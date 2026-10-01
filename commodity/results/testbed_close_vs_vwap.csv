@@ -1,0 +1,12 @@
+symbol,dates,days,median_abs_gap_bp,p90_abs_gap_bp,mean_signed_gap_bp
+GOLDGUINEA,TRAIN dates,205,15.1,55.2,-0.4
+GOLDM,TRAIN dates,181,17.5,59.4,1.1
+GOLDPETAL,TRAIN dates,211,13.5,60.6,1.6
+GOLDTEN,TRAIN dates,63,23.3,86.5,-1.7
+GOLDGUINEA,all dates,457,17.6,57.3,2.5
+GOLDM,all dates,498,22.5,69.5,4.4
+GOLDPETAL,all dates,549,17.9,68.3,2.1
+GOLDTEN,all dates,401,24.4,72.8,3.6
+spread PETAL-TEN,all dates,401,8.1,24.6,-1.1
+spread GUINEA-TEN,all dates,315,9.0,25.2,-0.6
+spread GUINEA-PETAL,all dates,457,6.5,20.5,-0.1

@@ -15,6 +15,7 @@ Put `ingest.py`, `backtest.py` and this README in the same folder as `raw_clean/
     python backtest.py holdout  # second sealed test, 2025-08-01 to 2026-09-30, runs once
     python methods.py           # research-backed alternatives, compared on TRAIN dates only
     python uncertainty.py       # bootstrap interval for TEST, spread level per contract cycle
+    python testbed.py           # accuracy testbed: data error rates and 95% margins
 
 ## Design
 - Normalized price: close / quote grams (10, 8, 1) / purity 0.999, in Rs per gram of pure gold.
@@ -140,3 +141,40 @@ delivery cost of 1 g and 8 g products) is a hypothesis we have not verified.
 - Politis & Romano (1994). The Stationary Bootstrap. JASA 89(428). doi:10.1080/01621459.1994.10476870
 - Pavabutr & Chaihetphon (2010). Price discovery in the Indian gold futures market. Journal of Economics and Finance 34(4). doi:10.1007/s12197-008-9068-9
 - Mahajan & Chandra (2019). Stochastic Spread Pairs Trading in the Indian Commodity Market. arXiv:1907.08397
+
+## Accuracy testbed (`testbed.py`)
+
+### A. Data errors: 0 unexplained in 1,919 rows
+| Check | Error rate |
+|---|---|
+| Duplicates, rows after expiry, open/close outside [low, high], non-positive prices | 0.00% |
+| Missing trading day inside a contract's life | 0.00% |
+| Normalized price >5% from same-cycle median (catches unit or lot-size mistakes) | 0.00% |
+| Previous Close != prior row's Close | 0.74% (14 rows), all right after a no-trade day |
+
+On a no-trade day the file's Close repeats the old price; MCX's actual settlement for that day only
+appears as the next day's Previous Close. These rows are flagged `no_trade` and never used in pairs.
+Same-cycle deviations: median 0.25%, 99th percentile 1.25%, max 1.67%.
+
+### B. Settlement close vs average traded price (VWAP = turnover / grams traded)
+| Measure | Median gap | 90th percentile |
+|---|---|---|
+| Single contract | 15-24 bp | 55-87 bp |
+| Spread between two contracts (gold's move cancels) | 6.5-9 bp | 20-25 bp |
+
+The spread gap shows how far the settlement spread is from where trading actually happened. A median of
+~8 bp per pair (~4 bp per leg) means 0 bp slippage is unrealistic and the 5 bp per leg assumption is in a
+realistic range. Gaps are unbiased on average (mean -1 to +4 bp).
+
+### C. 95% margins on the main numbers (week-block bootstrap)
+| Quantity | Estimate | 95% interval | Margin, % of estimate |
+|---|---|---|---|
+| Mean spread PETAL-TEN | 80.4 bp | 71.7 to 90.1 | +/-11% |
+| Mean spread GUINEA-TEN | 63.7 bp | 53.7 to 74.4 | +/-16% |
+| Mean spread GUINEA-PETAL | -8.0 bp | -20.0 to +5.6 | +/-159% (not different from zero) |
+| TEST net P&L, 0 bp | +10,292 | +847 to +23,140 | +/-108% |
+| TEST net P&L, 5 bp | -4,466 | -9,849 to +2,350 | +/-137% |
+| TEST net P&L, 10 bp | -19,224 | -25,405 to -13,824 | +/-30% |
+
+The GOLDTEN discount is measured to within about +/-11-16%. The strategy P&L is not: its margin is
+larger than the estimate itself at realistic slippage.
