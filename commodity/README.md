@@ -17,6 +17,8 @@ Put `ingest.py`, `backtest.py` and this README in the same folder as `raw_clean/
     python uncertainty.py       # bootstrap interval for TEST, spread level per contract cycle
     python testbed.py           # accuracy testbed: data error rates and 95% margins
     python accuracy.py          # all four contracts: carry, GOLDM pairs, precision per contract
+    python fairvalue.py dev     # GOLDM-anchored fair-price strategy, development window
+    python fairvalue.py holdout # its sealed test, runs once on 2025-08-06 to 2026-05-29
 
 ## Design
 - Normalized price: close / quote grams (10, 8, 1) / purity 0.999, in Rs per gram of pure gold.
@@ -220,3 +222,33 @@ GOLDM trades 20-60x more gold than the others, so it is the most reliable refere
 Margins shrink with the square root of independent weeks. Assuming similar variability, ~60 more weeks
 (Aug 2025 - Sep 2026) would take TEN-PETAL from +/-9.5 to about +/-5.8 bp and GOLDM-TEN from +/-4.9 to
 about +/-2.9 bp.
+
+## GOLDM-anchored fair-price strategy (`fairvalue.py`), pre-registered 2026-10-01
+
+Built from the precision result: GOLDM is the most liquid and agrees with GOLDTEN per pure gram, while
+GUINEA and PETAL carry a stable premium. For each smaller contract X, fair price = GOLDM moved to X's
+expiry with same-day carry + X's usual premium (mean of all previous days, past only). Trade when X's
+premium is k standard deviations away from usual; buy the cheap side, sell the other, 200 g per leg.
+Fills at the next day's average traded price. One position per contract type at a time. Exits:
+premium back to usual, 5 business days before expiry, or end of window.
+
+Windows, declared before any holdout data was downloaded:
+- DEV: market days up to 2025-08-05 (every day seen in any file analyzed before).
+- HOLDOUT: 2025-08-06 to 2026-05-29, market days in none of the files analyzed so far. Days from
+  2026-06-01 were seen through the Nov 2026 - Feb 2027 contracts and are not used for evaluation.
+
+DEV results (in-sample: k was chosen here), Rs, 200 g per leg:
+| k | Trades | Net at 0 / 5 / 10 bp |
+|---|---|---|
+| 1.0 | 15 | +102,931 / +47,069 / -8,792 |
+| 1.5 (chosen by the declared rule) | 8 | +107,802 / +78,186 / +48,571 |
+| 2.0 | 4 | +60,283 / +45,459 / +30,635 |
+
+Robustness of k=1.5 at 5 bp:
+- Fills at next-day close instead of VWAP: +91,670 (not an artifact of VWAP).
+- 95% interval (week blocks): +4,279 to +197,647, but from only 5 independent weeks.
+- 4 of the 8 trades and about 80% of the profit come from the gold swings of 1-15 April 2025; without
+  them, 4 trades make +15,502.
+
+Reading: GUINEA and PETAL overshoot GOLDM in sharp gold moves and return to their usual premium within
+days. DEV supports the idea but cannot prove it; the sealed HOLDOUT is the test.
