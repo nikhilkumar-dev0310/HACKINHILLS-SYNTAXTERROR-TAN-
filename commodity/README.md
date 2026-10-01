@@ -16,6 +16,7 @@ Put `ingest.py`, `backtest.py` and this README in the same folder as `raw_clean/
     python methods.py           # research-backed alternatives, compared on TRAIN dates only
     python uncertainty.py       # bootstrap interval for TEST, spread level per contract cycle
     python testbed.py           # accuracy testbed: data error rates and 95% margins
+    python accuracy.py          # all four contracts: carry, GOLDM pairs, precision per contract
 
 ## Design
 - Normalized price: close / quote grams (10, 8, 1) / purity 0.999, in Rs per gram of pure gold.
@@ -178,3 +179,44 @@ realistic range. Gaps are unbiased on average (mean -1 to +4 bp).
 
 The GOLDTEN discount is measured to within about +/-11-16%. The strategy P&L is not: its margin is
 larger than the estimate itself at realistic slippage.
+
+## Precision of all four contracts (`accuracy.py`)
+
+### Cost of carry, measured from the data (% per year, adjacent expiries of the same symbol)
+| Year | GOLDM | GOLDTEN | GOLDGUINEA | GOLDPETAL |
+|---|---|---|---|---|
+| 2025 | 5.05 | 4.52 | 5.49 | 5.30 |
+| 2026 | 8.27 | 9.26 | 11.38 | 10.25 |
+The four contracts agree within each year. GOLDM expires ~5 days after its partners, so it is moved to
+the partner's expiry with the same-day carry (median adjustment ~8 bp).
+
+### All six pairs, per gram of pure gold (a minus b), settlement close
+| Pair | Mean | 95% interval | Same sign in cycles |
+|---|---|---|---|
+| GOLDM - GOLDTEN | +4.1 bp | -0.7 to +9.0 | 5/7 |
+| GOLDM - GOLDGUINEA | -60.3 bp | -74.1 to -47.9 | 6/6 |
+| GOLDM - GOLDPETAL | -79.5 bp | -91.0 to -68.7 | 7/7 |
+| GOLDTEN - GOLDGUINEA | -63.7 bp | -74.5 to -53.6 | 7/7 |
+| GOLDTEN - GOLDPETAL | -80.4 bp | -90.2 to -71.1 | 8/8 |
+| GOLDGUINEA - GOLDPETAL | -8.0 bp | -19.9 to +6.6 | 3/7 |
+
+- GOLDM (100 g, 995) and GOLDTEN (10 g, 999) are priced the same per pure gram. This independently
+  confirms the purity normalization: an error there would show up as a ~40 bp gap.
+- The premium sits on the small contracts: GUINEA (8 g) ~60-64 bp and PETAL (1 g) ~80 bp above the bars.
+- Using the day's average traded price (VWAP) instead of the settlement close leaves the levels unchanged
+  and lowers daily spread noise by 5-9% (except GUINEA-PETAL).
+
+### Precision per contract
+| Contract | Median kg traded/day | No-trade days | Close vs VWAP, median |
+|---|---|---|---|
+| GOLDM | 352.4 | 0.40% | 22.5 bp |
+| GOLDTEN | 17.1 | 0.74% | 24.4 bp |
+| GOLDGUINEA | 5.8 | 1.72% | 17.6 bp |
+| GOLDPETAL | 10.0 | 0.18% | 17.9 bp |
+
+GOLDM trades 20-60x more gold than the others, so it is the most reliable reference price.
+
+### Margin with the holdout data
+Margins shrink with the square root of independent weeks. Assuming similar variability, ~60 more weeks
+(Aug 2025 - Sep 2026) would take TEN-PETAL from +/-9.5 to about +/-5.8 bp and GOLDM-TEN from +/-4.9 to
+about +/-2.9 bp.
