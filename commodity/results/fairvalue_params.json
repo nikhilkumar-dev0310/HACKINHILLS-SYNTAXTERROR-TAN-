@@ -1,0 +1,14 @@
+{
+  "k": 1.5,
+  "how": "pre-declared rule",
+  "grams_per_leg": 200,
+  "dev_end": "2025-08-05",
+  "holdout": [
+    "2025-08-06",
+    "2026-05-29"
+  ],
+  "fills": "next-day VWAP",
+  "exit_bdays": 5,
+  "no_entry_bdays": 10,
+  "min_history_days": 20
+}
