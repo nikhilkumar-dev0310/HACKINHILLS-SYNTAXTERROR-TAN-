@@ -252,3 +252,39 @@ Robustness of k=1.5 at 5 bp:
 
 Reading: GUINEA and PETAL overshoot GOLDM in sharp gold moves and return to their usual premium within
 days. DEV supports the idea but cannot prove it; the sealed HOLDOUT is the test.
+
+## HOLDOUT results (run once, 2026-10-01, after 39 new files: Aug 2025 - May 2026 contracts)
+Data check first: 70 contracts, 0 integrity errors. 6 rows were >5% from same-cycle peers; all are
+GOLDM on 21, 29 and 30 Jan 2026, when gold crashed about 10% in a day and GOLDM settled at its day low
+(lower price band) while the small contracts settled higher. Real data, kept, no rule changed.
+GOLDM expiring May 2026 was not downloaded, so the Apr 2026 cycle is missing from the fair-price test.
+
+### Fair-price strategy (k = 1.5 frozen; 200 g per leg; next-day VWAP fills), 2025-08-06 to 2026-05-29
+| Slippage | Trades | Gross | Costs | Net | Hit rate |
+|---|---|---|---|---|---|
+| 0 bp | 12 | 86,572 | 11,764 | +74,808 | 83% |
+| 5 bp | 12 | 86,572 | 73,582 | +12,990 | 58% |
+| 10 bp | 12 | 86,572 | 135,400 | -48,828 | 25% |
+- 95% interval at 5 bp (week blocks): -18,671 to +50,806; 75% of draws positive; only 6 entry weeks.
+- GUINEA +27,799 (4 trades), PETAL +6,877 (3), TEN -21,686 (5). Works where the premium is real
+  (GUINEA, PETAL); on TEN, where there is no premium, it trades noise and loses.
+- The GUINEA/PETAL premium over bars roughly doubled in 2026 (to ~130-140 bp), so the past-only
+  "usual premium" lagged and positions were held up to 107 days.
+
+### Same-expiry z-score baseline (frozen N=10, z=2.0; 40 g per leg; settlement fills), 2025-08-01 on
+| Slippage | Trades | Net | 95% interval | Share of draws > 0 |
+|---|---|---|---|---|
+| 0 bp | 156 | +365,755 | +50,445 to +813,603 | 100% |
+| 5 bp | 156 | +190,340 | -97,634 to +619,835 | 86% |
+| 10 bp | 156 | +14,926 | -251,631 to +401,270 | 50% |
+- All of it comes from January 2026: 30 trades made +267,750 at 5 bp; the other 126 trades lost
+  -77,410 (hit rate 27%). The top 5 January trades are 54% of the total.
+- Repriced at each day's VWAP instead of settlement: +168,114 (January +228,317, rest -60,204).
+
+### Verdict
+Neither strategy has a dependable edge at 5 bp outside one extreme month. The z-score baseline earns
+money only when gold moves violently and the small contracts lag (Jan 2026); in normal months it
+loses after costs, as it did in TRAIN. The fair-price strategy stayed positive at 0-5 bp on
+GUINEA and PETAL, but with 6 independent weeks its interval includes zero. What the data does
+establish firmly: per gram of pure gold GOLDM = GOLDTEN, and GUINEA/PETAL carry a persistent premium
+that widened from ~60-80 bp (2025) to ~130-140 bp (2026).
