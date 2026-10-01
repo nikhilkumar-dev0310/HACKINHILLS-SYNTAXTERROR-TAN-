@@ -2,6 +2,7 @@
 
     python backtest.py train      # parameter sweep on TRAIN dates only, applies the pre-declared rule
     python backtest.py test       # runs the FROZEN parameters once on TEST dates (only after you approve)
+    python backtest.py holdout    # second sealed test: same frozen parameters, run once on HOLDOUT dates
 
 Reads clean/gold_futures.csv produced by ingest.py. Writes results/*.csv and results/frozen_params.json.
 """
@@ -21,6 +22,9 @@ RES = os.path.join(HERE, "results")
 TRAIN_END = pd.Timestamp("2025-04-30")
 TEST_START = pd.Timestamp("2025-05-01")
 TEST_END = pd.Timestamp("2025-07-31")      # last expiry with all three symbols downloaded
+# Second sealed test, declared on 2026-10-01 before any of its data was downloaded.
+HOLDOUT_START = pd.Timestamp("2025-08-01")
+HOLDOUT_END = pd.Timestamp("2026-09-30")
 
 # ---- Position: equal grams of gold per leg, in whole lots ----
 LOT_GRAMS = {"GOLDTEN": 10, "GOLDGUINEA": 8, "GOLDPETAL": 1}   # confirmed from Volume(In 000's) / Volume(Lots)
@@ -186,19 +190,20 @@ def main(mode):
         json.dump(chosen, open(os.path.join(RES, "frozen_params.json"), "w"), indent=2)
         print("\nSelected:", chosen)
         print("TEST has not been run.")
-    elif mode == "test":
+    elif mode in ("test", "holdout"):
         f = os.path.join(RES, "frozen_params.json")
         if not os.path.exists(f):
             sys.exit("Run `python backtest.py train` first.")
         fp = json.load(open(f))
+        window = (TEST_START, TEST_END) if mode == "test" else (HOLDOUT_START, HOLDOUT_END)
         out = []
         for sl in SLIPPAGE_BP:
             for (a, b, e), p in pairs.items():
-                for t in run_pair(p, fp["lookback"], fp["entry_z"], TEST_START, TEST_END, sl):
+                for t in run_pair(p, fp["lookback"], fp["entry_z"], *window, sl):
                     out.append({"slip_bp": sl, "pair": f"{a}-{b}", "expiry": e, **t})
         log = pd.DataFrame(out)
-        log.to_csv(os.path.join(RES, "test_trades.csv"), index=False)
-        print(f"\nTEST with frozen params {fp['lookback']=} {fp['entry_z']=}")
+        log.to_csv(os.path.join(RES, f"{mode}_trades.csv"), index=False)
+        print(f"\n{mode.upper()} {window[0].date()} to {window[1].date()} with frozen params {fp['lookback']=} {fp['entry_z']=}")
         print(log.groupby("slip_bp")[["gross_rs", "cost_rs", "net_rs"]].agg(["count", "sum"]).round(1) if len(log) else "No trades.")
     else:
         sys.exit(__doc__)

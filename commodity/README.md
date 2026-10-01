@@ -12,6 +12,7 @@ Put `ingest.py`, `backtest.py` and this README in the same folder as `raw_clean/
     python ingest.py            # validates every file, writes clean/gold_futures.csv
     python backtest.py train    # sweep on dates <= 2025-04-30, applies the pre-declared rule
     python backtest.py test     # ONLY after more data is added and you agree; runs once
+    python backtest.py holdout  # second sealed test, 2025-08-01 to 2026-09-30, runs once
 
 ## Design
 - Normalized price: close / quote grams (10, 8, 1) / purity 0.999, in Rs per gram of pure gold.
@@ -48,6 +49,9 @@ settings with at least 8 trades across at least 2 pairs; else default N=10, z=2.
 - Added 18 more contracts (31 total). Before any TEST run: TEST window extended to 2025-07-31 (last
   expiry with all three symbols), and TRAIN selection rerun on the larger TRAIN set with the same rule.
   Frozen: lookback 10, entry z 2.0.
+
+- 2026-10-01: TEST has been used. Declared a second sealed HOLDOUT (2025-08-01 to 2026-09-30) before
+  downloading its data; it reuses the frozen parameters unchanged. See DOWNLOADS.md.
 
 ## Results (40 g per leg, Rs)
 TRAIN (to 30 Apr 2025, 10 pairs): all 27 settings lose before costs. Frozen setting: 9 trades, gross -3,939.
