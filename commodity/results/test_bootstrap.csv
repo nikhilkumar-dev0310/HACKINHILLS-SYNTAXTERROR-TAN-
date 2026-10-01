@@ -1,0 +1,4 @@
+slip_bp,trades,entry_weeks,net_rs,ci95_low,ci95_high,share_of_draws_positive
+0,19,9,10292,847,23140,0.99
+5,19,9,-4466,-9849,2350,0.09
+10,19,9,-19224,-25405,-13824,0.0
