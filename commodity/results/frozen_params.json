@@ -1,0 +1,13 @@
+{
+  "lookback": 10,
+  "entry_z": 2.0,
+  "how": "pre-declared rule",
+  "exit_z": 0.0,
+  "position_grams": 40,
+  "min_grams_traded": 1000,
+  "train_end": "2025-04-30",
+  "test": [
+    "2025-05-01",
+    "2025-07-31"
+  ]
+}
