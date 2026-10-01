@@ -1,0 +1,10 @@
+{
+  "promoted": null,
+  "reason": "no candidate had positive TRAIN net at 5 bp with enough trades",
+  "best_candidate": "kalman(W=20, c=1.5)",
+  "best_train_net_rs_5bp": -8827.3,
+  "holdout": [
+    "2025-08-01",
+    "2026-09-30"
+  ]
+}
