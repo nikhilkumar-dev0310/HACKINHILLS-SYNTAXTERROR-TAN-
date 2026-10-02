@@ -44,6 +44,12 @@ def part_a(d):
     rows.append(("Previous Close != prior row's Close", mism.mean(), len(chk)))
     rows.append(("  ...of which NOT right after a no-trade day", (mism & ~after_nt).mean(), len(chk)))
 
+    # weekend dates must be known special sessions (the brief: MCX may return a different date than requested)
+    special = {pd.Timestamp("2023-11-12"): "Diwali Muhurat session", pd.Timestamp("2025-02-01"): "Union Budget session",
+               pd.Timestamp("2026-02-01"): "Union Budget session"}
+    wk = d.date.dt.dayofweek >= 5
+    rows.append(("Weekend date that is not a known special session", (wk & ~d.date.isin(special)).mean(), len(d)))
+    print("Weekend sessions found:", {str(k.date()): v for k, v in special.items() if (d.date == k).any()})
     # trading calendar = every date that appears in any file; count gaps inside each contract's life
     cal = np.sort(d.date.unique())
     gaps, expected = 0, 0

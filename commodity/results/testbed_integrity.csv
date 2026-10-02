@@ -5,5 +5,6 @@ Row dated after its expiry,0.0,10869,0
 Non-positive price,0.0,10717,0
 Previous Close != prior row's Close,0.013129714126082503,10739,141
   ...of which NOT right after a no-trade day,0.0,10739,0
+Weekend date that is not a known special session,0.0,10869,0
 Missing trading day inside a contract's life,0.0,10869,0
 Normalized price >5% from same-cycle median,0.0010264066436502753,10717,11

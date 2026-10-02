@@ -1,0 +1,5 @@
+run,trades,inside_life,outside_tender,net_all,net_outside_tender_only,net_of_tender_trades
+A_hold,156,156,139,190340.0,153382.0,36959.0
+A_test,19,19,16,-4466.0,-1922.0,-2544.0
+B_dev,8,8,8,78186.0,78186.0,0.0
+B_hold,12,12,12,12990.0,12990.0,0.0
