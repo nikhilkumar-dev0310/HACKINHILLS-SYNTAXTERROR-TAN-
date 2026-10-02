@@ -164,6 +164,9 @@ main{min-width:0;padding:28px clamp(16px,4vw,56px) 72px}
 .chart .reveal{animation:reveal 1.3s cubic-bezier(.3,.6,.2,1) both}
 @keyframes reveal{from{clip-path:inset(-20px 100% -20px 0)}to{clip-path:inset(-20px -20px -20px 0)}}
 .chart .cross{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.chart .axbadge rect{fill:var(--ink);opacity:.92}
+.chart .axbadge text{fill:var(--bg);font:600 11px var(--f-num)}
+.chart .axbadge{pointer-events:none}
 .chart .lbl{font:600 11.5px var(--f-ui);fill:var(--ink-2)}
 .tip{position:absolute;pointer-events:none;z-index:5;min-width:170px;padding:10px 12px;border-radius:12px;font-size:12.5px;
   background:var(--panel-strong);border:1px solid var(--line-2);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
@@ -514,7 +517,7 @@ function monthTicks(t0, t1, maxN) {
 function lineChart(host, o) {
   host.innerHTML = ""; const W = Math.max(host.clientWidth, 280), H = o.h || (W < 560 ? 230 : 300);
   const narrow = W < 560, endL = o.endLabels && !narrow;
-  const m = { l: 52, r: endL ? 96 : 16, t: 14, b: 30 };
+  const m = { l: 62, r: endL ? 96 : 16, t: 14, b: 30 };
   const xs = o.dates.map(T); const t0 = xs[0], t1 = xs[xs.length - 1];
   let vals = []; o.series.forEach(s => s.values.forEach(v => v != null && vals.push(v)));
   if (o.zero) vals.push(0);
@@ -526,7 +529,8 @@ function lineChart(host, o) {
       const tx = sv("text", { x: (X(a) + X(b)) / 2, y: H - m.b - 8, "text-anchor": "middle", style: "fill:var(--bad);opacity:.85" }); tx.textContent = "crash period"; svg.appendChild(tx); } }
   sc.ticks.forEach(v => { svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: v === 0 && o.zero ? "zero" : "gridl" }));
     const t = sv("text", { x: m.l - 10, y: Y(v) + 4, "text-anchor": "end" }); t.textContent = (o.yfmt || (x => x))(v); svg.appendChild(t); });
-  monthTicks(t0, t1, W < 420 ? 3 : W < 560 ? 4 : 8).forEach(tt => { const t = sv("text", { x: X(tt), y: H - 8, "text-anchor": "middle" });
+  monthTicks(t0, t1, W < 420 ? 3 : W < 560 ? 4 : 8).forEach(tt => { svg.appendChild(sv("line", { x1: X(tt), x2: X(tt), y1: m.t, y2: H - m.b, class: "gridl" }));
+    const t = sv("text", { x: X(tt), y: H - 8, "text-anchor": "middle" });
     const d = new Date(tt); t.textContent = MON[d.getUTCMonth()] + " " + String(d.getUTCFullYear()).slice(2); svg.appendChild(t); });
   const G = sv("g", { class: "reveal" });
   if (o.hline != null) svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: Y(o.hline), y2: Y(o.hline), stroke: "var(--gold)", "stroke-dasharray": "5 4", "stroke-width": 1.2, opacity: .8 }));
@@ -550,17 +554,30 @@ function lineChart(host, o) {
     for (let i = 1; i < ls.length; i++) if (ls[i]._ly - ls[i - 1]._ly < 15) ls[i]._ly = ls[i - 1]._ly + 15;
     ls.forEach(s => { const t = sv("text", { x: W - m.r + 10, y: s._ly + 4, class: "lbl", style: `fill:${s.color}` }); t.textContent = s.label; svg.appendChild(t); }); }
   const cross = sv("line", { class: "cross", y1: m.t, y2: H - m.b, opacity: 0 }); svg.appendChild(cross);
+  const crossY = sv("line", { class: "cross", x1: m.l, x2: W - m.r, opacity: 0 }); svg.appendChild(crossY);
+  const badge = () => { const g = sv("g", { class: "axbadge", opacity: 0 }); const r = sv("rect", { rx: 5, height: 18 }); const t = sv("text", {}); g.append(r, t); svg.appendChild(g); return { g, r, t }; };
+  const bx = badge(), by = badge();
   const dots = o.series.map(s => { const c = sv("circle", { r: 4.5, style: `fill:${s.color};stroke:var(--panel-solid);stroke-width:2`, opacity: 0 }); svg.appendChild(c); return c; });
   const hit = sv("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent", style: "cursor:crosshair" }); svg.appendChild(hit);
   host.appendChild(svg); const tip = tipFor(host);
   const move = ev => { const r = svg.getBoundingClientRect(); const px = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
     const tt = t0 + (px - m.l) / (W - m.l - m.r) * (t1 - t0); let i = 0, best = Infinity; xs.forEach((x, j) => { const dd = Math.abs(x - tt); if (dd < best) { best = dd; i = j; } });
     const x = X(xs[i]); cross.setAttribute("x1", x); cross.setAttribute("x2", x); cross.setAttribute("opacity", 1);
+    const py = Math.max(m.t, Math.min(H - m.b, (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top));
+    const yv = sc.hi - (py - m.t) / (H - m.t - m.b) * (sc.hi - sc.lo);
+    crossY.setAttribute("y1", py); crossY.setAttribute("y2", py); crossY.setAttribute("opacity", 1);
+    bx.t.textContent = fdate(o.dates[i]); const bw = bx.t.getComputedTextLength() + 14;
+    const bxl = Math.max(m.l, Math.min(W - m.r - bw, x - bw / 2));
+    bx.r.setAttribute("x", bxl); bx.r.setAttribute("y", H - m.b + 4); bx.r.setAttribute("width", bw);
+    bx.t.setAttribute("x", bxl + 7); bx.t.setAttribute("y", H - m.b + 17); bx.g.setAttribute("opacity", 1);
+    by.t.textContent = (o.yfmt || (z => z))(+yv.toFixed(Math.abs(sc.hi - sc.lo) < 10 ? 2 : 0));
+    by.r.setAttribute("x", 0); by.r.setAttribute("y", py - 9); by.r.setAttribute("width", m.l - 4);
+    by.t.setAttribute("x", m.l - 9); by.t.setAttribute("text-anchor", "end"); by.t.setAttribute("y", py + 4); by.g.setAttribute("opacity", 1);
     let rows = ""; o.series.forEach((s, k) => { const v = s.values[i]; if (v == null) { dots[k].setAttribute("opacity", 0); return; }
       dots[k].setAttribute("cx", x); dots[k].setAttribute("cy", Y(v)); dots[k].setAttribute("opacity", 1);
       rows += `<div class="r"><span><i style="background:${s.color}"></i>${s.label}</span><b>${(o.tfmt || o.yfmt || (z => z))(v)}</b></div>`; });
     tip.innerHTML = `<div class="t">${fdate(o.dates[i])}</div>${rows}${o.extra ? o.extra(i) : ""}`; placeTip(host, tip, x, Y(o.series.map(s => s.values[i]).find(v => v != null) ?? 0)); };
-  const leave = () => { cross.setAttribute("opacity", 0); dots.forEach(d => d.setAttribute("opacity", 0)); tip.classList.remove("show"); };
+  const leave = () => { cross.setAttribute("opacity", 0); crossY.setAttribute("opacity", 0); bx.g.setAttribute("opacity", 0); by.g.setAttribute("opacity", 0); dots.forEach(d => d.setAttribute("opacity", 0)); tip.classList.remove("show"); };
   hit.addEventListener("mousemove", move); hit.addEventListener("touchmove", move, { passive: true }); hit.addEventListener("mouseleave", leave); hit.addEventListener("touchend", leave);
 }
 
