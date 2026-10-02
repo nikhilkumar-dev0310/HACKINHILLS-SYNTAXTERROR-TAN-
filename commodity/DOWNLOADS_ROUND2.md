@@ -102,3 +102,10 @@ If MCX returns nothing for a year, stop there and say so; nothing will be filled
 - Batch E: GOLDGUINEA, GOLDPETAL, GOLDM, all expiries Jan 2016 - Dec 2019 (144 files).
   From Date 01/07 of the previous year, To Date 31/12 of the expiry year.
 - Still missing from earlier rounds: GOLDTEN expiring 31 Aug 2026.
+
+## Amendment (2026-10-03, after the 2024 files arrived, before any 2020-2023 data)
+The 2024 contracts were downloaded from 01/07/2023, so they contain market days from 10 Oct 2023.
+Those days have now been seen. The first sealed test is therefore shortened to
+2020-01-01 to 2023-10-09. Days 2023-10-10 to 2023-12-31 are used for neither development nor testing.
+ingest.py now writes rows inside sealed windows to clean/sealed_rows.csv and keeps them out of
+clean/gold_futures.csv, so no analysis script can read them before the one sealed run.

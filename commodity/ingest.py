@@ -17,6 +17,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "raw_clean")
 OUT = os.path.join(HERE, "clean")
+SEALED = [("2016-01-01", "2019-12-31"), ("2020-01-01", "2023-10-09")]   # see DOWNLOADS_ROUND2.md
 SYMBOLS = {"GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"}
 
 # Normalization convention: rupees per gram of pure gold.
@@ -98,6 +99,13 @@ def main():
     d = d.sort_values(["symbol", "expiry_date", "date"]).reset_index(drop=True)
 
     os.makedirs(OUT, exist_ok=True)
+    # Sealed test windows (DOWNLOADS_ROUND2.md): their rows never enter the working dataset.
+    sealed = pd.Series(False, index=d.index)
+    for lo, hi in SEALED:
+        sealed |= d.date.between(pd.Timestamp(lo), pd.Timestamp(hi))
+    d[sealed].to_csv(os.path.join(OUT, "sealed_rows.csv"), index=False, date_format="%Y-%m-%d")
+    print(f"Sealed-window rows set aside (not analysed): {int(sealed.sum())}")
+    d = d[~sealed]
     d.to_csv(os.path.join(OUT, "gold_futures.csv"), index=False, date_format="%Y-%m-%d")
 
     print(f"\nRows: {len(d)}   Contracts: {d.groupby(['symbol','expiry_date']).ngroups}   "
