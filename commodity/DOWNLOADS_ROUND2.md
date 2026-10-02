@@ -94,3 +94,11 @@ mcxindia.com > Market Data > Bhavcopy, commodity-wise. For each file:
 | Dec 2023 | [ ] | [ ] | [ ] |
 
 If MCX returns nothing for a year, stop there and say so; nothing will be filled in.
+
+## Addendum (declared 2026-10-03, before any 2016-2019 data is downloaded)
+- SECOND SEALED TEST: market days 2016-01-01 to 2019-12-31, GOLDGUINEA, GOLDPETAL, GOLDM.
+  Improved rules are frozen on DEV (2024-01-01 onward) first, then run ONCE on 2020-2023 and ONCE
+  on 2016-2019. Neither window is used to choose or tune anything.
+- Batch E: GOLDGUINEA, GOLDPETAL, GOLDM, all expiries Jan 2016 - Dec 2019 (144 files).
+  From Date 01/07 of the previous year, To Date 31/12 of the expiry year.
+- Still missing from earlier rounds: GOLDTEN expiring 31 Aug 2026.
