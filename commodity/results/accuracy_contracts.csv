@@ -1,5 +1,5 @@
 symbol,rows,contracts,no_trade_pct,median_kg_traded_per_day,close_vs_vwap_median_bp,close_vs_vwap_p90_bp
-GOLDM,1300,17,0.31,649.2,26.2,87.1
+GOLDM,1377,20,0.29,716.5,25.6,85.4
 GOLDTEN,1319,18,0.23,35.1,25.6,83.3
-GOLDGUINEA,1481,17,0.54,12.3,19.8,70.4
-GOLDPETAL,1566,18,0.06,22.0,19.7,74.4
+GOLDGUINEA,1612,20,0.5,12.8,19.1,69.1
+GOLDPETAL,1674,20,0.06,21.3,19.2,72.7
