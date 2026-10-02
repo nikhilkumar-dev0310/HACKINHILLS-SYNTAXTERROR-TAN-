@@ -268,8 +268,9 @@ GOLDM expiring May 2026 was not downloaded, so the Apr 2026 cycle is missing fro
 - 95% interval at 5 bp (week blocks): -18,671 to +50,806; 75% of draws positive; only 6 entry weeks.
 - GUINEA +27,799 (4 trades), PETAL +6,877 (3), TEN -21,686 (5). Works where the premium is real
   (GUINEA, PETAL); on TEN, where there is no premium, it trades noise and loses.
-- The GUINEA/PETAL premium over bars roughly doubled in 2026 (to ~130-140 bp), so the past-only
-  "usual premium" lagged and positions were held up to 107 days.
+- The premium of all small contracts over GOLDM spiked in Dec 2025 - Mar 2026 (GUINEA and PETAL
+  ~330 bp in Jan-Feb 2026, GOLDTEN ~130-170 bp) and was back to normal levels by Apr-May 2026. The
+  past-only "usual premium" lagged this spike, so positions were held up to 107 days.
 
 ### Same-expiry z-score baseline (frozen N=10, z=2.0; 40 g per leg; settlement fills), 2025-08-01 on
 | Slippage | Trades | Net | 95% interval | Share of draws > 0 |
@@ -286,5 +287,22 @@ Neither strategy has a dependable edge at 5 bp outside one extreme month. The z-
 money only when gold moves violently and the small contracts lag (Jan 2026); in normal months it
 loses after costs, as it did in TRAIN. The fair-price strategy stayed positive at 0-5 bp on
 GUINEA and PETAL, but with 6 independent weeks its interval includes zero. What the data does
-establish firmly: per gram of pure gold GOLDM = GOLDTEN, and GUINEA/PETAL carry a persistent premium
-that widened from ~60-80 bp (2025) to ~130-140 bp (2026).
+establish firmly: per gram of pure gold GOLDM = GOLDTEN in normal months, and GUINEA/PETAL carry a
+persistent premium (about 20-130 bp month to month in 2025) that spikes in a crash, up to ~330 bp in
+Jan-Feb 2026, and then returns to normal.
+
+## Pair levels with all 70 contracts: normal months vs the crash period (descriptive, 2026-10-02)
+`accuracy.py` on all data gives GOLDM - GOLDTEN = -21.7 bp [-40.8, -6.9], against +4.1 bp on 2025 data.
+Splitting by period (split chosen after looking at the monthly premium chart, so descriptive only):
+
+| Pair (a minus b, per pure gram) | Normal months | Dec 2025 - Mar 2026 |
+|---|---|---|
+| GOLDM - GOLDTEN | +2.8 bp [-0.7, +6.2] | -89.0 bp [-147.6, -43.6] |
+| GOLDM - GOLDGUINEA | -59.8 bp [-69.0, -50.3] | -245.9 bp [-324.1, -178.0] |
+| GOLDM - GOLDPETAL | -72.8 bp [-80.1, -65.6] | -252.8 bp [-323.5, -191.5] |
+| GOLDTEN - GOLDGUINEA | -62.2 bp [-69.7, -54.9] | -157.0 bp [-190.0, -127.7] |
+| GOLDTEN - GOLDPETAL | -73.4 bp [-79.2, -68.2] | -164.0 bp [-192.7, -139.0] |
+
+In normal months GOLDM and GOLDTEN agree and GUINEA/PETAL sit 60-73 bp above them. In the crash
+period every smaller contract traded far above GOLDM (up to ~2.5%): the most liquid contract moved
+first and furthest, the small ones lagged. Weeks: 57-65 normal, 18 crash.
