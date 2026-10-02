@@ -27,8 +27,8 @@ RED_BG = colors.HexColor("#fdf0ec")
 ss = {}
 ss["title"] = ParagraphStyle("title", fontName="DVB", fontSize=24, leading=30, textColor=INK, spaceAfter=6)
 ss["sub"] = ParagraphStyle("sub", fontName="DV", fontSize=12, leading=17, textColor=INK2)
-ss["h1"] = ParagraphStyle("h1", fontName="DVB", fontSize=16, leading=21, textColor=INK, spaceBefore=4, spaceAfter=8)
-ss["h2"] = ParagraphStyle("h2", fontName="DVB", fontSize=11.5, leading=15, textColor=GOLD, spaceBefore=10, spaceAfter=4)
+ss["h1"] = ParagraphStyle("h1", fontName="DVB", fontSize=16, leading=21, textColor=INK, spaceBefore=18, spaceAfter=8, keepWithNext=1)
+ss["h2"] = ParagraphStyle("h2", fontName="DVB", fontSize=11.5, leading=15, textColor=GOLD, spaceBefore=10, spaceAfter=4, keepWithNext=1)
 ss["body"] = ParagraphStyle("body", fontName="DV", fontSize=9.5, leading=14.2, textColor=INK, spaceAfter=6)
 ss["small"] = ParagraphStyle("small", fontName="DV", fontSize=8, leading=11, textColor=INK2, spaceAfter=4)
 ss["cap"] = ParagraphStyle("cap", fontName="DVI", fontSize=8, leading=11, textColor=INK2, spaceAfter=8)
@@ -111,12 +111,12 @@ s += [Spacer(1, 30 * mm), P("HACK IN HILLS '26  ·  PROBLEM 03: COMMODITY DERIVA
       P("Gold Futures Spread Intelligence", "title"),
       P("One metal, four contracts: do India's gold futures agree on the price of gold, and can the gaps be traded after real costs?", "sub"),
       Spacer(1, 14 * mm),
-      tiles([("70", "MCX contracts analysed<br/>(5,666 daily records)"),
+      tiles([("130", "MCX contracts analysed<br/>(10,869 daily records)"),
              ("0", "unexplained data errors<br/>after integrity checks"),
-             ("60–73 bp", "extra price of small gold<br/>contracts in normal months"),
-             ("about 2.5%", "average gap during the<br/>Dec 2025 – Mar 2026 crash")]),
+             ("60–75 bp", "extra price of the 8 g coin<br/>over GOLDM, 2024 to 2026"),
+             ("about 2.7%", "average premium during the<br/>Dec 2025 – Mar 2026 crash")]),
       Spacer(1, 14 * mm),
-      box(P("<b>Status as of 2 October 2026.</b> All numbers come from official MCX Bhavcopy files and are reproducible "
+      box(P("<b>Status as of 3 October 2026.</b> All numbers come from official MCX Bhavcopy files and are reproducible "
             "with the scripts in our repository. Nothing in this report is estimated or invented unless it is clearly marked "
             "<i>projection</i> (Section 9).", "box"), BLUE_BG, colors.HexColor("#2a78d6")),
       Spacer(1, 40 * mm),
@@ -134,24 +134,26 @@ s += [table([[a, b] for a, b in toc], [0.06, 0.94], head=False, zebra=False), Sp
 s += [P("1. Summary in one page", "h1"),
       P("India's commodity exchange, MCX, lists four gold futures contracts that differ only in size and purity. "
         "Once their prices are converted to the same unit, rupees per gram of pure gold, they should be nearly identical. "
-        "We checked that with 70 contracts of official exchange data, measured every gap, and tested two trading strategies "
+        "We checked that with 130 contracts of official exchange data (October 2023 to September 2026), measured every gap, and tested two trading strategies "
         "on data they had never seen, after realistic costs."),
       P("What we found", "h2")]
 s += B(["<b>The conversion works.</b> In normal months the 100 g bar (GOLDM) and the 10 g bar (GOLDTEN) are priced the same "
-        "per pure gram: +2.8 basis points, with a 95% range of −0.7 to +6.2. A mistake in our purity correction would show up as a 40-point gap.",
-        "<b>Small contracts cost more.</b> The 8 g coin (GOLDGUINEA) is about 60 bp (0.6%) dearer per gram, and the 1 g contract "
-        "(GOLDPETAL) about 73 bp (0.73%). This held in every contract cycle we checked, so it is a lasting premium, not a passing mistake.",
-        "<b>In a crash the gap explodes.</b> During the gold sell-off of December 2025 to March 2026, small contracts traded up to "
-        "about 2.5% above GOLDM on average, with a monthly peak of 3.6%. The most traded contract moved first and furthest; the small ones lagged.",
+        "per pure gram: +0.8 basis points, with a 95% range of −2.4 to +4.1. A mistake in our purity correction would show up as a 40-point gap.",
+        "<b>The coin always costs more.</b> The 8 g coin (GOLDGUINEA) was about 75 bp (0.75%) dearer per gram than GOLDM in 2024 and "
+        "about 60 bp in 2025–26. It was dearer in all 34 contract cycles we checked, so it is a lasting premium, not a passing mistake.",
+        "<b>The 1 g contract changed sides.</b> GOLDPETAL traded about 140 bp (1.4%) <i>below</i> GOLDM through 2024, then about "
+        "64 bp above it in 2025–26. A premium that can flip is not something to rely on.",
+        "<b>In a crash the gap explodes.</b> During the gold sell-off of December 2025 to March 2026, small contracts traded about "
+        "2.7% above GOLDM on average, with a monthly peak of 3.8%. The most traded contract moved first and furthest; the small ones lagged.",
         "<b>Trading the gaps is not reliably profitable yet.</b> Our simple strategy made money in the sealed test (+₹1.9 lakh at "
         "5 bp slippage), but all of it came from January 2026; in the other months it lost ₹77,410. Our fair-price strategy made "
         "+₹12,990, but its 95% range (−₹18,671 to +₹50,806) includes zero.",
-        "<b>The answer is honest by design.</b> Every rule was fixed and time-stamped in Git before the test data was downloaded."])
+        "<b>The answer is honest by design.</b> Every rule was fixed and time-stamped in Git before the test data was downloaded. "
+        "Two more sealed tests (2020–2023 and 2016–2019) are declared and waiting."])
 s += [P("Why this matters", "h2"),
       P("Most backtests look profitable because they are tuned on the same data they are judged on, or they ignore costs. "
         "We did neither. The result is a map of when these gold contracts disagree, how large the disagreement is, and the conditions "
-        "under which it can be traded: in sharp market falls, not in quiet months."),
-      PageBreak()]
+        "under which it can be traded: in sharp market falls, not in quiet months.")]
 
 # ---------------------------------------------------------------- problem
 s += [P("2. The problem, in plain words", "h1"),
@@ -159,12 +161,12 @@ s += [P("2. The problem, in plain words", "h1"),
         "gold futures every day; the price moves with the gold price. Gold is sold in many sizes, so MCX offers four gold contracts "
         "for different budgets:"),
       table([["Contract", "Size of one lot", "Price is quoted per", "Purity", "Expires around", "Gold traded per day*"],
-             ["GOLDM (Gold Mini)", "100 g", "10 g", "99.5%", "5th of the month", "649 kg"],
-             ["GOLDTEN", "10 g", "10 g", "99.9%", "last day of month", "35 kg"],
-             ["GOLDGUINEA", "8 g (coin)", "8 g", "99.9%", "last day of month", "12 kg"],
-             ["GOLDPETAL", "1 g", "1 g", "99.9%", "last day of month", "22 kg"]],
+             ["GOLDM (Gold Mini)", "100 g", "10 g", "99.5%", "5th of the month", "479 kg"],
+             ["GOLDTEN", "10 g", "10 g", "99.9%", "last day of month", "34 kg"],
+             ["GOLDGUINEA", "8 g (coin)", "8 g", "99.9%", "last day of month", "8 kg"],
+             ["GOLDPETAL", "1 g", "1 g", "99.9%", "last day of month", "12 kg"]],
             [0.2, 0.14, 0.17, 0.1, 0.2, 0.19]),
-      P("* Median over all our data. GOLDM trades about 20–55 times more gold than the others, which makes it the most reliable price.", "cap"),
+      P("* Median over all our data. GOLDM trades about 15–60 times more gold than the others. GOLDTEN only started in April 2025, which makes it the most reliable price.", "cap"),
       P("Because each contract quotes its price for a different amount and purity of gold, the raw prices look very different "
         "(for example ₹97,214, ₹97,428, ₹78,086 and ₹9,820 on the same day). Underneath, they are all the same metal. "
         "The hackathon problem asks us to:"),
@@ -177,11 +179,10 @@ s += [P("Why would the prices differ at all?", "h2"),
       P("Several real reasons can make the same gold cost slightly different amounts per gram in different contracts: smaller pieces "
         "cost more to mint and deliver per gram; small contracts trade less, so their prices update more slowly; and the "
         "contracts expire on different dates, so money tied up for longer costs interest (the <i>cost of carry</i>). "
-        "Part of our job is to separate these normal, explainable gaps from gaps that are unusual and might be tradeable."),
-      PageBreak()]
+        "Part of our job is to separate these normal, explainable gaps from gaps that are unusual and might be tradeable.")]
 
 # ---------------------------------------------------------------- glossary
-s += [P("3. Words you will see", "h1"),
+s += [PageBreak(), P("3. Words you will see", "h1"),
       table([["Term", "Meaning in this report"],
              ["MCX", "Multi Commodity Exchange of India, where these gold futures trade."],
              ["Bhavcopy", "The exchange's official daily record of each contract: open, high, low, close, volume, value traded."],
@@ -198,15 +199,14 @@ s += [P("3. Words you will see", "h1"),
              ["95% range", "The range the true value most likely lies in, given how noisy the data is. If it includes zero, "
                            "the result could be luck."],
              ["Lakh", "₹1,00,000."]],
-            [0.24, 0.76], bold_first_col=True),
-      PageBreak()]
+            [0.24, 0.76], bold_first_col=True)]
 
 # ---------------------------------------------------------------- data
 s += [P("4. Our data and how we checked it", "h1"),
       P("<b>Source.</b> MCX Bhavcopy, downloaded by hand one contract at a time from mcxindia.com (the site blocks automated "
         "downloads). We do not use stitched ‘continuous’ price series from charting sites, because joining different contracts "
         "together creates false jumps."),
-      tiles([("70", "contracts"), ("5,666", "daily records"), ("1 Jan 2025", "first date"), ("25 Sep 2026", "last date")]),
+      tiles([("130", "contracts"), ("10,869", "daily records"), ("10 Oct 2023", "first date"), ("30 Sep 2026", "last date")]),
       Spacer(1, 8),
       P("Every file is identified by its contents (not its file name), duplicates are removed automatically, and each row is "
         "checked before it is used:"),
@@ -216,18 +216,19 @@ s += [P("4. Our data and how we checked it", "h1"),
              ["Open or close outside the day's high–low", "Corrupt prices", "0.00%"],
              ["Zero or negative price", "Corrupt prices", "0.00%"],
              ["Missing trading day inside a contract's life", "Incomplete downloads", "0.00%"],
-             ["Previous close ≠ last row's close", "Broken history", "0.29% (16 rows), all right after a no-trade day; explained, flagged and excluded"],
-             ["Price > 5% away from same-month peers", "Wrong units or lot sizes", "0.11% (6 rows), all GOLDM on 21, 29 and 30 Jan 2026"]],
+             ["Previous close ≠ last row's close", "Broken history", "1.31% (141 rows), all right after a no-trade day; explained, flagged and excluded"],
+             ["Price > 5% away from same-month peers", "Wrong units or lot sizes", "0.10% (11 rows): 10 GOLDM rows from 21 Jan to 1 Feb 2026, and GOLDGUINEA on its thin expiry day, 31 May 2024"]],
             [0.36, 0.26, 0.38]),
       Spacer(1, 6),
-      P("The six flagged rows are real. On 30 January 2026 gold fell about 10% in a day; GOLDM settled at its day's low (its lower "
-        "price limit) while the smaller contracts settled higher. News reports confirm the crash (Section 11). We kept these rows "
-        "and did not change any rule because of them."),
+      P("The flagged prices are real. On 30 January 2026 gold fell about 10% in a day; GOLDM settled at its day's low (its lower "
+        "price limit) while the smaller contracts settled higher. 1 February 2026 was a Sunday Budget-day special session. News reports "
+        "confirm the crash (Section 11). We kept these rows and did not change any rule because of them."),
+      P("<b>Sealed data is kept apart.</b> 37 contracts from 2020 have already been downloaded for the next sealed test. The loading "
+        "script writes them to a separate file that no analysis reads; only their names and dates were checked."),
       P("How far is the official close from a real trade?", "h2"),
       P("We compared each day's settlement close with that day's average traded price (VWAP). For a single contract the median "
-        "gap is 20–26 bp. For the <i>gap between two contracts</i>, which is what we trade, the median is only 6.7–8.4 bp because the "
-        "day's gold move cancels out. This is why we assume 5 bp of slippage per leg as the realistic case, and also show 0 and 10 bp."),
-      PageBreak()]
+        "gap is 17–26 bp. For the <i>gap between two contracts</i>, which is what we trade, the median is only 6.8–8.5 bp because the "
+        "day's gold move cancels out. This is why we assume 5 bp of slippage per leg as the realistic case, and also show 0 and 10 bp.")]
 
 # ---------------------------------------------------------------- method
 s += [P("5. How we solve it, step by step", "h1"),
@@ -276,8 +277,7 @@ s += [P("5. How we solve it, step by step", "h1"),
              ["GST", "18% on brokerage and fees", "Assumption"],
              ["Slippage", "0 / 5 / 10 bp per leg per side", "5 bp = realistic case (Section 4)"]],
             [0.3, 0.33, 0.37]),
-      P("Each trade has four legs (buy and sell on entry and exit), so every cost is paid four times.", "cap"),
-      PageBreak()]
+      P("Each trade has four legs (buy and sell on entry and exit), so every cost is paid four times.", "cap")]
 
 # ---------------------------------------------------------------- honesty
 s += [P("6. How we keep the test honest", "h1"),
@@ -288,7 +288,8 @@ s += [P("6. How we keep the test honest", "h1"),
              ["Train / Development", "up to 30 Apr 2025 (A); up to 5 Aug 2025 (B)", "Designing rules and choosing settings by a pre-declared rule"],
              ["Test 1 (Strategy A only)", "1 May – 31 Jul 2025", "First sealed test, run once"],
              ["Sealed holdout", "Aug 2025 – May 2026", "Final test of both strategies, run once"],
-             ["Next sealed test", "1 Jan 2020 – 31 Dec 2023", "Declared 2 Oct 2026, before the data is downloaded (Section 9)"]],
+             ["Sealed test 2", "1 Jan 2020 – 9 Oct 2023", "Declared before download; run once on the improved rules"],
+             ["Sealed test 3", "1 Jan 2016 – 31 Dec 2019", "Declared before download; run once on the improved rules"]],
             [0.24, 0.33, 0.43]),
       Spacer(1, 6),
       table([["Time (IST)", "Commit", "What happened"],
@@ -296,7 +297,10 @@ s += [P("6. How we keep the test honest", "h1"),
              ["1 Oct 2026, 22:15", "045ab2b", "Strategy B rules and setting (k = 1.5) frozen"],
              ["1 Oct 2026, 23:01", "7acf18e", "Holdout data (39 MCX files) uploaded"],
              ["1 Oct 2026, 23:05", "3e9e82d", "Holdout run once; results recorded as they came out"],
-             ["2 Oct 2026, 03:28", "35d7e7b", "Next sealed test (2020–2023) declared before download"]],
+             ["2 Oct 2026, 03:28", "35d7e7b", "Sealed test 2 (2020–2023) declared before download"],
+             ["3 Oct 2026, 01:13", "a8cda54", "Sealed test 3 (2016–2019) declared before download"],
+             ["3 Oct 2026, 01:47", "8f16845", "Test 2 shortened to end 9 Oct 2023: the 2024 files included late-2023 days, now seen; sealed rows walled off in code"],
+             ["3 Oct 2026, 02:43", "79129fc", "2020 files arrive and go straight to the sealed file, unread"]],
             [0.22, 0.13, 0.65]),
       Spacer(1, 6),
       P("Other safeguards", "h2")]
@@ -307,34 +311,35 @@ s += B(["Signals use only information available at that day's close; trades happ
         "A bug found during development (the 10-day average included the current day) was fixed <i>before</i> any test was run, and is logged.",
         "An earlier AI-generated draft from another tool produced statistics for contracts that were not in our data and references "
         "that did not exist. We discarded all of it and rebuilt every number from the raw files; every reference in Section 11 was checked."])
-s += [PageBreak()]
 
 # ---------------------------------------------------------------- results: gaps
-s += [P("7. Results: what the gaps look like", "h1"),
+s += [PageBreak(), P("7. Results: what the gaps look like", "h1"),
       img("premium.png"),
-      P("Monthly average price of each small contract above GOLDM, per pure gram, after the carry adjustment. June 2026 is missing "
-        "because the matching GOLDM contract (July 2026 expiry) has not been downloaded yet.", "cap"),
-      P("The chart shows two different worlds. In normal months GOLDTEN sits on GOLDM's line and the coin and 1 g contracts sit "
-        "about 20–140 bp above it. From December 2025 to March 2026, while gold crashed, every small contract became much dearer "
-        "than GOLDM, then the gaps returned to normal by April–May 2026."),
-      table([["Gap (A minus B, per pure gram)", "Normal months", "Dec 2025 – Mar 2026"],
-             ["GOLDM − GOLDTEN", "+2.8 bp (−0.7 to +6.2)", "−89.0 bp (−147.6 to −43.6)"],
-             ["GOLDM − GOLDGUINEA", "−59.8 bp (−69.0 to −50.3)", "−245.9 bp (−324.1 to −178.0)"],
-             ["GOLDM − GOLDPETAL", "−72.8 bp (−80.1 to −65.6)", "−252.8 bp (−323.5 to −191.5)"],
-             ["GOLDTEN − GOLDGUINEA", "−62.2 bp (−69.7 to −54.9)", "−157.0 bp (−190.0 to −127.7)"],
-             ["GOLDTEN − GOLDPETAL", "−73.4 bp (−79.2 to −68.2)", "−164.0 bp (−192.7 to −139.0)"],
-             ["GOLDGUINEA − GOLDPETAL, all months", "−8.2 bp (−14.5 to −1.5)", "(not split)"]],
-            [0.38, 0.31, 0.31]),
-      P("Brackets show the 95% range. Normal months: 57–65 weeks of data; crash period: 18 weeks. We chose the period split after "
-        "looking at the chart, so it describes the data rather than testing a prediction.", "cap"),
+      P("Monthly average price of each small contract above GOLDM, per pure gram, after the carry adjustment. GOLDTEN starts in "
+        "April 2025, when MCX listed it.", "cap"),
+      P("The chart shows three different worlds. In 2024 the coin sat above GOLDM while the 1 g contract sat well below it. Through "
+        "the quiet months of 2025–26 GOLDTEN sits on GOLDM's line and the coin and 1 g contracts sit together about 20–130 bp above it. "
+        "From December 2025 to March 2026, while gold crashed, every small contract became much dearer than GOLDM, then the gaps "
+        "returned to normal by April–May 2026."),
+      table([["Gap (A minus B, per pure gram)", "2024", "2025–26 quiet months", "Dec 2025 – Mar 2026"],
+             ["GOLDM − GOLDTEN", "not listed yet", "+0.8 bp (−2.4 to +4.1)", "−100.5 bp (−153.9 to −54.0)"],
+             ["GOLDM − GOLDGUINEA", "−74.9 bp (−88.9 to −60.1)", "−59.5 bp (−67.1 to −51.7)", "−263.3 bp (−329.5 to −200.5)"],
+             ["GOLDM − GOLDPETAL", "+140.3 bp (+122.5 to +155.9)", "−63.6 bp (−73.2 to −52.4)", "−269.4 bp (−331.2 to −209.5)"],
+             ["GOLDTEN − GOLDGUINEA", "not listed yet", "−59.3 bp (−65.3 to −53.1)", "−166.6 bp (−195.8 to −137.9)"],
+             ["GOLDTEN − GOLDPETAL", "not listed yet", "−70.8 bp (−75.4 to −66.2)", "−169.2 bp (−193.8 to −145.0)"],
+             ["GOLDGUINEA − GOLDPETAL", "+211.1 bp (+199.4 to +221.7)", "−2.2 bp (−10.7 to +7.3)", "−4.1 bp (−17.8 to +11.8)"]],
+            [0.28, 0.24, 0.24, 0.24]),
+      P("Brackets show the 95% range. 2024: 60–65 weeks; 2025–26 quiet months: 61–75 weeks; crash period: 18 weeks. The crash "
+        "period was chosen after looking at the chart, so that split describes the data rather than testing a prediction.", "cap"),
       P("What this tells us", "h2")]
-s += B(["<b>The purity correction is right.</b> If it were wrong, GOLDM and GOLDTEN would differ by about 40 bp in every month; they differ by 3.",
-        "<b>The small-contract premium is structural.</b> It appeared in every one of 15–18 contract cycles, so it does not close "
-        "and cannot be captured by simply holding to expiry. A likely reason, which we have not proved, is the higher cost of "
-        "minting and delivering small pieces.",
+s += B(["<b>The purity correction is right.</b> If it were wrong, GOLDM and GOLDTEN would differ by about 40 bp in every month; they differ by less than 1.",
+        "<b>The coin premium is structural.</b> GOLDGUINEA was dearer than GOLDM in all 34 contract cycles from 2024 to 2026, so the "
+        "gap does not close and cannot be captured by holding to expiry. A likely reason, which we have not proved, is the higher cost "
+        "of minting and delivering coins.",
+        "<b>The 1 g premium is not.</b> GOLDPETAL was below GOLDM in 2024 and above it from early 2025; it agrees with GOLDM's sign in "
+        "only 21 of 35 cycles. We checked the raw files: the units and lot values are right, so the flip is real. Its cause is not yet known.",
         "<b>Stress reveals who leads.</b> In a fast fall, GOLDM (where most gold trades) reprices first; the small contracts follow later. "
         "That delay is the only place we found real money (Section 8)."])
-s += [PageBreak()]
 
 # ---------------------------------------------------------------- results: trading
 s += [P("8. Results: can the gaps be traded?", "h1"),
@@ -363,29 +368,29 @@ s += B(["<b>Strategy A's profit is one event.</b> 30 trades in January 2026 made
 s += [box(P("<b>Our verdict today.</b> The gaps between India's gold contracts are real, measurable and explainable. Trading them "
             "in quiet markets does not pay after costs. Trading them during sharp crashes did pay in our data, because small contracts "
             "lag GOLDM. With only one such crash inside our sealed test, this is a promising lead, not a proven edge, and the next "
-            "data round is designed to test exactly this.", "box")),
-      PageBreak()]
+            "data round is designed to test exactly this.", "box"))]
 
 # ---------------------------------------------------------------- future
 s += [P("9. What more data will add (with projections)", "h1"),
       P("GOLDGUINEA has traded on MCX since 2008 and GOLDPETAL since 2011, so years of the same official data exist. GOLDTEN only "
-        "started on 1 April 2025, so its history can only grow month by month. We have asked for these MCX downloads, in priority order:"),
-      table([["Batch", "Contracts", "Files", "What it adds"],
-             ["A", "GOLDM May 2026; GUINEA, PETAL, GOLDM Jan–Mar 2025", "10", "Fills gaps in current data"],
-             ["B", "GUINEA, PETAL, GOLDM, all 2024 expiries", "36", "More development data, including the 23 Jul 2024 Budget day, when import duty was cut from 15% to 6%"],
-             ["C", "Same three, all 2020 expiries", "36", "Sealed test; contains the COVID market crash (Mar 2020) and the Aug 2020 gold peak and fall"],
-             ["D", "Same three, 2021–2023 expiries", "108", "Rest of the sealed test: three more years of normal and stressed markets"]],
-            [0.08, 0.38, 0.08, 0.46]),
+        "started on 1 April 2025, so its history can only grow month by month.", "body"),
+      table([["Batch", "Contracts", "Files", "Status", "What it adds"],
+             ["2024", "GUINEA, PETAL, GOLDM, all 2024 expiries", "36", "Done", "Development data; showed the 1 g flip; includes the 23 Jul 2024 duty cut"],
+             ["2025–26 gaps", "GOLDM May–Sep 2026, small contracts Jun–Sep 2026, PETAL Jan 2025", "16", "Done", "Complete 2025–26 coverage"],
+             ["Gap", "GOLDTEN Aug 2026", "1", "Missing", "Last 2025–26 gap"],
+             ["2020", "Same three, all 2020 expiries", "37", "Done, sealed", "Sealed test 2: Mar 2020 COVID crash and Aug 2020 peak"],
+             ["2021–23", "Same three, Feb 2021 – Dec 2023 expiries", "107", "To do", "Rest of sealed test 2"],
+             ["2016–19", "Same three, all 2016–2019 expiries", "144", "To do", "Sealed test 3"]],
+            [0.11, 0.33, 0.07, 0.13, 0.36]),
       P("Projected precision", "h2"),
-      P("The 95% range of an average shrinks roughly with the square root of the number of independent weeks. Assuming future data is "
-        "about as variable as today's data (an assumption, not a guarantee), the ranges would narrow like this:"),
-      table([["Measurement (vs GOLDM, all months)", "Today", "+ 2024 (about +52 weeks)", "+ 2020–2024 (about +260 weeks)"],
-             ["GOLDGUINEA premium, 95% range", "± 23.9 bp (81 weeks)", "± 18.7 bp", "± 11.7 bp"],
-             ["GOLDPETAL premium, 95% range", "± 20.9 bp (82 weeks)", "± 16.4 bp", "± 10.3 bp"],
-             ["GOLDTEN premium, 95% range", "± 14.1 bp (74 weeks)", "± 10.8 bp after one more year of new data", "not available: no history before Apr 2025"],
-             ["Strategy B, average profit per trade", "6 independent weeks", "—", "range about 40% as wide if trading frequency stays similar"],
-             ["Crash episodes available to test", "2 (Apr 2025, Jan 2026)", "3 (+ Jul 2024 duty cut)", "5 (+ Mar 2020, Aug 2020)"]],
-            [0.3, 0.21, 0.24, 0.25]),
+      P("The 95% range of an average shrinks roughly with the square root of the number of independent weeks. Assuming new data is "
+        "about as variable as today's (an assumption, not a guarantee):"),
+      table([["Measurement", "Today", "After the sealed tests"],
+             ["Strategy B, average profit per trade", "Range from 6 independent weeks", "About 40% as wide if 2016–2023 trades at a similar pace"],
+             ["Crash episodes to test the ‘lag in a crash’ idea", "1 in a sealed test (Jan 2026)", "Several more in 2016–2023, judged on rules frozen beforehand"],
+             ["Years in which the coin and 1 g premiums are measured", "3 (2024, 2025, 2026)", "Up to 11 (2016–2026), showing whether the 1 g flip has happened before"],
+             ["Quiet-month premium margin, coin and 1 g (2025–26)", "± 7.7 and ± 10.4 bp (74 weeks)", "Narrows only as new months arrive; sealed years are reported separately"]],
+            [0.34, 0.28, 0.38]),
       P("<i>Projection</i>: computed from today's measured variability; actual ranges will be known only after the data arrives.", "cap"),
       P("Planned improvements, to be fixed before the next sealed test", "h2")]
 s += B(["<b>Price-limit filter:</b> skip days when a contract settles at its daily limit (close equal to the day's low or high on a "
@@ -395,6 +400,8 @@ s += B(["<b>Price-limit filter:</b> skip days when a contract settles at its dai
         "<b>Stress detector:</b> trade only when GOLDM has moved sharply, since that is where the lag appeared. This rule will be written "
         "down before we see 2020–2023, and judged only there.",
         "<b>Drop GOLDTEN from Strategy B:</b> no premium to trade, as both our measurements and the holdout show.",
+        "<b>Treat the 1 g contract with care:</b> its premium flipped sign in early 2025, so a fair-price rule built on one year's "
+        "‘usual premium’ can be badly wrong in another. Rules will be built on 2024–26 together and judged on the sealed years.",
         "<b>Independent cross-checks:</b> IBJA's published daily 999 and 995 gold rates (recent days only) to verify our purity "
         "ratio and carry estimate against physical gold."])
 s += [P("What we will report after each batch: the same tables as this report, updated; whether the sealed-test result clears zero "
@@ -402,13 +409,15 @@ s += [P("What we will report after each batch: the same tables as this report, u
 
 # ---------------------------------------------------------------- limitations
 s += [P("10. Limitations", "h1")]
-s += B(["<b>Short history.</b> 21 months of data and one large crash. Strong conclusions about trading need several crashes; Section 9 addresses this.",
+s += B(["<b>Short working history.</b> Three years of development data and one large crash. Strong conclusions about trading need several crashes; the sealed tests in Section 9 address this.",
         "<b>Daily data only.</b> We see one official close and one average price per day, not every trade. Real fills could be "
         "better or worse than our 5 bp assumption, especially in a crash, when prices move fastest.",
         "<b>Some costs are assumptions.</b> Stamp duty, SEBI fee, brokerage and GST rates come from typical broker charge sheets.",
-        "<b>Liquidity limits size.</b> GOLDGUINEA trades about 12 kg a day; larger positions than ours would move the price.",
-        "<b>Why the premium exists is a hypothesis.</b> Minting and delivery costs fit the data, but we have not verified them from MCX's delivery records.",
-        "<b>Gaps in data.</b> GOLDM expiring May and July 2026 have not been downloaded, so two cycles are missing from GOLDM comparisons."])
+        "<b>Liquidity limits size.</b> GOLDGUINEA trades about 8 kg a day; larger positions than ours would move the price.",
+        "<b>Why the premiums exist is a hypothesis.</b> Minting and delivery costs fit the coin premium, but we have not verified them "
+        "from MCX's delivery records, and nothing we have explains why the 1 g premium flipped in early 2025.",
+        "<b>Strategy results predate the 2024 data.</b> Section 8's numbers come from the single sealed runs of 1 October 2026 and are not re-run.",
+        "<b>Gaps in data.</b> GOLDTEN expiring August 2026 has not been downloaded."])
 s += [P("11. References and files", "h1"),
       P("Research papers (DOIs checked against Crossref or RePEc)", "h2")]
 refs = ["Gatev, Goetzmann &amp; Rouwenhorst (2006). Pairs Trading: Performance of a Relative-Value Arbitrage Rule. Review of Financial Studies 19(3). doi:10.1093/rfs/hhj020",
@@ -438,7 +447,8 @@ s += [P("Code (repository folder <i>commodity/</i>)", "h2"),
              ["backtest.py", "Strategy A: train, test and holdout, each run once"],
              ["methods.py", "Research-backed alternatives compared on training data"],
              ["fairvalue.py", "Strategy B: development and sealed holdout"],
-             ["uncertainty.py", "Week-block bootstrap for the profit ranges"]],
+             ["uncertainty.py", "Week-block bootstrap for the profit ranges"],
+             ["dashboard/", "Interactive website built from the same results (export.py, build.py)"]],
             [0.2, 0.8])]
 
 doc.build(s)
