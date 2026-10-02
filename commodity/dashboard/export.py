@@ -42,6 +42,8 @@ def main():
     out["meta"] = {"rows": int(len(d)), "contracts": int(d.groupby(["symbol", "expiry_date"]).ngroups),
                    "first": str(d.date.min().date()), "last": str(d.date.max().date()),
                    "files": int(len([f for f in os.listdir("raw_clean") if f.endswith(".xls")])),
+                   "sealed_contracts": int(pd.read_csv("clean/sealed_rows.csv").groupby(["symbol", "expiry_date"]).ngroups)
+                   if os.path.exists("clean/sealed_rows.csv") and os.path.getsize("clean/sealed_rows.csv") > 200 else 0,
                    "exported": pd.Timestamp.now(tz="Asia/Kolkata").strftime("%Y-%m-%d %H:%M IST")}
 
     # ---------- normalized price: per day, the most-traded contract of each symbol (Rs per pure gram)
@@ -87,12 +89,15 @@ def main():
         ps = ac.pair_series(t, car, a, b, "rs_per_g").spread_bp
         dt = ps.index.get_level_values("date")
         crash = (dt >= CRASH[0]) & (dt <= CRASH[1])
-        e, lo, hi, n = ac.week_boot_mean(ps[~crash])
+        y24 = dt < pd.Timestamp("2025-01-01")
+        e, lo, hi, n = ac.week_boot_mean(ps[~crash & ~y24])            # 2025-26 quiet months
         e2, lo2, hi2, n2 = ac.week_boot_mean(ps[crash])
+        y = ac.week_boot_mean(ps[y24]) if y24.sum() >= 20 else None
         key = f"{a[4:]}-{b[4:]}"
         al = acc[(acc.pair == key) & (acc.price == "close")].iloc[0]
         pairs.append({"pair": key, "a": a, "b": b,
                       "normal": [r(e), r(lo), r(hi), int(n)], "crash": [r(e2), r(lo2), r(hi2), int(n2)],
+                      "y2024": [r(y[0]), r(y[1]), r(y[2]), int(y[3])] if y else None,
                       "all": [r(al.mean_bp), r(al.ci95_low), r(al.ci95_high), int(al.weeks)],
                       "cycles_same_sign": al.cycles_same_sign, "daily_sd": r(al.daily_sd_bp)})
         dm = ps.groupby(level="date").mean().sort_index()

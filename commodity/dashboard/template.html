@@ -312,7 +312,7 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
       <div class="head">
         <div class="eyebrow">Relative value</div>
         <h1>Six pairs, two worlds</h1>
-        <p>Every pair of contracts compared per pure gram. Quiet months and the Dec 2025 – Mar 2026 crash behave so differently that we report them separately.</p>
+        <p>Every pair of contracts compared per pure gram. 2024, the quiet months of 2025–26 and the Dec 2025 – Mar 2026 crash behave differently enough that we report them separately. GOLDTEN only started in April 2025.</p>
       </div>
       <div class="glass card">
         <div class="card-h">
@@ -605,8 +605,8 @@ RENDER.overview = () => {
   const mt = P["M-TEN"].normal, mg = P["M-GUINEA"].normal, mp = P["M-PETAL"].normal, cg = P["M-GUINEA"].crash, cp = P["M-PETAL"].crash;
   $("#ov-kpis").innerHTML =
     kpi("Data checked", `${D.meta.contracts}<small>contracts</small>`, `${D.meta.rows.toLocaleString("en-IN")} trading days, 0 unexplained errors`) +
-    kpi("GOLDM vs GOLDTEN", `${sgn(mt[0])}<small>bp</small>`, `Quiet months, 95% range ${sgn(mt[1])} to ${sgn(mt[2])}. Same price.`) +
-    kpi("Coin & 1 g premium", `${Math.round(-mg[0])}–${Math.round(-mp[0])}<small>bp</small>`, `GUINEA and PETAL above GOLDM in quiet months`, "accent") +
+    kpi("GOLDM vs GOLDTEN", `${sgn(mt[0])}<small>bp</small>`, `2025–26 quiet months, 95% range ${sgn(mt[1])} to ${sgn(mt[2])}. Same price.`) +
+    kpi("Coin & 1 g premium", `${Math.round(-mg[0])}–${Math.round(-mp[0])}<small>bp</small>`, `GUINEA and PETAL above GOLDM, 2025–26 quiet months`, "accent") +
     kpi("In the crash", `${(-(cg[0] + cp[0]) / 2 / 100).toFixed(1)}<small>%</small>`, `Average premium, Dec 2025 – Mar 2026`);
   const k = D.signals.threshold, hot = D.signals.rows.filter(r => Math.abs(r.z) >= k);
   $("#ov-status").innerHTML = `<span class="dot" style="${hot.length ? "background:var(--warn);box-shadow:0 0 0 4px var(--warn-soft)" : ""}"></span>
@@ -620,7 +620,7 @@ RENDER.overview = () => {
   lineChart($("#ov-prem"), { dates: ix.map(i => pd.dates[i]), series: ser, band: crash, zero: true, endLabels: true, yfmt: v => v + " bp", tfmt: v => sgn(v, 0, " bp"), aria: "Premium of small gold contracts over GOLDM" });
   $("#ov-finds").innerHTML = [
     ["var(--good)", "var(--good-soft)", '<path d="M5 12l4 4 10-10"/>', "The conversion is right", `In quiet months GOLDM and GOLDTEN differ by ${sgn(mt[0])} bp. A wrong purity correction would show about 40 bp, every month.`],
-    ["var(--gold)", "var(--gold-soft)", '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', "Small gold costs more", `The 8 g coin and the 1 g contract sit ${Math.round(-mg[0])}–${Math.round(-mp[0])} bp above the bars in every contract cycle. It is a lasting premium, not a mistake to arbitrage.`],
+    ["var(--gold)", "var(--gold-soft)", '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', "The coin premium holds; the 1 g one flipped", `The 8 g coin sat ${Math.round(-P["M-GUINEA"].y2024[0])} bp above GOLDM in 2024 and ${Math.round(-mg[0])} bp in 2025–26. The 1 g contract was ${Math.round(P["M-PETAL"].y2024[0])} bp <em>below</em> GOLDM in 2024, then ${Math.round(-mp[0])} bp above it.`],
     ["var(--bad)", "var(--bad-soft)", '<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>', "Crashes break the link", `In the Jan 2026 sell-off GOLDM fell first and furthest; small contracts lagged up to ${(-cp[0] / 100).toFixed(1)}% above it. That lag is the only place a trade paid.`]
   ].map(([c, bg, ic, h, p]) => `<div class="glass find"><div class="ic" style="background:${bg};color:${c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></div><h3>${h}</h3><p>${p}</p></div>`).join("");
   const pr = D.prices, pidx = pr.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
@@ -642,15 +642,16 @@ RENDER.relative = () => {
   const p = P[rvPair], s = D.pair_series[rvPair];
   $("#rv-title").textContent = pname(rvPair);
   $("#rv-sub").textContent = `Daily gap per pure gram, in bp. Above zero: ${short[rvPair.split("-")[0]]} is dearer.`;
-  legend($("#rv-legend"), [["var(--teal)", "Daily gap"], ["var(--gold)", "Quiet-month average"]], true);
+  legend($("#rv-legend"), [["var(--teal)", "Daily gap"], ["var(--gold)", "2025–26 quiet-month average"]], true);
   lineChart($("#rv-chart"), { dates: s.dates, series: [{ label: "Gap", color: "var(--teal)", values: s.bp }], band: crash, zero: true, area: true, hline: p.normal[0], yfmt: v => v + " bp", tfmt: v => sgn(v, 1, " bp"), aria: "Daily gap for " + pname(rvPair) });
   $("#rv-stats").innerHTML =
-    stat("Quiet months", `${sgn(p.normal[0])} bp`, `95% range ${sgn(p.normal[1])} to ${sgn(p.normal[2])} · ${p.normal[3]} weeks`, "accent") +
+    (p.y2024 ? stat("2024", `${sgn(p.y2024[0])} bp`, `95% range ${sgn(p.y2024[1])} to ${sgn(p.y2024[2])} · ${p.y2024[3]} weeks`) : "") +
+    stat("2025–26 quiet months", `${sgn(p.normal[0])} bp`, `95% range ${sgn(p.normal[1])} to ${sgn(p.normal[2])} · ${p.normal[3]} weeks`, "accent") +
     stat("Crash period", `${sgn(p.crash[0])} bp`, `95% range ${sgn(p.crash[1])} to ${sgn(p.crash[2])} · ${p.crash[3]} weeks`) +
     stat("Same sign in", p.cycles_same_sign, `contract cycles · typical daily swing ${p.daily_sd} bp`);
-  $("#rv-table").innerHTML = `<thead><tr><th>Pair</th><th class="n">Quiet months</th><th class="n">95% range</th><th class="n">Crash period</th><th class="n">All days</th><th class="n">Cycles</th></tr></thead><tbody>` +
+  $("#rv-table").innerHTML = `<thead><tr><th>Pair</th><th class="n">2024</th><th class="n">2025–26 quiet</th><th class="n">95% range</th><th class="n">Crash period</th><th class="n">All days</th><th class="n">Cycles</th></tr></thead><tbody>` +
     D.pairs.map(p => { const zero = p.normal[1] <= 0 && p.normal[2] >= 0;
-      return `<tr style="cursor:pointer" data-p="${p.pair}"><td><b>${pname(p.pair)}</b> ${zero ? '<span class="pill good">same price</span>' : ""}</td><td class="n">${sgn(p.normal[0])} bp</td><td class="n" style="color:var(--ink-3)">${sgn(p.normal[1])} to ${sgn(p.normal[2])}</td><td class="n">${sgn(p.crash[0])} bp</td><td class="n">${sgn(p.all[0])} bp</td><td class="n">${p.cycles_same_sign}</td></tr>`; }).join("") + "</tbody>";
+      return `<tr style="cursor:pointer" data-p="${p.pair}"><td><b>${pname(p.pair)}</b> ${zero ? '<span class="pill good">same price</span>' : ""}</td><td class="n">${p.y2024 ? sgn(p.y2024[0]) + " bp" : '<span style="color:var(--ink-3)">not listed</span>'}</td><td class="n">${sgn(p.normal[0])} bp</td><td class="n" style="color:var(--ink-3)">${sgn(p.normal[1])} to ${sgn(p.normal[2])}</td><td class="n">${sgn(p.crash[0])} bp</td><td class="n">${sgn(p.all[0])} bp</td><td class="n">${p.cycles_same_sign}</td></tr>`; }).join("") + "</tbody>";
 };
 $("#v-relative").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; rvPair = b.dataset.p; RENDER.relative(); });
 
@@ -791,7 +792,7 @@ let dqF = "All";
 RENDER.quality = () => {
   const integ = D.integrity, failing = integ.filter(r => r.errors > 0);
   const explained = D.flags.length;
-  $("#dq-kpis").innerHTML = kpi("Files read", `${D.meta.files}`, "MCX Bhavcopy downloads, deduplicated by content") +
+  $("#dq-kpis").innerHTML = kpi("Files read", `${D.meta.files}`, `MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts set aside, unread.`) +
     kpi("Contracts", `${D.meta.contracts}`, `${fdate(D.meta.first)} – ${fdate(D.meta.last)}`) +
     kpi("Rows checked", D.meta.rows.toLocaleString("en-IN"), "One row per contract per trading day") +
     kpi("Unexplained errors", "0", `${explained} rows flagged, each explained below`, "accent");
