@@ -1,7 +1,7 @@
 quantity,estimate,ci95_low,ci95_high,n,margin_pct_of_estimate
 Mean spread PETAL-TEN (bp),100.0,87.3,114.4,1316,14.0
 Mean spread GUINEA-TEN (bp),92.0,76.8,108.2,1230,17.0
-Mean spread GUINEA-PETAL (bp),-8.2,-14.5,-1.2,1473,81.0
+Mean spread GUINEA-PETAL (bp),-2.8,-11.2,6.4,1581,310.0
 "TEST net P&L at 0 bp (Rs, total)",10292.2,846.6,23139.9,19,108.0
 "TEST net P&L at 5 bp (Rs, total)",-4466.0,-9849.0,2350.3,19,137.0
 "TEST net P&L at 10 bp (Rs, total)",-19224.3,-25405.3,-13824.1,19,30.0
