@@ -42,6 +42,8 @@ def main():
     out["meta"] = {"rows": int(len(d)), "contracts": int(d.groupby(["symbol", "expiry_date"]).ngroups),
                    "first": str(d.date.min().date()), "last": str(d.date.max().date()),
                    "files": int(len([f for f in os.listdir("raw_clean") if f.endswith(".xls")])),
+                   "sealed_contracts": int(pd.read_csv("clean/sealed_rows.csv").groupby(["symbol", "expiry_date"]).ngroups)
+                   if os.path.exists("clean/sealed_rows.csv") and os.path.getsize("clean/sealed_rows.csv") > 200 else 0,
                    "exported": pd.Timestamp.now(tz="Asia/Kolkata").strftime("%Y-%m-%d %H:%M IST")}
 
     # ---------- normalized price: per day, the most-traded contract of each symbol (Rs per pure gram)
@@ -87,12 +89,15 @@ def main():
         ps = ac.pair_series(t, car, a, b, "rs_per_g").spread_bp
         dt = ps.index.get_level_values("date")
         crash = (dt >= CRASH[0]) & (dt <= CRASH[1])
-        e, lo, hi, n = ac.week_boot_mean(ps[~crash])
+        y24 = dt < pd.Timestamp("2025-01-01")
+        e, lo, hi, n = ac.week_boot_mean(ps[~crash & ~y24])            # 2025-26 quiet months
         e2, lo2, hi2, n2 = ac.week_boot_mean(ps[crash])
+        y = ac.week_boot_mean(ps[y24]) if y24.sum() >= 20 else None
         key = f"{a[4:]}-{b[4:]}"
         al = acc[(acc.pair == key) & (acc.price == "close")].iloc[0]
         pairs.append({"pair": key, "a": a, "b": b,
                       "normal": [r(e), r(lo), r(hi), int(n)], "crash": [r(e2), r(lo2), r(hi2), int(n2)],
+                      "y2024": [r(y[0]), r(y[1]), r(y[2]), int(y[3])] if y else None,
                       "all": [r(al.mean_bp), r(al.ci95_low), r(al.ci95_high), int(al.weeks)],
                       "cycles_same_sign": al.cycles_same_sign, "daily_sd": r(al.daily_sd_bp)})
         dm = ps.groupby(level="date").mean().sort_index()
@@ -145,7 +150,7 @@ def main():
                            columns="slip_bp", values="net_rs").reset_index()
         rows = []
         for x in w.to_dict(orient="records"):
-            rows.append({"what": x.get("pair") or x.get("symbol"), "expiry": str(x["expiry"])[:10],
+            rows.append({"what": x.get("pair") or x.get("symbol"), "expiry": str(x["expiry"])[:10], "m_exp": str(x.get("goldm_expiry") or "")[:10],
                          "entry": str(x["entry"])[:10], "exit": str(x["exit"])[:10], "side": x["side"],
                          "days": int(x["days_held"]), "gross": r(x["gross_rs"], 0),
                          "net0": r(x[0], 2), "net5": r(x[5], 2), "net10": r(x[10], 2)})
@@ -161,7 +166,10 @@ def main():
         {"when": "1 Oct 2026, 22:15 IST", "commit": "045ab2b", "what": "Strategy B rules and setting (k = 1.5) frozen"},
         {"when": "1 Oct 2026, 23:01 IST", "commit": "7acf18e", "what": "Holdout data (39 MCX files) uploaded"},
         {"when": "1 Oct 2026, 23:05 IST", "commit": "3e9e82d", "what": "Holdout run once; results recorded as they came out"},
-        {"when": "2 Oct 2026, 03:28 IST", "commit": "35d7e7b", "what": "Next sealed test (2020–2023) declared before download"},
+        {"when": "2 Oct 2026, 03:28 IST", "commit": "35d7e7b", "what": "Sealed test 2 (2020–2023) declared before download"},
+        {"when": "3 Oct 2026, 01:13 IST", "commit": "a8cda54", "what": "Sealed test 3 (2016–2019) declared before download"},
+        {"when": "3 Oct 2026, 01:47 IST", "commit": "8f16845", "what": "Test 2 shortened to end 9 Oct 2023 (late-2023 days seen via 2024 files); sealed rows walled off in code"},
+        {"when": "3 Oct 2026, 02:43 IST", "commit": "79129fc", "what": "2020 files set aside in the sealed file, unread"},
     ]
 
     # ---------- contracts (calendar) and data quality
@@ -191,6 +199,31 @@ def main():
                "action": "Explained: no-trade day excluded"} for x in mism.itertuples()]
     out["flags"] = sorted(flags, key=lambda z: z["date"], reverse=True)
 
+    # ---------- brief items: gold attribution, tender compliance, roll-down, liquidity build-up
+    att = pd.read_csv(R + "attribution_trades.csv")
+    lt = pd.read_csv(R + "lifecycle_trades.csv")
+    key = ["what", "expiry", "entry", "exit"]
+    for run, rows in out["trades"].items():
+        A = att[att.run == run].set_index(key)
+        Lt = lt[lt.run == run].set_index(key)
+        for x in rows:
+            k = (x["what"], x["expiry"], x["entry"], x["exit"])
+            x["gap_part"] = r(A.loc[k, "gap_part"], 0) if k in A.index else None
+            x["gold_part"] = r(A.loc[k, "gold_part"], 0) if k in A.index else None
+            x["gold_move"] = r(A.loc[k, "gold_move_pct"], 2) if k in A.index else None
+            x["ok_tender"] = bool(Lt.loc[k, "outside_tender"]) if k in Lt.index else None
+            x["safe_exit"] = str(Lt.loc[k, "last_safe_exit"]) if k in Lt.index else None
+    out["attribution"] = pd.read_csv(R + "attribution_summary.csv").to_dict(orient="records")
+    out["lifecycle_summary"] = pd.read_csv(R + "lifecycle_summary.csv").to_dict(orient="records")
+    rd = pd.read_csv(R + "rolldown_monthly.csv")
+    out["rolldown"] = {"goldm": rd[rd.symbol == "GOLDM"][["month", "expiry", "carry_pa_pct", "total_pct", "rolldown_pct", "curve_move_pct"]].round(2).to_dict(orient="records"),
+                       "summary": pd.read_csv(R + "rolldown_summary.csv").round(2).to_dict(orient="records")}
+    lq = pd.read_csv(R + "lifecycle_liquidity.csv")
+    out["liquidity"] = lq.round(2).to_dict(orient="records")
+    lc = pd.read_csv(R + "lifecycle_contracts.csv")
+    safe = {(x.symbol, x.expiry_date): x.last_safe_exit for x in lc.itertuples()}
+    for c in out["contracts"]:
+        c["safe_exit"] = safe.get((c["symbol"], c["expiry"]))
     json.dump(out, open(os.path.join(HERE, "data.json"), "w"), separators=(",", ":"), default=str)
     print("wrote dashboard/data.json", os.path.getsize(os.path.join(HERE, "data.json")) // 1024, "KB")
 

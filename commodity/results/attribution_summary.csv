@@ -1,0 +1,5 @@
+run,trades,gross,gap_part,gold_part,gold_share_of_gross_pct,abs_gold_share_pct,corr_net_vs_gold_move,corr_net_vs_abs_gold_move,max_reproduction_error_rs
+A_test,19,14623.62,14846.98,-223.36,-1.53,2.24,-0.29,0.21,0.0
+A_hold,156,410654.65,404944.18,5710.48,1.39,7.11,0.55,0.57,0.0
+B_dev,8,113652.86,113729.65,-76.79,-0.07,1.89,0.57,0.93,0.0
+B_hold,12,86571.51,90738.54,-4167.03,-4.81,5.55,-0.04,-0.01,0.0

@@ -306,3 +306,46 @@ Splitting by period (split chosen after looking at the monthly premium chart, so
 In normal months GOLDM and GOLDTEN agree and GUINEA/PETAL sit 60-73 bp above them. In the crash
 period every smaller contract traded far above GOLDM (up to ~2.5%): the most liquid contract moved
 first and furthest, the small ones lagged. Weeks: 57-65 normal, 18 crash.
+
+## Closing the brief (2026-10-03): gold attribution, roll-down, contract lifecycle
+    python attribution.py   # split every trade's profit into the gap part and gold's own move
+    python rolldown.py      # split each month's price change into roll-down and curve move
+    python lifecycle.py     # liquidity build-up, tender period, every trade checked against its contract
+
+### Strategy performance vs gold's own move (`attribution.py`)
+Exact identity per trade (long A / short B, equal grams g):
+gap part = g·B0·(A1/B1 − A0/B0), gold part = g·(B1 − B0)·(A1/B1 − 1). Reproduces every stored gross to Rs 0.00.
+
+| Run | Trades | Gross | From the gap | From gold's move | Corr(net, gold move) |
+|---|---|---|---|---|---|
+| A test 1 | 19 | 14,624 | 14,847 | −223 | −0.29 |
+| A sealed holdout | 156 | 410,655 | 404,944 | 5,710 (1.4%) | 0.55 |
+| B development | 8 | 113,653 | 113,730 | −77 | 0.57 |
+| B sealed holdout | 12 | 86,572 | 90,739 | −4,167 (−4.8%) | −0.04 |
+
+Strategy A's 0.55 correlation comes from January 2026 (gold +7.8% on average over those trades, gap part
+Rs 308,106, gold part Rs 9,997); outside January it is 0.02. Profit came from the gap, not gold's direction.
+
+### Roll-down vs curve move (`rolldown.py`)
+Monthly change of the most-traded contract: roll-down = exp(−carry·days/365) − 1 from that day's own carry.
+| Contract | Months | Roll-down / month | Curve move / month (avg abs) |
+|---|---|---|---|
+| GOLDM | 32 | −0.59% | ±4.43% |
+| GOLDTEN | 17 | −0.96% | ±5.48% |
+| GOLDGUINEA | 32 | −0.73% | ±4.65% |
+| GOLDPETAL | 33 | −0.77% | ±4.51% |
+Roll-down is 12–15% of the monthly movement. Measured GOLDM carry: ~4–6% a year in 2023–25, ~15% in 2026 (cause not found).
+
+### Contract lifecycle (`lifecycle.py`)
+- Tender period: MCX gold contracts enter staggered/compulsory delivery 5 business days before expiry; brokers
+  square off before it (e.g. 5 Feb 2026 expiry: close by 29 Jan 2026).
+- Liquidity peaks 10–20 business days before expiry and is thin beyond 60 and inside the last 5.
+- Every trade starts after its contract's first trading day. Strategy B always exits before the tender period.
+  Strategy A's force-exit (3 calendar days before expiry) held 17 of 156 holdout trades and 3 of 19 test trades
+  1–3 business days into it. Holdout net at 5 bp: Rs 190,340 with them, Rs 153,382 without (they made 36,959).
+  Stored results are not re-run; this is reported as a compliance finding.
+
+### Data warnings from the brief
+- Weekend dates must be known special sessions: Diwali Muhurat 12 Nov 2023, Budget 1 Feb 2025 and 1 Feb 2026 (testbed check, 0 others).
+- Dates parsed from "29 Aug 2025" with a fixed format (no DD/MM vs MM/DD swap); expiry "04SEP2026"; symbols stripped.
+- Volume is not depth: only daily volume exists, so days under 1 kg are skipped and positions stay at 40–200 g.

@@ -1,9 +1,3 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Gold Spread Lab: MCX gold futures spreads from official Bhavcopy data.">
 <title>Gold Spread Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -278,9 +272,6 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
   *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
 }
 </style>
-</head>
-<body>
-
 
 <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="shell">
@@ -1016,6 +1007,3 @@ $("#dq-f").addEventListener("click", e => { const b = e.target.closest("button")
 let first = location.hash.slice(1); if (!first) { try { first = localStorage.getItem("gsl-view") || "overview"; } catch (e) { first = "overview"; } }
 lastW = document.body.clientWidth; show(first);
 </script>
-
-</body>
-</html>

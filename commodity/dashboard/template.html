@@ -158,6 +158,9 @@ main{min-width:0;padding:28px clamp(16px,4vw,56px) 72px}
 .chart .reveal{animation:reveal 1.3s cubic-bezier(.3,.6,.2,1) both}
 @keyframes reveal{from{clip-path:inset(-20px 100% -20px 0)}to{clip-path:inset(-20px -20px -20px 0)}}
 .chart .cross{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.chart .axbadge rect{fill:var(--ink);opacity:.92}
+.chart .axbadge text{fill:var(--bg);font:600 11px var(--f-num)}
+.chart .axbadge{pointer-events:none}
 .chart .lbl{font:600 11.5px var(--f-ui);fill:var(--ink-2)}
 .tip{position:absolute;pointer-events:none;z-index:5;min-width:170px;padding:10px 12px;border-radius:12px;font-size:12.5px;
   background:var(--panel-strong);border:1px solid var(--line-2);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
@@ -239,6 +242,17 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 .pager button{border:1px solid var(--line-2);background:var(--hi);border-radius:10px;padding:7px 12px;cursor:pointer;transition:background .2s}
 .pager button:hover:not([disabled]){background:var(--gold-soft)}
 .pager button[disabled]{opacity:.4;cursor:default}
+.toggle{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--ink);cursor:pointer;max-width:250px}
+.toggle input{width:18px;height:18px;accent-color:var(--gold);margin-top:2px;flex:none}
+.toggle small{color:var(--ink-3);font-size:12px}
+.dir{padding:22px;display:flex;flex-direction:column;gap:10px}
+.dir h3{font-size:16px;font-weight:600;display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dir q{color:var(--ink-2);font-size:13.5px;font-style:italic;quotes:none}
+.dir ul{margin:4px 0 0;padding-left:18px;color:var(--ink);font-size:14px;display:flex;flex-direction:column;gap:5px}
+.dir a.go{color:var(--gold);font-size:13px;font-weight:600;text-decoration:none;margin-top:auto}
+.dir a.go:hover{text-decoration:underline}
+.split{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--hi);margin:8px 0 4px}
+.split i{display:block;height:100%}
 .foot{color:var(--ink-3);font-size:12.5px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
 @media (max-width:860px){
@@ -307,12 +321,24 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
       </div>
     </section>
 
+    <!-- BRIEF -->
+    <section class="view" id="v-brief" data-title="The brief">
+      <div class="head">
+        <div class="eyebrow">Problem 03 · Commodity Derivatives Intelligence</div>
+        <h1>What the brief asks, and where we answer it</h1>
+        <p>The brief: build a data product from MCX's public futures data that finds and analyses price differences between gold contracts for the same metal, validates it on unseen history, reports results after costs, and separates strategy performance from gold's own move. A rigorous "no edge after costs" is an accepted outcome.</p>
+      </div>
+      <div class="grid g2" id="br-dirs"></div>
+      <div class="glass card"><div class="card-h"><div><h2>The final challenge, line by line</h2><div class="sub">Quoted from the problem statement.</div></div></div><div class="tw"><table id="br-final"></table></div></div>
+      <div class="glass card"><div class="card-h"><div><h2>Data warnings in the brief</h2><div class="sub">Each one, and what we did about it.</div></div></div><div class="tw"><table id="br-warn"></table></div></div>
+    </section>
+
     <!-- RELATIVE VALUE -->
     <section class="view" id="v-relative" data-title="Relative value">
       <div class="head">
         <div class="eyebrow">Relative value</div>
         <h1>Six pairs, two worlds</h1>
-        <p>Every pair of contracts compared per pure gram. Quiet months and the Dec 2025 – Mar 2026 crash behave so differently that we report them separately.</p>
+        <p>Every pair of contracts compared per pure gram. 2024, the quiet months of 2025–26 and the Dec 2025 – Mar 2026 crash behave differently enough that we report them separately. GOLDTEN only started in April 2025.</p>
       </div>
       <div class="glass card">
         <div class="card-h">
@@ -345,9 +371,15 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <div class="legend" id="ts-legend"></div>
         <div class="chart" id="ts-chart"></div>
       </div>
+      <div class="glass card">
+        <div class="card-h"><div><h2>Roll-down vs curve move, GOLDM each month</h2><div class="sub">Roll-down: what time alone does to a futures price on an unchanged curve, from that day's carry. Curve move: everything else, mostly gold itself.</div></div></div>
+        <div class="legend"><span><i style="background:var(--gold)"></i>Roll-down</span><span><i style="background:var(--teal)"></i>Curve move</span></div>
+        <div class="chart bars" id="ts-roll"></div>
+        <div class="tw" style="margin-top:18px"><table id="ts-rollsum"></table></div>
+      </div>
       <div class="grid g2">
         <div class="glass card"><div class="card-h"><div><h2>Cost of carry by year</h2><div class="sub">Median annualised gap between neighbouring expiries of the same contract.</div></div></div><div class="tw"><table id="ts-carry"></table></div>
-          <p class="note">2025 values agree across all four contracts. 2026 values are distorted by the crash months, when small contracts lagged GOLDM.</p></div>
+          <p class="note">Measured carry rose from about 4–6% a year (2024–25) to about 10–18% in 2026. The 2026 level is what the data shows; we have not found its cause, and the crash months distort the small contracts most.</p></div>
         <div class="glass card"><div class="card-h"><div><h2>Contracts on the latest curve</h2><div class="sub">Price per pure gram and days to expiry.</div></div></div><div class="tw"><table id="ts-table"></table></div></div>
       </div>
     </section>
@@ -365,6 +397,7 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
             <div class="lab" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600">Strategy and period</div>
             <div class="seg" id="bt-pick"></div>
           </div>
+          <label class="toggle"><input type="checkbox" id="tender-only"><span>Only trades a broker would allow<br><small>exit before the 5-day tender period</small></span></label>
           <div class="slider">
             <div class="row"><label for="slip">Slippage per leg, each side</label><b><span id="slip-v">5.0</span> bp</b></div>
             <input id="slip" class="range" type="range" min="0" max="10" step="0.5" value="5">
@@ -379,6 +412,10 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <div class="glass card"><div class="card-h"><div><h2>By month of entry</h2><div class="sub" id="bt-msub"></div></div></div><div class="chart bars" id="bt-month"></div></div>
       </div>
       <div class="callout" id="bt-verdict"></div>
+      <div class="grid g-main">
+        <div class="glass card"><div class="card-h"><div><h2>Profit per trade against gold's move</h2><div class="sub">Each dot is one trade: net profit at the selected slippage vs how much gold moved while it was open.</div></div></div><div class="chart" id="bt-scatter"></div></div>
+        <div class="glass card"><div class="card-h"><div><h2>Where the profit came from</h2><div class="sub">Before costs, split exactly into the gap and gold's own move.</div></div></div><div id="bt-attr"></div></div>
+      </div>
       <div class="glass card">
         <div class="card-h"><div><h2>Trade log</h2><div class="sub" id="bt-logsub"></div></div><div class="seg" id="bt-filter"></div></div>
         <div class="tw"><table id="bt-log"></table></div>
@@ -420,8 +457,14 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <p>Each bar is one contract from the first to the last day in our files. GOLDM expires around the 5th; the others at month end. Hover a bar for its liquidity.</p>
       </div>
       <div class="glass card">
-        <div class="card-h"><div><h2 id="cal-h"></h2><div class="sub">Shaded band: Dec 2025 – Mar 2026 crash period.</div></div><div class="seg" id="cal-f"></div></div>
+        <div class="card-h"><div><h2 id="cal-h"></h2><div class="sub">The marked end of each bar is the 5-business-day tender period, when positions must already be closed. Shaded band: Dec 2025 – Mar 2026 crash.</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end"><div class="seg" id="cal-f"></div><div class="seg" id="cal-t"></div></div></div>
+        <div class="legend" id="cal-legend"></div>
         <div class="chart" id="cal-chart"></div>
+      </div>
+      <div class="grid g2">
+        <div class="glass card"><div class="card-h"><div><h2>How liquidity builds over a contract's life</h2><div class="sub">Median gold traded per day, as a share of each contract type's busiest stretch, by business days left to expiry.</div></div></div><div class="legend" id="liq-legend"></div><div class="chart" id="liq-chart"></div></div>
+        <div class="glass card"><div class="card-h"><div><h2>Every trade inside its contract</h2><div class="sub">Entry after listing, exit before the tender period.</div></div></div><div class="tw"><table id="cal-check"></table></div><p class="note" id="cal-note"></p></div>
       </div>
     </section>
 
@@ -468,6 +511,7 @@ const fmon = s => { const [y, m] = s.split("-"); return `${MON[m - 1]} ${y.slice
 const T = s => new Date(s + "T00:00:00Z").getTime();
 const ICON = {
   overview: '<path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 4v3h6V4z"/>',
+  brief: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
   relative: '<path d="M4 17l5-5 4 4 7-8"/><path d="M14 8h6v6"/>',
   term: '<path d="M3 20h18"/><path d="M5 16c4-1 6-5 9-7s5-3 7-3"/>',
   backtest: '<path d="M4 4v16h16"/><path d="M8 14l3-3 3 2 5-6"/>',
@@ -475,7 +519,7 @@ const ICON = {
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   quality: '<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>'
 };
-const VIEWS = [["overview","Overview"],["relative","Relative value"],["term","Term structure"],["backtest","Backtest"],["signals","Signals"],["calendar","Contracts"],["quality","Data quality"]];
+const VIEWS = [["overview","Overview"],["brief","The brief"],["relative","Relative value"],["term","Term structure"],["backtest","Backtest"],["signals","Signals"],["calendar","Contracts"],["quality","Data quality"]];
 
 /* ---------- tooltip ---------- */
 function tipFor(host) { let t = host.querySelector(".tip"); if (!t) { t = el("div", { class: "tip", role: "status" }); host.appendChild(t); } return t; }
@@ -505,7 +549,7 @@ function monthTicks(t0, t1, maxN) {
 function lineChart(host, o) {
   host.innerHTML = ""; const W = Math.max(host.clientWidth, 280), H = o.h || (W < 560 ? 230 : 300);
   const narrow = W < 560, endL = o.endLabels && !narrow;
-  const m = { l: 52, r: endL ? 96 : 16, t: 14, b: 30 };
+  const m = { l: 62, r: endL ? 96 : 16, t: 14, b: 30 };
   const xs = o.dates.map(T); const t0 = xs[0], t1 = xs[xs.length - 1];
   let vals = []; o.series.forEach(s => s.values.forEach(v => v != null && vals.push(v)));
   if (o.zero) vals.push(0);
@@ -517,7 +561,8 @@ function lineChart(host, o) {
       const tx = sv("text", { x: (X(a) + X(b)) / 2, y: H - m.b - 8, "text-anchor": "middle", style: "fill:var(--bad);opacity:.85" }); tx.textContent = "crash period"; svg.appendChild(tx); } }
   sc.ticks.forEach(v => { svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: v === 0 && o.zero ? "zero" : "gridl" }));
     const t = sv("text", { x: m.l - 10, y: Y(v) + 4, "text-anchor": "end" }); t.textContent = (o.yfmt || (x => x))(v); svg.appendChild(t); });
-  monthTicks(t0, t1, W < 420 ? 3 : W < 560 ? 4 : 8).forEach(tt => { const t = sv("text", { x: X(tt), y: H - 8, "text-anchor": "middle" });
+  monthTicks(t0, t1, W < 420 ? 3 : W < 560 ? 4 : 8).forEach(tt => { svg.appendChild(sv("line", { x1: X(tt), x2: X(tt), y1: m.t, y2: H - m.b, class: "gridl" }));
+    const t = sv("text", { x: X(tt), y: H - 8, "text-anchor": "middle" });
     const d = new Date(tt); t.textContent = MON[d.getUTCMonth()] + " " + String(d.getUTCFullYear()).slice(2); svg.appendChild(t); });
   const G = sv("g", { class: "reveal" });
   if (o.hline != null) svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: Y(o.hline), y2: Y(o.hline), stroke: "var(--gold)", "stroke-dasharray": "5 4", "stroke-width": 1.2, opacity: .8 }));
@@ -541,17 +586,30 @@ function lineChart(host, o) {
     for (let i = 1; i < ls.length; i++) if (ls[i]._ly - ls[i - 1]._ly < 15) ls[i]._ly = ls[i - 1]._ly + 15;
     ls.forEach(s => { const t = sv("text", { x: W - m.r + 10, y: s._ly + 4, class: "lbl", style: `fill:${s.color}` }); t.textContent = s.label; svg.appendChild(t); }); }
   const cross = sv("line", { class: "cross", y1: m.t, y2: H - m.b, opacity: 0 }); svg.appendChild(cross);
+  const crossY = sv("line", { class: "cross", x1: m.l, x2: W - m.r, opacity: 0 }); svg.appendChild(crossY);
+  const badge = () => { const g = sv("g", { class: "axbadge", opacity: 0 }); const r = sv("rect", { rx: 5, height: 18 }); const t = sv("text", {}); g.append(r, t); svg.appendChild(g); return { g, r, t }; };
+  const bx = badge(), by = badge();
   const dots = o.series.map(s => { const c = sv("circle", { r: 4.5, style: `fill:${s.color};stroke:var(--panel-solid);stroke-width:2`, opacity: 0 }); svg.appendChild(c); return c; });
   const hit = sv("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent", style: "cursor:crosshair" }); svg.appendChild(hit);
   host.appendChild(svg); const tip = tipFor(host);
   const move = ev => { const r = svg.getBoundingClientRect(); const px = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
     const tt = t0 + (px - m.l) / (W - m.l - m.r) * (t1 - t0); let i = 0, best = Infinity; xs.forEach((x, j) => { const dd = Math.abs(x - tt); if (dd < best) { best = dd; i = j; } });
     const x = X(xs[i]); cross.setAttribute("x1", x); cross.setAttribute("x2", x); cross.setAttribute("opacity", 1);
+    const py = Math.max(m.t, Math.min(H - m.b, (ev.touches ? ev.touches[0].clientY : ev.clientY) - r.top));
+    const yv = sc.hi - (py - m.t) / (H - m.t - m.b) * (sc.hi - sc.lo);
+    crossY.setAttribute("y1", py); crossY.setAttribute("y2", py); crossY.setAttribute("opacity", 1);
+    bx.t.textContent = fdate(o.dates[i]); const bw = bx.t.getComputedTextLength() + 14;
+    const bxl = Math.max(m.l, Math.min(W - m.r - bw, x - bw / 2));
+    bx.r.setAttribute("x", bxl); bx.r.setAttribute("y", H - m.b + 4); bx.r.setAttribute("width", bw);
+    bx.t.setAttribute("x", bxl + 7); bx.t.setAttribute("y", H - m.b + 17); bx.g.setAttribute("opacity", 1);
+    by.t.textContent = (o.yfmt || (z => z))(+yv.toFixed(Math.abs(sc.hi - sc.lo) < 10 ? 2 : 0));
+    by.r.setAttribute("x", 0); by.r.setAttribute("y", py - 9); by.r.setAttribute("width", m.l - 4);
+    by.t.setAttribute("x", m.l - 9); by.t.setAttribute("text-anchor", "end"); by.t.setAttribute("y", py + 4); by.g.setAttribute("opacity", 1);
     let rows = ""; o.series.forEach((s, k) => { const v = s.values[i]; if (v == null) { dots[k].setAttribute("opacity", 0); return; }
       dots[k].setAttribute("cx", x); dots[k].setAttribute("cy", Y(v)); dots[k].setAttribute("opacity", 1);
       rows += `<div class="r"><span><i style="background:${s.color}"></i>${s.label}</span><b>${(o.tfmt || o.yfmt || (z => z))(v)}</b></div>`; });
     tip.innerHTML = `<div class="t">${fdate(o.dates[i])}</div>${rows}${o.extra ? o.extra(i) : ""}`; placeTip(host, tip, x, Y(o.series.map(s => s.values[i]).find(v => v != null) ?? 0)); };
-  const leave = () => { cross.setAttribute("opacity", 0); dots.forEach(d => d.setAttribute("opacity", 0)); tip.classList.remove("show"); };
+  const leave = () => { cross.setAttribute("opacity", 0); crossY.setAttribute("opacity", 0); bx.g.setAttribute("opacity", 0); by.g.setAttribute("opacity", 0); dots.forEach(d => d.setAttribute("opacity", 0)); tip.classList.remove("show"); };
   hit.addEventListener("mousemove", move); hit.addEventListener("touchmove", move, { passive: true }); hit.addEventListener("mouseleave", leave); hit.addEventListener("touchend", leave);
 }
 
@@ -570,6 +628,41 @@ function barChart(host, o) {
     r.addEventListener("mouseenter", () => { tip.innerHTML = `<div class="t">${o.labels[i]}</div><div class="r"><span>Net</span><b>${o.tfmt(v)}</b></div>${o.extra ? o.extra(i) : ""}`; placeTip(host, tip, x + w / 2, Math.min(y0, y1)); });
     r.addEventListener("mouseleave", () => tip.classList.remove("show")); svg.appendChild(r);
     if (i % step === 0) { const t = sv("text", { x: x + w / 2, y: H - 8, "text-anchor": "middle" }); t.textContent = o.short ? o.short(i) : o.labels[i]; svg.appendChild(t); } });
+  host.appendChild(svg);
+}
+
+/* ---------- scatter ---------- */
+function scatter(host, o) {
+  host.innerHTML = ""; const W = Math.max(host.clientWidth, 260), H = o.h || 290, m = { l: 62, r: 14, t: 12, b: 44 };
+  const sx = nice(Math.min(...o.x, 0), Math.max(...o.x, 0), 6), sy = nice(Math.min(...o.y, 0), Math.max(...o.y, 0), 5);
+  const X = v => m.l + (v - sx.lo) / (sx.hi - sx.lo) * (W - m.l - m.r), Y = v => m.t + (sy.hi - v) / (sy.hi - sy.lo) * (H - m.t - m.b);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": o.aria || "" });
+  sy.ticks.forEach(v => { svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: v === 0 ? "zero" : "gridl" })); const t = sv("text", { x: m.l - 10, y: Y(v) + 4, "text-anchor": "end" }); t.textContent = o.yfmt(v); svg.appendChild(t); });
+  sx.ticks.forEach(v => { svg.appendChild(sv("line", { x1: X(v), x2: X(v), y1: m.t, y2: H - m.b, class: v === 0 ? "zero" : "gridl" })); const t = sv("text", { x: X(v), y: H - 24, "text-anchor": "middle" }); t.textContent = o.xfmt(v); svg.appendChild(t); });
+  const xl = sv("text", { x: W - m.r, y: H - 1, "text-anchor": "end" }); xl.textContent = o.xlabel; svg.appendChild(xl);
+  const tip = tipFor(host);
+  o.x.forEach((xv, i) => { const c = sv("circle", { cx: X(xv), cy: Y(o.y[i]), r: 5.5, style: `fill:${o.color(i)};fill-opacity:.75;stroke:var(--panel-solid);stroke-width:1.5;cursor:pointer` });
+    c.style.transformOrigin = `${X(xv)}px ${Y(o.y[i])}px`; c.animate([{ transform: "scale(0)" }, { transform: "scale(1)" }], { duration: 450, delay: Math.min(i * 6, 600), fill: "backwards", easing: "cubic-bezier(.2,.8,.2,1)" });
+    c.addEventListener("mouseenter", () => { c.setAttribute("r", 8); tip.innerHTML = o.tip(i); placeTip(host, tip, X(xv), Y(o.y[i])); });
+    c.addEventListener("mouseleave", () => { c.setAttribute("r", 5.5); tip.classList.remove("show"); }); svg.appendChild(c); });
+  host.appendChild(svg);
+}
+/* ---------- grouped bars (two series per category) ---------- */
+function groupBars(host, o) {
+  host.innerHTML = ""; const W = Math.max(host.clientWidth, 260), H = o.h || 260, m = { l: 56, r: 8, t: 14, b: 30 };
+  const all = o.a.concat(o.b, [0]); const sc = nice(Math.min(...all), Math.max(...all), 5);
+  const n = o.labels.length, bw = (W - m.l - m.r) / n, Y = v => m.t + (sc.hi - v) / (sc.hi - sc.lo) * (H - m.t - m.b);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": o.aria || "" });
+  sc.ticks.forEach(v => { svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), class: v === 0 ? "zero" : "gridl" })); const t = sv("text", { x: m.l - 10, y: Y(v) + 4, "text-anchor": "end" }); t.textContent = o.yfmt(v); svg.appendChild(t); });
+  const step = Math.ceil(n / (W < 480 ? 5 : 12)); const tip = tipFor(host);
+  o.labels.forEach((lab, i) => { const g = sv("g", { class: "bar" }); [[o.a[i], "var(--gold)", 0], [o.b[i], "var(--teal)", 1]].forEach(([v, col, k]) => {
+      const w = bw * .34, x = m.l + i * bw + bw * .14 + k * (w + bw * .04), y0 = Y(0), y1 = Y(v);
+      const r = sv("rect", { x, width: w, y: Math.min(y0, y1), height: Math.max(1, Math.abs(y1 - y0)), rx: 2.5, style: `fill:${col}` });
+      r.style.transformOrigin = `${x}px ${y0}px`; r.animate([{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }], { duration: 650, delay: i * 25, fill: "backwards", easing: "cubic-bezier(.2,.8,.2,1)" }); g.appendChild(r); });
+    const hit = sv("rect", { x: m.l + i * bw, y: m.t, width: bw, height: H - m.t - m.b, fill: "transparent" }); g.appendChild(hit);
+    g.addEventListener("mouseenter", () => { tip.innerHTML = o.tip(i); placeTip(host, tip, m.l + i * bw + bw / 2, Y(Math.max(o.a[i], o.b[i], 0))); });
+    g.addEventListener("mouseleave", () => tip.classList.remove("show")); svg.appendChild(g);
+    if (i % step === 0) { const t = sv("text", { x: m.l + i * bw + bw / 2, y: H - 8, "text-anchor": "middle" }); t.textContent = o.short(i); svg.appendChild(t); } });
   host.appendChild(svg);
 }
 
@@ -605,8 +698,8 @@ RENDER.overview = () => {
   const mt = P["M-TEN"].normal, mg = P["M-GUINEA"].normal, mp = P["M-PETAL"].normal, cg = P["M-GUINEA"].crash, cp = P["M-PETAL"].crash;
   $("#ov-kpis").innerHTML =
     kpi("Data checked", `${D.meta.contracts}<small>contracts</small>`, `${D.meta.rows.toLocaleString("en-IN")} trading days, 0 unexplained errors`) +
-    kpi("GOLDM vs GOLDTEN", `${sgn(mt[0])}<small>bp</small>`, `Quiet months, 95% range ${sgn(mt[1])} to ${sgn(mt[2])}. Same price.`) +
-    kpi("Coin & 1 g premium", `${Math.round(-mg[0])}–${Math.round(-mp[0])}<small>bp</small>`, `GUINEA and PETAL above GOLDM in quiet months`, "accent") +
+    kpi("GOLDM vs GOLDTEN", `${sgn(mt[0])}<small>bp</small>`, `2025–26 quiet months, 95% range ${sgn(mt[1])} to ${sgn(mt[2])}. Same price.`) +
+    kpi("Coin & 1 g premium", `${Math.round(-mg[0])}–${Math.round(-mp[0])}<small>bp</small>`, `GUINEA and PETAL above GOLDM, 2025–26 quiet months`, "accent") +
     kpi("In the crash", `${(-(cg[0] + cp[0]) / 2 / 100).toFixed(1)}<small>%</small>`, `Average premium, Dec 2025 – Mar 2026`);
   const k = D.signals.threshold, hot = D.signals.rows.filter(r => Math.abs(r.z) >= k);
   $("#ov-status").innerHTML = `<span class="dot" style="${hot.length ? "background:var(--warn);box-shadow:0 0 0 4px var(--warn-soft)" : ""}"></span>
@@ -620,7 +713,7 @@ RENDER.overview = () => {
   lineChart($("#ov-prem"), { dates: ix.map(i => pd.dates[i]), series: ser, band: crash, zero: true, endLabels: true, yfmt: v => v + " bp", tfmt: v => sgn(v, 0, " bp"), aria: "Premium of small gold contracts over GOLDM" });
   $("#ov-finds").innerHTML = [
     ["var(--good)", "var(--good-soft)", '<path d="M5 12l4 4 10-10"/>', "The conversion is right", `In quiet months GOLDM and GOLDTEN differ by ${sgn(mt[0])} bp. A wrong purity correction would show about 40 bp, every month.`],
-    ["var(--gold)", "var(--gold-soft)", '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', "Small gold costs more", `The 8 g coin and the 1 g contract sit ${Math.round(-mg[0])}–${Math.round(-mp[0])} bp above the bars in every contract cycle. It is a lasting premium, not a mistake to arbitrage.`],
+    ["var(--gold)", "var(--gold-soft)", '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', "The coin premium holds; the 1 g one flipped", `The 8 g coin sat ${Math.round(-P["M-GUINEA"].y2024[0])} bp above GOLDM in 2024 and ${Math.round(-mg[0])} bp in 2025–26. The 1 g contract was ${Math.round(P["M-PETAL"].y2024[0])} bp <em>below</em> GOLDM in 2024, then ${Math.round(-mp[0])} bp above it.`],
     ["var(--bad)", "var(--bad-soft)", '<path d="M3 7l6 6 4-4 8 8"/><path d="M15 17h6v-6"/>', "Crashes break the link", `In the Jan 2026 sell-off GOLDM fell first and furthest; small contracts lagged up to ${(-cp[0] / 100).toFixed(1)}% above it. That lag is the only place a trade paid.`]
   ].map(([c, bg, ic, h, p]) => `<div class="glass find"><div class="ic" style="background:${bg};color:${c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ic}</svg></div><h3>${h}</h3><p>${p}</p></div>`).join("");
   const pr = D.prices, pidx = pr.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
@@ -633,6 +726,44 @@ RENDER.overview = () => {
 $("#ov-range").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; ovRange = +b.dataset.r;
   $("#ov-range").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); RENDER.overview(); });
 
+/* ---------- the brief ---------- */
+RENDER.brief = () => {
+  const P5 = D.pairs.find(p => p.pair === "M-TEN").normal, att = Object.fromEntries(D.attribution.map(a => [a.run, a])), lc = Object.fromEntries(D.lifecycle_summary.map(a => [a.run, a]));
+  const rs = Object.fromEntries(D.rolldown.summary.map(a => [a.symbol, a]));
+  const pill = s => `<span class="pill ${s === "Done" ? "good" : s === "Partly" ? "warn" : "neutral"}">${s}</span>`;
+  const dirs = [
+    ["Cross-contract relative value", "Normalize contract size, quotation base, and purity. Identify when one contract appears unusually cheap or expensive relative to another.", "Done",
+      [`All four contracts in ₹ per gram of pure gold; GOLDM vs GOLDTEN ${sgn(P5[0])} bp in quiet months proves the conversion`, "All six pairs measured for 2024, quiet 2025–26 months and the crash", "Strategy B flags a contract that strays from its fair price"], "relative"],
+    ["Term structure & carry", "Analyze the futures curve. Separate mechanical roll-down toward expiry from genuine changes in the curve.", "Done",
+      ["Futures curve on any of three dates; carry measured from the data", `Each month's price change split: roll-down about ${Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% vs curve moves of about ${rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}% a month for GOLDM`], "term"],
+    ["Walk-forward backtesting", "Replay historical contracts day by day without look-ahead bias. Account for transaction costs and thin-day liquidity.", "Done",
+      ["Signals at today's close, trades at the next day's price", "MCX fees, taxes and 0–10 bp slippage on every leg", "Days with under 1 kg traded are skipped; rules frozen in Git before each sealed test"], "backtest"],
+    ["Trader-facing intelligence", "Build dashboards or alerts that highlight meaningful opportunities. Keep alerts quiet when there is no meaningful signal. Attribute performance to the strategy rather than simply to gold-price movement.", "Done",
+      ["This dashboard; Signals page stays “Quiet” unless a contract is ±1.5σ from fair", `Every trade's profit split into gap and gold parts: gold's own move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's and ${Math.abs(att.B_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy B's holdout gross profit`], "backtest"],
+    ["Contract lifecycle planning", "Track listing dates, liquidity development, tender periods, and expiry. Place every intended entry and exit inside the relevant contract calendar.", "Done",
+      ["Every contract's first and last day, its tender period, and how liquidity builds", `All trades start after listing. Strategy B exits before the tender period every time; Strategy A held ${lc.A_hold.trades - lc.A_hold.outside_tender} of ${lc.A_hold.trades} holdout trades into it, shown and excluded on request`], "calendar"]
+  ];
+  $("#br-dirs").innerHTML = dirs.map(([h, q, st, items, link], i) => `<div class="glass dir"${i === dirs.length - 1 ? ' style="grid-column:1/-1"' : ""}><h3>${h}${pill(st)}</h3><q>${q}</q><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul><a class="go" href="#${link}">See it →</a></div>`).join("");
+  const A5 = D.backtests.A_hold.rows.find(r => r.slip === 5), B5 = D.backtests.B_hold.rows.find(r => r.slip === 5);
+  const fin = [
+    ["Create a functional prototype that transforms exchange settlement data into a defensible analytical signal or intelligence product", "This site, rebuilt by two scripts from the official MCX files", "Done"],
+    ["…and validates the approach using unseen historical data", `Sealed holdout Aug 2025 – May 2026, run once. Two more sealed tests (2020–2023, 2016–2019) declared before download; ${D.meta.sealed_contracts} contracts already set aside unread`, "Done"],
+    ["Report performance after relevant costs using the prices of the contracts actually held", `Every trade priced on the exact contracts held. Strategy A ${inr(A5.net)}, Strategy B ${inr(B5.net)} at 5 bp`, "Done"],
+    ["Clearly separate strategy performance from the impact of the underlying gold price", "Exact per-trade split into gap and gold parts, plus each trade plotted against gold's move", "Done"],
+    ["A rigorous demonstration that no persistent edge survives costs is also a valid analytical outcome", "Our verdict: no dependable edge in quiet markets; the gap paid only during the Jan 2026 crash. Sealed tests will check other crashes", "Done"]
+  ];
+  $("#br-final").innerHTML = `<thead><tr><th>The brief says</th><th>What we did</th><th>Status</th></tr></thead><tbody>` + fin.map(r => `<tr><td style="max-width:420px"><i>${r[0]}</i></td><td>${r[1]}</td><td>${pill(r[2])}</td></tr>`).join("") + "</tbody>";
+  const warn = [
+    ["Validate the returned Date against the requested date", "Every file identified by its contents; no row after its contract's expiry; every weekend date must be a known special session (Diwali Muhurat 2023, Budget days 2025 and 2026)"],
+    ["Requests use DD/MM/YYYY, responses MM/DD/YYYY; compact expiry format; space-padded symbols", "Downloaded files carry dates as “29 Aug 2025”, parsed with a fixed format, so day and month cannot swap; expiry parsed as 04SEP2026; symbols stripped"],
+    ["Track contracts by expiry date, not a continuous near-month series", "Every price, pair and trade is tied to one contract's expiry; nothing is stitched"],
+    ["Settlement prices are not automatically executable fills", "Measured: the official close sits 17–26 bp from the day's average traded price. Strategy B fills at that average; all results shown at 0, 5 and 10 bp slippage"],
+    ["Volume is not market depth", "We only have daily volume, so we skip days under 1 kg traded and keep positions small (40–200 g). Depth cannot be measured from end-of-day files; stated as a limitation"],
+    ["GOLDTEN only exists from 2025", "GOLDTEN pairs start April 2025 and are marked “not listed yet” for 2024"]
+  ];
+  $("#br-warn").innerHTML = `<thead><tr><th>Warning in the brief</th><th>How we handled it</th></tr></thead><tbody>` + warn.map(r => `<tr><td style="max-width:360px"><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join("") + "</tbody>";
+};
+
 /* ---------- relative value ---------- */
 let rvPair = "M-GUINEA";
 const pname = k => k.split("-").map(s => short[s]).join(" − ");
@@ -642,15 +773,16 @@ RENDER.relative = () => {
   const p = P[rvPair], s = D.pair_series[rvPair];
   $("#rv-title").textContent = pname(rvPair);
   $("#rv-sub").textContent = `Daily gap per pure gram, in bp. Above zero: ${short[rvPair.split("-")[0]]} is dearer.`;
-  legend($("#rv-legend"), [["var(--teal)", "Daily gap"], ["var(--gold)", "Quiet-month average"]], true);
+  legend($("#rv-legend"), [["var(--teal)", "Daily gap"], ["var(--gold)", "2025–26 quiet-month average"]], true);
   lineChart($("#rv-chart"), { dates: s.dates, series: [{ label: "Gap", color: "var(--teal)", values: s.bp }], band: crash, zero: true, area: true, hline: p.normal[0], yfmt: v => v + " bp", tfmt: v => sgn(v, 1, " bp"), aria: "Daily gap for " + pname(rvPair) });
   $("#rv-stats").innerHTML =
-    stat("Quiet months", `${sgn(p.normal[0])} bp`, `95% range ${sgn(p.normal[1])} to ${sgn(p.normal[2])} · ${p.normal[3]} weeks`, "accent") +
+    (p.y2024 ? stat("2024", `${sgn(p.y2024[0])} bp`, `95% range ${sgn(p.y2024[1])} to ${sgn(p.y2024[2])} · ${p.y2024[3]} weeks`) : "") +
+    stat("2025–26 quiet months", `${sgn(p.normal[0])} bp`, `95% range ${sgn(p.normal[1])} to ${sgn(p.normal[2])} · ${p.normal[3]} weeks`, "accent") +
     stat("Crash period", `${sgn(p.crash[0])} bp`, `95% range ${sgn(p.crash[1])} to ${sgn(p.crash[2])} · ${p.crash[3]} weeks`) +
     stat("Same sign in", p.cycles_same_sign, `contract cycles · typical daily swing ${p.daily_sd} bp`);
-  $("#rv-table").innerHTML = `<thead><tr><th>Pair</th><th class="n">Quiet months</th><th class="n">95% range</th><th class="n">Crash period</th><th class="n">All days</th><th class="n">Cycles</th></tr></thead><tbody>` +
+  $("#rv-table").innerHTML = `<thead><tr><th>Pair</th><th class="n">2024</th><th class="n">2025–26 quiet</th><th class="n">95% range</th><th class="n">Crash period</th><th class="n">All days</th><th class="n">Cycles</th></tr></thead><tbody>` +
     D.pairs.map(p => { const zero = p.normal[1] <= 0 && p.normal[2] >= 0;
-      return `<tr style="cursor:pointer" data-p="${p.pair}"><td><b>${pname(p.pair)}</b> ${zero ? '<span class="pill good">same price</span>' : ""}</td><td class="n">${sgn(p.normal[0])} bp</td><td class="n" style="color:var(--ink-3)">${sgn(p.normal[1])} to ${sgn(p.normal[2])}</td><td class="n">${sgn(p.crash[0])} bp</td><td class="n">${sgn(p.all[0])} bp</td><td class="n">${p.cycles_same_sign}</td></tr>`; }).join("") + "</tbody>";
+      return `<tr style="cursor:pointer" data-p="${p.pair}"><td><b>${pname(p.pair)}</b> ${zero ? '<span class="pill good">same price</span>' : ""}</td><td class="n">${p.y2024 ? sgn(p.y2024[0]) + " bp" : '<span style="color:var(--ink-3)">not listed</span>'}</td><td class="n">${sgn(p.normal[0])} bp</td><td class="n" style="color:var(--ink-3)">${sgn(p.normal[1])} to ${sgn(p.normal[2])}</td><td class="n">${sgn(p.crash[0])} bp</td><td class="n">${sgn(p.all[0])} bp</td><td class="n">${p.cycles_same_sign}</td></tr>`; }).join("") + "</tbody>";
 };
 $("#v-relative").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (!b) return; rvPair = b.dataset.p; RENDER.relative(); });
 
@@ -677,7 +809,13 @@ RENDER.term = () => {
   host.appendChild(svg);
   legend($("#ts-legend"), syms.map(s => [SYM[s].c, s]).concat([["transparent", "Dot size: gold traded that day"]]));
   const ys2 = [...new Set(D.carry.map(r => r.date))];
-  $("#ts-carry").innerHTML = `<thead><tr><th>Year</th>${syms.map(s => `<th class="n">${s}</th>`).join("")}</tr></thead><tbody>` + D.carry.map(r => `<tr><td class="mono">${r.date}</td>${syms.map(s => `<td class="n">${r[s] != null ? r[s].toFixed(2) + "%" : "—"}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  $("#ts-carry").innerHTML = `<thead><tr><th>Year</th>${syms.map(s => `<th class="n">${s}</th>`).join("")}</tr></thead><tbody>` + D.carry.map(r => `<tr><td class="mono">${r.date}</td>${syms.map(s => `<td class="n">${r[s] != null && !isNaN(r[s]) ? r[s].toFixed(2) + "%" : '<span style="color:var(--ink-3)">—</span>'}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  const rd = D.rolldown.goldm;
+  groupBars($("#ts-roll"), { labels: rd.map(r => r.month), a: rd.map(r => r.rolldown_pct), b: rd.map(r => r.curve_move_pct), yfmt: v => v + "%", short: i => fmon(rd[i].month + "-01").split(" ")[0],
+    aria: "GOLDM monthly roll-down and curve move",
+    tip: i => `<div class="t">${fmon(rd[i].month + "-01")} · GOLDM ${fdate(rd[i].expiry)}</div><div class="r"><span>Total change</span><b>${sgn(rd[i].total_pct, 2, "%")}</b></div><div class="r"><span><i style="background:var(--gold)"></i>Roll-down</span><b>${sgn(rd[i].rolldown_pct, 2, "%")}</b></div><div class="r"><span><i style="background:var(--teal)"></i>Curve move</span><b>${sgn(rd[i].curve_move_pct, 2, "%")}</b></div><div class="r"><span>Carry that day</span><b>${rd[i].carry_pa_pct.toFixed(1)}% a year</b></div>` });
+  $("#ts-rollsum").innerHTML = `<thead><tr><th>Contract</th><th class="n">Months</th><th class="n">Roll-down / month</th><th class="n">Curve move / month</th><th class="n">Roll-down share</th></tr></thead><tbody>` +
+    D.rolldown.summary.map(r => `<tr><td><span class="sw" style="background:${SYM[r.symbol].c}"></span>${r.symbol}</td><td class="n">${r.months}</td><td class="n">${sgn(r.avg_rolldown_pct, 2, "%")}</td><td class="n">±${r.avg_abs_curve_move_pct.toFixed(2)}%</td><td class="n">${r.rolldown_share_of_abs_change_pct.toFixed(0)}%</td></tr>`).join("") + "</tbody>";
   $("#ts-table").innerHTML = `<thead><tr><th>Contract</th><th>Expiry</th><th class="n">Days</th><th class="n">₹ / pure g</th><th class="n">Traded</th></tr></thead><tbody>` +
     pts.slice().sort((a, b) => a.dte - b.dte || a.symbol.localeCompare(b.symbol)).map(p => `<tr><td><span class="sw" style="background:${SYM[p.symbol].c}"></span>${p.symbol}</td><td class="mono">${fdate(p.expiry)}</td><td class="n">${p.dte}</td><td class="n">${p.rs_per_g.toLocaleString("en-IN", { minimumFractionDigits: 1 })}</td><td class="n">${p.kg} kg</td></tr>`).join("") + "</tbody>";
 };
@@ -695,15 +833,31 @@ $("#bt-pick").innerHTML = Object.entries(BT).map(([k, v]) => `<button data-k="${
 const netAt = (t, s) => t.net0 + (t.net5 - t.net0) * s / 5;
 function btRender(animate) {
   const s = +$("#slip").value; $("#slip-v").textContent = s.toFixed(1);
-  const tr = D.trades[btKey], info = D.backtests[btKey], near = info.rows.reduce((a, r) => Math.abs(r.slip - s) < Math.abs(a.slip - s) ? r : a);
+  const tonly = $("#tender-only").checked, all = D.trades[btKey], tr = tonly ? all.filter(t => t.ok_tender) : all;
+  const info = D.backtests[btKey], near = info.rows.reduce((a, r) => Math.abs(r.slip - s) < Math.abs(a.slip - s) ? r : a);
+  const inTender = all.length - all.filter(t => t.ok_tender).length;
   const nets = tr.map(t => netAt(t, s)), tot = nets.reduce((a, b) => a + b, 0), hit = nets.filter(v => v > 0).length / nets.length * 100;
   const gross = tr.reduce((a, t) => a + t.gross, 0);
   $("#bt-desc").textContent = BT[btKey].desc;
   $("#bt-kpis").innerHTML =
     kpi("Net profit", `<span class="${tot >= 0 ? "pos" : "neg"}">${inr(tot)}</span>`, `${info.grams} g per leg · gross ${inr(gross)}`, "") +
-    kpi("Trades", `${tr.length}`, `from ${info.rows[0].weeks} independent entry weeks`) +
+    kpi("Trades", `${tr.length}`, tonly ? `${inTender} trade${inTender === 1 ? "" : "s"} held into the tender period left out` : `from ${info.rows[0].weeks} independent entry weeks · ${inTender} held into the tender period`) +
     kpi("Won after costs", `${hit.toFixed(0)}<small>%</small>`, `of trades at ${s.toFixed(1)} bp slippage`) +
-    kpi(`95% range at ${near.slip} bp`, `<span style="font-size:20px">${inr(near.ci[0])} to ${inr(near.ci[1])}</span>`, `${near.p_pos}% of resamples above zero`);
+    kpi(`95% range at ${near.slip} bp`, `<span style="font-size:20px">${inr(near.ci[0])} to ${inr(near.ci[1])}</span>`, `${near.p_pos}% of resamples above zero${tonly ? " (all trades)" : ""}`);
+  // profit vs gold's move, and the exact split
+  scatter($("#bt-scatter"), { x: tr.map(t => t.gold_move), y: nets, color: i => nets[i] >= 0 ? "var(--good)" : "var(--bad)", xfmt: v => v + "%", yfmt: v => (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k"),
+    xlabel: "gold's move while the trade was open", aria: "Profit per trade against gold's move",
+    tip: i => `<div class="t">${tr[i].what.replace(/GOLD/g, "")} · ${fdate(tr[i].entry)} → ${fdate(tr[i].exit)}</div><div class="r"><span>Gold moved</span><b>${sgn(tr[i].gold_move, 2, "%")}</b></div><div class="r"><span>Net</span><b>${inr(nets[i])}</b></div><div class="r"><span>From the gap</span><b>${inr(tr[i].gap_part)}</b></div><div class="r"><span>From gold's move</span><b>${inr(tr[i].gold_part)}</b></div>` });
+  const gp = tr.reduce((a, t) => a + t.gap_part, 0), gd = tr.reduce((a, t) => a + t.gold_part, 0), ab = Math.abs(gp) + Math.abs(gd) || 1;
+  const xs2 = tr.map(t => t.gold_move), mx = xs2.reduce((a, b) => a + b, 0) / xs2.length, my = nets.reduce((a, b) => a + b, 0) / nets.length;
+  const cv = xs2.reduce((a, x, i) => a + (x - mx) * (nets[i] - my), 0), corr = cv / Math.sqrt(xs2.reduce((a, x) => a + (x - mx) ** 2, 0) * nets.reduce((a, y) => a + (y - my) ** 2, 0) || 1);
+  $("#bt-attr").innerHTML = `<div class="grid" style="grid-template-columns:1fr 1fr;gap:14px">
+      <div><div class="lab" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600">From the gap</div><div class="num" style="font-size:24px;font-weight:600;color:var(--teal)">${inr(gp)}</div></div>
+      <div><div class="lab" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600">From gold's move</div><div class="num" style="font-size:24px;font-weight:600;color:var(--gold)">${inr(gd)}</div></div></div>
+    <div class="split" aria-hidden="true"><i style="width:${(100 * Math.abs(gp) / ab).toFixed(1)}%;background:var(--teal)"></i><i style="width:${(100 * Math.abs(gd) / ab).toFixed(1)}%;background:var(--gold)"></i></div>
+    <p class="note" style="margin-top:6px">Gold's own move is <b>${(100 * Math.abs(gd) / ab).toFixed(1)}%</b> of the profit swing. Both legs hold the same grams, so gold's move cancels except for the gap still open and GOLDM's 99.5% purity.</p>
+    <dl class="kv" style="margin-top:14px"><dt>Correlation of net profit with gold's move</dt><dd>${corr.toFixed(2)}</dd><dt>Gross before costs</dt><dd>${inr(gp + gd)}</dd></dl>
+    <p class="note">${btKey === "A_hold" ? "The correlation comes from January 2026, when gold rose about 8% while the gaps widened and closed; outside January it is close to zero. The money came from the gap, not from gold's direction." : "A correlation near zero, or driven by a few large moves, means the strategy is not a disguised bet on gold."}</p>`;
   const ord = tr.map((t, i) => ({ t, v: nets[i] })).sort((a, b) => a.t.exit.localeCompare(b.t.exit));
   const byDay = {}; ord.forEach(o => byDay[o.t.exit] = (byDay[o.t.exit] || 0) + o.v);
   const days = Object.keys(byDay).sort(); let c = 0; const cum = days.map(d => (c += byDay[d]));
@@ -716,7 +870,7 @@ function btRender(animate) {
   const jan = tr.map((t, i) => t.entry.startsWith("2026-01") ? nets[i] : null).filter(v => v != null);
   const rest = tot - jan.reduce((a, b) => a + b, 0);
   const V = {
-    A_hold: `<b>One event.</b> January 2026 alone made ${inr(jan.reduce((a, b) => a + b, 0))} from ${jan.length} trades; the other ${tr.length - jan.length} trades made ${inr(rest)}. Outside the crash, this rule loses after costs.`,
+    A_hold: `<b>One event.</b> January 2026 alone made ${inr(jan.reduce((a, b) => a + b, 0))} from ${jan.length} trades; the other ${tr.length - jan.length} trades made ${inr(rest)}. Outside the crash, this rule loses after costs. ${inTender} trades were held 1–3 business days into the tender period, which a broker would not allow; tick the box above to leave them out.`,
     B_hold: `<b>Positive, not proven.</b> It earned on GUINEA and PETAL, where a real premium exists, and lost on GOLDTEN, where there is none. With ${info.rows[0].weeks} independent weeks the 95% range still includes zero at 5 bp.`,
     A_test: `<b>Break-even near 3.5 bp.</b> Profitable only with near-perfect fills. Move the slider below 3.5 to see it turn positive.`,
     B_dev: `<b>In-sample.</b> These are the numbers the setting was chosen on, so they overstate. About 80% of the profit came from the swings of 1–15 April 2025.`
@@ -732,12 +886,13 @@ function btRender(animate) {
   $("#bt-logsub").textContent = `${rows.length} trade${rows.length === 1 ? "" : "s"} · net at ${s.toFixed(1)} bp · click a column to sort`;
   $("#bt-pager").innerHTML = pages > 1 ? `<button data-pg="-1" ${btPage === 0 ? "disabled" : ""}>← Previous</button><span class="num">${btPage + 1} / ${pages}</span><button data-pg="1" ${btPage === pages - 1 ? "disabled" : ""}>Next →</button>` : "";
   const col = (k, l, n) => `<th class="sort ${n ? "n" : ""}" data-k="${k}" ${btSort.k === k ? `data-dir="${btSort.dir}"` : ""}>${l}</th>`;
-  $("#bt-log").innerHTML = `<thead><tr>${col("what", "Contract")}${col("expiry", "Expiry")}${col("entry", "Entry")}${col("exit", "Exit")}${col("side", "Position")}${col("days", "Days", 1)}${col("gross", "Gross", 1)}${col("net", "Net", 1)}</tr></thead><tbody>` +
-    shown.map(t => `<tr><td><b>${t.what.replace(/GOLD/g, "")}</b></td><td class="mono">${fdate(t.expiry)}</td><td class="mono">${fdate(t.entry)}</td><td class="mono">${fdate(t.exit)}</td><td style="color:var(--ink-2)">${t.side.replace("long a/short b", "buy A, sell B").replace("short a/long b", "sell A, buy B")}</td><td class="n">${t.days}</td><td class="n">${inr(t.gross)}</td><td class="n ${t.net >= 0 ? "pos" : "neg"}">${inr(t.net)}</td></tr>`).join("") + "</tbody>";
+  $("#bt-log").innerHTML = `<thead><tr>${col("what", "Contract")}${col("expiry", "Expiry")}${col("entry", "Entry")}${col("exit", "Exit")}${col("side", "Position")}${col("days", "Days", 1)}${col("gold_part", "Gold part", 1)}${col("gross", "Gross", 1)}${col("net", "Net", 1)}<th>Tender</th></tr></thead><tbody>` +
+    shown.map(t => `<tr><td><b>${t.what.replace(/GOLD/g, "")}</b></td><td class="mono">${fdate(t.expiry)}</td><td class="mono">${fdate(t.entry)}</td><td class="mono">${fdate(t.exit)}</td><td style="color:var(--ink-2)">${t.side.replace("long a/short b", "buy A, sell B").replace("short a/long b", "sell A, buy B")}</td><td class="n">${t.days}</td><td class="n" style="color:var(--ink-2)">${inr(t.gold_part)}</td><td class="n">${inr(t.gross)}</td><td class="n ${t.net >= 0 ? "pos" : "neg"}">${inr(t.net)}</td><td>${t.ok_tender ? '<span class="pill good">Clear</span>' : `<span class="pill bad" title="Last safe exit ${fdate(t.safe_exit)}">In tender</span>`}</td></tr>`).join("") + "</tbody>";
 }
 RENDER.backtest = () => { btRender(true);
   $("#bt-tl").innerHTML = D.timeline.map(t => `<li><span class="b"></span><div><div class="w">${t.when}<span class="c">${t.commit}</span></div><div>${t.what}</div></div></li>`).join(""); };
 $("#slip").addEventListener("input", () => btRender(false));
+$("#tender-only").addEventListener("change", () => { btPage = 0; btRender(false); });
 $("#bt-pick").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; btKey = b.dataset.k; btFilter = "All"; btPage = 0; $("#bt-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); btRender(true); });
 $("#bt-filter").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; btFilter = b.dataset.f; btPage = 0; btRender(false); });
 $("#bt-pager").addEventListener("click", e => { const b = e.target.closest("button[data-pg]"); if (!b) return; btPage += +b.dataset.pg; btRender(false); });
@@ -760,12 +915,15 @@ RENDER.signals = () => {
 };
 
 /* ---------- calendar ---------- */
-let calF = "All";
+let calF = "All", calT = "A_hold";
 RENDER.calendar = () => {
   const syms = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];
   $("#cal-f").innerHTML = ["All", ...syms].map(s => `<button data-s="${s}" aria-pressed="${s === calF}">${s === "All" ? "All" : s.replace("GOLD", "") || "M"}</button>`).join("");
   const cs = D.contracts.filter(c => calF === "All" || c.symbol === calF).sort((a, b) => syms.indexOf(a.symbol) - syms.indexOf(b.symbol) || a.expiry.localeCompare(b.expiry));
   $("#cal-h").textContent = `${cs.length} contracts`;
+  $("#cal-t").innerHTML = [["none", "No trades"], ["A_hold", "Strategy A trades"], ["B_hold", "Strategy B trades"]].map(([k, l]) => `<button data-t="${k}" aria-pressed="${k === calT}">${l}</button>`).join("");
+  $("#cal-legend").innerHTML = `<span><i style="background:var(--ink);opacity:.55;height:8px"></i>Tender period</span>` + (calT !== "none" ? `<span><i style="background:var(--good)"></i>Trade, profit</span><span><i style="background:var(--bad)"></i>Trade, loss</span><span><i style="background:transparent;border:2px solid var(--bad);width:10px;height:10px;border-radius:50%"></i>Exit inside tender period</span>` : "") + `<span><i class="box"></i>Crash period</span>`;
+  const rowY = {};
   const host = $("#cal-chart"); host.innerHTML = ""; const W = Math.max(host.clientWidth, 300), rowH = calF === "All" ? 9 : 18, gap = calF === "All" ? 3 : 6, m = { l: W < 560 ? 64 : 96, r: 12, t: 8, b: 30 };
   let groups = [], y = m.t; syms.forEach(s => { const g = cs.filter(c => c.symbol === s); if (!g.length) return; groups.push({ s, y0: y, n: g.length }); y += g.length * (rowH + gap) + 14; });
   const H = y + m.b - 14; const t0 = Math.min(...cs.map(c => T(c.first))), t1 = Math.max(...cs.map(c => T(c.last)));
@@ -781,9 +939,44 @@ RENDER.calendar = () => {
       const r = sv("rect", { x, y: yy, width: w, height: rowH, rx: rowH / 2.5, style: `fill:${SYM[c.symbol].c};opacity:${op.toFixed(2)};cursor:pointer` });
       r.style.transformOrigin = `${x}px ${yy}px`; r.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 600, delay: i * 18, fill: "backwards", easing: "cubic-bezier(.2,.8,.2,1)" });
       r.addEventListener("mouseenter", () => { r.style.opacity = 1; tip.innerHTML = `<div class="t">${c.symbol} · expires ${fdate(c.expiry)}</div><div class="r"><span>In our files</span><b>${fdate(c.first)} – ${fdate(c.last)}</b></div><div class="r"><span>Trading days</span><b>${c.days}</b></div><div class="r"><span>No-trade days</span><b>${c.no_trade}</b></div><div class="r"><span>Median traded</span><b>${c.kg_median} kg/day</b></div>`; placeTip(host, tip, x + w / 2, yy); });
-      r.addEventListener("mouseleave", () => { r.style.opacity = op; tip.classList.remove("show"); }); svg.appendChild(r); }); });
+      r.addEventListener("mouseleave", () => { r.style.opacity = op; tip.classList.remove("show"); }); svg.appendChild(r);
+      rowY[c.symbol + "|" + c.expiry] = yy + rowH / 2;
+      if (c.safe_exit && T(c.last) > T(c.safe_exit)) { const tx = X(T(c.safe_exit));
+        svg.appendChild(sv("rect", { x: tx, y: yy, width: Math.max(2, X(T(c.last)) - tx), height: rowH, rx: rowH / 2.5, style: "fill:var(--ink);opacity:.5;pointer-events:none" })); } }); });
+  if (calT !== "none") {
+    D.trades[calT].forEach(t => { const legs = calT.startsWith("A") ? t.what.split("-").map(sy => sy + "|" + t.expiry) : [t.what + "|" + t.expiry, "GOLDM|" + t.m_exp];
+      legs.forEach(k => { const yy = rowY[k]; if (yy == null) return; const x0 = X(T(t.entry)), x1 = Math.max(X(T(t.exit)), x0 + 3), col = t.net5 >= 0 ? "var(--good)" : "var(--bad)";
+        const ln = sv("line", { x1: x0, x2: x1, y1: yy, y2: yy, style: `stroke:${col};stroke-width:${calF === "All" ? 4 : 6};stroke-linecap:round;cursor:pointer` });
+        ln.addEventListener("mouseenter", () => { tip.innerHTML = `<div class="t">${t.what.replace(/GOLD/g, "")} · ${fdate(t.entry)} → ${fdate(t.exit)}</div><div class="r"><span>Net at 5 bp</span><b>${inr(t.net5)}</b></div><div class="r"><span>Last safe exit</span><b>${fdate(t.safe_exit)}</b></div><div class="r"><span>Tender check</span><b>${t.ok_tender ? "clear" : "exit inside tender"}</b></div>`; placeTip(host, tip, x1, yy); });
+        ln.addEventListener("mouseleave", () => tip.classList.remove("show")); svg.appendChild(ln);
+        if (!t.ok_tender) svg.appendChild(sv("circle", { cx: x1, cy: yy, r: calF === "All" ? 5 : 7, style: "fill:none;stroke:var(--bad);stroke-width:2;pointer-events:none" })); }); }); }
   host.appendChild(svg);
+  // liquidity build-up
+  const order = ["(100.0, 130.0]", "(80.0, 100.0]", "(60.0, 80.0]", "(40.0, 60.0]", "(20.0, 40.0]", "(10.0, 20.0]", "(5.0, 10.0]", "(-0.001, 5.0]"];
+  const labs = ["130–100", "100–80", "80–60", "60–40", "40–20", "20–10", "10–5", "5–0"];
+  const lh = $("#liq-chart"); lh.innerHTML = ""; const LW = Math.max(lh.clientWidth, 260), LH = 250, lm = { l: 48, r: 12, t: 12, b: 40 };
+  const lx = i => lm.l + i / (order.length - 1) * (LW - lm.l - lm.r), ly = v => lm.t + (1 - v) * (LH - lm.t - lm.b);
+  const lsvg = sv("svg", { viewBox: `0 0 ${LW} ${LH}`, height: LH, role: "img", "aria-label": "Liquidity by business days to expiry" });
+  [0, .25, .5, .75, 1].forEach(v => { lsvg.appendChild(sv("line", { x1: lm.l, x2: LW - lm.r, y1: ly(v), y2: ly(v), class: v === 0 ? "zero" : "gridl" })); const t = sv("text", { x: lm.l - 8, y: ly(v) + 4, "text-anchor": "end" }); t.textContent = v * 100 + "%"; lsvg.appendChild(t); });
+  const lstep = LW < 420 ? 2 : 1;
+  labs.forEach((l, i) => { if (i % lstep) return; const t = sv("text", { x: lx(i), y: LH - 22, "text-anchor": "middle" }); t.textContent = l; lsvg.appendChild(t); });
+  const xt = sv("text", { x: LW - lm.r, y: LH - 4, "text-anchor": "end" }); xt.textContent = "business days left to expiry →"; lsvg.appendChild(xt);
+  if (D.lifecycle_summary) { const tz = sv("rect", { x: lx(6.5), y: lm.t, width: lx(7) - lx(6.5) + 6, height: LH - lm.t - lm.b, style: "fill:var(--ink);opacity:.08" }); lsvg.insertBefore(tz, lsvg.firstChild); }
+  const ltip = tipFor(lh); const G = sv("g", { class: "reveal" });
+  syms.forEach(sy => { const rows = order.map(o => D.liquidity.find(q => q.symbol === sy && q.bucket === o)); const mxk = Math.max(...rows.map(q => q ? q.kg_median : 0)) || 1;
+    const vals = rows.map(q => q ? q.kg_median / mxk : null);
+    G.appendChild(sv("path", { d: vals.map((v, i) => v == null ? "" : (i ? "L" : "M") + lx(i) + " " + ly(v)).join(""), class: "line", style: `stroke:${SYM[sy].c}` }));
+    vals.forEach((v, i) => { if (v == null) return; const c = sv("circle", { cx: lx(i), cy: ly(v), r: 4.5, style: `fill:${SYM[sy].c};stroke:var(--panel-solid);stroke-width:1.5;cursor:pointer` });
+      c.addEventListener("mouseenter", () => { ltip.innerHTML = `<div class="t">${sy} · ${labs[i]} business days left</div><div class="r"><span>Median traded</span><b>${rows[i].kg_median.toLocaleString("en-IN")} kg/day</b></div><div class="r"><span>Open interest</span><b>${Math.round(rows[i].oi_lots_median).toLocaleString("en-IN")} lots</b></div><div class="r"><span>No-trade days</span><b>${rows[i].no_trade_pct.toFixed(1)}%</b></div>`; placeTip(lh, ltip, lx(i), ly(v)); });
+      c.addEventListener("mouseleave", () => ltip.classList.remove("show")); G.appendChild(c); }); });
+  lsvg.appendChild(G); lh.appendChild(lsvg);
+  legend($("#liq-legend"), syms.map(sy => [SYM[sy].c, sy]).concat([["var(--line-2)", "Shaded: tender period"]]));
+  const L = Object.fromEntries(D.lifecycle_summary.map(a => [a.run, a])), nm = { A_test: "A · test 1", A_hold: "A · sealed holdout", B_dev: "B · development", B_hold: "B · sealed holdout" };
+  $("#cal-check").innerHTML = `<thead><tr><th>Run</th><th class="n">Trades</th><th class="n">After listing</th><th class="n">Clear of tender</th><th class="n">Net, all</th><th class="n">Net, allowed</th></tr></thead><tbody>` +
+    ["A_test", "A_hold", "B_dev", "B_hold"].map(k => { const a = L[k]; return `<tr><td><b>${nm[k]}</b></td><td class="n">${a.trades}</td><td class="n">${a.inside_life}</td><td class="n ${a.outside_tender < a.trades ? "neg" : "pos"}">${a.outside_tender}</td><td class="n">${inr(a.net_all)}</td><td class="n">${inr(a.net_outside_tender_only)}</td></tr>`; }).join("") + "</tbody>";
+  $("#cal-note").textContent = "Strategy A's force-exit was 3 calendar days before expiry, which can fall inside MCX's 5-business-day tender period. Strategy B exits 5 business days before expiry and is always clear. Net at 5 bp slippage.";
 };
+$("#cal-t").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; calT = b.dataset.t; RENDER.calendar(); });
 $("#cal-f").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; calF = b.dataset.s; RENDER.calendar(); });
 
 /* ---------- data quality ---------- */
@@ -791,7 +984,7 @@ let dqF = "All";
 RENDER.quality = () => {
   const integ = D.integrity, failing = integ.filter(r => r.errors > 0);
   const explained = D.flags.length;
-  $("#dq-kpis").innerHTML = kpi("Files read", `${D.meta.files}`, "MCX Bhavcopy downloads, deduplicated by content") +
+  $("#dq-kpis").innerHTML = kpi("Files read", `${D.meta.files}`, `MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts set aside, unread.`) +
     kpi("Contracts", `${D.meta.contracts}`, `${fdate(D.meta.first)} – ${fdate(D.meta.last)}`) +
     kpi("Rows checked", D.meta.rows.toLocaleString("en-IN"), "One row per contract per trading day") +
     kpi("Unexplained errors", "0", `${explained} rows flagged, each explained below`, "accent");
