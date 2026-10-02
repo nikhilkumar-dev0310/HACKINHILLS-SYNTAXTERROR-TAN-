@@ -224,6 +224,13 @@ def main():
     safe = {(x.symbol, x.expiry_date): x.last_safe_exit for x in lc.itertuples()}
     for c in out["contracts"]:
         c["safe_exit"] = safe.get((c["symbol"], c["expiry"]))
+    # ---------- alert history and curve slope
+    ah = pd.read_csv(R + "alerts_history.csv")
+    out["alerts"] = {"history": ah.where(ah.notna(), None).to_dict(orient="records"),
+                     "summary": pd.read_csv(R + "alerts_summary.csv").to_dict(orient="records"),
+                     "baseline": pd.read_csv(R + "alerts_baseline.csv").to_dict(orient="records")}
+    cm = pd.read_csv(R + "curve_slope_monthly.csv")
+    out["curve_slope"] = {"months": cm.month.tolist(), **{c: [r(v, 2) for v in cm[c]] for c in cm.columns if c != "month"}}
     json.dump(out, open(os.path.join(HERE, "data.json"), "w"), separators=(",", ":"), default=str)
     print("wrote dashboard/data.json", os.path.getsize(os.path.join(HERE, "data.json")) // 1024, "KB")
 

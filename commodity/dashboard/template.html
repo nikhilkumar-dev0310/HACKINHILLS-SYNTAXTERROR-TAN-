@@ -377,6 +377,12 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <div class="chart bars" id="ts-roll"></div>
         <div class="tw" style="margin-top:18px"><table id="ts-rollsum"></table></div>
       </div>
+      <div class="glass card">
+        <div class="card-h"><div><h2>How steep is the curve?</h2><div class="sub">Each day, a straight line through every listed expiry of a contract type (outside its tender period); its slope is the annualised carry across the whole curve. Monthly median.</div></div></div>
+        <div class="legend" id="ts-slope-legend"></div>
+        <div class="chart" id="ts-slope"></div>
+        <p class="note">All four contract types, fitted separately, steepen together from December 2025 and flatten from July 2026, so this is a market-wide change, not a data quirk. A straight line fits each day's curve to within about 4–5 bp. We have not found the cause of the 2026 steepening.</p>
+      </div>
       <div class="grid g2">
         <div class="glass card"><div class="card-h"><div><h2>Cost of carry by year</h2><div class="sub">Median annualised gap between neighbouring expiries of the same contract.</div></div></div><div class="tw"><table id="ts-carry"></table></div>
           <p class="note">Measured carry rose from about 4–6% a year (2024–25) to about 10–18% in 2026. The 2026 level is what the data shows; we have not found its cause, and the crash months distort the small contracts most.</p></div>
@@ -446,7 +452,17 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <p>Each small contract is compared with its fair price: GOLDM moved to the same expiry, plus that contract's usual premium. A signal needs the gap to sit more than <span class="num" id="sg-k"></span> standard deviations from usual, using only past days.</p>
       </div>
       <div class="grid g3" id="sg-cards"></div>
-      <div class="callout"><b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. A stress filter for that case is planned and will be tested on 2020–2023 data before it is trusted.</div>
+      <div class="grid g4" id="sg-kpis"></div>
+      <div class="glass card">
+        <div class="card-h"><div><h2>Every alert so far</h2><div class="sub">Each dot is one alert episode, sized by how far the contract was from its usual premium. Green: the gap closed at least halfway within 10 trading days.</div></div></div>
+        <div class="legend"><span><i style="background:var(--good)"></i>Closed halfway in 10 days</span><span><i style="background:var(--bad)"></i>Did not</span><span><i style="background:var(--ink-3)"></i>Too recent to judge</span><span><i class="box"></i>Crash period</span></div>
+        <div class="chart" id="sg-strip"></div>
+      </div>
+      <div class="glass card">
+        <div class="card-h"><div><h2>Alert log</h2><div class="sub" id="sg-logsub"></div></div><div class="seg" id="sg-f"></div></div>
+        <div class="tw"><table id="sg-log"></table></div><div class="pager" id="sg-pager"></div>
+      </div>
+      <div class="callout"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about 47 bp in 10 trading days, against 3 bp on ordinary days, and a round trip costs about 24 bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. A stress filter for that case is planned and will be tested on 2020–2023 data before it is trusted.</div>
     </section>
 
     <!-- CALENDAR -->
@@ -735,11 +751,11 @@ RENDER.brief = () => {
     ["Cross-contract relative value", "Normalize contract size, quotation base, and purity. Identify when one contract appears unusually cheap or expensive relative to another.", "Done",
       [`All four contracts in ₹ per gram of pure gold; GOLDM vs GOLDTEN ${sgn(P5[0])} bp in quiet months proves the conversion`, "All six pairs measured for 2024, quiet 2025–26 months and the crash", "Strategy B flags a contract that strays from its fair price"], "relative"],
     ["Term structure & carry", "Analyze the futures curve. Separate mechanical roll-down toward expiry from genuine changes in the curve.", "Done",
-      ["Futures curve on any of three dates; carry measured from the data", `Each month's price change split: roll-down about ${Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% vs curve moves of about ${rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}% a month for GOLDM`], "term"],
+      ["Futures curve on any of three dates; carry measured from the data", "The curve's slope tracked month by month across all listed expiries, for every contract type", `Each month's price change split: roll-down about ${Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% vs curve moves of about ${rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}% a month for GOLDM`], "term"],
     ["Walk-forward backtesting", "Replay historical contracts day by day without look-ahead bias. Account for transaction costs and thin-day liquidity.", "Done",
       ["Signals at today's close, trades at the next day's price", "MCX fees, taxes and 0–10 bp slippage on every leg", "Days with under 1 kg traded are skipped; rules frozen in Git before each sealed test"], "backtest"],
     ["Trader-facing intelligence", "Build dashboards or alerts that highlight meaningful opportunities. Keep alerts quiet when there is no meaningful signal. Attribute performance to the strategy rather than simply to gold-price movement.", "Done",
-      ["This dashboard; Signals page stays “Quiet” unless a contract is ±1.5σ from fair", `Every trade's profit split into gap and gold parts: gold's own move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's and ${Math.abs(att.B_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy B's holdout gross profit`], "backtest"],
+      ["This dashboard; Signals page stays “Quiet” unless a contract is ±1.5σ from fair", `A full alert history: ${D.alerts.history.length} past alerts and what each gap did next, compared with ordinary days and with the cost of a round trip`, `Every trade's profit split into gap and gold parts: gold's own move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's and ${Math.abs(att.B_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy B's holdout gross profit`], "backtest"],
     ["Contract lifecycle planning", "Track listing dates, liquidity development, tender periods, and expiry. Place every intended entry and exit inside the relevant contract calendar.", "Done",
       ["Every contract's first and last day, its tender period, and how liquidity builds", `All trades start after listing. Strategy B exits before the tender period every time; Strategy A held ${lc.A_hold.trades - lc.A_hold.outside_tender} of ${lc.A_hold.trades} holdout trades into it, shown and excluded on request`], "calendar"]
   ];
@@ -810,6 +826,10 @@ RENDER.term = () => {
   legend($("#ts-legend"), syms.map(s => [SYM[s].c, s]).concat([["transparent", "Dot size: gold traded that day"]]));
   const ys2 = [...new Set(D.carry.map(r => r.date))];
   $("#ts-carry").innerHTML = `<thead><tr><th>Year</th>${syms.map(s => `<th class="n">${s}</th>`).join("")}</tr></thead><tbody>` + D.carry.map(r => `<tr><td class="mono">${r.date}</td>${syms.map(s => `<td class="n">${r[s] != null && !isNaN(r[s]) ? r[s].toFixed(2) + "%" : '<span style="color:var(--ink-3)">—</span>'}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  const cs = D.curve_slope, ssy = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"].filter(x => cs[x]);
+  legend($("#ts-slope-legend"), ssy.map(x => [SYM[x].c, x]), true);
+  lineChart($("#ts-slope"), { dates: cs.months.map(m => m + "-15"), series: ssy.map(x => ({ label: x, color: SYM[x].c, values: cs[x] })), band: crash, zero: true, endLabels: true,
+    yfmt: v => v + "%", tfmt: v => v.toFixed(1) + "% a year", aria: "Futures curve slope by month", h: 260 });
   const rd = D.rolldown.goldm;
   groupBars($("#ts-roll"), { labels: rd.map(r => r.month), a: rd.map(r => r.rolldown_pct), b: rd.map(r => r.curve_move_pct), yfmt: v => v + "%", short: i => fmon(rd[i].month + "-01").split(" ")[0],
     aria: "GOLDM monthly roll-down and curve move",
@@ -911,8 +931,48 @@ RENDER.signals = () => {
       <dl class="kv"><dt>Premium today</dt><dd>${sgn(r.premium_bp)} bp</dd><dt>Usual premium</dt><dd>${sgn(r.usual_bp)} bp</dd><dt>Typical swing (1σ)</dt><dd>${r.sd_bp.toFixed(1)} bp</dd><dt>Distance from usual</dt><dd><b>${sgn(r.z, 2, "σ")}</b></dd></dl>
       <div class="chart" id="sg-z${i}" style="min-height:90px;margin-top:16px"></div><p class="note" style="margin-top:6px">Last 90 market days to ${fdate(r.date)}.</p></div>`; }).join("");
   requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll(".needle").forEach(n => n.style.left = n.dataset.pos + "%")));
+  sgHistory();
   rows.forEach((r, i) => lineChart($("#sg-z" + i), { dates: r.z_hist.dates, series: [{ label: "Distance", color: SYM[r.symbol].c, values: r.z_hist.z }], zero: true, h: 110, yfmt: v => v + "σ", tfmt: v => sgn(v, 2, "σ"), aria: "Recent distance from usual premium" }));
 };
+
+let sgF = "All", sgPage = 0;
+function sgHistory() {
+  const A = D.alerts, h = A.history, base = Object.fromEntries(A.baseline.map(b => [String(b.alert_day), b])), on = base["true"] || base["True"], off = base["false"] || base["False"];
+  const all = A.summary.find(x => x.symbol === "All");
+  $("#sg-kpis").innerHTML =
+    kpi("Alert episodes", `${h.length}`, `${fdate(h[0].start)} – ${fdate(h[h.length - 1].start)}`) +
+    kpi("Closed halfway in 10 days", `${all.closed_half_10d_pct.toFixed(0)}<small>%</small>`, `vs ${off.closed_half_10d.toFixed(0)}% of ordinary days: alerts are not more likely to close`) +
+    kpi("Gap closed in 10 days", `${on.median_closed_bp_10d.toFixed(0)}<small>bp</small>`, `median after an alert, vs ${off.median_closed_bp_10d.toFixed(0)} bp on ordinary days`, "accent") +
+    kpi("Round-trip cost", `${on.round_trip_cost_bp_at_5bp.toFixed(0)}<small>bp</small>`, `at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`);
+  // strip
+  const host = $("#sg-strip"); host.innerHTML = ""; const syms = ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];
+  const W = Math.max(host.clientWidth, 280), rowH = 54, m = { l: W < 560 ? 70 : 100, r: 16, t: 10, b: 30 }, H = m.t + syms.length * rowH + m.b;
+  const t0 = T(h[0].start) - 20 * 864e5, t1 = T(D.meta.last), X = t => m.l + (t - t0) / (t1 - t0) * (W - m.l - m.r);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": "Alert history" });
+  svg.appendChild(sv("rect", { x: X(T(crash[0])), y: m.t, width: X(T(crash[1])) - X(T(crash[0])), height: H - m.t - m.b, fill: "var(--band)" }));
+  monthTicks(t0, t1, W < 560 ? 4 : 10).forEach(tt => { svg.appendChild(sv("line", { x1: X(tt), x2: X(tt), y1: m.t, y2: H - m.b, class: "gridl" }));
+    const t = sv("text", { x: X(tt), y: H - 10, "text-anchor": "middle" }); const d = new Date(tt); t.textContent = MON[d.getUTCMonth()] + " " + String(d.getUTCFullYear()).slice(2); svg.appendChild(t); });
+  const tip = tipFor(host);
+  syms.forEach((sy, k) => { const cy = m.t + k * rowH + rowH / 2;
+    svg.appendChild(sv("line", { x1: m.l, x2: W - m.r, y1: cy, y2: cy, class: "gridl" }));
+    const lb = sv("text", { x: 0, y: cy + 4, class: "lbl", style: `fill:${SYM[sy].c}` }); lb.textContent = sy; svg.appendChild(lb);
+    h.filter(a => a.symbol === sy).forEach((a, i) => { const gap = Math.abs(a.premium_bp - a.usual_bp), r = Math.max(4, Math.min(16, 3 + Math.sqrt(gap) * .7));
+      const col = a.closed_half_10d === true ? "var(--good)" : a.closed_half_10d === false ? "var(--bad)" : "var(--ink-3)";
+      const c = sv("circle", { cx: X(T(a.start)), cy, r, style: `fill:${col};fill-opacity:.55;stroke:${col};stroke-width:1.5;cursor:pointer` });
+      c.style.transformOrigin = `${X(T(a.start))}px ${cy}px`; c.animate([{ transform: "scale(0)" }, { transform: "scale(1)" }], { duration: 500, delay: i * 25, fill: "backwards", easing: "cubic-bezier(.2,.8,.2,1)" });
+      c.addEventListener("mouseenter", () => { tip.innerHTML = `<div class="t">${sy} · ${fdate(a.start)}${a.alert_days > 1 ? " – " + fdate(a.end) : ""}</div><div class="r"><span>Signal</span><b>${a.direction}</b></div><div class="r"><span>Premium / usual</span><b>${sgn(a.premium_bp, 0)} / ${sgn(a.usual_bp, 0)} bp</b></div><div class="r"><span>10 days later</span><b>${a.prem_10d == null ? "—" : sgn(a.prem_10d, 0) + " bp"}</b></div><div class="r"><span>Halfway closed</span><b>${a.days_to_half ? "after " + a.days_to_half + " days" : a.closed_half_10d === false ? "not within 10 days" : "—"}</b></div>`; placeTip(host, tip, X(T(a.start)), cy - r); });
+      c.addEventListener("mouseleave", () => tip.classList.remove("show")); svg.appendChild(c); }); });
+  host.appendChild(svg);
+  // log
+  const opts = ["All", ...syms]; $("#sg-f").innerHTML = opts.map(o => `<button data-f="${o}" aria-pressed="${o === sgF}">${o === "All" ? "All" : o.replace("GOLD", "")}</button>`).join("");
+  const rows = h.filter(a => sgF === "All" || a.symbol === sgF).slice().reverse(), PER2 = 10, pages = Math.max(1, Math.ceil(rows.length / PER2)); sgPage = Math.min(sgPage, pages - 1);
+  $("#sg-logsub").textContent = `${rows.length} alert episode${rows.length === 1 ? "" : "s"}, newest first. Premiums in bp above GOLDM, per pure gram.`;
+  $("#sg-log").innerHTML = `<thead><tr><th>Started</th><th>Contract</th><th>Signal</th><th class="n">Days</th><th class="n">Distance</th><th class="n">Premium</th><th class="n">Usual</th><th class="n">After 10 days</th><th>Outcome</th></tr></thead><tbody>` +
+    rows.slice(sgPage * PER2, sgPage * PER2 + PER2).map(a => `<tr><td class="mono" style="white-space:nowrap">${fdate(a.start)}</td><td style="white-space:nowrap"><span class="sw" style="background:${SYM[a.symbol].c}"></span>${a.symbol}</td><td>${a.direction}</td><td class="n">${a.alert_days}</td><td class="n">${sgn(a.z, 2, "σ")}</td><td class="n">${sgn(a.premium_bp, 0)}</td><td class="n">${sgn(a.usual_bp, 0)}</td><td class="n">${a.prem_10d == null ? "—" : sgn(a.prem_10d, 0)}</td><td>${a.closed_half_10d === true ? `<span class="pill good">Closed halfway, day ${a.days_to_half}</span>` : a.closed_half_10d === false ? '<span class="pill bad">Did not close</span>' : '<span class="pill neutral">Too recent</span>'}</td></tr>`).join("") + "</tbody>";
+  $("#sg-pager").innerHTML = pages > 1 ? `<button data-pg="-1" ${sgPage === 0 ? "disabled" : ""}>← Newer</button><span class="num">${sgPage + 1} / ${pages}</span><button data-pg="1" ${sgPage === pages - 1 ? "disabled" : ""}>Older →</button>` : "";
+}
+$("#sg-f").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; sgF = b.dataset.f; sgPage = 0; sgHistory(); });
+$("#sg-pager").addEventListener("click", e => { const b = e.target.closest("button[data-pg]"); if (!b) return; sgPage += +b.dataset.pg; sgHistory(); });
 
 /* ---------- calendar ---------- */
 let calF = "All", calT = "A_hold";

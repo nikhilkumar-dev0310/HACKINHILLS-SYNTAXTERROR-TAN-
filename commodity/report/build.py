@@ -350,6 +350,10 @@ s += [PageBreak(), P("7. Results: what the gaps look like", "h1"),
              ["GOLDM", "32", "−0.59%", "±4.43%", "12%"], ["GOLDTEN", "17", "−0.96%", "±5.48%", "15%"],
              ["GOLDGUINEA", "32", "−0.73%", "±4.65%", "14%"], ["GOLDPETAL", "33", "−0.77%", "±4.51%", "15%"]],
             [0.18, 0.12, 0.2, 0.32, 0.18]),
+      P("We also fit a straight line through every listed expiry of each contract type every day; its slope is the annualised "
+        "carry across the whole curve. It was about 4.5–7% a year through 2025, rose to 14–18% from December 2025 to June 2026, and "
+        "fell back to 7–9% from July 2026. All four contract types, fitted separately, moved together, so this is market-wide. "
+        "A straight line fits each day's curve to within about 4–5 bp."),
       P("Roll-down is small and predictable; the curve move is large and is where the risk sits. Measured carry for GOLDM was about "
         "4–6% a year in 2023–25 and about 15% in 2026; the 2026 level is what the data shows, and we have not found its cause.", "cap"),
       P("What this tells us", "h2")]
@@ -400,6 +404,12 @@ s += [P("Where the profit came from: the gap or gold?", "h2"),
       P("Strategy A's correlation of 0.55 comes from January 2026: gold rose about 7.8% during those trades while the gaps widened "
         "and closed. That month the gap part made ₹3,08,106 and gold's move ₹9,997. Outside January the correlation is 0.02. "
         "The profit came from the gap, not from betting on gold's direction.", "cap"),
+      P("Do the alerts mean anything?", "h2"),
+      P("Using the same fair-price model, we listed every past alert (68 episodes since December 2023) and what the gap did next. "
+        "An alert does <i>not</i> make the gap more likely to close: it halved within 10 trading days 52% of the time on alert days "
+        "and 56% on ordinary days. But alerts mark the large gaps: the median gap was 180 bp and it closed by a median 47 bp within "
+        "10 days, against 3 bp on ordinary days. A round trip costs about 24 bp at 5 bp slippage, so alerts clear costs at the "
+        "median and only barely on average (30 bp). Most alerts during the crash did not close within 10 days."),
       P("Did every trade fit inside its contract?", "h2"),
       P("MCX gold contracts enter a 5-business-day tender (delivery) period before expiry, and brokers close positions before it, "
         "for example by 29 January 2026 for the 5 February 2026 expiry. We checked every trade: all started after their contract "
@@ -499,6 +509,8 @@ s += [P("Code (repository folder <i>commodity/</i>)", "h2"),
              ["attribution.py", "Splits every trade's profit into the gap part and gold's own move"],
              ["rolldown.py", "Splits each month's price change into roll-down and curve move"],
              ["lifecycle.py", "Liquidity build-up, tender periods, every trade checked against its contract"],
+             ["alerts.py", "Every past alert and what the gap did next, against ordinary days"],
+             ["curve.py", "Daily slope of the whole futures curve per contract type"],
              ["dashboard/", "Interactive website built from the same results (export.py, build.py)"]],
             [0.2, 0.8])]
 
