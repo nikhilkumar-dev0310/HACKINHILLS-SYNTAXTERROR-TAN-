@@ -349,3 +349,22 @@ Roll-down is 12–15% of the monthly movement. Measured GOLDM carry: ~4–6% a y
 - Weekend dates must be known special sessions: Diwali Muhurat 12 Nov 2023, Budget 1 Feb 2025 and 1 Feb 2026 (testbed check, 0 others).
 - Dates parsed from "29 Aug 2025" with a fixed format (no DD/MM vs MM/DD swap); expiry "04SEP2026"; symbols stripped.
 - Volume is not depth: only daily volume exists, so days under 1 kg are skipped and positions stay at 40–200 g.
+
+## Alert history and curve shape (2026-10-03)
+    python alerts.py   # every past fair-price alert (|z| >= 1.5) and what the gap did next
+    python curve.py    # daily slope of the whole futures curve per contract type
+
+### Alerts (`alerts.py`)
+68 alert episodes, Dec 2023 - Mar 2026. Gap to usual premium closed at least halfway within 10 trading days
+in 60% of episodes (median 4 days). Against every day, alert or not:
+| | Days | Halved within 10 days | Median gap | Median closed in 10 days |
+|---|---|---|---|---|
+| Ordinary days | 1,445 | 55.5% | 32 bp | 3 bp |
+| Alert days | 307 | 52.4% | 180 bp | 47 bp (mean 30) |
+Round trip at 5 bp slippage costs about 24 bp. Alerts are not more likely to close, but they mark the large gaps,
+which clear costs at the median and barely on average. Most crash-period alerts did not close within 10 days.
+
+### Curve slope (`curve.py`)
+Straight line through every listed expiry (outside tender) each day; fit error about 4-5 bp.
+Median slope, % a year: about 4.5-7 in 2023-24, 6-7 in 2025, 13.5-14 in 2026 (14-18 from Dec 2025 to Jun 2026,
+back to 7-9 from Jul 2026). All four contract types move together: a market-wide steepening, cause not found.
