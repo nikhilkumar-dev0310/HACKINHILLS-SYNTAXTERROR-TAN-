@@ -1,6 +1,7 @@
 # Parity (dashboard)
 
 Are MCX's four gold futures priced the same? One self-contained page built from the real results, no sample data.
+The front page states the problem, shows the latest end-of-day prices and today's signal, answers each question in the brief, and offers every table as a CSV download.
 React app, bundled and inlined into a single HTML file: no internet or Node needed to view it.
 
 ## Run it locally

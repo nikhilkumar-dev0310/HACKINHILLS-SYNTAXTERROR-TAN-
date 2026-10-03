@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME } from "./lib.js";
+import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, reducedMotion } from "./lib.js";
 import { lineChart, barChart, scatter, groupBars, curveChart, alertStrip, calendarChart, liquidityChart } from "./charts.js";
 import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More } from "./ui.jsx";
 
@@ -7,43 +7,122 @@ const roll = (a, n) => a.map((_, i) => { const w = a.slice(Math.max(0, i - n + 1
 const kfmt = v => v === 0 ? "0" : (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k");
 const Go = ({ to, children }) => <a className="go" href={"#" + to}>{children} <Icon name="arrow" size={15} /></a>;
 
+/* ================================================================ DOWNLOADS (shared by the front page, Backtest and Signals) */
+const TRADE_HEAD = ["strategy", "contract", "expiry", "entry", "exit", "position", "days_held", "grams_per_leg", "gold_move_pct", "from_gap_rs", "from_gold_rs", "gross_rs", "costs_rs", "net_rs", "slippage_bp", "tender", "last_safe_exit"];
+function csvTrades(key, s, rows, tonly = false, f = "All") {
+  downloadCSV(`parity_trades_${slug(BT[key].name)}_${s.toFixed(1)}bp${tonly ? "_broker-allowed" : ""}${f !== "All" ? "_" + slug(f) : ""}.csv`, TRADE_HEAD,
+    rows.map(t => [BT[key].name.replace(" · ", " "), t.what, t.expiry, t.entry, t.exit, posText(t), t.days, D.backtests[key].grams, r2(t.gold_move), r2(t.gap_part), r2(t.gold_part), r2(t.gross), r2(t.gross - t.net), r2(t.net), s, t.ok_tender ? "clear" : "in tender", t.safe_exit]));
+}
+function csvAlerts(list, f = "All") {
+  downloadCSV(`parity_alerts_${f === "All" ? "all" : slug(f)}.csv`,
+    ["start", "end", "contract", "expiry", "signal", "alert_days", "z", "premium_bp", "usual_premium_bp", "premium_5d_bp", "premium_10d_bp", "premium_20d_bp", "closed_halfway_10d", "days_to_half"],
+    list.map(a => [a.start, a.end, a.symbol, a.expiry, a.direction, a.alert_days, r2(a.z), r2(a.premium_bp), r2(a.usual_bp), r2(a.prem_5d), r2(a.prem_10d), r2(a.prem_20d),
+      a.closed_half_10d === true ? "yes" : a.closed_half_10d === false ? "no" : "too recent", a.days_to_half == null || !isFinite(a.days_to_half) ? null : a.days_to_half]));
+}
+const allTrades = (key, s = 5) => D.trades[key].map(t => ({ ...t, net: netAt(t, s) }));
+
+/* The latest end-of-day snapshot: for each contract type, the contract the fair-price signal watches (GOLDM: the most traded). */
+function latest() {
+  const day = D.curves.today, pts = day.points;
+  const m = pts.filter(p => p.symbol === "GOLDM").reduce((a, b) => b.kg > a.kg ? b : a);
+  const rows = [{ symbol: "GOLDM", expiry: m.expiry, rs: m.rs_per_g, kg: m.kg, ref: true }];
+  D.signals.rows.forEach(r => { const p = pts.find(x => x.symbol === r.symbol && x.expiry === r.expiry);
+    rows.push({ symbol: r.symbol, expiry: r.expiry, rs: p ? p.rs_per_g : null, kg: p ? p.kg : null, prem: r.premium_bp, usual: r.usual_bp, z: r.z }); });
+  return { date: day.date, rows, all: pts };
+}
+
+function Snapshot() {
+  const k = D.signals.threshold, L = latest(), hot = L.rows.filter(r => r.z != null && Math.abs(r.z) >= k);
+  const csv = () => downloadCSV(`parity_latest_${L.date}.csv`, ["date", "contract", "expiry", "rs_per_pure_gram", "traded_kg", "days_to_expiry"],
+    L.all.map(p => [L.date, p.symbol, p.expiry, p.rs_per_g, p.kg, p.dte]));
+  return <Card id="latest" title="Latest market data" sub={<>End of day {fdate(L.date)}, the last complete MCX Bhavcopy in our files. Prices are ₹ per gram of pure gold, so the four can be compared directly.</>}
+    actions={<CsvButton text="Download" label={`Download every contract traded on ${fdate(L.date)} (${L.all.length} rows, CSV)`} onClick={csv} />}>
+    <div className={"status inset" + (hot.length ? " hot" : "")}><span className="dot" />
+      <div><b>{hot.length ? `Signal today: ${hot.length} contract${hot.length > 1 ? "s" : ""} off fair price` : "Signal today: quiet. Every contract is close to its fair price."}</b>
+        <div className="muted">Our model's output. An alert fires when a contract sits more than {k}σ from its fair price.</div></div>
+      <Go to="signals">How the signal works</Go></div>
+    <div className="tw"><table className="snap"><thead><tr><th>Contract</th><th className="ph-x">Expiry</th><th className="n">₹ / pure g</th><th className="n ph-x">Traded</th><th className="n">Premium<span className="ph-x"> vs GOLDM</span></th><th className="n ph-x">Usual</th><th>Signal</th></tr></thead>
+      <tbody>{L.rows.map(r => <tr key={r.symbol}><td className="nowrap"><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b><div className="dim sm">{SYM[r.symbol].d}<span className="ph-o"> · {fdate(r.expiry)}</span></div></td>
+        <td className="mono nowrap ph-x">{fdate(r.expiry)}</td><td className="n" data-l="₹ / pure g">{r.rs == null ? "—" : r.rs.toLocaleString("en-IN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td><td className="n dim ph-x">{r.kg == null ? "—" : r.kg + " kg"}</td>
+        {r.ref ? <><td className="n dim" data-l="Premium">reference</td><td className="n dim ph-x">—</td><td data-l="Signal"><Pill>Benchmark</Pill></td></>
+          : <><td className="n" data-l="Premium">{sgn(r.prem)} bp</td><td className="n dim ph-x">{sgn(r.usual)} bp</td>
+            <td data-l="Signal">{Math.abs(r.z) >= k ? <Pill tone="warn">{r.z > 0 ? "Rich" : "Cheap"} · {sgn(r.z, 2, "σ")}</Pill> : <Pill tone="good">Normal · {sgn(r.z, 2, "σ")}</Pill>}</td></>}</tr>)}</tbody></table></div>
+    <p className="note">Premium is measured after moving GOLDM to the same expiry, so different expiry dates compare fairly. Parity does not forecast gold's price; the brief asks for a signal, a test on unseen data and results after costs. The MCX files are end-of-day, so “current” means the latest file: add newer Bhavcopy files and rebuild to move this table forward.</p>
+  </Card>;
+}
+
+function BriefQA() {
+  const mt = P["M-TEN"].normal, mg = P["M-GUINEA"].normal, mp = P["M-PETAL"].normal, rs = Object.fromEntries(D.rolldown.summary.map(a => [a.symbol, a]));
+  const A5 = D.backtests.A_hold.rows.find(r => r.slip === 5), B5 = D.backtests.B_hold.rows.find(r => r.slip === 5);
+  const lc = Object.fromEntries(D.lifecycle_summary.map(a => [a.run, a])), att = Object.fromEntries(D.attribution.map(a => [a.run, a]));
+  const k = D.signals.threshold, hot = D.signals.rows.filter(r => Math.abs(r.z) >= k).length;
+  const dirs = [
+    ["Relative value", "Once size, quote and purity are normalised, is one contract cheap or expensive against another?",
+      <>GOLDM and GOLDTEN match ({sgn(mt[0])} bp). The 8 g coin and 1 g contract carry a steady {Math.round(-mg[0])}–{Math.round(-mp[0])} bp premium.</>, "relative"],
+    ["Term structure and carry", "How much of a price change is mechanical roll-down, and how much is the curve itself moving?",
+      <>Roll-down is about {Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% a month for GOLDM; curve moves average {rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}%, so most change is the curve.</>, "term"],
+    ["Walk-forward backtest", "Replayed day by day with no look-ahead, after costs and thin days, does a strategy make money?",
+      <>Strategy A {inr(A5.net)}, Strategy B {inr(B5.net)} net at 5 bp on a sealed holdout. A's profit came almost all from January 2026.</>, "backtest"],
+    ["Trader alerts", "Do alerts flag real opportunities and stay quiet when there is nothing to act on?",
+      <>{hot ? `${hot} alert${hot > 1 ? "s" : ""} today.` : "Quiet today."} {D.alerts.history.length} alerts in the record; one fires only beyond ±{k}σ from fair price.</>, "signals"],
+    ["Contract lifecycle", "Does every entry and exit sit inside the contract calendar, including the tender period?",
+      <>Every trade starts after listing. B always exits before tender; A's {lc.A_hold.trades - lc.A_hold.outside_tender} tender trades are shown and can be left out.</>, "calendar"]
+  ];
+  const fin = [
+    ["Validated on unseen history?", "Yes. A sealed holdout, Aug 2025 – May 2026, run once after the rules were frozen in Git.", "backtest"],
+    ["Reported after costs, on the contracts actually held?", "Yes. MCX fees, taxes, brokerage, GST and 0–10 bp slippage on every leg of the exact contract.", "backtest"],
+    ["Strategy separated from gold's own move?", `Yes. Each trade is split exactly; gold's move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's gross profit.`, "backtest"],
+    ["Is there a persistent edge after costs?", "No dependable edge in quiet markets. The brief accepts a rigorous “no edge” as a valid outcome.", "brief"]
+  ];
+  const Row = ({ n, h, q, a, to }) => <li className="qa-r"><span className="qa-n">{String(n).padStart(2, "0")}</span>
+    <div className="qa-b">{h && <div className="qa-h">{h}</div>}<div className="qa-q">{q}</div><div className="qa-a">{a}</div></div><Go to={to}>See it</Go></li>;
+  return <Card id="asks" title="What the problem statement asks, and our answer" sub="Problem 03 sets five analysis directions and a final challenge. Each one, answered in a line.">
+    <div className="qa-g"><div className="lab">Five analysis directions</div>
+      <ol className="qa">{dirs.map(([h, q, a, to], i) => <Row key={h} n={i + 1} h={h} q={q} a={a} to={to} />)}</ol></div>
+    <div className="qa-g"><div className="lab">Final challenge</div>
+      <ol className="qa">{fin.map(([q, a, to], i) => <Row key={q} n={i + 6} q={q} a={a} to={to} />)}</ol></div>
+    <Go to="brief">The full brief, quoted line by line</Go>
+  </Card>;
+}
+
+function Downloads() {
+  const L = latest(), pr = D.prices, pd = D.premium_daily, h = D.alerts.history;
+  const items = [
+    ["Latest day, every contract", `${L.all.length} contracts on ${fdate(L.date)}`, () => downloadCSV(`parity_latest_${L.date}.csv`, ["date", "contract", "expiry", "rs_per_pure_gram", "traded_kg", "days_to_expiry"], L.all.map(p => [L.date, p.symbol, p.expiry, p.rs_per_g, p.kg, p.dte]))],
+    ["Daily price per pure gram", `${pr.dates.length} days, most traded contract of each type`, () => downloadCSV("parity_daily_price_per_pure_gram.csv", ["date", ...SYMS], pr.dates.map((d, i) => [d, ...SYMS.map(s => pr[s][i])]))],
+    ["Daily premium over GOLDM", `${pd.dates.length} days, in bp, same expiry`, () => { const ss = ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"].filter(s => pd[s]); downloadCSV("parity_daily_premium_bp.csv", ["date", ...ss], pd.dates.map((d, i) => [d, ...ss.map(s => pd[s][i])])); }],
+    ["Strategy A trades", `${D.trades.A_hold.length} trades, sealed holdout, net at 5 bp`, () => csvTrades("A_hold", 5, allTrades("A_hold"))],
+    ["Strategy B trades", `${D.trades.B_hold.length} trades, sealed holdout, net at 5 bp`, () => csvTrades("B_hold", 5, allTrades("B_hold"))],
+    ["Alert history", `${h.length} alert episodes and what each gap did next`, () => csvAlerts(h.slice().reverse())]
+  ];
+  return <Card id="downloads" title="Download the data" sub="Everything on this site comes from these tables. CSV files open in Excel or Google Sheets.">
+    <div className="dl">{items.map(([t, d, fn]) => <button key={t} type="button" className="dl-i" onClick={fn} aria-label={`Download ${t} as CSV: ${d}`}>
+      <Icon name="download" size={18} /><span><b>{t}</b><small>{d}</small></span><span className="dl-x">CSV</span></button>)}</div>
+  </Card>;
+}
+
 /* ================================================================ OVERVIEW */
 export function Overview() {
   const [range, setRange] = useState(0);
-  const mt = P["M-TEN"].normal, mg = P["M-GUINEA"].normal, mp = P["M-PETAL"].normal, cg = P["M-GUINEA"].crash, cp = P["M-PETAL"].crash;
-  const k = D.signals.threshold, hot = D.signals.rows.filter(r => Math.abs(r.z) >= k);
   const pd = D.premium_daily, cut = range ? T(pd.dates[pd.dates.length - 1]) - range * 30.44 * 864e5 : -Infinity;
   const pr = D.prices;
   return <>
     <Hero n={1} eyebrow="MCX gold futures · Problem 03" title={<>One metal, <span className="hl">four prices.</span></>}>
-      MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, and whether any gap pays after real costs.
+      <b>The problem:</b> MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, whether any gap can be traded after real costs, and tells a trader when one is worth a look.
     </Hero>
-    <Takeaway points={[
-      <>The prices line up: GOLDM and GOLDTEN differ by just {sgn(mt[0])} <Term k="bp">bp</Term> in quiet months.</>,
-      <>The 8 g coin and the 1 g contract cost a steady {Math.round(-mg[0])}–{Math.round(-mp[0])} bp more than GOLDM.</>,
-      <>After costs there is no dependable edge in quiet markets. The gap paid only in the January 2026 crash.</>]}>
-      They mostly match, and where they don't, the gap is usually too small to trade.
-    </Takeaway>
-    <div className="stats">
-      <Kpi big label="Contracts checked" note={<>{D.meta.rows.toLocaleString("en-IN")} trading days, 0 unexplained errors</>}><Num v={D.meta.contracts} intro /></Kpi>
-      <Kpi big label="GOLDM vs GOLDTEN" note="Quiet months 2025–26: the same price"><Num v={mt[0]} f="sgn1" intro /><small>bp</small></Kpi>
-      <Kpi big tone="accent" label="Coin & 1 g premium" note="Above GOLDM, quiet months 2025–26"><Num v={Math.round(-mg[0])} intro />–<Num v={Math.round(-mp[0])} intro /><small>bp</small></Kpi>
-      <Kpi big label="In the crash" note="Average premium, Dec 2025 – Mar 2026"><Num v={-(cg[0] + cp[0]) / 2 / 100} f="d1" intro /><small>%</small></Kpi>
-    </div>
-    <Reveal className={"status" + (hot.length ? " hot" : "")}>
-      <span className="dot" />
-      <div><b>{hot.length ? `Today: ${hot.length} contract${hot.length > 1 ? "s" : ""} outside the normal range` : "Today: quiet, every contract is within its normal range"}</b>
-        <div className="muted">Fair-price check as of {fdate(D.signals.rows[0].date)}</div></div>
-      <Go to="signals">See signals</Go>
-    </Reveal>
-    <Card title="How much more the small contracts cost than GOLDM" sub={<>Per gram of pure gold. 100 <Term k="bp">bp</Term> = 1%. Gold dots mark market events; hover one.</>}
-      actions={<Seg label="Range" value={range} onChange={setRange} options={[[6, "6M"], [12, "1Y"], [0, "All"]]} />}>
-      <Legend items={["GOLDGUINEA", "GOLDPETAL", "GOLDTEN"].map(s => [SYM[s].c, `${s} (${SYM[s].d})`])} band />
-      <Chart deps={[range]} draw={host => { const ix = pd.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
-        const ser = ["GOLDGUINEA", "GOLDPETAL", "GOLDTEN"].map(s => { const sm = roll(pd[s], 5); return { label: s, color: SYM[s].c, values: ix.map(i => sm[i]) }; });
-        lineChart(host, { dates: ix.map(i => pd.dates[i]), series: ser, band: CRASH, zero: true, endLabels: true, yfmt: v => v + " bp", tfmt: v => sgn(v, 0, " bp"), aria: "Premium of small gold contracts over GOLDM" }); }} />
-    </Card>
+    <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it; it paid only during the January 2026 crash.</Takeaway>
+    <nav className="jump" aria-label="On this page"><a href="#latest" onClick={jump}>Latest data</a><a href="#asks" onClick={jump}>What the brief asks</a><a href="#downloads" onClick={jump}>Downloads</a></nav>
+    <Snapshot />
+    <BriefQA />
+    <Downloads />
     <div className="more-list">
+      <More title="How the premium moved, 2023 – 2026" hint="How much more the small contracts cost than GOLDM, with market events marked">
+        <div className="toolbar"><Legend items={["GOLDGUINEA", "GOLDPETAL", "GOLDTEN"].map(s => [SYM[s].c, `${s} (${SYM[s].d})`])} band />
+          <Seg label="Range" value={range} onChange={setRange} options={[[6, "6M"], [12, "1Y"], [0, "All"]]} small /></div>
+        <Chart deps={[range]} draw={host => { const ix = pd.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
+          const ser = ["GOLDGUINEA", "GOLDPETAL", "GOLDTEN"].map(s => { const sm = roll(pd[s], 5); return { label: s, color: SYM[s].c, values: ix.map(i => sm[i]) }; });
+          lineChart(host, { dates: ix.map(i => pd.dates[i]), series: ser, band: CRASH, zero: true, endLabels: true, yfmt: v => v + " bp", tfmt: v => sgn(v, 0, " bp"), aria: "Premium of small gold contracts over GOLDM" }); }} />
+      </More>
       <More title="All four contracts on one price chart" hint="₹ per gram of pure gold. The lines overlap; that is the point.">
         <Legend items={SYMS.map(s => [SYM[s].c, s])} band />
         <Chart deps={[range]} draw={host => { const pidx = pr.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
@@ -51,12 +130,11 @@ export function Overview() {
           lineChart(host, { dates: pidx.map(i => pr.dates[i]), series: ps, band: CRASH, yfmt: v => "₹" + v.toLocaleString("en-IN"), tfmt: v => "₹" + v.toLocaleString("en-IN", { maximumFractionDigits: 0 }), aria: "Price per gram of pure gold, four contracts",
             extra: i => { const vv = ps.map(s => s.values[i]).filter(v => v != null); if (vv.length < 2) return ""; return `<div class="r sep"><span>Widest gap</span><b>${((Math.max(...vv) / Math.min(...vv) - 1) * 1e4).toFixed(0)} bp</b></div>`; } }); }} />
       </More>
-      <More title="Why the 1 g premium matters" hint="It flipped sign between 2024 and 2025">
-        <p className="prose">The 8 g coin sat {Math.round(-P["M-GUINEA"].y2024[0])} bp above GOLDM in 2024 and {Math.round(-mg[0])} bp in 2025–26. The 1 g contract was {Math.round(P["M-PETAL"].y2024[0])} bp <em>below</em> GOLDM in 2024, then {Math.round(-mp[0])} bp above it. In the January 2026 sell-off GOLDM fell first and furthest; the small contracts lagged up to {(-cp[0] / 100).toFixed(1)}% above it. That lag is the only place a trade paid.</p>
-      </More>
     </div>
   </>;
 }
+/* In-page jumps without touching the hash router */
+function jump(e) { e.preventDefault(); const el = document.getElementById(e.currentTarget.getAttribute("href").slice(1)); if (el) { el.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" }); } }
 
 /* ================================================================ BRIEF */
 export function Brief() {
@@ -250,9 +328,7 @@ export function Backtest() {
   const byDay = {}; ord.forEach(o => byDay[o.t.exit] = (byDay[o.t.exit] || 0) + o.v);
   const days = Object.keys(byDay).sort(); let c = 0; const cum = days.map(d => (c += byDay[d]));
   const bm = {}; tr.forEach((t, i) => { const k = t.entry.slice(0, 7); bm[k] = bm[k] || { v: 0, n: 0 }; bm[k].v += nets[i]; bm[k].n++; }); const mk = Object.keys(bm).sort();
-  const csv = () => downloadCSV(`parity_trades_${slug(BT[key].name)}_${s.toFixed(1)}bp${tonly ? "_broker-allowed" : ""}${f !== "All" ? "_" + slug(f) : ""}.csv`,
-    ["strategy", "contract", "expiry", "entry", "exit", "position", "days_held", "grams_per_leg", "gold_move_pct", "from_gap_rs", "from_gold_rs", "gross_rs", "costs_rs", "net_rs", "slippage_bp", "tender", "last_safe_exit"],
-    rows.map(t => [BT[key].name.replace(" · ", " "), t.what, t.expiry, t.entry, t.exit, posText(t), t.days, info.grams, r2(t.gold_move), r2(t.gap_part), r2(t.gold_part), r2(t.gross), r2(t.gross - t.net), r2(t.net), s, t.ok_tender ? "clear" : "in tender", t.safe_exit]));
+  const csv = () => csvTrades(key, s, rows, tonly, f);
   const pickKey = k => { setKey(k); setFilter("All"); setPage(0); };
   return <>
     <Hero n={5} eyebrow="Backtest" title={<>Can the gaps <span className="hl">be traded?</span></>}>
@@ -275,7 +351,8 @@ export function Backtest() {
       <Kpi label="Won after costs" note={`of trades at ${s.toFixed(1)} bp slippage`}><Num v={hit} f="pct" k="bt-hit" /><small>%</small></Kpi>
       <Kpi label={<><Term k="range95">95% range</Term> at {near.slip} bp</>} note={`${near.p_pos}% of resamples above zero${tonly ? " (all trades)" : ""}`}><span className="val-sm"><Num v={near.ci[0]} f="inr" k="bt-lo" /> to <Num v={near.ci[1]} f="inr" k="bt-hi" /></span></Kpi>
     </div>
-    <Card title="Cumulative profit" sub="After all costs, at the selected slippage, by exit date.">
+    <Card title="Cumulative profit" sub="After all costs, at the selected slippage, by exit date."
+      actions={<CsvButton text="Download trades" label={`Download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view as CSV`} onClick={csv} />}>
         <Chart deps={[key, s, tonly]} draw={host => lineChart(host, { dates: days, series: [{ label: "Cumulative", color: tot >= 0 ? "var(--good)" : "var(--bad)", values: cum }], band: CRASH, zero: true, area: true, yfmt: kfmt, tfmt: v => inr(v), aria: "Cumulative profit", h: 270 })} />
     </Card>
     <HonestyGap />
@@ -334,10 +411,7 @@ export function Signals() {
   const all = A.summary.find(x => x.symbol === "All");
   const [f, setF] = useState("All"), [page, setPage] = useState(0);
   const list = h.filter(a => f === "All" || a.symbol === f).slice().reverse(), PER = 10, pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(page, pages - 1);
-  const csv = () => downloadCSV(`parity_alerts_${f === "All" ? "all" : slug(f)}.csv`,
-    ["start", "end", "contract", "expiry", "signal", "alert_days", "z", "premium_bp", "usual_premium_bp", "premium_5d_bp", "premium_10d_bp", "premium_20d_bp", "closed_halfway_10d", "days_to_half"],
-    list.map(a => [a.start, a.end, a.symbol, a.expiry, a.direction, a.alert_days, r2(a.z), r2(a.premium_bp), r2(a.usual_bp), r2(a.prem_5d), r2(a.prem_10d), r2(a.prem_20d),
-      a.closed_half_10d === true ? "yes" : a.closed_half_10d === false ? "no" : "too recent", a.days_to_half == null || !isFinite(a.days_to_half) ? null : a.days_to_half]));
+  const csv = () => csvAlerts(list, f);
   return <>
     <Hero n={6} eyebrow="Signals" title={hot.length ? <>{hot.length} contract{hot.length > 1 ? "s" : ""} <span className="hl">off fair price.</span></> : <>Quiet. <span className="hl">No signal today.</span></>}>
       Each small contract is compared with its fair price: GOLDM moved to the same expiry, plus that contract's usual <Term k="premium">premium</Term>. A signal needs the gap to sit more than {k} <Term k="sigma">standard deviations</Term> from usual, using only past days.
@@ -356,6 +430,8 @@ export function Signals() {
       <Kpi tone="accent" label="Gap closed in 10 days" note={`median after an alert, vs ${off.median_closed_bp_10d.toFixed(0)} bp on ordinary days`}><Num v={on.median_closed_bp_10d} intro /><small>bp</small></Kpi>
       <Kpi label="Round-trip cost" note={`at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`}><Num v={on.round_trip_cost_bp_at_5bp} intro /><small>bp</small></Kpi>
     </div>
+    <Reveal className="dlbar"><div><b>Alert history</b><span className="muted">{h.length} alert episodes since {fdate(h[0].start)}, with what each gap did over the next 20 trading days.</span></div>
+      <CsvButton text="Download alerts" label={`Download all ${h.length} alert episodes as CSV`} onClick={() => csvAlerts(h.slice().reverse())} /></Reveal>
     <div className="more-list">
     <More title={`Every alert so far · ${h.length} episodes`} hint="Each dot is one alert, sized by its gap. Green: closed at least halfway within 10 trading days.">
       <div className="legend"><span><i style={{ background: "var(--good)" }} />Closed halfway in 10 days</span><span><i style={{ background: "var(--bad)" }} />Did not</span><span><i style={{ background: "var(--ink-3)" }} />Too recent to judge</span><span><i className="box" />Crash period</span></div>
