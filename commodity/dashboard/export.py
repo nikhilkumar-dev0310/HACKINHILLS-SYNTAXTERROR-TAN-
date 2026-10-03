@@ -233,8 +233,42 @@ def main():
                      "baseline": pd.read_csv(R + "alerts_baseline.csv").to_dict(orient="records")}
     cm = pd.read_csv(R + "curve_slope_monthly.csv")
     out["curve_slope"] = {"months": cm.month.tolist(), **{c: [r(v, 2) for v in cm[c]] for c in cm.columns if c != "month"}}
+    try:
+        out["changelog"] = changelog()
+    except Exception as e:                       # no Git available: the page simply shows an empty log
+        print("changelog skipped:", e); out["changelog"] = []
     json.dump(out, open(os.path.join(HERE, "data.json"), "w"), separators=(",", ":"), default=str)
     print("wrote dashboard/data.json", os.path.getsize(os.path.join(HERE, "data.json")) // 1024, "KB")
+
+
+def changelog():
+    """Every commit (merges left out), newest first, in IST, with the MCX files each one added. Read from Git."""
+    import re
+    import subprocess
+    repo = os.path.abspath(os.path.join(HERE, "..", ".."))
+    git = lambda *a: subprocess.run(["git", "-C", repo, *a], capture_output=True, text=True, check=True).stdout
+    out = []
+    for line in git("log", "--no-merges", "--date=iso-strict", "--pretty=%h|%ad|%s").strip().splitlines():
+        h, ad, subj = line.split("|", 2)
+        t = pd.Timestamp(ad).tz_convert("Asia/Kolkata")
+        added = [f for f in git("show", "--pretty=", "--name-only", "--diff-filter=A", h).splitlines() if f.strip()]
+        files = sum(1 for f in added if f.lower().endswith((".xls", ".xlsx", ".csv")) and "/raw" in f)
+        if files:
+            kind, title = "data", f"{files} MCX file{'s' if files != 1 else ''} uploaded" if subj.startswith("Add files via upload") else subj
+        elif subj.startswith("Add files via upload"):
+            kind, title = "data", "Uploaded " + ", ".join(os.path.basename(f) for f in added[:3])
+        elif re.search(r"sealed|holdout|testbed|pre-register|declare|frozen|precision|accuracy", subj, re.I):
+            kind, title = "test", subj
+        elif re.search(r"dashboard|site|chart|polish", subj, re.I):
+            kind, title = "site", subj
+        elif re.search(r"report|pdf|readme", subj, re.I):
+            kind, title = "report", subj
+        else:
+            kind, title = "analysis", subj
+        out.append({"hash": h, "date": str(t.date()), "time": t.strftime("%H:%M"), "kind": kind,
+                    "kindLabel": {"data": "Data", "test": "Test", "site": "Site", "report": "Report", "analysis": "Analysis"}[kind],
+                    "title": title, "files": files})
+    return out
 
 
 if __name__ == "__main__":
