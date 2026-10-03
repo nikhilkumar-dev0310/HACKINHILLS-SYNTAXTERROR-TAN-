@@ -132,6 +132,13 @@ def simulate(fs, rules, start, end, slip, pct):
     return out
 
 
+DEV_WINDOWS = (("2000-01-01", "2015-12-31"), ("2024-01-01", "2100-01-01"))   # declared DEV; late 2023 is not scored
+
+
+def run_dev(frames, rules, slips, pct):
+    return pd.concat([run(frames, rules, a, b, slips, pct) for a, b in DEV_WINDOWS], ignore_index=True)
+
+
 def run(frames, rules, start, end, slips, pct):
     rows = []
     for slip in slips:
@@ -175,7 +182,7 @@ def dev():
     settings = [dict(zip(GRID, v)) for v in itertools.product(*GRID.values())]
     logs, rows = [], []
     for r in settings:
-        log = run(frames, r, "2000-01-01", "2100-01-01", [SELECT_SLIP], pct)
+        log = run_dev(frames, r, [SELECT_SLIP], pct)
         if len(log):
             log["year"] = pd.to_datetime(log.entry).dt.year
             log["setting"] = name(r)
@@ -205,9 +212,9 @@ def dev():
     how = "declared rule on all DEV years" if final else "no setting eligible: Strategy B kept"
     final = final or name(B_RULES)
     rules = next(r for r in settings if name(r) == final)
-    full = run(frames, rules, "2000-01-01", "2100-01-01", bt.SLIPPAGE_BP, pct)
+    full = run_dev(frames, rules, bt.SLIPPAGE_BP, pct)
     full.to_csv(os.path.join(bt.RES, "strategy_c_dev_trades.csv"), index=False)
-    base = run(frames, B_RULES, "2000-01-01", "2100-01-01", bt.SLIPPAGE_BP, pct)
+    base = run_dev(frames, B_RULES, bt.SLIPPAGE_BP, pct)
     base.to_csv(os.path.join(bt.RES, "strategy_b_dev_alldata_trades.csv"), index=False)
     params = {**rules, "how": how, "dev_years": [int(y) for y in years], "grams_per_leg": fv.GRAMS,
               "fills": "next-day VWAP", "selection_slip_bp": SELECT_SLIP, "sealed_windows": TESTS}
