@@ -503,29 +503,29 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 }
 
 /* ---------------- glass, on floating layers only (macOS material ratios)
-   Bars: saturate 180% + blur 20px over an 80% tint (the apple.com / macOS toolbar recipe).
-   Popovers, menus, palette, drawers: saturate 180% + blur 30px over an 82% tint,
+   Bars: saturate 200% + blur 24px over a ~60% tint.
+   Popovers, menus, palette, drawers: saturate 200% + blur 40px over a ~55% tint with a top sheen,
    a 0.5px hairline edge, a top inner highlight and a large soft shadow. Cards stay solid. */
 :root{
-  --glass-bar:rgba(10,11,14,.80); --glass:rgba(22,25,31,.82);
-  --glass-edge:rgba(255,255,255,.12); --glass-hi:rgba(255,255,255,.08);
+  --glass-bar:rgba(10,11,14,.60); --glass:rgba(24,28,36,.56);
+  --glass-edge:rgba(255,255,255,.16); --glass-hi:rgba(255,255,255,.14); --sheen:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,0) 42%);
   --glass-shadow:0 24px 64px -14px rgba(0,0,0,.62),0 0 0 .5px rgba(0,0,0,.55);
-  --mat-bar:saturate(180%) blur(20px); --mat-pop:saturate(180%) blur(30px); --scrim:rgba(4,5,7,.32);
+  --mat-bar:saturate(200%) blur(24px); --mat-pop:saturate(200%) blur(40px); --scrim:rgba(4,5,7,.32);
 }
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --glass-bar:rgba(244,242,237,.80); --glass:rgba(252,251,248,.82);
-  --glass-edge:rgba(20,22,28,.10); --glass-hi:rgba(255,255,255,.75);
+  --glass-bar:rgba(244,242,237,.58); --glass:rgba(255,255,255,.52);
+  --glass-edge:rgba(255,255,255,.7); --glass-hi:rgba(255,255,255,.9); --sheen:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 45%);
   --glass-shadow:0 24px 64px -18px rgba(40,32,16,.28),0 0 0 .5px rgba(20,22,28,.10); --scrim:rgba(40,36,28,.14);
 }}
 :root[data-theme="light"]{
-  --glass-bar:rgba(244,242,237,.80); --glass:rgba(252,251,248,.82);
-  --glass-edge:rgba(20,22,28,.10); --glass-hi:rgba(255,255,255,.75);
+  --glass-bar:rgba(244,242,237,.58); --glass:rgba(255,255,255,.52);
+  --glass-edge:rgba(255,255,255,.7); --glass-hi:rgba(255,255,255,.9); --sheen:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 45%);
   --glass-shadow:0 24px 64px -18px rgba(40,32,16,.28),0 0 0 .5px rgba(20,22,28,.10); --scrim:rgba(40,36,28,.14);
 }
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .top{background:var(--glass-bar);backdrop-filter:var(--mat-bar);-webkit-backdrop-filter:var(--mat-bar);border-bottom:.5px solid var(--glass-edge);box-shadow:inset 0 -.5px 0 var(--glass-hi)}
   .overlay,.overlay.sheet-o{background:var(--scrim);backdrop-filter:none;-webkit-backdrop-filter:none}
-  .palette,.drawer,.sheet,.gloss,.tip{background:var(--glass);backdrop-filter:var(--mat-pop);-webkit-backdrop-filter:var(--mat-pop);border:.5px solid var(--glass-edge);box-shadow:inset 0 .5px 0 var(--glass-hi),var(--glass-shadow)}
+  .palette,.drawer,.sheet,.gloss,.tip{background:var(--sheen),var(--glass);backdrop-filter:var(--mat-pop);-webkit-backdrop-filter:var(--mat-pop);border:.5px solid var(--glass-edge);box-shadow:inset 0 .5px 0 var(--glass-hi),var(--glass-shadow)}
   .palette{border-radius:12px}
   .drawer{border-width:0 0 0 .5px}
   .sheet{border-width:.5px 0 0;border-radius:16px 16px 0 0}
