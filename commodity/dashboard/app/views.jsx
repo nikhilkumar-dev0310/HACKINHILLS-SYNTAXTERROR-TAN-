@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME } from "./lib.js";
 import { lineChart, barChart, scatter, groupBars, curveChart, alertStrip, calendarChart, liquidityChart } from "./charts.js";
-import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp } from "./ui.jsx";
+import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More } from "./ui.jsx";
 
 const roll = (a, n) => a.map((_, i) => { const w = a.slice(Math.max(0, i - n + 1), i + 1).filter(v => v != null); return a[i] == null || !w.length ? null : w.reduce((x, y) => x + y, 0) / w.length; });
-const kfmt = v => (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k");
+const kfmt = v => v === 0 ? "0" : (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k");
 const Go = ({ to, children }) => <a className="go" href={"#" + to}>{children} <Icon name="arrow" size={15} /></a>;
 
 /* ================================================================ OVERVIEW */
@@ -13,45 +13,48 @@ export function Overview() {
   const mt = P["M-TEN"].normal, mg = P["M-GUINEA"].normal, mp = P["M-PETAL"].normal, cg = P["M-GUINEA"].crash, cp = P["M-PETAL"].crash;
   const k = D.signals.threshold, hot = D.signals.rows.filter(r => Math.abs(r.z) >= k);
   const pd = D.premium_daily, cut = range ? T(pd.dates[pd.dates.length - 1]) - range * 30.44 * 864e5 : -Infinity;
-  const pr = D.prices, last = useMemo(() => SYMS.map(s => { let i = pr.dates.length - 1; while (i > 0 && pr[s][i] == null) i--; return [s, pr[s][i], pr.dates[i]]; }), []);
-  const ticker = [...last.map(([s, v]) => `${s} ₹${Math.round(v).toLocaleString("en-IN")}/g`), `GOLDM − GOLDTEN ${sgn(mt[0])} bp`, `GUINEA premium ${Math.round(-mg[0])} bp`, `PETAL premium ${Math.round(-mp[0])} bp`, `${D.alerts.history.length} alerts since ${fmon(D.alerts.history[0].start)}`, `Data through ${fdate(D.meta.last_full || D.meta.last)}`];
+  const pr = D.prices;
   return <>
-    <Hero n={1} eyebrow="Hack in Hills '26 · Problem 03" title={<>One metal.<br /><span className="hl">Four prices.</span></>}>
-      MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Converted to rupees per gram of pure gold, they should match. Parity measures where they don't, why, and whether the gap pays after real costs.
+    <Hero n={1} eyebrow="MCX gold futures · Problem 03" title={<>One metal, <span className="hl">four prices.</span></>}>
+      MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, and whether any gap pays after real costs.
     </Hero>
-    <div className="ticker" aria-hidden="true"><div className="tk">{[0, 1].map(j => <span key={j}>{ticker.map((t, i) => <span key={i}>{t}<i>◆</i></span>)}</span>)}</div></div>
+    <Takeaway points={[
+      <>The prices line up: GOLDM and GOLDTEN differ by just {sgn(mt[0])} <Term k="bp">bp</Term> in quiet months.</>,
+      <>The 8 g coin and the 1 g contract cost a steady {Math.round(-mg[0])}–{Math.round(-mp[0])} bp more than GOLDM.</>,
+      <>After costs there is no dependable edge in quiet markets. The gap paid only in the January 2026 crash.</>]}>
+      They mostly match, and where they don't, the gap is usually too small to trade.
+    </Takeaway>
     <div className="stats">
       <Kpi big label="Contracts checked" note={<>{D.meta.rows.toLocaleString("en-IN")} trading days, 0 unexplained errors</>}><Num v={D.meta.contracts} intro /></Kpi>
-      <Kpi big label="GOLDM vs GOLDTEN" note={<>Quiet months 2025–26, <Term k="range95">95% range</Term> {sgn(mt[1])} to {sgn(mt[2])}. Same price.</>}><Num v={mt[0]} f="sgn1" intro /><small><Term k="bp">bp</Term></small></Kpi>
-      <Kpi big tone="accent" label="Coin & 1 g premium" note="GUINEA and PETAL above GOLDM, quiet months 2025–26"><Num v={Math.round(-mg[0])} intro />–<Num v={Math.round(-mp[0])} intro /><small>bp</small></Kpi>
+      <Kpi big label="GOLDM vs GOLDTEN" note="Quiet months 2025–26: the same price"><Num v={mt[0]} f="sgn1" intro /><small>bp</small></Kpi>
+      <Kpi big tone="accent" label="Coin & 1 g premium" note="Above GOLDM, quiet months 2025–26"><Num v={Math.round(-mg[0])} intro />–<Num v={Math.round(-mp[0])} intro /><small>bp</small></Kpi>
       <Kpi big label="In the crash" note="Average premium, Dec 2025 – Mar 2026"><Num v={-(cg[0] + cp[0]) / 2 / 100} f="d1" intro /><small>%</small></Kpi>
     </div>
     <Reveal className={"status" + (hot.length ? " hot" : "")}>
       <span className="dot" />
-      <div><b>{hot.length ? `${hot.length} contract${hot.length > 1 ? "s" : ""} outside the normal range` : "Quiet: every contract is within its normal range"}</b>
-        <div className="muted">Fair-price check as of {fdate(D.signals.rows[0].date)} · signal threshold ±{k}<Term k="sigma">σ</Term></div></div>
-      <Go to="signals">Open signals</Go>
+      <div><b>{hot.length ? `Today: ${hot.length} contract${hot.length > 1 ? "s" : ""} outside the normal range` : "Today: quiet, every contract is within its normal range"}</b>
+        <div className="muted">Fair-price check as of {fdate(D.signals.rows[0].date)}</div></div>
+      <Go to="signals">See signals</Go>
     </Reveal>
-    <Card fig="Fig. 1" title="How much more the small contracts cost than GOLDM" sub={<>Per gram of pure gold, after moving GOLDM to the same <Term k="expiry">expiry</Term>. 5-day average; 100 <Term k="bp">bp</Term> = 1%. Dots on top mark market events: hover one.</>}
+    <Card title="How much more the small contracts cost than GOLDM" sub={<>Per gram of pure gold. 100 <Term k="bp">bp</Term> = 1%. Gold dots mark market events; hover one.</>}
       actions={<Seg label="Range" value={range} onChange={setRange} options={[[6, "6M"], [12, "1Y"], [0, "All"]]} />}>
       <Legend items={["GOLDGUINEA", "GOLDPETAL", "GOLDTEN"].map(s => [SYM[s].c, `${s} (${SYM[s].d})`])} band />
       <Chart deps={[range]} draw={host => { const ix = pd.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
         const ser = ["GOLDGUINEA", "GOLDPETAL", "GOLDTEN"].map(s => { const sm = roll(pd[s], 5); return { label: s, color: SYM[s].c, values: ix.map(i => sm[i]) }; });
         lineChart(host, { dates: ix.map(i => pd.dates[i]), series: ser, band: CRASH, zero: true, endLabels: true, yfmt: v => v + " bp", tfmt: v => sgn(v, 0, " bp"), aria: "Premium of small gold contracts over GOLDM" }); }} />
     </Card>
-    <div className="grid g3">
-      {[["01", "var(--good)", "The conversion is right", <>In quiet months GOLDM and GOLDTEN differ by {sgn(mt[0])} bp. A wrong <Term k="purity">purity</Term> correction would show about 40 bp, every month.</>],
-        ["02", "var(--gold)", "The coin premium holds; the 1 g one flipped", <>The 8 g coin sat {Math.round(-P["M-GUINEA"].y2024[0])} bp above GOLDM in 2024 and {Math.round(-mg[0])} bp in 2025–26. The 1 g contract was {Math.round(P["M-PETAL"].y2024[0])} bp <em>below</em> GOLDM in 2024, then {Math.round(-mp[0])} bp above it.</>],
-        ["03", "var(--bad)", "Crashes break the link", <>In the Jan 2026 sell-off GOLDM fell first and furthest; small contracts lagged up to {(-cp[0] / 100).toFixed(1)}% above it. That lag is the only place a trade paid.</>]
-      ].map(([n, c, h, p]) => <Reveal key={n} className="find"><span className="fn" style={{ color: c }}>{n}</span><h3>{h}</h3><p>{p}</p></Reveal>)}
+    <div className="more-list">
+      <More title="All four contracts on one price chart" hint="₹ per gram of pure gold. The lines overlap; that is the point.">
+        <Legend items={SYMS.map(s => [SYM[s].c, s])} band />
+        <Chart deps={[range]} draw={host => { const pidx = pr.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
+          const ps = SYMS.map(s => ({ label: s, color: SYM[s].c, values: pidx.map(i => pr[s][i]) }));
+          lineChart(host, { dates: pidx.map(i => pr.dates[i]), series: ps, band: CRASH, yfmt: v => "₹" + v.toLocaleString("en-IN"), tfmt: v => "₹" + v.toLocaleString("en-IN", { maximumFractionDigits: 0 }), aria: "Price per gram of pure gold, four contracts",
+            extra: i => { const vv = ps.map(s => s.values[i]).filter(v => v != null); if (vv.length < 2) return ""; return `<div class="r sep"><span>Widest gap</span><b>${((Math.max(...vv) / Math.min(...vv) - 1) * 1e4).toFixed(0)} bp</b></div>`; } }); }} />
+      </More>
+      <More title="Why the 1 g premium matters" hint="It flipped sign between 2024 and 2025">
+        <p className="prose">The 8 g coin sat {Math.round(-P["M-GUINEA"].y2024[0])} bp above GOLDM in 2024 and {Math.round(-mg[0])} bp in 2025–26. The 1 g contract was {Math.round(P["M-PETAL"].y2024[0])} bp <em>below</em> GOLDM in 2024, then {Math.round(-mp[0])} bp above it. In the January 2026 sell-off GOLDM fell first and furthest; the small contracts lagged up to {(-cp[0] / 100).toFixed(1)}% above it. That lag is the only place a trade paid.</p>
+      </More>
     </div>
-    <Card fig="Fig. 2" title="All four contracts, one price" sub="Most-traded contract of each type per day, ₹ per gram of pure gold. The lines overlap; that is the point.">
-      <Legend items={SYMS.map(s => [SYM[s].c, s])} band />
-      <Chart deps={[range]} draw={host => { const pidx = pr.dates.map((d, i) => T(d) >= cut ? i : -1).filter(i => i >= 0);
-        const ps = SYMS.map(s => ({ label: s, color: SYM[s].c, values: pidx.map(i => pr[s][i]) }));
-        lineChart(host, { dates: pidx.map(i => pr.dates[i]), series: ps, band: CRASH, yfmt: v => "₹" + v.toLocaleString("en-IN"), tfmt: v => "₹" + v.toLocaleString("en-IN", { maximumFractionDigits: 0 }), aria: "Price per gram of pure gold, four contracts",
-          extra: i => { const vv = ps.map(s => s.values[i]).filter(v => v != null); if (vv.length < 2) return ""; return `<div class="r sep"><span>Widest gap</span><b>${((Math.max(...vv) / Math.min(...vv) - 1) * 1e4).toFixed(0)} bp</b></div>`; } }); }} />
-    </Card>
   </>;
 }
 
@@ -88,20 +91,21 @@ export function Brief() {
     ["GOLDTEN only exists from 2025", "GOLDTEN pairs start April 2025 and are marked “not listed yet” for 2024"]
   ];
   return <>
-    <Hero n={2} eyebrow="Problem 03 · Commodity Derivatives Intelligence" title={<>What the brief asks.<br /><span className="hl">Where we answer it.</span></>}>
+    <Hero n={2} eyebrow="Problem 03 · Commodity Derivatives Intelligence" title={<>What the brief asks, <span className="hl">and our answer.</span></>}>
       Build a data product from MCX's public futures data that finds and analyses price differences between gold contracts, validates it on unseen history, reports results after costs, and separates strategy performance from gold's own move. A rigorous “no edge after costs” is an accepted outcome.
     </Hero>
+    <Takeaway>All five directions in the brief are covered and every line of the final challenge is answered. Our honest result: after costs there is no dependable edge in quiet markets; the gap paid only during the January 2026 crash.</Takeaway>
     <div className="grid g2">{dirs.map(([h, q, items, link], i) => <Reveal key={h} className={"dir" + (i === dirs.length - 1 ? " span2" : "")}>
       <div className="dir-h"><span className="fn">{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><Pill tone="good">Done</Pill></div>
       <q>{q}</q><ul>{items.map(t => <li key={t}>{t}</li>)}</ul><Go to={link}>See it</Go></Reveal>)}</div>
-    <Card fig="Table 1" title="The final challenge, line by line" sub="Quoted from the problem statement.">
+    <Card title="The final challenge, line by line" sub="Quoted from the problem statement.">
       <div className="tw"><table><thead><tr><th>The brief says</th><th>What we did</th><th>Status</th></tr></thead>
         <tbody>{fin.map(r => <tr key={r[0]}><td className="quote">{r[0]}</td><td>{r[1]}</td><td><Pill tone="good">Done</Pill></td></tr>)}</tbody></table></div>
     </Card>
-    <Card fig="Table 2" title="Data warnings in the brief" sub="Each one, and what we did about it.">
+    <div className="more-list"><More title="Data warnings in the brief" hint="Six warnings, and what we did about each">
       <div className="tw"><table><thead><tr><th>Warning in the brief</th><th>How we handled it</th></tr></thead>
         <tbody>{warn.map(r => <tr key={r[0]}><td style={{ maxWidth: 360 }}><b>{r[0]}</b></td><td>{r[1]}</td></tr>)}</tbody></table></div>
-    </Card>
+    </More></div>
   </>;
 }
 
@@ -111,10 +115,11 @@ export function Relative() {
   const { rvPair: pair, setRvPair: setPair } = useApp();
   const p = P[pair], s = D.pair_series[pair];
   return <>
-    <Hero n={3} eyebrow="Relative value" title={<>Six pairs.<br /><span className="hl">Two worlds.</span></>}>
+    <Hero n={3} eyebrow="Relative value" title={<>Six pairs, <span className="hl">two worlds.</span></>}>
       Every pair of contracts compared per pure gram. 2024, the quiet months of 2025–26 and the Dec 2025 – Mar 2026 crash behave differently enough that we report them separately. GOLDTEN only started in April 2025.
     </Hero>
-    <Card fig="Fig. 3" title={pname(pair)} sub={<>Daily gap per pure gram, in <Term k="bp">bp</Term>. Above zero: {SHORT[pair.split("-")[0]]} is dearer.</>}
+    <Takeaway>GOLDM and GOLDTEN trade at the same price. GOLDGUINEA and GOLDPETAL sit steadily above GOLDM. All the gaps blew out only in the December 2025 – March 2026 crash. Pick a pair to see it.</Takeaway>
+    <Card title={pname(pair)} sub={<>Daily gap per pure gram, in <Term k="bp">bp</Term>. Above zero: {SHORT[pair.split("-")[0]]} is dearer.</>}
       actions={<Seg label="Pair" value={pair} onChange={setPair} options={D.pairs.map(q => [q.pair, q.pair.replace("M-", "GOLDM-")])} small />}>
       <div className="grid g-main">
         <div style={{ minWidth: 0 }}><Legend items={[["var(--teal)", "Daily gap"], ["var(--gold)", "2025–26 quiet-month average"]]} band />
@@ -127,13 +132,13 @@ export function Relative() {
         </div>
       </div>
     </Card>
-    <Card fig="Table 3" title="All pairs at a glance" sub={<>Mean gap, A minus B, with the <Term k="range95">95% range</Term> from week-block resampling. Click a row.</>}>
+    <div className="more-list"><More title="All six pairs in one table" hint="Mean gap by period, with its 95% range. Click a row to chart it.">
       <div className="tw"><table><thead><tr><th>Pair</th><th className="n">2024</th><th className="n">2025–26 quiet</th><th className="n">95% range</th><th className="n">Crash period</th><th className="n">All days</th><th className="n">Cycles</th></tr></thead>
         <tbody>{D.pairs.map(q => { const zero = q.normal[1] <= 0 && q.normal[2] >= 0;
           return <tr key={q.pair} className={"click" + (q.pair === pair ? " sel" : "")} tabIndex={0} onClick={() => setPair(q.pair)} onKeyDown={e => e.key === "Enter" && setPair(q.pair)}>
             <td><b>{pname(q.pair)}</b> {zero && <Pill tone="good">same price</Pill>}</td><td className="n">{q.y2024 ? sgn(q.y2024[0]) + " bp" : <span className="dim">not listed</span>}</td>
             <td className="n">{sgn(q.normal[0])} bp</td><td className="n dim">{sgn(q.normal[1])} to {sgn(q.normal[2])}</td><td className="n">{sgn(q.crash[0])} bp</td><td className="n">{sgn(q.all[0])} bp</td><td className="n">{q.cycles_same_sign}</td></tr>; })}</tbody></table></div>
-    </Card>
+    </More></div>
   </>;
 }
 
@@ -142,36 +147,38 @@ export function Term_() {
   const [day, setDay] = useState("today");
   const c = D.curves[day], cs = D.curve_slope, ssy = SYMS.filter(x => cs[x]), rd = D.rolldown.goldm;
   return <>
-    <Hero n={4} eyebrow="Term structure" title={<>Later expiries<br /><span className="hl">cost more.</span></>}>
+    <Hero n={4} eyebrow="Term structure" title={<>Later expiries <span className="hl">cost more.</span></>}>
       Holding gold for longer ties up money, so contracts that expire later trade higher. We measure that <Term k="carry">cost of carry</Term> from the data itself and use it to line GOLDM up with the others.
     </Hero>
-    <Card fig="Fig. 4" title="Futures curve" sub={`₹ per gram of pure gold against days to expiry, ${fdate(c.date)}.`}
+    <Takeaway>Contracts that expire later cost more, because holding gold ties up money. That carry was about 4–6% a year until 2025 and 10–18% in 2026. Time alone moves GOLDM only about {Math.abs(D.rolldown.summary.find(r => r.symbol === "GOLDM").avg_rolldown_pct).toFixed(1)}% a month; gold's own moves are far bigger.</Takeaway>
+    <Card title="Futures curve" sub={`₹ per gram of pure gold against days to expiry, ${fdate(c.date)}.`}
       actions={<Seg label="Date" value={day} onChange={setDay} options={[["today", "Latest"], ["t30", "30 days earlier"], ["t90", "90 days earlier"]]} />}>
       <Legend items={SYMS.map(s => [SYM[s].c, s]).concat([["transparent", "Dot size: gold traded that day"]])} />
       <Chart deps={[day]} draw={host => curveChart(host, c)} />
     </Card>
-    <Card fig="Fig. 5" title="Roll-down vs curve move, GOLDM each month" sub={<><Term k="rolldown">Roll-down</Term>: what time alone does to a futures price on an unchanged curve, from that day's carry. Curve move: everything else, mostly gold itself.</>}>
+    <div className="more-list">
+    <More title="Roll-down vs curve move, month by month" hint="What time alone does to GOLDM's price, against everything else">
+      <p className="prose sm"><Term k="rolldown">Roll-down</Term>: what time alone does to a futures price on an unchanged curve, from that day's carry. Curve move: everything else, mostly gold itself.</p>
       <Legend items={[["var(--gold)", "Roll-down"], ["var(--teal)", "Curve move"]]} />
       <Chart className="bars" draw={host => groupBars(host, { labels: rd.map(r => r.month), a: rd.map(r => r.rolldown_pct), b: rd.map(r => r.curve_move_pct), yfmt: v => v + "%", short: i => fmon(rd[i].month + "-01").split(" ")[0], aria: "GOLDM monthly roll-down and curve move",
         tip: i => `<div class="t">${fmon(rd[i].month + "-01")} · GOLDM ${fdate(rd[i].expiry)}</div><div class="r"><span>Total change</span><b>${sgn(rd[i].total_pct, 2, "%")}</b></div><div class="r"><span><i style="background:var(--gold)"></i>Roll-down</span><b>${sgn(rd[i].rolldown_pct, 2, "%")}</b></div><div class="r"><span><i style="background:var(--teal)"></i>Curve move</span><b>${sgn(rd[i].curve_move_pct, 2, "%")}</b></div><div class="r"><span>Carry that day</span><b>${rd[i].carry_pa_pct.toFixed(1)}% a year</b></div>` })} />
       <div className="tw mt"><table><thead><tr><th>Contract</th><th className="n">Months</th><th className="n">Roll-down / month</th><th className="n">Curve move / month</th><th className="n">Roll-down share</th></tr></thead>
         <tbody>{D.rolldown.summary.map(r => <tr key={r.symbol}><td><span className="sw" style={{ background: SYM[r.symbol].c }} />{r.symbol}</td><td className="n">{r.months}</td><td className="n">{sgn(r.avg_rolldown_pct, 2, "%")}</td><td className="n">±{r.avg_abs_curve_move_pct.toFixed(2)}%</td><td className="n">{r.rolldown_share_of_abs_change_pct.toFixed(0)}%</td></tr>)}</tbody></table></div>
-    </Card>
-    <Card fig="Fig. 6" title="How steep is the curve?" sub="Each day, a straight line through every listed expiry of a contract type (outside its tender period); its slope is the annualised carry across the whole curve. Monthly median.">
+    </More>
+    <More title="How steep the curve has been" hint="Annualised carry across every listed expiry, monthly median">
       <Legend items={ssy.map(x => [SYM[x].c, x])} band />
       <Chart draw={host => lineChart(host, { dates: cs.months.map(m => m + "-15"), series: ssy.map(x => ({ label: x, color: SYM[x].c, values: cs[x] })), band: CRASH, zero: true, endLabels: true, events: false, yfmt: v => v + "%", tfmt: v => v.toFixed(1) + "% a year", aria: "Futures curve slope by month", h: 270 })} />
       <p className="note">All four contract types, fitted separately, steepen together from December 2025 and flatten from July 2026, so this is a market-wide change, not a data quirk. A straight line fits each day's curve to within about 4–5 bp. We have not found the cause of the 2026 steepening.</p>
-    </Card>
-    <div className="grid g2">
-      <Card fig="Table 4" title="Cost of carry by year" sub="Median annualised gap between neighbouring expiries of the same contract.">
+    </More>
+      <More title="Cost of carry by year" hint="Median annualised gap between neighbouring expiries">
         <div className="tw"><table><thead><tr><th>Year</th>{SYMS.map(s => <th key={s} className="n">{s}</th>)}</tr></thead>
           <tbody>{D.carry.map(r => <tr key={r.date}><td className="mono">{r.date}</td>{SYMS.map(s => <td key={s} className="n">{r[s] != null && !isNaN(r[s]) ? r[s].toFixed(2) + "%" : <span className="dim">—</span>}</td>)}</tr>)}</tbody></table></div>
         <p className="note">Measured carry rose from about 4–6% a year (2024–25) to about 10–18% in 2026. The 2026 level is what the data shows; we have not found its cause, and the crash months distort the small contracts most.</p>
-      </Card>
-      <Card fig="Table 5" title="Contracts on the latest curve" sub="Price per pure gram and days to expiry.">
+      </More>
+      <More title="Contracts on the latest curve" hint="Price per pure gram and days to expiry">
         <div className="tw"><table><thead><tr><th>Contract</th><th>Expiry</th><th className="n">Days</th><th className="n">₹ / pure g</th><th className="n">Traded</th></tr></thead>
           <tbody>{D.curves.today.points.slice().sort((a, b) => a.dte - b.dte || a.symbol.localeCompare(b.symbol)).map(p => <tr key={p.symbol + p.expiry}><td><span className="sw" style={{ background: SYM[p.symbol].c }} />{p.symbol}</td><td className="mono">{fdate(p.expiry)}</td><td className="n">{p.dte}</td><td className="n">{p.rs_per_g.toLocaleString("en-IN", { minimumFractionDigits: 1 })}</td><td className="n">{p.kg} kg</td></tr>)}</tbody></table></div>
-      </Card>
+      </More>
     </div>
   </>;
 }
@@ -200,7 +207,7 @@ function HonestyGap() {
   ];
   const S = [["A", "Strategy A", ag, a5, "sealed holdout before costs (its tuning window lost money)", "sealed holdout, all costs, 5 bp"],
     ["B", "Strategy B", bg, b5, "development window it was tuned on, before costs", "sealed holdout, all costs, 5 bp"]];
-  return <Card fig="Fig. 7" className={"honest " + mode} title="A typical backtest vs our test" sub="Most reports leave out costs, assume perfect fills and score a strategy on the data it was tuned on. Flip the switch to see what that does to the same two strategies."
+  return <Card className={"honest " + mode} title="A typical backtest vs our test" sub="Most reports leave out costs, assume perfect fills and score a strategy on the data it was tuned on. Flip the switch to see what that does to the same two strategies."
     actions={<Seg label="Reporting style" value={mode} onChange={setMode} options={[["typical", "How most teams report"], ["ours", "Our sealed test"]]} />}>
     <div className="hg">
       {S.map(([k, name, g, n, lt, lo]) => { const v = typ ? g : n; return <div key={k} className="hg-s">
@@ -227,7 +234,7 @@ export function Backtest() {
   const corr = xs2.reduce((a, x, i) => a + (x - mx) * (nets[i] - my), 0) / Math.sqrt(xs2.reduce((a, x) => a + (x - mx) ** 2, 0) * nets.reduce((a, y) => a + (y - my) ** 2, 0) || 1);
   const jan = tr.map((t, i) => t.entry.startsWith("2026-01") ? nets[i] : null).filter(v => v != null), rest = tot - jan.reduce((a, b) => a + b, 0);
   const V = {
-    A_hold: <><b>One event.</b> January 2026 alone made {inr(jan.reduce((a, b) => a + b, 0))} from {jan.length} trades; the other {tr.length - jan.length} trades made {inr(rest)}. Outside the crash, this rule loses after costs. {inTender} trades were held 1–3 business days into the <Term k="tender">tender period</Term>, which a broker would not allow; tick the box above to leave them out.</>,
+    A_hold: <><b>One event.</b> January 2026 alone made {inr(jan.reduce((a, b) => a + b, 0))} from {jan.length} trades; the other {tr.length - jan.length} trades made {inr(rest)}. Outside the crash, this rule loses after costs. {inTender} trades were held 1–3 business days into the <Term k="tender">tender period</Term>, which a broker would not allow; tick “Only trades a broker would allow” below to leave them out.</>,
     B_hold: <><b>Positive, not proven.</b> It earned on GUINEA and PETAL, where a real premium exists, and lost on GOLDTEN, where there is none. With {info.rows[0].weeks} independent weeks the 95% range still includes zero at 5 bp.</>,
     A_test: <><b>Break-even near 3.5 bp.</b> Profitable only with near-perfect fills. Move the slider below 3.5 to see it turn positive.</>,
     B_dev: <><b><Term k="insample">In-sample</Term>.</b> These are the numbers the setting was chosen on, so they overstate. About 80% of the profit came from the swings of 1–15 April 2025.</>
@@ -248,10 +255,10 @@ export function Backtest() {
     rows.map(t => [BT[key].name.replace(" · ", " "), t.what, t.expiry, t.entry, t.exit, posText(t), t.days, info.grams, r2(t.gold_move), r2(t.gap_part), r2(t.gold_part), r2(t.gross), r2(t.gross - t.net), r2(t.net), s, t.ok_tender ? "clear" : "in tender", t.safe_exit]));
   const pickKey = k => { setKey(k); setFilter("All"); setPage(0); };
   return <>
-    <Hero n={5} eyebrow="Backtest" title={<>Can the gaps<br /><span className="hl">be traded?</span></>}>
-      Two strategies, tested once on data they never saw, after MCX fees, taxes and <Term k="slippage">slippage</Term>. Drag the slider to see how much execution quality decides the result.
+    <Hero n={5} eyebrow="Backtest" title={<>Can the gaps <span className="hl">be traded?</span></>}>
+      Two strategies, tested once on data they never saw, after MCX fees, taxes and <Term k="slippage">slippage</Term>. Move the slider to see how much execution quality decides the result.
     </Hero>
-    <HonestyGap />
+    <Takeaway>{V[key]}</Takeaway>
     <Reveal className="card controls-card">
       <div className="controls">
         <div className="ctl"><div className="lab">Strategy and period</div><Seg label="Strategy and period" value={key} onChange={pickKey} options={Object.entries(BT).map(([k, v]) => [k, v.name])} /></div>
@@ -268,21 +275,21 @@ export function Backtest() {
       <Kpi label="Won after costs" note={`of trades at ${s.toFixed(1)} bp slippage`}><Num v={hit} f="pct" k="bt-hit" /><small>%</small></Kpi>
       <Kpi label={<><Term k="range95">95% range</Term> at {near.slip} bp</>} note={`${near.p_pos}% of resamples above zero${tonly ? " (all trades)" : ""}`}><span className="val-sm"><Num v={near.ci[0]} f="inr" k="bt-lo" /> to <Num v={near.ci[1]} f="inr" k="bt-hi" /></span></Kpi>
     </div>
-    <div className="grid g-main">
-      <Card fig="Fig. 8" title="Cumulative profit" sub="After all costs, at the selected slippage, by exit date.">
+    <Card title="Cumulative profit" sub="After all costs, at the selected slippage, by exit date.">
         <Chart deps={[key, s, tonly]} draw={host => lineChart(host, { dates: days, series: [{ label: "Cumulative", color: tot >= 0 ? "var(--good)" : "var(--bad)", values: cum }], band: CRASH, zero: true, area: true, yfmt: kfmt, tfmt: v => inr(v), aria: "Cumulative profit", h: 270 })} />
-      </Card>
-      <Card fig="Fig. 9" title="By month of entry" sub="Net at the selected slippage. Hover a bar.">
+    </Card>
+    <HonestyGap />
+    <div className="more-list">
+      <More title="Profit by month of entry" hint="Net at the selected slippage">
         <Chart className="bars" deps={[key, s, tonly]} draw={host => barChart(host, { labels: mk.map(fmon), values: mk.map(k => bm[k].v), yfmt: kfmt, tfmt: v => inr(v), short: i => MON[+mk[i].slice(5) - 1], extra: i => `<div class="r"><span>Trades</span><b>${bm[mk[i]].n}</b></div>`, aria: "Profit by month" })} />
-      </Card>
-    </div>
-    <Reveal className="callout">{V[key]}</Reveal>
-    <div className="grid g-main">
-      <Card fig="Fig. 10" title="Profit per trade against gold's move" sub="Each dot is one trade: net profit at the selected slippage vs how much gold moved while it was open.">
+      </More>
+      <More title="Is it just a bet on gold's direction?" hint="Each trade's profit split exactly into the gap and gold's own move">
+        <div className="grid g-main">
+          <div style={{ minWidth: 0 }}><p className="prose sm">Each dot is one trade: net profit at the selected slippage against how much gold moved while it was open.</p>
         <Chart deps={[key, s, tonly]} draw={host => scatter(host, { x: xs2, y: nets, color: i => nets[i] >= 0 ? "var(--good)" : "var(--bad)", xfmt: v => v + "%", yfmt: kfmt, xlabel: "gold's move while the trade was open", aria: "Profit per trade against gold's move",
           tip: i => `<div class="t">${tr[i].what.replace(/GOLD/g, "")} · ${fdate(tr[i].entry)} → ${fdate(tr[i].exit)}</div><div class="r"><span>Gold moved</span><b>${sgn(tr[i].gold_move, 2, "%")}</b></div><div class="r"><span>Net</span><b>${inr(nets[i])}</b></div><div class="r"><span>From the gap</span><b>${inr(tr[i].gap_part)}</b></div><div class="r"><span>From gold's move</span><b>${inr(tr[i].gold_part)}</b></div>` })} />
-      </Card>
-      <Card fig="Fig. 11" title="Where the profit came from" sub="Before costs, split exactly into the gap and gold's own move.">
+          </div>
+          <div>
         <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <div><div className="lab">From the gap</div><div className="bignum" style={{ color: "var(--teal)" }}><Num v={gp} f="inr" k="bt-gp" /></div></div>
           <div><div className="lab">From gold's move</div><div className="bignum" style={{ color: "var(--gold)" }}><Num v={gd} f="inr" k="bt-gd" /></div></div></div>
@@ -290,25 +297,25 @@ export function Backtest() {
         <p className="note">Gold's own move is <b>{(100 * Math.abs(gd) / ab).toFixed(1)}%</b> of the profit swing. Both legs hold the same grams, so gold's move cancels except for the gap still open and GOLDM's 99.5% purity.</p>
         <dl className="kv"><dt>Correlation of net profit with gold's move</dt><dd>{corr.toFixed(2)}</dd><dt>Gross before costs</dt><dd>{inr(gp + gd)}</dd></dl>
         <p className="note">{key === "A_hold" ? "The correlation comes from January 2026, when gold rose about 8% while the gaps widened and closed; outside January it is close to zero. The money came from the gap, not from gold's direction." : "A correlation near zero, or driven by a few large moves, means the strategy is not a disguised bet on gold."}</p>
-      </Card>
-    </div>
-    <Card fig="Table 6" title="Trade log" sub={`${rows.length} trade${rows.length === 1 ? "" : "s"} · net at ${s.toFixed(1)} bp · click a column to sort`}
-      actions={<><Seg label="Contract filter" value={f} onChange={v => { setFilter(v); setPage(0); }} options={cons.map(x => [x, x.replace(/GOLD/g, "")])} small /><CsvButton label={`CSV: download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view`} onClick={csv} /></>}>
+          </div>
+        </div>
+      </More>
+      <More title={`Trade log · ${rows.length} trade${rows.length === 1 ? "" : "s"}`} hint={`Net at ${s.toFixed(1)} bp. Sort by any column; download as CSV.`}>
+        <div className="toolbar"><Seg label="Contract filter" value={f} onChange={v => { setFilter(v); setPage(0); }} options={cons.map(x => [x, x.replace(/GOLD/g, "")])} small /><CsvButton label={`CSV: download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view`} onClick={csv} /></div>
       <div className="tw"><table id="bt-log"><thead><tr><Th k="what" l="Contract" /><Th k="expiry" l="Expiry" /><Th k="entry" l="Entry" /><Th k="exit" l="Exit" /><Th k="side" l="Position" /><Th k="days" l="Days" n /><Th k="gold_part" l="Gold part" n /><Th k="gross" l="Gross" n /><Th k="net" l="Net" n /><th>Tender</th></tr></thead>
         <tbody>{shown.map((t, i) => <tr key={t.what + t.entry + i}><td><b>{t.what.replace(/GOLD/g, "")}</b></td><td className="mono">{fdate(t.expiry)}</td><td className="mono">{fdate(t.entry)}</td><td className="mono">{fdate(t.exit)}</td>
           <td className="dim">{t.side.replace("long a/short b", "buy A, sell B").replace("short a/long b", "sell A, buy B")}</td><td className="n">{t.days}</td><td className="n dim">{inr(t.gold_part)}</td><td className="n">{inr(t.gross)}</td>
           <td className={"n " + (t.net >= 0 ? "pos" : "neg")}>{inr(t.net)}</td><td>{t.ok_tender ? <Pill tone="good">Clear</Pill> : <Pill tone="bad" title={`Last safe exit ${fdate(t.safe_exit)}`}>In tender</Pill>}</td></tr>)}</tbody></table></div>
       <Pager page={pg} pages={pages} set={setPage} />
-    </Card>
-    <div className="grid g2">
-      <Card fig="Log" title="How we kept the test honest" sub="Rules were committed to Git before the test data existed.">
+      </More>
+      <More title="How we kept the test honest" hint="Rules were committed to Git before the test data existed">
         <ul className="tl">{D.timeline.map(t => <li key={t.commit}><span className="b" /><div><div className="w">{t.when}<span className="c">{t.commit}</span></div><div>{t.what}</div></div></li>)}</ul>
-      </Card>
-      <Card fig="Table 7" title="Costs charged on every leg" sub="Four legs per trade: buy and sell, on entry and exit.">
+      </More>
+      <More title="Costs charged on every leg" hint="Fees, taxes, brokerage and slippage on all four legs">
         <div className="tw"><table><thead><tr><th>Item</th><th>Rate</th><th>Basis</th></tr></thead><tbody>
           {[["MCX transaction fee", "₹2.10 / lakh", "MCX filing, from 1 Oct 2024"], ["Commodity transaction tax", "0.01% sell", "Non-agri futures"], ["Stamp duty", "0.002% buy", "Broker charge sheets"], ["SEBI fee", "₹10 / crore", "Assumption"],
             ["Brokerage", "₹20, max 0.03%", "Discount broker"], ["GST", "18%", "On brokerage and fees"], ["Slippage", "0–10 bp", "Slider above"]].map(r => <tr key={r[0]}><td>{r[0]}</td><td className="mono">{r[1]}</td><td>{r[2]}</td></tr>)}</tbody></table></div>
-      </Card>
+      </More>
     </div>
   </>;
 }
@@ -332,9 +339,10 @@ export function Signals() {
     list.map(a => [a.start, a.end, a.symbol, a.expiry, a.direction, a.alert_days, r2(a.z), r2(a.premium_bp), r2(a.usual_bp), r2(a.prem_5d), r2(a.prem_10d), r2(a.prem_20d),
       a.closed_half_10d === true ? "yes" : a.closed_half_10d === false ? "no" : "too recent", a.days_to_half == null || !isFinite(a.days_to_half) ? null : a.days_to_half]));
   return <>
-    <Hero n={6} eyebrow="Signals" title={hot.length ? <>{hot.length} contract{hot.length > 1 ? "s" : ""}<br /><span className="hl">off fair price.</span></> : <>Quiet.<br /><span className="hl">No signal today.</span></>}>
+    <Hero n={6} eyebrow="Signals" title={hot.length ? <>{hot.length} contract{hot.length > 1 ? "s" : ""} <span className="hl">off fair price.</span></> : <>Quiet. <span className="hl">No signal today.</span></>}>
       Each small contract is compared with its fair price: GOLDM moved to the same expiry, plus that contract's usual <Term k="premium">premium</Term>. A signal needs the gap to sit more than {k} <Term k="sigma">standard deviations</Term> from usual, using only past days.
     </Hero>
+    <Takeaway>{hot.length ? `${hot.length} contract${hot.length > 1 ? "s are" : " is"} more than ${k}σ from fair price.` : "Every contract is within its normal range, so there is nothing to act on."} When alerts do fire they mark big gaps: a median {on.median_closed_bp_10d.toFixed(0)} bp closes within 10 trading days, against a {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp round-trip cost. Most days the right answer is to wait.</Takeaway>
     <div className="grid g3">{rows.map((r, i) => { const onS = Math.abs(r.z) >= k; return <Reveal key={r.symbol} className="card sig">
       <div className="card-h"><div className="card-t"><h2><span className="sw" style={{ background: SYM[r.symbol].c }} />{r.symbol}</h2><p className="sub">{SYM[r.symbol].d} · expiry {fdate(r.expiry)}</p></div>
         <Pill tone={onS ? "warn" : "good"}>{onS ? (r.z > 0 ? "Rich vs GOLDM" : "Cheap vs GOLDM") : "Normal"}</Pill></div>
@@ -348,20 +356,24 @@ export function Signals() {
       <Kpi tone="accent" label="Gap closed in 10 days" note={`median after an alert, vs ${off.median_closed_bp_10d.toFixed(0)} bp on ordinary days`}><Num v={on.median_closed_bp_10d} intro /><small>bp</small></Kpi>
       <Kpi label="Round-trip cost" note={`at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`}><Num v={on.round_trip_cost_bp_at_5bp} intro /><small>bp</small></Kpi>
     </div>
-    <Card fig="Fig. 12" title="Every alert so far" sub="Each dot is one alert episode, sized by how far the contract was from its usual premium. Green: the gap closed at least halfway within 10 trading days.">
+    <div className="more-list">
+    <More title={`Every alert so far · ${h.length} episodes`} hint="Each dot is one alert, sized by its gap. Green: closed at least halfway within 10 trading days.">
       <div className="legend"><span><i style={{ background: "var(--good)" }} />Closed halfway in 10 days</span><span><i style={{ background: "var(--bad)" }} />Did not</span><span><i style={{ background: "var(--ink-3)" }} />Too recent to judge</span><span><i className="box" />Crash period</span></div>
       <Chart draw={host => alertStrip(host, h)} />
-    </Card>
-    <Card fig="Table 8" title="Alert log" sub={`${list.length} alert episode${list.length === 1 ? "" : "s"}, newest first. Premiums in bp above GOLDM, per pure gram.`}
-      actions={<><Seg label="Contract filter" value={f} onChange={v => { setF(v); setPage(0); }} options={["All", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"].map(o => [o, o === "All" ? "All" : o.replace("GOLD", "")])} small />
-        <CsvButton label={`CSV: download all ${list.length} alert episode${list.length === 1 ? "" : "s"} in this view`} onClick={csv} /></>}>
+    </More>
+    <More title="Alert log" hint="Newest first, premiums in bp above GOLDM per pure gram. Download as CSV.">
+      <div className="toolbar"><Seg label="Contract filter" value={f} onChange={v => { setF(v); setPage(0); }} options={["All", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"].map(o => [o, o === "All" ? "All" : o.replace("GOLD", "")])} small />
+        <CsvButton label={`CSV: download all ${list.length} alert episode${list.length === 1 ? "" : "s"} in this view`} onClick={csv} /></div>
       <div className="tw"><table id="sg-log"><thead><tr><th>Started</th><th>Contract</th><th>Signal</th><th className="n">Days</th><th className="n">Distance</th><th className="n">Premium</th><th className="n">Usual</th><th className="n">After 10 days</th><th>Outcome</th></tr></thead>
         <tbody>{list.slice(pg * PER, pg * PER + PER).map(a => <tr key={a.symbol + a.start}><td className="mono">{fdate(a.start)}</td><td className="nowrap"><span className="sw" style={{ background: SYM[a.symbol].c }} />{a.symbol}</td><td>{a.direction}</td><td className="n">{a.alert_days}</td><td className="n">{sgn(a.z, 2, "σ")}</td>
           <td className="n">{sgn(a.premium_bp, 0)}</td><td className="n">{sgn(a.usual_bp, 0)}</td><td className="n">{a.prem_10d == null || !isFinite(a.prem_10d) ? "—" : sgn(a.prem_10d, 0)}</td>
           <td>{a.closed_half_10d === true ? <Pill tone="good">Closed halfway, day {a.days_to_half}</Pill> : a.closed_half_10d === false ? <Pill tone="bad">Did not close</Pill> : <Pill>Too recent</Pill>}</td></tr>)}</tbody></table></div>
       <Pager page={pg} pages={pages} set={setPage} prev="← Newer" next="Older →" />
-    </Card>
-    <Reveal className="callout"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about 47 bp in 10 trading days, against 3 bp on ordinary days, and a round trip costs about 24 bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. A stress filter for that case is planned and will be tested on 2020–2023 data before it is trusted.</Reveal>
+    </More>
+    <More title="Why quiet is the right answer most days" hint="What the alert record and the sealed test show">
+      <p className="prose"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about 47 bp in 10 trading days, against 3 bp on ordinary days, and a round trip costs about 24 bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. A stress filter for that case is planned and will be tested on 2020–2023 data before it is trusted.</p>
+    </More>
+    </div>
   </>;
 }
 
@@ -371,25 +383,26 @@ export function Calendar() {
   const cs = D.contracts.filter(c => calF === "All" || c.symbol === calF).sort((a, b) => SYMS.indexOf(a.symbol) - SYMS.indexOf(b.symbol) || a.expiry.localeCompare(b.expiry));
   const L = Object.fromEntries(D.lifecycle_summary.map(a => [a.run, a])), nm = { A_test: "A · test 1", A_hold: "A · sealed holdout", B_dev: "B · development", B_hold: "B · sealed holdout" };
   return <>
-    <Hero n={7} eyebrow="Contract calendar" title={<>Every contract<br /><span className="hl">we hold.</span></>}>
+    <Hero n={7} eyebrow="Contract calendar" title={<>Every contract <span className="hl">we hold.</span></>}>
       Each bar is one contract from the first to the last day in our files. GOLDM expires around the 5th; the others at month end. Hover a bar for its liquidity.
     </Hero>
-    <Card fig="Fig. 13" title={`${cs.length} contracts`} sub={<>The darker end of each bar is the 5-business-day <Term k="tender">tender period</Term>, when positions must already be closed. Shaded band: Dec 2025 – Mar 2026 crash.</>}
+    <Takeaway>{D.meta.contracts} contracts, each tracked from listing to expiry. Strategy B always closed before the delivery (tender) period; Strategy A held {L.A_hold.trades - L.A_hold.outside_tender} of {L.A_hold.trades} holdout trades into it, which a broker would not allow. Leaving those out, A still made {inr(L.A_hold.net_outside_tender_only)} at 5 bp.</Takeaway>
+    <Card title={`${cs.length} contracts`} sub={<>The darker end of each bar is the 5-business-day <Term k="tender">tender period</Term>, when positions must already be closed. Shaded band: Dec 2025 – Mar 2026 crash.</>}
       actions={<div className="stack-r"><Seg label="Contract type" value={calF} onChange={setCalF} options={["All", ...SYMS].map(s => [s, s === "All" ? "All" : s.replace("GOLD", "") || "M"])} small />
         <Seg label="Trades shown" value={calT} onChange={setCalT} options={[["none", "No trades"], ["A_hold", "Strategy A trades"], ["B_hold", "Strategy B trades"]]} small /></div>}>
       <div className="legend"><span><i style={{ background: "var(--ink)", opacity: .55 }} />Tender period</span>{calT !== "none" && <><span><i style={{ background: "var(--good)" }} />Trade, profit</span><span><i style={{ background: "var(--bad)" }} />Trade, loss</span><span><i className="ring" />Exit inside tender period</span></>}<span><i className="box" />Crash period</span></div>
       <Chart deps={[calF, calT]} draw={host => calendarChart(host, cs, calF, calT)} />
     </Card>
-    <div className="grid g2">
-      <Card fig="Fig. 14" title="How liquidity builds over a contract's life" sub="Median gold traded per day, as a share of each contract type's busiest stretch, by business days left to expiry.">
+    <div className="more-list">
+      <More title="How liquidity builds over a contract's life" hint="Median gold traded per day, by business days left to expiry">
         <Legend items={SYMS.map(sy => [SYM[sy].c, sy]).concat([["var(--line-2)", "Shaded: tender period"]])} />
         <Chart draw={host => liquidityChart(host)} />
-      </Card>
-      <Card fig="Table 9" title="Every trade inside its contract" sub="Entry after listing, exit before the tender period.">
+      </More>
+      <More title="Every trade checked against its contract" hint="Entry after listing, exit before the tender period">
         <div className="tw"><table><thead><tr><th>Run</th><th className="n">Trades</th><th className="n">After listing</th><th className="n">Clear of tender</th><th className="n">Net, all</th><th className="n">Net, allowed</th></tr></thead>
           <tbody>{["A_test", "A_hold", "B_dev", "B_hold"].map(k => { const a = L[k]; return <tr key={k}><td><b>{nm[k]}</b></td><td className="n">{a.trades}</td><td className="n">{a.inside_life}</td><td className={"n " + (a.outside_tender < a.trades ? "neg" : "pos")}>{a.outside_tender}</td><td className="n">{inr(a.net_all)}</td><td className="n">{inr(a.net_outside_tender_only)}</td></tr>; })}</tbody></table></div>
         <p className="note">Strategy A's force-exit was 3 calendar days before expiry, which can fall inside MCX's 5-business-day tender period. Strategy B exits 5 business days before expiry and is always clear. Net at 5 bp slippage.</p>
-      </Card>
+      </More>
     </div>
   </>;
 }
@@ -398,36 +411,38 @@ export function Calendar() {
 export function Quality() {
   const [f, setF] = useState("All"); const integ = D.integrity, kinds = ["All", ...new Set(D.flags.map(x => x.kind))];
   return <>
-    <Hero n={8} eyebrow="Data quality" title={<>Checked before<br /><span className="hl">it is trusted.</span></>}>
+    <Hero n={8} eyebrow="Data quality" title={<>Checked before <span className="hl">it is trusted.</span></>}>
       Every MCX <Term k="bhavcopy">Bhavcopy</Term> file is identified by its contents, duplicates are dropped, and every row passes these checks before any number on this site is computed.
     </Hero>
+    <Takeaway>Every row passed the checks: 0 unexplained errors in {D.meta.rows.toLocaleString("en-IN")} rows. Of the {D.flags.length} flagged rows, {D.flags.filter(x => x.kind === "Previous close mismatch").length} follow a no-trade day and are left out; {D.flags.filter(x => x.kind === "Far from peers").length} are real prices far from their peers, mostly in the January 2026 crash, and are kept. No price was changed.</Takeaway>
     <div className="grid g4">
       <Kpi label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts set aside, unread.`}><Num v={D.meta.files} intro /></Kpi>
       <Kpi label="Contracts" note={`${fdate(D.meta.first)} – ${fdate(D.meta.last)}`}><Num v={D.meta.contracts} intro /></Kpi>
       <Kpi label="Rows checked" note="One row per contract per trading day"><Num v={D.meta.rows} intro /></Kpi>
       <Kpi tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
     </div>
-    <div className="grid g2">
-      <Card fig="Table 10" title="Integrity checks" sub="Share of rows failing each check.">
+    <div className="more-list">
+      <More title="Integrity checks" hint="Share of rows failing each check">
         <div className="tw"><table><thead><tr><th>Check</th><th className="n">Failing</th><th>Status</th></tr></thead>
           <tbody>{integ.map(r => { const sub = r.check.trim().startsWith("..."), ok = r.errors === 0;
             return <tr key={r.check}><td style={sub ? { paddingLeft: 28, color: "var(--ink-2)" } : undefined}>{r.check.replace(/^\s*\.\.\./, "")}</td><td className="n">{r.error_rate.toFixed(2)}% <span className="dim">({r.errors})</span></td>
               <td>{ok ? <Pill tone="good">Pass</Pill> : r.check.includes("peers") || r.check.includes("median") ? <Pill tone="warn">Real prices</Pill> : <Pill>Explained</Pill>}</td></tr>; })}</tbody></table></div>
-      </Card>
-      <Card fig="Table 11" title="Official close vs real trades" sub={<>Gap between the <Term k="settlement">settlement price</Term> and the day's average traded price (<Term k="vwap">VWAP</Term>).</>}>
+      </More>
+      <More title="Official close vs real trades" hint="Gap between the settlement price and the day's average traded price (VWAP)">
         <div className="tw"><table><thead><tr><th>Measure</th><th className="n">Typical</th><th className="n">90% of days</th></tr></thead>
           <tbody>{D.close_vs_vwap.map(r => <tr key={r.symbol}><td>{r.symbol.startsWith("spread") ? <b>Gap {r.symbol.replace("spread ", "").replace("-", " − ")}</b> : r.symbol}</td><td className="n">{r.median_abs_gap_bp.toFixed(1)} bp</td><td className="n">{r.p90_abs_gap_bp.toFixed(1)} bp</td></tr>)}</tbody></table></div>
         <p className="note">The gap between two contracts is what a spread trade pays. A typical 7–8 bp there is why 5 bp per leg is our realistic slippage.</p>
-      </Card>
-    </div>
-    <Card fig="Table 12" title="Each contract type" sub="Liquidity decides how far a price can be trusted.">
+      </More>
+      <More title="Each contract type" hint="Liquidity decides how far a price can be trusted">
       <div className="tw"><table><thead><tr><th>Contract</th><th className="n">Contracts</th><th className="n">Days</th><th className="n">No-trade days</th><th className="n">Gold traded / day</th><th className="n">Close vs trades</th></tr></thead>
         <tbody>{D.per_contract.map(r => <tr key={r.symbol}><td><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b> <span className="dim">{SYM[r.symbol].d}</span></td><td className="n">{r.contracts}</td><td className="n">{r.rows.toLocaleString("en-IN")}</td><td className="n">{r.no_trade_pct.toFixed(2)}%</td><td className="n">{r.median_kg_traded_per_day.toLocaleString("en-IN")} kg</td><td className="n">{r.close_vs_vwap_median_bp.toFixed(1)} bp</td></tr>)}</tbody></table></div>
-    </Card>
-    <Card fig="Table 13" title="Flagged rows" sub="Every row a check flagged, and what we did with it." actions={<Seg label="Flag type" value={f} onChange={setF} options={kinds.map(x => [x, `${x} ${x === "All" ? D.flags.length : D.flags.filter(y => y.kind === x).length}`])} small />}>
+      </More>
+      <More title={`Flagged rows · ${D.flags.length}`} hint="Every row a check flagged, and what we did with it">
+      <div className="toolbar"><Seg label="Flag type" value={f} onChange={setF} options={kinds.map(x => [x, `${x} ${x === "All" ? D.flags.length : D.flags.filter(y => y.kind === x).length}`])} small /></div>
       <div className="tw"><table><thead><tr><th>Date</th><th>Contract</th><th>Check</th><th>Detail</th><th>What we did</th></tr></thead>
         <tbody>{D.flags.filter(x => f === "All" || x.kind === f).map((x, i) => <tr key={i}><td className="mono">{fdate(x.date)}</td><td className="nowrap"><span className="sw" style={{ background: SYM[x.symbol].c }} />{x.symbol} <span className="dim">{fmon(x.expiry)}</span></td>
           <td><Pill tone={x.kind.startsWith("Far") ? "warn" : "neutral"}>{x.kind}</Pill></td><td className="dim">{x.detail}</td><td>{x.action}</td></tr>)}</tbody></table></div>
-    </Card>
+      </More>
+    </div>
   </>;
 }
