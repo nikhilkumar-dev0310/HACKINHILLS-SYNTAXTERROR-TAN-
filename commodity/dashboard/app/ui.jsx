@@ -113,8 +113,8 @@ export function downloadCSV(name, header, rows) {
   const url = URL.createObjectURL(new Blob([[header, ...rows].map(r => r.map(esc).join(",")).join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
-export function CsvButton({ label, onClick }) {
-  return <button type="button" className="btn" aria-label={label} title={label} onClick={onClick}><Icon name="download" size={16} />CSV</button>;
+export function CsvButton({ label, onClick, text = "Download CSV" }) {
+  return <button type="button" className="btn dlb" aria-label={label} title={label} onClick={onClick}><Icon name="download" size={16} />{text}</button>;
 }
 
 /* "In short": the one thing to take from a page, said first. */
