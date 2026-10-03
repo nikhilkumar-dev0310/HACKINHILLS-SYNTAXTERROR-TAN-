@@ -55,6 +55,9 @@ SELECT_SLIP, MIN_TRADES, MIN_TYPES = 5, 10, 2
 # ---------------------------------------------------------------- data
 def load(include_sealed):
     d = pd.read_csv(bt.DATA, parse_dates=["date", "expiry_date"])
+    hist = os.path.join(HERE, "clean", "gold_futures_history.csv")      # pre-2016 DEV rows (ingest.py)
+    if os.path.exists(hist):
+        d = pd.concat([pd.read_csv(hist, parse_dates=["date", "expiry_date"]), d], ignore_index=True)
     if include_sealed:
         d = pd.concat([d, pd.read_csv(SEALED_FILE, parse_dates=["date", "expiry_date"])], ignore_index=True)
     d = d.sort_values(["symbol", "expiry_date", "date"]).reset_index(drop=True)
