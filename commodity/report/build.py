@@ -112,7 +112,7 @@ def on_cover(c, doc):
 
 
 doc = BaseDocTemplate(OUT, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm, topMargin=18 * mm, bottomMargin=20 * mm,
-                      title="Gold Futures Spread Intelligence", author="Team SyntaxTerror",
+                      title="Gold Futures Spread Intelligence", author="Team SYNTAX TERROR (TAN)",
                       subject="Hack in Hills '26, Problem 03: Commodity Derivatives Intelligence")
 frame = Frame(doc.leftMargin, doc.bottomMargin, doc.width, doc.height, id="f")
 doc.addPageTemplates([PageTemplate("cover", [frame], onPage=on_cover), PageTemplate("main", [frame], onPage=on_page)])
@@ -132,7 +132,7 @@ s += [Spacer(1, 30 * mm), P("HACK IN HILLS '26  ·  PROBLEM 03: COMMODITY DERIVA
             "with the scripts in our repository. Nothing in this report is estimated or invented unless it is clearly marked "
             "<i>projection</i>; Section 9 compares the earlier projections with what the data later showed.", "box"), BLUE_BG, colors.HexColor("#2a78d6")),
       Spacer(1, 40 * mm),
-      P("Team SyntaxTerror  ·  github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-", "small"),
+      P("Team SYNTAX TERROR (TAN)  ·  github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-", "small"),
       NextPageTemplate("main"), PageBreak()]
 
 # ---------------------------------------------------------------- contents + summary

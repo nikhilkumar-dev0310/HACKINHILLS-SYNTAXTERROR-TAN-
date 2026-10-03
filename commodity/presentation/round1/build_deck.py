@@ -94,18 +94,19 @@ def notes(slide, t):
 s = S[0]; clear(s)
 text(s, 1.0, 5.15, 6, 0.6, "TEAM", size=40, bold=True, font=HEAD, name="Title")
 text(s, 1.0, 6.0, 8.2, 2.6, [[("Team name", {"bold": True, "color": GOLD, "size": 18})],
-                              [("SyntaxTerror", {"bold": True, "size": 34, "font": HEAD})],
+                              [("SYNTAX TERROR (TAN)", {"bold": True, "size": 34, "font": HEAD})],
                               [("Project: Parity · MCX gold futures intelligence", {"size": 20, "color": INK2})],
                               [("Problem 03 · Commodity Derivatives Intelligence", {"size": 20, "color": INK2})]], name="Team name")
-rows = [("Nikhil Kumar", "ROLE (fill in)"), ("MEMBER 2 NAME (fill in)", "ROLE (fill in)"),
-        ("MEMBER 3 NAME (fill in)", "ROLE (fill in)"), ("MEMBER 4 NAME (fill in)", "ROLE (fill in)")]
-box(s, 10.2, 5.2, 8.9, 5.3, name="Members card")
+rows = [("Nikhil Kumar", "Team lead · data pipeline, strategy research and backtests, dashboard"),
+        ("Sai Ganesh", "Market research and pitch presentation"),
+        ("Ishaan Chhabra", "Testing, data checks and documentation")]
+box(s, 10.2, 5.2, 8.9, 5.0, name="Members card")
 text(s, 10.6, 5.45, 8, 0.4, "MEMBERS AND ROLES", size=16, bold=True, color=GOLD, font=HEAD)
 for i, (n, r) in enumerate(rows):
-    y = 6.05 + i * 1.08
-    text(s, 10.6, y, 8.1, 0.45, n, size=22, bold=True, color=INK if i == 0 else BAD, name=f"Member {i + 1}")
-    text(s, 10.6, y + 0.45, 8.1, 0.4, r, size=17, color=BAD)
-notes(s, "Team SyntaxTerror, project Parity, for Problem 03. Replace the red placeholders with each member's name and role before submitting.")
+    y = 6.05 + i * 1.32
+    text(s, 10.6, y, 8.1, 0.45, n, size=24, bold=True, name=f"Member {i + 1}")
+    text(s, 10.6, y + 0.5, 8.1, 0.7, r, size=17, color=INK2)
+notes(s, "Team SYNTAX TERROR (TAN): Nikhil Kumar leads and built the data pipeline, strategies and dashboard; Sai Ganesh on market research and the pitch; Ishaan Chhabra on testing and documentation.")
 
 # ------------------------------------------------------------------ 2 PROBLEM
 s = S[1]; clear(s)
