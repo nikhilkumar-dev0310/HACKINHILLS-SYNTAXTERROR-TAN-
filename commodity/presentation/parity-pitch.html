@@ -136,7 +136,7 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
 .ledgerlist{position:absolute;left:1010px;top:250px;width:486px;display:flex;flex-direction:column;gap:14px}
 .lrow{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 22px;border-radius:14px;background:var(--ledger);border:1px solid var(--line);font-size:19px}
 .lrow b{font:600 20px var(--f-num);white-space:nowrap}
-.split{position:absolute;left:104px;right:104px;top:640px;height:150px}
+.split{position:absolute;left:104px;right:104px;top:620px;height:140px}
 .split .row{display:flex;height:64px;border-radius:12px;overflow:hidden;background:var(--ledger)}
 .split .row div{display:flex;align-items:center;padding:0 20px;font:600 19px var(--f-ui);white-space:nowrap;transition:flex-basis 1.2s var(--ease)}
 #coins{position:absolute;inset:0;pointer-events:none;z-index:5}
@@ -222,9 +222,31 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
 .verdict{position:absolute;left:104px;right:104px;top:200px;display:flex;flex-direction:column;gap:26px}
 .vline{font:600 58px/1.12 var(--f-disp);letter-spacing:-.04em}
 
+
+/* Pari, the mascot: lives only in the empty strip under the content (y 838-896), never over data */
+#pari{position:absolute;left:0;top:836px;width:58px;height:60px;z-index:18;cursor:pointer;transform:translateX(220px);transition:opacity .4s}
+#pari.hide{opacity:0;pointer-events:none}
+#pari .bod{transform-origin:29px 58px}
+#pari svg{display:block;overflow:visible}
+#pari .lid{transform-origin:center;transform-box:fill-box;animation:blink 4.2s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+#pari .m{display:none}
+#pari[data-mood="happy"] .m.happy,#pari[data-mood="wow"] .m.wow,#pari[data-mood="scared"] .m.scared,#pari[data-mood="sad"] .m.sad,#pari[data-mood="sleep"] .m.sleep,#pari[data-mood="wink"] .m.wink{display:inline}
+#pari[data-mood="sleep"] .eyes,#pari[data-mood="wink"] .eyes .r{display:none}
+#pari[data-mood="scared"] .bod{animation:shiver .12s linear infinite}
+@keyframes shiver{0%{transform:translateX(-1px)}50%{transform:translateX(1px)}100%{transform:translateX(-1px)}}
+#pari[data-mood="sleep"] .bod{animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.03,.96)}}
+#pari .z{font:700 12px var(--f-disp);fill:var(--ink-3);animation:zz 2.4s ease-in-out infinite}
+#pari .z.b{animation-delay:1.2s}
+@keyframes zz{0%{opacity:0;transform:translate(0,0)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
+#bub{position:absolute;left:66px;top:12px;white-space:nowrap;padding:7px 12px;border-radius:12px 12px 12px 4px;background:rgba(24,28,36,.86);border:.5px solid rgba(255,255,255,.18);font:600 14px var(--f-ui);color:var(--ink);opacity:0;transform:translateY(4px) scale(.9);transform-origin:left bottom;transition:opacity .3s var(--ease),transform .4s var(--spring);pointer-events:none}
+#bub.on{opacity:1;transform:none}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01s!important;transition-duration:.01s!important}
   .radar .sweep{animation:none}
+  #pari .bod,#pari .lid,#pari .z{animation:none!important}
 }
 </style>
 
@@ -332,7 +354,7 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
       <div class="note" style="margin-bottom:12px">AND WHERE DID IT COME FROM?</div>
       <div class="row" id="splitRow"><div style="flex-basis:50%;background:var(--gold);color:var(--gold-ink)" id="spJan">January 2026 · 30 trades · +₹2,67,750</div><div style="flex-basis:50%;background:rgba(240,110,95,.22);color:var(--bad)" id="spRest">Other 126 trades · −₹77,410</div></div>
     </div>
-    <div class="abs f" data-s="4" style="left:104px;right:104px;top:812px;font:600 30px var(--f-disp);letter-spacing:-.02em">One crash made it all. <span class="bad">Everything else lost money.</span></div>
+    <div class="abs f" data-s="4" style="left:104px;right:104px;top:778px;font:600 30px var(--f-disp);letter-spacing:-.02em">One crash made it all. <span class="bad">Everything else lost money.</span></div>
   </section>
 
   <!-- 8 · typical vs ours -->
@@ -466,9 +488,26 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
     </div>
   </section>
 
+  <div id="pari" role="img" aria-label="Pari, the Parity mascot" data-mood="happy">
+    <svg width="58" height="60" viewBox="0 0 58 60" aria-hidden="true"><g class="bod">
+      <ellipse cx="29" cy="58" rx="20" ry="2.5" fill="rgba(0,0,0,.45)"/>
+      <path d="M21 47v9M37 47v9" stroke="#c98d0c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M17 56h7M34 56h7" stroke="#c98d0c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M15 20h28l8 28H7z" fill="url(#gb)" stroke="#c98d0c" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M17 22h24" stroke="rgba(255,240,200,.8)" stroke-width="2" stroke-linecap="round"/>
+      <g class="eyes"><ellipse class="lid l" cx="22.5" cy="32" rx="2.6" ry="3.4" fill="#1b1300"/><ellipse class="lid r" cx="35.5" cy="32" rx="2.6" ry="3.4" fill="#1b1300"/></g>
+      <g class="m wink"><path d="M32.5 32.5q3-2.5 6 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M24 38.5q5 4 10 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+      <g class="m happy"><path d="M24 38.5q5 4.5 10 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+      <g class="m wow"><ellipse cx="29" cy="40" rx="2.6" ry="3" fill="#1b1300"/></g>
+      <g class="m scared"><path d="M24 40.5q1.2-1.6 2.5 0t2.5 0t2.5 0t2.5 0" stroke="#1b1300" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M45 24q2 3 0 5" stroke="#9fd8ff" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+      <g class="m sad"><path d="M24 41q5-4 10 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+      <g class="m sleep"><path d="M20 32.5q2.5 2 5 0M33 32.5q2.5 2 5 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M26.5 39.5h5" stroke="#1b1300" stroke-width="2" stroke-linecap="round"/><text class="z" x="44" y="16">z</text><text class="z b" x="49" y="10">z</text></g>
+    </g></svg>
+    <div id="bub"></div>
+  </div>
   <div id="flash"></div>
   <div id="brandmini"><svg width="22" height="19" viewBox="9 11 30 26" aria-hidden="true"><path d="M14 13h20l3.2 8.6H10.8z" fill="#f5b83d" stroke="#f5b83d" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 26.4h20l3.2 8.6H10.8z" fill="#f5b83d" stroke="#f5b83d" stroke-width="1.6" stroke-linejoin="round"/></svg>Parity</div>
-  <div id="hint"><kbd>→</kbd> or click to go on · <kbd>←</kbd> back · <kbd>F</kbd> full screen · <kbd>N</kbd> speaker notes</div>
+  <div id="hint"><kbd>→</kbd> or click to go on · <kbd>←</kbd> back · <kbd>F</kbd> full screen · <kbd>N</kbd> speaker notes · <kbd>M</kbd> mascot</div>
   <div id="count">01 / 16</div>
   <div id="bar"></div>
 </div>
@@ -574,7 +613,7 @@ H[5] = { enter() { const p = DATA.prem; lineChart($("#c5"), { dates: p.d, band: 
 
 /* 6 · crash */
 H[6] = { step(s) {
-  if (s === 0) { if (!RM) { stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake"); const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); } }
+  if (s === 0) { pari.dataset.mood = "scared"; if (!RM) { stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake"); const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); } }
   if (s >= 1 && !$("#c6 svg")) { const c = DATA.crash; lineChart($("#c6"), { dates: c.d, series: [{ label: "8 g coin", c: "#e0603f", v: c.GOLDGUINEA, dy: -16 }, { label: "1 g", c: "#22a892", v: c.GOLDPETAL, dy: 16 }],
       yMin: -200, yMax: 900, yTicks: [0, 300, 600, 900], yfmt: v => v + " bp", xTicks: ["2025-12-15", "2026-01-15", "2026-02-15", "2026-03-15"] }); }
 }, leave() { $("#c6").innerHTML = ""; } };
@@ -641,6 +680,30 @@ const live = $("#live"); const setSig = on => { live.classList.toggle("sig", on)
 $("#swQ").addEventListener("click", e => { e.stopPropagation(); setSig(false); }); $("#swS").addEventListener("click", e => { e.stopPropagation(); setSig(true); });
 H[14] = { enter() { setSig(false); }, step(s) { if (s >= 1) { later(() => setSig(true), 200); later(() => setSig(false), 2200); later(() => setSig(true), 3400); } } };
 
+
+/* ------------------------------------------------ Pari the mascot (bottom strip only) */
+const pari = $("#pari"), bub = $("#bub");
+const PX = [220, 700, 260, 1100, 980, 1100, 300, 900, 1120, 300, 720, 280, 1100, 260, 640, 1060];
+const PM = ["happy", "wow", "happy", "happy", "wow", "happy", "scared", "sad", "happy", "wink", "happy", "sleep", "happy", "wow", "wow", "happy"];
+const PQ = ["Psst… take a guess!", "That's me!", "Big questions.", "180 files. I counted.", "Twins!", "Snack-pack pricing!", "Eek!", "My coins…", "We kept the receipts.", "Pinky promise.", "It's the gap, not gold.", "Shh… all quiet.", "All ticked!", "Try it live!", "That's my cousin!", "Thank you!"];
+let px = 220, bubT = 0, hopAnim = null;
+function say(txt, ms = 2800) { clearTimeout(bubT); bub.textContent = txt; bub.classList.add("on"); bubT = setTimeout(() => bub.classList.remove("on"), ms); }
+function hop(to, then) {
+  const from = px; px = to; hopAnim?.cancel();
+  if (RM || from === to) { pari.style.transform = `translateX(${to}px)`; then?.(); return; }
+  const up = Math.min(64, 26 + Math.abs(to - from) / 22), dur = 520 + Math.min(420, Math.abs(to - from) * .5);
+  hopAnim = pari.animate([
+    { transform: `translateX(${from}px) translateY(0) scale(1.12,.84)` },
+    { transform: `translateX(${from + (to - from) * .12}px) translateY(-${up * .6}px) scale(.92,1.12)`, offset: .18 },
+    { transform: `translateX(${from + (to - from) * .5}px) translateY(-${up}px) scale(.96,1.06)`, offset: .5 },
+    { transform: `translateX(${to}px) translateY(0) scale(1.18,.8)`, offset: .86 },
+    { transform: `translateX(${to}px) translateY(0) scale(1,1)` }], { duration: dur, easing: "cubic-bezier(.3,0,.3,1)", fill: "forwards" });
+  hopAnim.onfinish = () => { pari.style.transform = `translateX(${to}px)`; hopAnim.cancel(); hopAnim = null; then?.(); };
+}
+function pariFor(i) { bub.classList.remove("on"); pari.dataset.mood = "happy"; hop(PX[i] ?? 260, () => { pari.dataset.mood = PM[i] || "happy"; say(PQ[i] || ""); }); }
+pari.addEventListener("click", e => { e.stopPropagation(); const m = pari.dataset.mood; pari.dataset.mood = "wow"; if (!RM) pari.animate([{ transform: `translateX(${px}px)` }, { transform: `translateX(${px}px) translateY(-34px) rotate(-8deg)`, offset: .45 }, { transform: `translateX(${px}px) translateY(0) scale(1.15,.82)`, offset: .85 }, { transform: `translateX(${px}px)` }], { duration: 620, easing: "ease-out" });
+  say(["Hi!", "Hehe!", "That tickles!", "Still here!", "Gold, ±0 bp."][Math.floor(Math.random() * 5)], 1600); setTimeout(() => pari.dataset.mood = m, 1700); });
+
 /* ------------------------------------------------ navigation */
 const NOTES = [
   "Don't introduce yourselves yet. Ask the room: which is the cheapest gold? Let someone pick (click it). Then press → to convert every price into rupees per pure gram.",
@@ -666,7 +729,7 @@ function applyStep(sc, s) { $$(".f[data-s]", sc).forEach(e => e.classList.toggle
 function go(i, s = 0, dir = 1) {
   i = Math.max(0, Math.min(scenes.length - 1, i));
   if (i !== cur) { clearTimers(); if (cur >= 0) { scenes[cur].classList.remove("active"); H[cur]?.leave?.(); } scenes.forEach((x, k) => x.classList.toggle("past", k < i));
-    cur = i; const sc = scenes[i]; sc.classList.add("active"); applyStep(sc, -1); H[i]?.enter?.(); }
+    cur = i; const sc = scenes[i]; sc.classList.add("active"); applyStep(sc, -1); H[i]?.enter?.(); pariFor(i); }
   const max = (+scenes[i].dataset.steps || 1) - 1; step = Math.max(0, Math.min(max, s));
   applyStep(scenes[i], step); H[i]?.step?.(step, dir);
   count.textContent = String(i + 1).padStart(2, "0") + " / " + scenes.length;
@@ -684,9 +747,10 @@ addEventListener("keydown", e => {
   else if (e.key === "Home") go(0); else if (e.key === "End") go(scenes.length - 1);
   else if (e.key === "f" || e.key === "F") { const d = document; if (!d.fullscreenElement) d.documentElement.requestFullscreen?.().catch(() => {}); else d.exitFullscreen?.(); }
   else if (e.key === "n" || e.key === "N") $("#notes").classList.toggle("on");
+  else if (e.key === "m" || e.key === "M") pari.classList.toggle("hide");
   else if (e.key === "s" || e.key === "S") { if (cur === 14) setSig(!live.classList.contains("sig")); }
 });
-$("#viewport").addEventListener("click", e => { if (e.target.closest(".ing,button,a")) return; const r = stage.getBoundingClientRect(); (e.clientX < r.left + r.width * .2 ? prev : next)(); });
+$("#viewport").addEventListener("click", e => { if (e.target.closest(".ing,button,a,#pari")) return; const r = stage.getBoundingClientRect(); (e.clientX < r.left + r.width * .2 ? prev : next)(); });
 let tx = null; addEventListener("touchstart", e => tx = e.touches[0].clientX, { passive: true });
 addEventListener("touchend", e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) (dx < 0 ? next : prev)(); tx = null; });
 const m0 = /^#s(\d+)$/.exec(location.hash); go(m0 ? +m0[1] - 1 : 0);
