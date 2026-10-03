@@ -18,6 +18,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "raw_clean")
 OUT = os.path.join(HERE, "clean")
 SEALED = [("2016-01-01", "2019-12-31"), ("2020-01-01", "2023-10-09")]   # see DOWNLOADS_ROUND2.md
+HISTORY_BEFORE = "2016-01-01"   # round 3: older DEV days go to their own file (training only)
 SYMBOLS = {"GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"}
 
 # Normalization convention: rupees per gram of pure gold.
@@ -74,7 +75,8 @@ def main():
             notes.append(f"content says {expected}")
         if sym not in SYMBOLS:
             notes.append("not a gold symbol")
-        gap = int(t["date"].sort_values().diff().dt.days.max() or 0)
+        gap = t["date"].sort_values().diff().dt.days.max()
+        gap = 0 if pd.isna(gap) else int(gap)          # a one-row contract has no gap
         if gap > 5:
             notes.append(f"gap of {gap} days, check for a holiday or truncation")
         if t["date"].max() > exp:
@@ -106,6 +108,10 @@ def main():
     d[sealed].to_csv(os.path.join(OUT, "sealed_rows.csv"), index=False, date_format="%Y-%m-%d")
     print(f"Sealed-window rows set aside (not analysed): {int(sealed.sum())}")
     d = d[~sealed]
+    old = d.date < pd.Timestamp(HISTORY_BEFORE)
+    d[old].to_csv(os.path.join(OUT, "gold_futures_history.csv"), index=False, date_format="%Y-%m-%d")
+    print(f"Pre-{HISTORY_BEFORE[:4]} DEV rows (training history, clean/gold_futures_history.csv): {int(old.sum())}")
+    d = d[~old]
     d.to_csv(os.path.join(OUT, "gold_futures.csv"), index=False, date_format="%Y-%m-%d")
 
     print(f"\nRows: {len(d)}   Contracts: {d.groupby(['symbol','expiry_date']).ngroups}   "

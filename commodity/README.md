@@ -368,3 +368,26 @@ which clear costs at the median and barely on average. Most crash-period alerts 
 Straight line through every listed expiry (outside tender) each day; fit error about 4-5 bp.
 Median slope, % a year: about 4.5-7 in 2023-24, 6-7 in 2025, 13.5-14 in 2026 (14-18 from Dec 2025 to Jun 2026,
 back to 7-9 from Jul 2026). All four contract types move together: a market-wide steepening, cause not found.
+
+## Round 3 (4 Oct 2026): every contract, retraining, two more sealed tests
+Declared in DOWNLOADS_ROUND2.md before download. `tools/mcx_fetch.js` pulled every GOLDM, GOLDTEN,
+GOLDGUINEA and GOLDPETAL contract MCX lists (710 contracts, Nov 2003 - Oct 2026, 55,457 contract-days)
+through mcxindia.com's own Bhavcopy endpoint and XLS export; `tools/unpack_bundle.py` wrote raw_clean/.
+All 13,042 closes in the files we already had match MCX exactly.
+
+    python strategy_c.py dev       # train on DEV: before 2016 and from 2024 (walk-forward by year)
+    python strategy_c.py sealed    # already run once; refuses to run again
+
+Strategy C = Strategy B plus learned settings (stress filter on GOLDM's 5-day volatility, entry k,
+exit, holding limit). Frozen on DEV: stress >= 80th percentile, k 1.5, exit |z| <= 0.5, hold <= 10 days.
+DEV at 5 bp: Rs 4,00,592 from 54 trades (74% from Q1 2026); B's rules on the same days Rs 79,982.
+
+Sealed, run once (net Rs at 5 bp slippage, all costs):
+| Window | A (pairs) | B (fair price) | C (retrained) |
+|---|---|---|---|
+| 2016 - 2019 | -48,734 (109 trades) | +35,873 (22) | +21,415 (13) |
+| 2020 - 9 Oct 2023 | -62,774 (137) | +6,962 (16) | -3,707 (13) |
+
+Verdict: retraining did not beat the simple fair-price rule out of sample; the March 2020 crash moved
+the other way from the 2026 one. B stays slightly positive over 2016-2023 (Rs 42,834; 95% range
+-54,534 to +1,42,962), so no dependable edge is shown after costs. Pairs (A) lose in every window.

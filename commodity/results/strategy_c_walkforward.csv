@@ -1,0 +1,10 @@
+year,chosen_with_years_before,trades,net_rs
+2010,ref=all k=1.5 stress=None exit=0.0 hold=None,2,5656.0
+2011,ref=all k=1.5 stress=None exit=0.0 hold=None,2,-494.0
+2012,ref=all k=1.5 stress=None exit=0.5 hold=None,7,-8028.0
+2013,ref=1y k=2.0 stress=None exit=0.0 hold=None,16,9052.0
+2014,ref=1y k=2.0 stress=None exit=0.0 hold=None,9,-1988.0
+2015,ref=1y k=2.0 stress=0.8 exit=0.0 hold=None,1,9438.0
+2024,ref=1y k=2.0 stress=0.8 exit=0.0 hold=None,8,61763.0
+2025,ref=1y k=2.0 stress=0.8 exit=0.0 hold=None,11,-146265.0
+2026,ref=1y k=2.0 stress=None exit=0.0 hold=None,0,0.0
