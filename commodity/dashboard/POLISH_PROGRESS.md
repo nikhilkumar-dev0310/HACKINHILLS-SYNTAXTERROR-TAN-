@@ -1,31 +1,24 @@
-# Polish round 2: progress (paused 3 Oct 2026, 04:50 IST)
+# Polish round 2 (3 Oct 2026): done
 
-Figma file: https://www.figma.com/design/6XRN8oEtTYy9OtnzxcmWGy (Starter plan: ~20 Figma tool calls/month, 1 mode per variable collection)
+Figma file: https://www.figma.com/design/6XRN8oEtTYy9OtnzxcmWGy (Starter plan: about 20 Figma tool calls a month,
+1 mode per variable collection, so Dark and Light are two collections with identical variable names)
 
-## Done in Figma
-- Pages: Foundations (0:1), Components (2:2), Polish · Oct 2026 (2:3, empty)
-- Variables: "Color · Dark" (VariableCollectionId:2:4) and "Color · Light" (2:5), 28 tokens each, code syntax var(--token);
-  "Space & radius" (2:62), 12 tokens. 17 text styles (Inter + JetBrains Mono; Mono Semi Bold not in Figma, Bold used).
-- Token sheets: Foundations — Dark (2:90), Foundations — Light (2:290), with contrast figures.
-- Components (bound to Dark): icons 3:6..3:49 (incl. new auto 3:41, download 3:49), Kbd 3:50, Chip set 3:68,
-  Theme switch 3:96 (Full / Icon only), Nav item 3:134, Button 3:147, Segment 3:152, KPI card 3:165, Pill 3:174,
-  review frame 3:175.
-- Known fix for next call: Pill set shares one Label property, so all variants read "Clear";
-  delete property Label#3:36 and set per-variant text (Clear / Rich vs GOLDM / In tender / Too recent).
+## In Figma
+- Foundations (page 0:1): "Color · Dark" and "Color · Light" variables (28 each, code syntax var(--token)),
+  "Space & radius" (12), 21 text styles, token sheets with contrast figures (2:90, 2:290).
+- Components (page 2:2): icons, Kbd, Chip, Theme switch (Full / Icon only), Nav item, Button, Segment, KPI card, Pill.
+- Polish · Oct 2026 (page 2:3): phone header now vs compact (dark and light), trade log and alert log with CSV,
+  sidebar with number keys, KPI count-up spec, notes.
 
-## Decisions from Figma measurements
-- Compact chips: Basis 161 px, Count 188 px; with a 10 px gap = 359 px > 358 px available at 390 px.
-- Phone header: row 1 = Basis chip (compact) + icon-only theme switch (109 px), row 2 = contracts chip. Saves one row.
+## In the site (commodity/dashboard/template.html)
+1. Keys 1-8 switch sections (ignored in inputs and with Ctrl/Cmd/Alt); key cap on nav hover/focus; aria-keyshortcuts;
+   "Turn off shortcuts" in the sidebar footer, remembered (WCAG 2.1.4).
+2. CSV download on the trade log and the alert log: every row in the current view (all pages), plain numbers,
+   file name carries strategy, slippage, tender filter and contract filter.
+3. Phones (600 px and below): compact chips, icon-only theme switch (each button labelled), title 52 px higher.
+4. Headline numbers on the Backtest page count to their new value in 400 ms on var(--ease); instant with reduced motion.
+Also: Auto theme button has an icon; brand mark keeps its own gold in light mode; theme buttons use the motion tokens.
 
-## Next steps
-1. Figma: build review frames on "Polish · Oct 2026": phone header now vs compact (dark + light),
-   trade log + CSV button, alert log + CSV button, sidebar with key hints and "Turn off shortcuts", KPI count-up spec.
-   Real figures to use: A_hold net 5.0 bp Rs 1,90,340 (32%) -> 6.0 bp Rs 1,55,258 (31%); 120 ms frame Rs 1,66,201.
-2. Code (template.html), the four approved features:
-   - Keys 1-8 jump to sections (ignore inputs and modifier keys), kbd hint on nav hover/focus,
-     "Turn off shortcuts" switch saved in localStorage (WCAG 2.1.4).
-   - Download CSV on trade log (all rows in current view; strategy, slippage, tender in file name) and alert log.
-   - Compact phone header (layout above; icon-only switch with aria-labels; add auto icon to full switch too).
-   - KPI numbers count to new values in 400 ms, cubic-bezier(.2,0,0,1), restart from current value, instant with reduced motion.
-   - Small consistency fix: .theme button transition uses raw .25s; switch to var(--dur-2) var(--ease).
-3. Rebuild (python dashboard/build.py), audit 4 widths x 2 themes x 8 views, sync Figma, commit, push.
+## Checks
+- CSV: 156 trades, net Rs 1,90,340 at 5 bp, gross Rs 4,10,652; broker-allowed 139 trades, Rs 1,53,382; 68 alerts (41 closed halfway).
+- Audit: 8 views x 1440/1024/768/390 px x dark/light: no overflow, clipped text, unnamed controls or console errors.

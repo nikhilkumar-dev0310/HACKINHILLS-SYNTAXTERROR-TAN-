@@ -83,7 +83,7 @@ button{font:inherit;color:inherit}
 .side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;padding:28px 18px;display:flex;flex-direction:column;gap:28px;
   background:var(--panel);backdrop-filter:blur(22px) saturate(140%);-webkit-backdrop-filter:blur(22px) saturate(140%);border-right:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:12px;padding:0 8px}
-.mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(140deg,var(--gold),#c98d0c);color:#1b1300;font:700 13px var(--f-num);box-shadow:0 6px 18px -6px var(--gold)}
+.mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(140deg,#f2b632,#c98d0c);color:#1b1300;font:700 13px var(--f-num);box-shadow:0 6px 18px -6px var(--gold)}
 .brand b{display:block;font-size:15px;letter-spacing:-.01em}
 .brand small{display:block;color:var(--ink-3);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
 nav{display:flex;flex-direction:column;gap:2px}
@@ -106,7 +106,8 @@ main{min-width:0;padding:28px clamp(16px,4vw,56px) 72px}
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:12.5px;color:var(--ink-2);white-space:nowrap}
 .chip .num{color:var(--ink)}
 .theme{display:inline-flex;padding:4px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.theme button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-size:12.5px;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .25s,color .25s}
+.theme button{border:0;background:transparent;padding:6px 12px;border-radius:999px;font-size:12.5px;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background var(--dur-2) var(--ease),color var(--dur-2) var(--ease)}
+.theme button:hover{color:var(--ink)}
 .theme button svg{width:15px;height:15px}
 .theme button[aria-pressed="true"]{background:var(--panel-strong);color:var(--ink);box-shadow:0 1px 6px -2px rgba(0,0,0,.3)}
 
@@ -262,6 +263,25 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 .split i{display:block;height:100%}
 .foot{color:var(--ink-3);font-size:12.5px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
+/* number-key shortcuts: key caps on nav hover/focus, hint and off switch in the sidebar footer */
+kbd{display:inline-block;min-width:20px;padding:1px 6px;border-radius:5px;border:1px solid var(--line-2);background:var(--hi);
+  font:500 11.5px/16px var(--f-num);color:var(--ink-2);text-align:center}
+nav a .key{margin-left:auto;opacity:0;transition:opacity var(--dur-1) var(--ease)}
+nav a:hover .key,nav a:focus-visible .key{opacity:1}
+.nokeys nav a .key{display:none}
+.keys{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.keys .kh{display:inline-flex;align-items:center;gap:5px}
+.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--ink-2);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.linkbtn:hover{color:var(--ink)}
+@media (hover:none){.keys{display:none}}
+
+/* secondary button (CSV download) next to a card's filters */
+.acts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);background:var(--hi);border-radius:var(--r-sm);padding:7px 12px;
+  font-size:13px;color:var(--ink);cursor:pointer;transition:background var(--dur-1) var(--ease)}
+.btn:hover{background:var(--gold-soft)}
+.btn svg{width:16px;height:16px;color:var(--ink-2)}
+
 @media (max-width:860px){
   .shell{grid-template-columns:1fr}
   .side{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;height:auto;padding:12px 16px;flex-direction:row;align-items:center;gap:14px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}
@@ -271,9 +291,22 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
   nav a span{display:none}
   nav a[aria-current="page"] span{display:inline}
   nav a[aria-current="page"]::before{display:none}
+  nav a .key{display:none}
   main{padding-top:22px}
   .topbar{margin-bottom:24px}
   .kpi .val{font-size:26px}
+}
+/* phones: compact chips and an icon-only theme switch share the first row; the contracts chip takes the second
+   (measured in Figma: both compact chips need 359 px, a 390 px screen leaves 358) */
+@media (max-width:600px){
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 8px;align-items:center}
+  .crumbs{display:contents}
+  .crumbs .chip{justify-self:start;grid-column:1;grid-row:1}
+  .crumbs .chip+.chip{grid-column:1/-1;grid-row:2}
+  .chip{font-size:12px;padding:4px 9px;gap:5px}
+  .theme{grid-column:2;grid-row:1}
+  .theme button{padding:7px 9px}
+  .theme .tl{display:none}
 }
 @media (prefers-reduced-transparency: reduce){
   :root{--panel:var(--panel-solid);--panel-strong:var(--panel-solid)}
@@ -297,6 +330,7 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
     <div class="side-foot">
       <div class="live"><span class="pulse"></span><span>Data through <b id="thru" class="num"></b></span></div>
       <div>Official MCX Bhavcopy · end of day</div>
+      <div class="keys" id="keys"></div>
     </div>
   </aside>
   <main id="main" tabindex="-1">
@@ -306,9 +340,9 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <span class="chip"><span class="num" id="m-contracts"></span> contracts · <span class="num" id="m-rows"></span> days</span>
       </div>
       <div class="theme" role="group" aria-label="Colour theme">
-        <button data-t="light" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light</button>
-        <button data-t="system" aria-pressed="false">Auto</button>
-        <button data-t="dark" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>Dark</button>
+        <button data-t="light" aria-pressed="false" aria-label="Light theme" title="Light theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span class="tl">Light</span></button>
+        <button data-t="system" aria-pressed="false" aria-label="Auto theme, follows your device" title="Auto: follows your device"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg><span class="tl">Auto</span></button>
+        <button data-t="dark" aria-pressed="false" aria-label="Dark theme" title="Dark theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><span class="tl">Dark</span></button>
       </div>
     </div>
 
@@ -439,7 +473,8 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <div class="glass card"><div class="card-h"><div><h2>Where the profit came from</h2><div class="sub">Before costs, split exactly into the gap and gold's own move.</div></div></div><div id="bt-attr"></div></div>
       </div>
       <div class="glass card">
-        <div class="card-h"><div><h2>Trade log</h2><div class="sub" id="bt-logsub"></div></div><div class="seg" id="bt-filter"></div></div>
+        <div class="card-h"><div><h2>Trade log</h2><div class="sub" id="bt-logsub"></div></div>
+          <div class="acts"><div class="seg" id="bt-filter"></div><button type="button" class="btn" id="bt-csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>CSV</button></div></div>
         <div class="tw"><table id="bt-log"></table></div>
         <div class="pager" id="bt-pager"></div>
       </div>
@@ -475,7 +510,8 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
         <div class="chart" id="sg-strip"></div>
       </div>
       <div class="glass card">
-        <div class="card-h"><div><h2>Alert log</h2><div class="sub" id="sg-logsub"></div></div><div class="seg" id="sg-f"></div></div>
+        <div class="card-h"><div><h2>Alert log</h2><div class="sub" id="sg-logsub"></div></div>
+          <div class="acts"><div class="seg" id="sg-f"></div><button type="button" class="btn" id="sg-csv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>CSV</button></div></div>
         <div class="tw"><table id="sg-log"></table></div><div class="pager" id="sg-pager"></div>
       </div>
       <div class="callout"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about 47 bp in 10 trading days, against 3 bp on ordinary days, and a round trip costs about 24 bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. A stress filter for that case is planned and will be tested on 2020–2023 data before it is trusted.</div>
@@ -709,7 +745,7 @@ let saved = "system"; try { saved = localStorage.getItem("gsl-theme") || "system
 
 /* ---------- nav / router ---------- */
 const nav = $("#nav");
-VIEWS.forEach(([id, label]) => nav.appendChild(el("a", { href: "#" + id, "data-v": id, "aria-label": label, title: label }, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[id]}</svg><span>${label}</span>`)));
+VIEWS.forEach(([id, label], i) => nav.appendChild(el("a", { href: "#" + id, "data-v": id, "aria-label": label, title: label }, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[id]}</svg><span>${label}</span><kbd class="key" aria-hidden="true">${i + 1}</kbd>`)));
 const rendered = {}, RENDER = {};
 function show(id, user) { if (!VIEWS.find(v => v[0] === id)) id = "overview";
   const label = VIEWS.find(v => v[0] === id)[1]; document.title = id === "overview" ? "Gold Spread Lab" : label + " · Gold Spread Lab";
@@ -724,6 +760,25 @@ function show(id, user) { if (!VIEWS.find(v => v[0] === id)) id = "overview";
   if (user) { const h = document.querySelector("#v-" + id + " h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } } }
 window.addEventListener("hashchange", () => { show(location.hash.slice(1), true); window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); });
 $("#skip").addEventListener("click", () => { const h = document.querySelector(".view.on h1"); (h || $("#main")).setAttribute("tabindex", "-1"); (h || $("#main")).focus(); });
+
+/* ---------- number keys 1-8 jump to a section; can be turned off (WCAG 2.1.4, single-key shortcuts) ---------- */
+let keysOn = true; try { keysOn = localStorage.getItem("gsl-keys") !== "off"; } catch (e) {}
+function setKeys(on, save) {
+  keysOn = on; root.classList.toggle("nokeys", !on);
+  nav.querySelectorAll("a").forEach((a, i) => on ? a.setAttribute("aria-keyshortcuts", String(i + 1)) : a.removeAttribute("aria-keyshortcuts"));
+  $("#keys").innerHTML = on ? `<span class="kh"><kbd>1</kbd>–<kbd>8</kbd> switch sections</span><button type="button" class="linkbtn" id="keys-t">Turn off shortcuts</button>`
+    : `<button type="button" class="linkbtn" id="keys-t">Turn on number-key shortcuts</button>`;
+  if (save) { try { localStorage.setItem("gsl-keys", on ? "on" : "off"); } catch (e) {} $("#keys-t").focus(); }
+}
+$("#keys").addEventListener("click", e => { if (e.target.closest("#keys-t")) setKeys(!keysOn, true); });
+document.addEventListener("keydown", e => {
+  if (!keysOn || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+  if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
+  const n = "12345678".indexOf(e.key); if (n < 0 || e.key.length !== 1) return;
+  e.preventDefault(); const id = VIEWS[n][0];
+  if (location.hash.slice(1) !== id) location.hash = id; else { const h = document.querySelector(".view.on h1"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } }
+});
+setKeys(keysOn, false);
 let lastW = 0; new ResizeObserver(() => { const w = document.body.clientWidth; if (Math.abs(w - lastW) > 30) { lastW = w; const cur = document.querySelector(".view.on"); if (cur) RENDER[cur.id.slice(2)](); } }).observe(document.body);
 
 /* ---------- meta ---------- */
@@ -735,6 +790,32 @@ const crash = D.crash_window;
 
 /* ---------- overview ---------- */
 function kpi(lab, val, note, cls = "") { return `<div class="glass kpi ${cls}"><div class="lab">${lab}</div><div class="val">${val}</div><div class="note">${note}</div></div>`; }
+
+/* headline numbers count to their new value: 400 ms on var(--ease), cubic-bezier(.2,0,0,1); a new value mid-way starts
+   from the number on screen; first render and reduced motion show the value at once */
+const easeStd = x => { let lo = 0, hi = 1, t = x; for (let i = 0; i < 24; i++) { t = (lo + hi) / 2; const xt = .6 * t * (1 - t) ** 2 + t ** 3; if (xt < x) lo = t; else hi = t; } return 3 * (1 - t) * t * t + t ** 3; };
+const FMT = { inr: v => inr(Math.round(v) || 0), int: v => String(Math.round(v)), pct: v => v.toFixed(0) };
+const TWN = {}, noMotion = matchMedia("(prefers-reduced-motion: reduce)");
+const tw = (k, v, f) => `<span data-tw="${k}" data-v="${v}" data-f="${f}">${FMT[f](v)}</span>`;
+function countTo(host) {
+  host.querySelectorAll("[data-tw]").forEach(node => {
+    const k = node.dataset.tw, to = +node.dataset.v, f = FMT[node.dataset.f], st = TWN[k] || (TWN[k] = {});
+    cancelAnimationFrame(st.raf); const from = st.cur;
+    if (from == null || !isFinite(from) || from === to || noMotion.matches) { st.cur = to; node.textContent = f(to); return; }
+    const t0 = performance.now(); node.textContent = f(from);
+    const step = now => { const p = Math.min(1, (now - t0) / 400); st.cur = from + (to - from) * easeStd(p); node.textContent = f(st.cur); if (p < 1) st.raf = requestAnimationFrame(step); };
+    st.raf = requestAnimationFrame(step);
+  });
+}
+
+/* CSV downloads: every row in the current view (all pages), plain numbers so spreadsheets read them as numbers */
+function downloadCSV(name, header, rows) {
+  const esc = v => { if (v == null || (typeof v === "number" && !isFinite(v))) return ""; const s = String(v); return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const url = URL.createObjectURL(new Blob([[header, ...rows].map(r => r.map(esc).join(",")).join("\r\n") + "\r\n"], { type: "text/csv;charset=utf-8" }));
+  const a = el("a", { href: url, download: name }); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+const slug = s => s.toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-|-$/g, "");
+const r2 = v => v == null || !isFinite(v) ? null : Math.round(v * 100) / 100;
 function legend(host, items, band) { host.innerHTML = items.map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("") + (band ? `<span><i class="box"></i>Crash period</span>` : ""); }
 let ovRange = 0;
 RENDER.overview = () => {
@@ -875,7 +956,7 @@ const BT = {
   A_test: { name: "A · test 1", desc: "Strategy A on its first sealed test, 1 May – 31 Jul 2025. Training before this lost money even before costs (9 trades, gross −₹3,939)." },
   B_dev: { name: "B · development", desc: "Strategy B on the development window, up to 5 Aug 2025. Its setting (k = 1.5) was chosen here, so this is in-sample and flattering by design." }
 };
-let btKey = "A_hold", btFilter = "All", btSort = { k: "entry", dir: "asc" }, btPage = 0; const PER = 12;
+let btKey = "A_hold", btFilter = "All", btSort = { k: "entry", dir: "asc" }, btPage = 0, btView = null; const PER = 12;
 $("#bt-pick").innerHTML = Object.entries(BT).map(([k, v]) => `<button data-k="${k}" aria-pressed="${k === btKey}">${v.name}</button>`).join("");
 const netAt = (t, s) => t.net0 + (t.net5 - t.net0) * s / 5;
 function btRender(animate) {
@@ -887,10 +968,11 @@ function btRender(animate) {
   const gross = tr.reduce((a, t) => a + t.gross, 0);
   $("#bt-desc").textContent = BT[btKey].desc;
   $("#bt-kpis").innerHTML =
-    kpi("Net profit", `<span class="${tot >= 0 ? "pos" : "neg"}">${inr(tot)}</span>`, `${info.grams} g per leg · gross ${inr(gross)}`, "") +
-    kpi("Trades", `${tr.length}`, tonly ? `${inTender} trade${inTender === 1 ? "" : "s"} held into the tender period left out` : `from ${info.rows[0].weeks} independent entry weeks · ${inTender} held into the tender period`) +
-    kpi("Won after costs", `${hit.toFixed(0)}<small>%</small>`, `of trades at ${s.toFixed(1)} bp slippage`) +
-    kpi(`95% range at ${near.slip} bp`, `<span style="font-size:20px">${inr(near.ci[0])} to ${inr(near.ci[1])}</span>`, `${near.p_pos}% of resamples above zero${tonly ? " (all trades)" : ""}`);
+    kpi("Net profit", `<span class="${tot >= 0 ? "pos" : "neg"}">${tw("bt-net", tot, "inr")}</span>`, `${info.grams} g per leg · gross ${inr(gross)}`, "") +
+    kpi("Trades", tw("bt-n", tr.length, "int"), tonly ? `${inTender} trade${inTender === 1 ? "" : "s"} held into the tender period left out` : `from ${info.rows[0].weeks} independent entry weeks · ${inTender} held into the tender period`) +
+    kpi("Won after costs", `${tw("bt-hit", hit, "pct")}<small>%</small>`, `of trades at ${s.toFixed(1)} bp slippage`) +
+    kpi(`95% range at ${near.slip} bp`, `<span style="font-size:20px">${tw("bt-lo", near.ci[0], "inr")} to ${tw("bt-hi", near.ci[1], "inr")}</span>`, `${near.p_pos}% of resamples above zero${tonly ? " (all trades)" : ""}`);
+  countTo($("#bt-kpis"));
   // profit vs gold's move, and the exact split
   scatter($("#bt-scatter"), { x: tr.map(t => t.gold_move), y: nets, color: i => nets[i] >= 0 ? "var(--good)" : "var(--bad)", xfmt: v => v + "%", yfmt: v => (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k"),
     xlabel: "gold's move while the trade was open", aria: "Profit per trade against gold's move",
@@ -930,6 +1012,8 @@ function btRender(animate) {
   rows.sort((a, b) => { const k = btSort.k, d = btSort.dir === "asc" ? 1 : -1; return (typeof a[k] === "number" ? a[k] - b[k] : String(a[k]).localeCompare(String(b[k]))) * d; });
   const pages = Math.max(1, Math.ceil(rows.length / PER)); btPage = Math.min(btPage, pages - 1);
   const shown = rows.slice(btPage * PER, btPage * PER + PER);
+  btView = { rows, s, tonly, grams: info.grams };
+  const csvLab = `CSV: download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view`; $("#bt-csv").setAttribute("aria-label", csvLab); $("#bt-csv").title = csvLab;
   $("#bt-logsub").textContent = `${rows.length} trade${rows.length === 1 ? "" : "s"} · net at ${s.toFixed(1)} bp · click a column to sort`;
   $("#bt-pager").innerHTML = pages > 1 ? `<button data-pg="-1" ${btPage === 0 ? "disabled" : ""}>← Previous</button><span class="num">${btPage + 1} / ${pages}</span><button data-pg="1" ${btPage === pages - 1 ? "disabled" : ""}>Next →</button>` : "";
   const col = (k, l, n) => `<th class="sort ${n ? "n" : ""}" data-k="${k}" tabindex="0" aria-sort="${btSort.k === k ? (btSort.dir === "asc" ? "ascending" : "descending") : "none"}" ${btSort.k === k ? `data-dir="${btSort.dir}"` : ""}>${l}</th>`;
@@ -946,6 +1030,13 @@ $("#bt-pager").addEventListener("click", e => { const b = e.target.closest("butt
 function sortBy(h) { const k = h.dataset.k; btSort = { k, dir: btSort.k === k && btSort.dir === "asc" ? "desc" : "asc" }; btRender(false); const again = $(`#bt-log th[data-k="${k}"]`); if (again) again.focus(); }
 $("#bt-log").addEventListener("click", e => { const h = e.target.closest("th.sort"); if (h) sortBy(h); });
 $("#bt-log").addEventListener("keydown", e => { const h = e.target.closest("th.sort"); if (h && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); sortBy(h); } });
+const posText = t => { const [a, b] = t.what.split("-"); return t.side === "long a/short b" ? `buy ${a}, sell ${b}` : t.side === "short a/long b" ? `sell ${a}, buy ${b}` : t.side.replace("X", t.what).replace(" / ", ", "); };
+$("#bt-csv").addEventListener("click", () => {
+  if (!btView) return; const { rows, s, tonly, grams } = btView;
+  downloadCSV(`gold-spread-lab_trades_${slug(BT[btKey].name)}_${s.toFixed(1)}bp${tonly ? "_broker-allowed" : ""}${btFilter !== "All" ? "_" + slug(btFilter) : ""}.csv`,
+    ["strategy", "contract", "expiry", "entry", "exit", "position", "days_held", "grams_per_leg", "gold_move_pct", "from_gap_rs", "from_gold_rs", "gross_rs", "costs_rs", "net_rs", "slippage_bp", "tender", "last_safe_exit"],
+    rows.map(t => [BT[btKey].name.replace(" · ", " "), t.what, t.expiry, t.entry, t.exit, posText(t), t.days, grams, r2(t.gold_move), r2(t.gap_part), r2(t.gold_part), r2(t.gross), r2(t.gross - t.net), r2(t.net), s, t.ok_tender ? "clear" : "in tender", t.safe_exit]));
+});
 
 /* ---------- signals ---------- */
 RENDER.signals = () => {
@@ -964,7 +1055,7 @@ RENDER.signals = () => {
   rows.forEach((r, i) => lineChart($("#sg-z" + i), { dates: r.z_hist.dates, series: [{ label: "Distance", color: SYM[r.symbol].c, values: r.z_hist.z }], zero: true, h: 110, yfmt: v => v + "σ", tfmt: v => sgn(v, 2, "σ"), aria: "Recent distance from usual premium" }));
 };
 
-let sgF = "All", sgPage = 0;
+let sgF = "All", sgPage = 0, sgRows = [];
 function sgHistory() {
   const A = D.alerts, h = A.history, base = Object.fromEntries(A.baseline.map(b => [String(b.alert_day), b])), on = base["true"] || base["True"], off = base["false"] || base["False"];
   const all = A.summary.find(x => x.symbol === "All");
@@ -995,6 +1086,7 @@ function sgHistory() {
   // log
   const opts = ["All", ...syms]; $("#sg-f").innerHTML = opts.map(o => `<button data-f="${o}" aria-pressed="${o === sgF}">${o === "All" ? "All" : o.replace("GOLD", "")}</button>`).join("");
   const rows = h.filter(a => sgF === "All" || a.symbol === sgF).slice().reverse(), PER2 = 10, pages = Math.max(1, Math.ceil(rows.length / PER2)); sgPage = Math.min(sgPage, pages - 1);
+  sgRows = rows; const csvLab = `CSV: download all ${rows.length} alert episode${rows.length === 1 ? "" : "s"} in this view`; $("#sg-csv").setAttribute("aria-label", csvLab); $("#sg-csv").title = csvLab;
   $("#sg-logsub").textContent = `${rows.length} alert episode${rows.length === 1 ? "" : "s"}, newest first. Premiums in bp above GOLDM, per pure gram.`;
   $("#sg-log").innerHTML = `<thead><tr><th>Started</th><th>Contract</th><th>Signal</th><th class="n">Days</th><th class="n">Distance</th><th class="n">Premium</th><th class="n">Usual</th><th class="n">After 10 days</th><th>Outcome</th></tr></thead><tbody>` +
     rows.slice(sgPage * PER2, sgPage * PER2 + PER2).map(a => `<tr><td class="mono" style="white-space:nowrap">${fdate(a.start)}</td><td style="white-space:nowrap"><span class="sw" style="background:${SYM[a.symbol].c}"></span>${a.symbol}</td><td>${a.direction}</td><td class="n">${a.alert_days}</td><td class="n">${sgn(a.z, 2, "σ")}</td><td class="n">${sgn(a.premium_bp, 0)}</td><td class="n">${sgn(a.usual_bp, 0)}</td><td class="n">${a.prem_10d == null ? "—" : sgn(a.prem_10d, 0)}</td><td>${a.closed_half_10d === true ? `<span class="pill good">Closed halfway, day ${a.days_to_half}</span>` : a.closed_half_10d === false ? '<span class="pill bad">Did not close</span>' : '<span class="pill neutral">Too recent</span>'}</td></tr>`).join("") + "</tbody>";
@@ -1002,6 +1094,10 @@ function sgHistory() {
 }
 $("#sg-f").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; sgF = b.dataset.f; sgPage = 0; sgHistory(); });
 $("#sg-pager").addEventListener("click", e => { const b = e.target.closest("button[data-pg]"); if (!b) return; sgPage += +b.dataset.pg; sgHistory(); });
+$("#sg-csv").addEventListener("click", () => downloadCSV(`gold-spread-lab_alerts_${sgF === "All" ? "all" : slug(sgF)}.csv`,
+  ["start", "end", "contract", "expiry", "signal", "alert_days", "z", "premium_bp", "usual_premium_bp", "premium_5d_bp", "premium_10d_bp", "premium_20d_bp", "closed_halfway_10d", "days_to_half"],
+  sgRows.map(a => [a.start, a.end, a.symbol, a.expiry, a.direction, a.alert_days, r2(a.z), r2(a.premium_bp), r2(a.usual_bp), r2(a.prem_5d), r2(a.prem_10d), r2(a.prem_20d),
+    a.closed_half_10d === true ? "yes" : a.closed_half_10d === false ? "no" : "too recent", a.days_to_half == null || !isFinite(a.days_to_half) ? null : a.days_to_half])));
 
 /* ---------- calendar ---------- */
 let calF = "All", calT = "A_hold";
