@@ -120,6 +120,8 @@ def main():
                                    "dte": int((x.expiry_date - day).days), "kg": r(x.grams / 1000, 1)}
                                   for x in g.sort_values("expiry_date").itertuples()]}
     out["curves"] = curves
+    # the "as of" day: after it, the files hold only contracts running into their own expiry
+    out["meta"]["last_full"] = str(last.date())
 
     # ---------- backtests (stored single runs)
     def summ(df, label, extra=None):
