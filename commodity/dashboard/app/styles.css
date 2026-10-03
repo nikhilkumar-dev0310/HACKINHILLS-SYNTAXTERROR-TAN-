@@ -73,7 +73,11 @@ p{margin:0}
 .top{position:sticky;top:0;z-index:40;height:var(--top);display:flex;align-items:center;gap:20px;padding:0 clamp(16px,3vw,32px);
   background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
-.mark{width:32px;height:32px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(140deg,#f5b83d,#c98d0c);color:#1b1300;font:700 12.5px var(--f-num);box-shadow:0 6px 18px -8px #f5b83d}
+.mark{width:32px;height:32px;display:grid;place-items:center}
+.mark .bar{fill:var(--gold);stroke:var(--gold);stroke-width:1.6;stroke-linejoin:round;transition:transform var(--dur-3) var(--ease-emph)}
+.mark.hot .lo{fill:var(--warn);stroke:var(--warn);transform:translateX(3px)}
+.brand:hover .mark .lo{transform:translateX(1.5px)}
+.mark.hot .lo,.brand:hover .mark.hot .lo{transform:translateX(3px)}
 .wm{font:600 19px/1 var(--f-disp);letter-spacing:-.03em;display:flex;flex-direction:column;gap:3px}
 .wm small{font:500 10px/1 var(--f-num);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .crumb{display:flex;align-items:center;gap:10px;color:var(--ink-2);font-size:13px;padding-left:20px;border-left:1px solid var(--line)}
@@ -496,4 +500,41 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
   .snap td:first-child{grid-column:1/-1}
   .snap td[data-l]::before{content:attr(data-l);display:block;font:500 10.5px/1.4 var(--f-num);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px;font-family:var(--f-num)}
   .snap .ph-x{display:none}.snap .ph-o{display:inline}.snap .pill{white-space:normal}
+}
+
+/* ---------------- glass, on floating layers only (macOS material ratios)
+   Bars: saturate 180% + blur 20px over an 80% tint (the apple.com / macOS toolbar recipe).
+   Popovers, menus, palette, drawers: saturate 180% + blur 30px over an 82% tint,
+   a 0.5px hairline edge, a top inner highlight and a large soft shadow. Cards stay solid. */
+:root{
+  --glass-bar:rgba(10,11,14,.80); --glass:rgba(22,25,31,.82);
+  --glass-edge:rgba(255,255,255,.12); --glass-hi:rgba(255,255,255,.08);
+  --glass-shadow:0 24px 64px -14px rgba(0,0,0,.62),0 0 0 .5px rgba(0,0,0,.55);
+  --mat-bar:saturate(180%) blur(20px); --mat-pop:saturate(180%) blur(30px); --scrim:rgba(4,5,7,.32);
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  --glass-bar:rgba(244,242,237,.80); --glass:rgba(252,251,248,.82);
+  --glass-edge:rgba(20,22,28,.10); --glass-hi:rgba(255,255,255,.75);
+  --glass-shadow:0 24px 64px -18px rgba(40,32,16,.28),0 0 0 .5px rgba(20,22,28,.10); --scrim:rgba(40,36,28,.14);
+}}
+:root[data-theme="light"]{
+  --glass-bar:rgba(244,242,237,.80); --glass:rgba(252,251,248,.82);
+  --glass-edge:rgba(20,22,28,.10); --glass-hi:rgba(255,255,255,.75);
+  --glass-shadow:0 24px 64px -18px rgba(40,32,16,.28),0 0 0 .5px rgba(20,22,28,.10); --scrim:rgba(40,36,28,.14);
+}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .top{background:var(--glass-bar);backdrop-filter:var(--mat-bar);-webkit-backdrop-filter:var(--mat-bar);border-bottom:.5px solid var(--glass-edge);box-shadow:inset 0 -.5px 0 var(--glass-hi)}
+  .overlay,.overlay.sheet-o{background:var(--scrim);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .palette,.drawer,.sheet,.gloss,.tip{background:var(--glass);backdrop-filter:var(--mat-pop);-webkit-backdrop-filter:var(--mat-pop);border:.5px solid var(--glass-edge);box-shadow:inset 0 .5px 0 var(--glass-hi),var(--glass-shadow)}
+  .palette{border-radius:12px}
+  .drawer{border-width:0 0 0 .5px}
+  .sheet{border-width:.5px 0 0;border-radius:16px 16px 0 0}
+  .sheet a,.sheet button{background:var(--hi)}
+  .gloss,.tip{border-radius:8px}
+  @media (max-width:1100px){.strip{background:var(--glass-bar);backdrop-filter:var(--mat-bar);-webkit-backdrop-filter:var(--mat-bar);border-bottom:.5px solid var(--glass-edge)}}
+  @media (max-width:760px){.tabbar{background:var(--glass-bar);backdrop-filter:var(--mat-bar);-webkit-backdrop-filter:var(--mat-bar);border-top:.5px solid var(--glass-edge);box-shadow:inset 0 .5px 0 var(--glass-hi)}}
+}
+@media (prefers-reduced-transparency: reduce){
+  .top,.strip,.tabbar{background:var(--bg)!important}
+  .palette,.drawer,.sheet,.gloss,.tip{background:var(--panel-2)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 }
