@@ -65,7 +65,7 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
 #bar{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);width:0;transition:width .6s var(--ease);z-index:20}
 #count{position:absolute;right:40px;bottom:26px;font:500 13px var(--f-num);color:var(--ink-3);letter-spacing:.1em;z-index:20}
 #brandmini{position:absolute;left:40px;bottom:22px;display:flex;align-items:center;gap:10px;font:600 15px var(--f-disp);color:var(--ink-2);z-index:20;letter-spacing:-.02em;transition:opacity .5s}
-#hint{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);font:500 13px var(--f-num);color:var(--ink-3);letter-spacing:.06em;z-index:20;transition:opacity .8s;white-space:nowrap}
+#hint{position:absolute;left:50%;top:26px;transform:translateX(-50%);font:500 13px var(--f-num);color:var(--ink-3);letter-spacing:.06em;z-index:20;transition:opacity .8s;white-space:nowrap}
 #hint kbd,.kbd{display:inline-block;padding:2px 7px;border:1px solid var(--line-2);border-radius:5px;font:500 12px var(--f-num);color:var(--ink-2);margin:0 2px}
 #notes{position:fixed;left:50%;bottom:16px;transform:translate(-50%,140%);width:min(900px,calc(100vw - 32px));box-sizing:border-box;padding:16px 20px;border-radius:12px;background:rgba(20,23,30,.72);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border:.5px solid rgba(255,255,255,.16);font:15px/1.55 var(--f-ui);color:var(--ink);z-index:50;transition:transform .5s var(--ease)}
 #notes.on{transform:translate(-50%,0)}
@@ -224,7 +224,7 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
 
 
 /* Pari, the mascot: lives only in the empty strip under the content (y 838-896), never over data */
-#pari{position:absolute;left:0;top:836px;width:58px;height:60px;z-index:18;cursor:pointer;transform:translateX(220px);transition:opacity .4s}
+#pari{position:absolute;left:0;top:0;width:58px;height:60px;z-index:18;cursor:pointer;transform:translate(150px,836px);transition:opacity .4s}
 #pari.hide{opacity:0;pointer-events:none}
 #pari .bod{transform-origin:29px 58px}
 #pari svg{display:block;overflow:visible}
@@ -240,7 +240,11 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
 #pari .z{font:700 12px var(--f-disp);fill:var(--ink-3);animation:zz 2.4s ease-in-out infinite}
 #pari .z.b{animation-delay:1.2s}
 @keyframes zz{0%{opacity:0;transform:translate(0,0)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
-#bub{position:absolute;left:66px;top:12px;white-space:nowrap;padding:7px 12px;border-radius:12px 12px 12px 4px;background:rgba(24,28,36,.86);border:.5px solid rgba(255,255,255,.18);font:600 14px var(--f-ui);color:var(--ink);opacity:0;transform:translateY(4px) scale(.9);transform-origin:left bottom;transition:opacity .3s var(--ease),transform .4s var(--spring);pointer-events:none}
+#bub.left{left:auto;right:66px;border-radius:12px 12px 4px 12px;transform-origin:right bottom}
+#pari .p{display:none}#pari[data-prop~="glass"] .p.glass,#pari[data-prop~="bang"] .p.bang{display:inline}
+#pari .p.bang{animation:bang .5s var(--spring) both}@keyframes bang{0%{transform:translateY(6px) scale(.3);opacity:0}100%{transform:none;opacity:1}}
+#pari svg.tilt{transform-origin:29px 58px}
+#bub{position:absolute;left:66px;top:12px;white-space:nowrap;padding:7px 12px;border-radius:12px 12px 12px 4px;background:rgba(24,28,36,.86);border:.5px solid rgba(255,255,255,.18);font:600 15px var(--f-ui);color:var(--ink);opacity:0;transform:translateY(4px) scale(.9);transform-origin:left bottom;transition:opacity .3s var(--ease),transform .4s var(--spring);pointer-events:none}
 #bub.on{opacity:1;transform:none}
 
 @media (prefers-reduced-motion: reduce){
@@ -501,6 +505,8 @@ h1,h2,h3{margin:0;font-family:var(--f-disp);font-weight:600;letter-spacing:-.035
       <g class="m wow"><ellipse cx="29" cy="40" rx="2.6" ry="3" fill="#1b1300"/></g>
       <g class="m scared"><path d="M24 40.5q1.2-1.6 2.5 0t2.5 0t2.5 0t2.5 0" stroke="#1b1300" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M45 24q2 3 0 5" stroke="#9fd8ff" stroke-width="2" fill="none" stroke-linecap="round"/></g>
       <g class="m sad"><path d="M24 41q5-4 10 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+      <g class="p glass"><path d="M44 40l7 9" stroke="#7a5a10" stroke-width="3" stroke-linecap="round"/><circle cx="41" cy="35" r="7" fill="rgba(160,220,255,.25)" stroke="#e8eef5" stroke-width="2.2"/></g>
+      <g class="p bang"><text x="29" y="13" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#eaa23c">!</text></g>
       <g class="m sleep"><path d="M20 32.5q2.5 2 5 0M33 32.5q2.5 2 5 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M26.5 39.5h5" stroke="#1b1300" stroke-width="2" stroke-linecap="round"/><text class="z" x="44" y="16">z</text><text class="z b" x="49" y="10">z</text></g>
     </g></svg>
     <div id="bub"></div>
@@ -613,7 +619,7 @@ H[5] = { enter() { const p = DATA.prem; lineChart($("#c5"), { dates: p.d, band: 
 
 /* 6 · crash */
 H[6] = { step(s) {
-  if (s === 0) { pari.dataset.mood = "scared"; if (!RM) { stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake"); const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); } }
+  if (s === 0) { if (!RM) { stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake"); const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); } }
   if (s >= 1 && !$("#c6 svg")) { const c = DATA.crash; lineChart($("#c6"), { dates: c.d, series: [{ label: "8 g coin", c: "#e0603f", v: c.GOLDGUINEA, dy: -16 }, { label: "1 g", c: "#22a892", v: c.GOLDPETAL, dy: 16 }],
       yMin: -200, yMax: 900, yTicks: [0, 300, 600, 900], yfmt: v => v + " bp", xTicks: ["2025-12-15", "2026-01-15", "2026-02-15", "2026-03-15"] }); }
 }, leave() { $("#c6").innerHTML = ""; } };
@@ -676,33 +682,90 @@ const scr = $("#screen"); scenes[13].addEventListener("mousemove", e => { if (RM
 scenes[13].addEventListener("mouseleave", () => scr.style.transform = "");
 
 /* 14 · live logo */
-const live = $("#live"); const setSig = on => { live.classList.toggle("sig", on); $("#swQ").setAttribute("aria-pressed", !on); $("#swS").setAttribute("aria-pressed", on); };
+const live = $("#live"); const setSig = on => { live.classList.toggle("sig", on); pariPush(on); $("#swQ").setAttribute("aria-pressed", !on); $("#swS").setAttribute("aria-pressed", on); };
 $("#swQ").addEventListener("click", e => { e.stopPropagation(); setSig(false); }); $("#swS").addEventListener("click", e => { e.stopPropagation(); setSig(true); });
 H[14] = { enter() { setSig(false); }, step(s) { if (s >= 1) { later(() => setSig(true), 200); later(() => setSig(false), 2200); later(() => setSig(true), 3400); } } };
 
 
-/* ------------------------------------------------ Pari the mascot (bottom strip only) */
-const pari = $("#pari"), bub = $("#bub");
-const PX = [220, 700, 260, 1100, 980, 1100, 300, 900, 1120, 300, 720, 280, 1100, 260, 640, 1060];
-const PM = ["happy", "wow", "happy", "happy", "wow", "happy", "scared", "sad", "happy", "wink", "happy", "sleep", "happy", "wow", "wow", "happy"];
-const PQ = ["Psst… take a guess!", "That's me!", "Big questions.", "180 files. I counted.", "Twins!", "Snack-pack pricing!", "Eek!", "My coins…", "We kept the receipts.", "Pinky promise.", "It's the gap, not gold.", "Shh… all quiet.", "All ticked!", "Try it live!", "That's my cousin!", "Thank you!"];
-let px = 220, bubT = 0, hopAnim = null;
-function say(txt, ms = 2800) { clearTimeout(bubT); bub.textContent = txt; bub.classList.add("on"); bubT = setTimeout(() => bub.classList.remove("on"), ms); }
-function hop(to, then) {
-  const from = px; px = to; hopAnim?.cancel();
-  if (RM || from === to) { pari.style.transform = `translateX(${to}px)`; then?.(); return; }
-  const up = Math.min(64, 26 + Math.abs(to - from) / 22), dur = 520 + Math.min(420, Math.abs(to - from) * .5);
-  hopAnim = pari.animate([
-    { transform: `translateX(${from}px) translateY(0) scale(1.12,.84)` },
-    { transform: `translateX(${from + (to - from) * .12}px) translateY(-${up * .6}px) scale(.92,1.12)`, offset: .18 },
-    { transform: `translateX(${from + (to - from) * .5}px) translateY(-${up}px) scale(.96,1.06)`, offset: .5 },
-    { transform: `translateX(${to}px) translateY(0) scale(1.18,.8)`, offset: .86 },
-    { transform: `translateX(${to}px) translateY(0) scale(1,1)` }], { duration: dur, easing: "cubic-bezier(.3,0,.3,1)", fill: "forwards" });
-  hopAnim.onfinish = () => { pari.style.transform = `translateX(${to}px)`; hopAnim.cancel(); hopAnim = null; then?.(); };
+/* ------------------------------------------------ Pari, the narrator
+   Home is the empty strip under every scene (y 836). Off-strip spots are only in empty space, checked per step. */
+const pari = $("#pari"), bub = $("#bub"), psvg = $("#pari svg");
+const STRIP = 836;
+let pos = { x: 150, y: STRIP }, bubT = 0, moving = null;
+const setT = p => pari.style.transform = `translate(${p.x}px,${p.y}px)`;
+function say(txt, { ms = 3600, side } = {}) {
+  clearTimeout(bubT); if (!txt) { bub.classList.remove("on"); return; }
+  bub.textContent = txt; bub.classList.remove("left");
+  const w = bub.offsetWidth || txt.length * 8;
+  if (side === "left" || (!side && pos.x + 66 + w > 1460)) bub.classList.add("left");
+  bub.classList.add("on"); bubT = setTimeout(() => bub.classList.remove("on"), ms);
 }
-function pariFor(i) { bub.classList.remove("on"); pari.dataset.mood = "happy"; hop(PX[i] ?? 260, () => { pari.dataset.mood = PM[i] || "happy"; say(PQ[i] || ""); }); }
-pari.addEventListener("click", e => { e.stopPropagation(); const m = pari.dataset.mood; pari.dataset.mood = "wow"; if (!RM) pari.animate([{ transform: `translateX(${px}px)` }, { transform: `translateX(${px}px) translateY(-34px) rotate(-8deg)`, offset: .45 }, { transform: `translateX(${px}px) translateY(0) scale(1.15,.82)`, offset: .85 }, { transform: `translateX(${px}px)` }], { duration: 620, easing: "ease-out" });
-  say(["Hi!", "Hehe!", "That tickles!", "Still here!", "Gold, ±0 bp."][Math.floor(Math.random() * 5)], 1600); setTimeout(() => pari.dataset.mood = m, 1700); });
+function move(to, { up, dur, then } = {}) {
+  const from = { ...pos }; pos = { ...to }; moving?.cancel(); moving = null;
+  const dist = Math.hypot(to.x - from.x, to.y - from.y);
+  if (RM || dist < 1) { setT(to); then?.(); return; }
+  up = up ?? Math.min(70, 24 + dist / 20); dur = dur ?? 480 + Math.min(460, dist * .45);
+  const mid = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - up };
+  moving = pari.animate([
+    { transform: `translate(${from.x}px,${from.y}px) scale(1.12,.84)` },
+    { transform: `translate(${from.x + (to.x - from.x) * .14}px,${from.y + (mid.y - from.y) * .6}px) scale(.92,1.12)`, offset: .18 },
+    { transform: `translate(${mid.x}px,${mid.y}px) scale(.96,1.06)`, offset: .5 },
+    { transform: `translate(${to.x}px,${to.y}px) scale(1.18,.8)`, offset: .86 },
+    { transform: `translate(${to.x}px,${to.y}px)` }], { duration: dur, easing: "cubic-bezier(.3,0,.3,1)", fill: "forwards" });
+  moving.onfinish = () => { setT(to); moving?.cancel(); moving = null; then?.(); };
+}
+const mood = m => pari.dataset.mood = m || "happy";
+const prop = p => pari.dataset.prop = p || "";
+function bounce(h = 22) { if (RM) return; pari.animate([{ transform: `translate(${pos.x}px,${pos.y}px)` }, { transform: `translate(${pos.x}px,${pos.y - h}px) scale(.94,1.08)`, offset: .45 }, { transform: `translate(${pos.x}px,${pos.y}px) scale(1.14,.84)`, offset: .85 }, { transform: `translate(${pos.x}px,${pos.y}px)` }], { duration: 480, easing: "ease-out" }); }
+function tumble() { if (RM) return; psvg.classList.add("tilt"); psvg.animate([{ transform: "rotate(0)" }, { transform: "rotate(-95deg) translateY(4px)", offset: .25 }, { transform: "rotate(-90deg) translateY(4px)", offset: .7 }, { transform: "rotate(8deg)", offset: .88 }, { transform: "rotate(0)" }], { duration: 2000, easing: "ease-in-out" }); }
+const strip = x => ({ x, y: STRIP });
+
+/* where Pari stands, per scene (strip x), and the special off-strip spots */
+const HOME = [150, 700, 220, 150, 980, 1080, 260, 300, 980, 260, 980, 260, 980, 220, 640, 980];
+const SPOT = {
+  logoTop: { x: 771, y: 88 },                // standing on the title's top bar (empty sky above it)
+  panIn: { x: 1041, y: 512 }, panUp: { x: 1034, y: 451 },   // in the right-hand pan of the scale, then riding it up
+  push: { x: 560, y: 436 }, pushed: { x: 600, y: 436 }      // beside the live logo's lower bar
+};
+/* narration: one entry per step; side effects in fx */
+const N = [
+  [{ t: "Hi, I'm Pari. One gram of gold." }, { t: "Which of us is cheapest? Pick one!" }, { t: "Plot twist: all ≈ ₹15,400 a gram.", m: "wow" }, { t: "Nearly equal. Measuring “nearly” is our job." }],
+  [{ t: "That's us. Two equal bars.", at: "logoTop", m: "wow" }],
+  [{ t: "One: are we all worth the same?" }, { t: "Two: can you profit from our differences?" }, { t: "Three: when should a trader even look?" }],
+  [{ t: "Reading every MCX file…", fx: "run" }, { t: "180 files. Zero unexplained errors.", m: "wow" }],
+  [{ t: "Zooming in on the two big bars…", p: "glass" }, { t: "0.8 bp apart. Basically twins.", m: "wow" }],
+  [{ t: "Small sizes cost more per gram." }, { t: "Like snack packets. Trust me, I'm 1 g." }, { t: "Steady premium, but not a trade alone." }],
+  [{ t: "Whoa! Gold just fell 10%!", m: "scared", fx: "tumble" }, { t: "The big bar fell first. We lagged.", m: "scared" }, { t: "That lag is where the money was.", m: "wow" }],
+  [{ t: "Big number. Now let's be honest." }, { t: "Fees and taxes… my coins!", m: "sad", fx: "chase" }, { t: "Realistic fills. Ouch.", m: "sad", fx: "chase" }, { t: "Wait. One month made all of it?", m: "wow" }, { t: "Every other month lost money.", m: "sad" }],
+  [{ t: "Most backtests stop at the gold bar." }, { t: "We show what's left after real life." }],
+  [{ t: "Rules first, data after. Git saw it all." }, { t: "Sealed. Pinky promise.", m: "wink", fx: "thud" }],
+  [{ t: "Let me weigh in…", at: "panIn", side: "left" }, { t: "Gold's part: 1.4%", at: "panUp", side: "left", m: "wow", dur: 1500 }],
+  [{ t: "Shh… all quiet today.", m: "sleep" }, { t: "68 alerts in three years.", m: "wow", p: "bang" }, { t: "When it rings, the gap beats the cost." }],
+  [{ t: "Check, check, check… all eight!", fx: "ticks" }],
+  [{ t: "This is the dashboard. Answer first." }, { t: "Slide the costs, watch the profit." }, { t: "And it stays quiet till it matters." }],
+  [{ t: "Watch this…", at: "push", side: "left" }, { t: "A gap opens, the bar moves!", at: "push", side: "left", m: "wow" }],
+  [{ t: "Calm markets: no free lunch." }, { t: "A crash: a real edge." }, { t: "And a tool that tells you which." }, { t: "Thank you! Questions?", fx: "wave" }]
+];
+let lastScene = -1;
+function pariStep(i, s) {
+  const n = (N[i] || [])[s] || {}, first = i !== lastScene; lastScene = i;
+  prop(n.p); bub.classList.remove("on");
+  const dest = n.at ? SPOT[n.at] : (first || pos.y !== STRIP ? strip(HOME[i] ?? 260) : pos);
+  const land = () => { mood(n.m); say(n.t, { side: n.side }); fx(n.fx, i); };
+  if (first || dest.x !== pos.x || dest.y !== pos.y) { mood("happy"); move(dest, { dur: n.dur, then: land }); } else land();
+}
+function fx(f, i) {
+  if (f === "run") { [300, 480, 660, 820].forEach((x, k) => later(() => move(strip(x), { up: 18, dur: 420 }), 700 + k * 650)); }
+  if (f === "tumble") tumble();
+  if (f === "chase") { [520, 300, 640, 420].forEach((x, k) => later(() => move(strip(x), { up: 16, dur: 360 }), 250 + k * 420)); }
+  if (f === "thud") later(() => bounce(30), 540);
+  if (f === "ticks") for (let k = 0; k < 8; k++) later(() => bounce(14), 500 + k * 260);
+  if (f === "wave") { for (let k = 0; k < 3; k++) later(() => bounce(24), 300 + k * 520); }
+}
+/* the live-logo push: Pari moves with the lower bar */
+function pariPush(on) { if (cur !== 14 || step < 1 || pos.y !== SPOT.push.y) return; move(on ? SPOT.pushed : SPOT.push, { up: 4, dur: 700 }); }
+pari.addEventListener("click", e => { e.stopPropagation(); const m = pari.dataset.mood; mood("wow"); bounce(30);
+  say(["Hi!", "Hehe!", "That tickles!", "Still here!", "Gold, ±0 bp."][Math.floor(Math.random() * 5)], { ms: 1600 }); setTimeout(() => mood(m), 1700); });
 
 /* ------------------------------------------------ navigation */
 const NOTES = [
@@ -729,9 +792,9 @@ function applyStep(sc, s) { $$(".f[data-s]", sc).forEach(e => e.classList.toggle
 function go(i, s = 0, dir = 1) {
   i = Math.max(0, Math.min(scenes.length - 1, i));
   if (i !== cur) { clearTimers(); if (cur >= 0) { scenes[cur].classList.remove("active"); H[cur]?.leave?.(); } scenes.forEach((x, k) => x.classList.toggle("past", k < i));
-    cur = i; const sc = scenes[i]; sc.classList.add("active"); applyStep(sc, -1); H[i]?.enter?.(); pariFor(i); }
+    cur = i; const sc = scenes[i]; sc.classList.add("active"); applyStep(sc, -1); H[i]?.enter?.(); }
   const max = (+scenes[i].dataset.steps || 1) - 1; step = Math.max(0, Math.min(max, s));
-  applyStep(scenes[i], step); H[i]?.step?.(step, dir);
+  applyStep(scenes[i], step); H[i]?.step?.(step, dir); pariStep(i, step);
   count.textContent = String(i + 1).padStart(2, "0") + " / " + scenes.length;
   bar.style.width = ((i + (step + 1) / (max + 1)) / scenes.length * 100) + "%";
   notesTxt.textContent = NOTES[i] || ""; $("#brandmini").style.opacity = i === 1 || i === 14 || i === 15 ? 0 : 1;
