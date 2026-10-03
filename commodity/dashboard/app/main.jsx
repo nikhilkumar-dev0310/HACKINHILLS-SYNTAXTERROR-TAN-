@@ -26,7 +26,10 @@ function ThemeSwitch({ theme, setTheme }) {
 /* ---------- command menu (⌘K / Ctrl+K) */
 function buildItems(go, ctx) {
   const it = [];
-  VIEWS.forEach(([id, l], i) => it.push({ id: "v" + id, group: "Sections", title: l, hint: String(i + 1), keys: "page section " + id, icon: id, run: () => go(id) }));
+  const KW = { overview: "summary home start answer premium prices", brief: "problem statement requirements checklist judges", relative: "pairs gap spread cheap expensive premium",
+    term: "curve carry expiry roll-down slope", backtest: "profit strategy trades costs slippage csv results honest typical", signals: "alerts alert today fair price signal z sigma",
+    calendar: "contracts expiry listing tender liquidity calendar", quality: "data checks errors flags integrity vwap files" };
+  VIEWS.forEach(([id, l], i) => it.push({ id: "v" + id, group: "Sections", title: l, hint: String(i + 1), keys: "page section " + id + " " + KW[id], icon: id, run: () => go(id) }));
   D.pairs.forEach(p => it.push({ id: "p" + p.pair, group: "Pairs", title: pname(p.pair), hint: "Relative value", keys: "pair gap spread " + p.pair.replace("M-", "GOLDM "), icon: "relative", run: () => { ctx.setRvPair(p.pair); go("relative"); } }));
   SYMS.forEach(s => it.push({ id: "c" + s, group: "Contracts", title: `${s} contracts`, hint: SYM[s].d, keys: "contract calendar expiry " + s.replace("GOLD", ""), icon: "calendar", run: () => { ctx.setCalF(s); go("calendar"); } }));
   EVENTS.slice().reverse().forEach(e => it.push({ id: "e" + e.date, group: "Events", title: `${fdate(e.date)} · ${e.tag}`, hint: "Overview chart", keys: e.text + " " + e.date, icon: "overview", run: () => go("overview") }));

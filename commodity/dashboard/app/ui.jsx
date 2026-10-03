@@ -35,7 +35,7 @@ export function Reveal({ as: Tag = "div", className = "", children, ...rest }) {
 export function Card({ fig, title, sub, actions, children, className = "", id }) {
   return <Reveal as="section" className={"card " + className} id={id} aria-label={typeof title === "string" ? title : undefined}>
     {(title || actions) && <header className="card-h">
-      <div className="card-t">{fig && <span className="fig">{fig}</span>}{title && <h2>{title}</h2>}{sub && <p className="sub">{sub}</p>}</div>
+      <div className="card-t">{title && <h2>{title}</h2>}{sub && <p className="sub">{sub}</p>}</div>
       {actions && <div className="acts">{actions}</div>}
     </header>}
     {children}
@@ -115,4 +115,21 @@ export function downloadCSV(name, header, rows) {
 }
 export function CsvButton({ label, onClick }) {
   return <button type="button" className="btn" aria-label={label} title={label} onClick={onClick}><Icon name="download" size={16} />CSV</button>;
+}
+
+/* "In short": the one thing to take from a page, said first. */
+export function Takeaway({ children, points }) {
+  return <Reveal className="take" role="note" aria-label="In short">
+    <div className="take-l">In short</div>
+    <div className="take-b"><p className="take-p">{children}</p>
+      {points && <ol className="take-pts">{points.map((p, i) => <li key={i}><span className="tn">{i + 1}</span><span>{p}</span></li>)}</ol>}</div>
+  </Reveal>;
+}
+
+/* Detail on demand: a native disclosure, closed by default, so a page shows its answer first. */
+export function More({ title, hint, children, open = false }) {
+  return <details className="more" open={open}>
+    <summary><span className="mt-t">{title}</span>{hint && <span className="mt-h">{hint}</span>}<span className="chev" aria-hidden="true" /></summary>
+    <div className="more-b">{children}</div>
+  </details>;
 }
