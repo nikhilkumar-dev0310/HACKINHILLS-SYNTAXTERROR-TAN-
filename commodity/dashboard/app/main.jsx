@@ -2,6 +2,16 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import { D, NAME, VIEWS, SYMS, SYM, EVENTS, GLOSSARY, fdate, pname, reducedMotion } from "./lib.js";
 import { AppCtx, Icon } from "./ui.jsx";
+
+/* The Equal Ingot: two gold bars as an equals sign. When a contract is off fair price today, the lower bar steps right. */
+const HOT = D.signals.rows.filter(r => Math.abs(r.z) >= D.signals.threshold).length;
+function Mark() {
+  return <span className={"mark" + (HOT ? " hot" : "")} title={HOT ? `${HOT} contract${HOT > 1 ? "s" : ""} off fair price today` : undefined}>
+    <svg viewBox="9 11 32 26" width="30" height="24" aria-hidden="true">
+      <path className="bar" d="M14 13h20l3.2 8.6H10.8z" />
+      <path className="bar lo" d="M14 26.4h20l3.2 8.6H10.8z" />
+    </svg></span>;
+}
 import { Overview, Brief, Relative, Term_, Backtest, Signals, Calendar, Quality } from "./views.jsx";
 
 const PAGES = { overview: Overview, brief: Brief, relative: Relative, term: Term_, backtest: Backtest, signals: Signals, calendar: Calendar, quality: Quality };
@@ -119,7 +129,7 @@ function App() {
     <a className="skip" href="#main" onClick={e => { e.preventDefault(); focusHead(); }}>Skip to content</a>
     <div className="bgfx" aria-hidden="true"><i /><i /></div>
     <header className="top">
-      <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><span className="mark">Au</span><span className="wm">{NAME}<small>MCX gold futures</small></span></a>
+      <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><Mark /><span className="wm">{NAME}<small>MCX gold futures</small></span></a>
       <div className="crumb" aria-hidden="true"><span className="num">{String(idx + 1).padStart(2, "0")} / 08</span>{label(view)}</div>
       <div className="top-r">
         <button type="button" className="search" onClick={() => setPal(true)} aria-label="Search (Ctrl+K)"><Icon name="search" size={16} /><span className="sl">Search</span><kbd>{isMac ? "⌘" : "Ctrl"} K</kbd></button>

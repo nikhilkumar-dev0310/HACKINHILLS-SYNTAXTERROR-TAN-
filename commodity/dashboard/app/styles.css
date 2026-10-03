@@ -73,7 +73,11 @@ p{margin:0}
 .top{position:sticky;top:0;z-index:40;height:var(--top);display:flex;align-items:center;gap:20px;padding:0 clamp(16px,3vw,32px);
   background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
-.mark{width:32px;height:32px;border-radius:7px;display:grid;place-items:center;background:linear-gradient(140deg,#f5b83d,#c98d0c);color:#1b1300;font:700 12.5px var(--f-num);box-shadow:0 6px 18px -8px #f5b83d}
+.mark{width:32px;height:32px;display:grid;place-items:center}
+.mark .bar{fill:var(--gold);stroke:var(--gold);stroke-width:1.6;stroke-linejoin:round;transition:transform var(--dur-3) var(--ease-emph)}
+.mark.hot .lo{fill:var(--warn);stroke:var(--warn);transform:translateX(3px)}
+.brand:hover .mark .lo{transform:translateX(1.5px)}
+.mark.hot .lo,.brand:hover .mark.hot .lo{transform:translateX(3px)}
 .wm{font:600 19px/1 var(--f-disp);letter-spacing:-.03em;display:flex;flex-direction:column;gap:3px}
 .wm small{font:500 10px/1 var(--f-num);letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 .crumb{display:flex;align-items:center;gap:10px;color:var(--ink-2);font-size:13px;padding-left:20px;border-left:1px solid var(--line)}
