@@ -126,6 +126,13 @@ def main():
                       ("clean/gold_futures.csv", "clean/gold_futures_history.csv", "clean/sealed_rows.csv") if os.path.exists(f)])
     out["meta"]["all"] = {"rows": int(len(_all)), "contracts": int(_all.groupby(["symbol", "expiry_date"]).ngroups),
                           "first": str(_all.date.min())[:10], "last": str(_all.date.max())[:10]}
+    # closes outside the day's high-low, over every row we hold. MCX settles a contract on its last trading day at
+    # the Due Date Rate (contract specification), not at a traded price, so that close can sit outside the traded range.
+    _x = pd.concat([pd.read_csv(f, usecols=["date", "symbol", "expiry_date", "high", "low", "close"]) for f in
+                    ("clean/gold_futures.csv", "clean/gold_futures_history.csv", "clean/sealed_rows.csv") if os.path.exists(f)])
+    _last = _x.groupby(["symbol", "expiry_date"]).date.transform("max")
+    _oob = (_x.high > 0) & ((_x.close > _x.high + 1e-9) | (_x.close < _x.low - 1e-9))
+    out["expiry_settle"] = {"outside": int(_oob.sum()), "on_last_day": int((_oob & (_x.date == _last)).sum()), "rows": int(len(_x))}
 
     # ---------- backtests (stored single runs)
     def summ(df, label, extra=None):

@@ -62,11 +62,11 @@ function BriefQA() {
     ["Term structure and carry", "How much of a price change is mechanical roll-down, and how much is the curve itself moving?",
       <>Roll-down is about {Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% a month for GOLDM; curve moves average {rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}%, so most change is the curve.</>, "term"],
     ["Walk-forward backtest", "Replayed day by day with no look-ahead, after costs and thin days, does a strategy make money?",
-      <>Strategy A {inr(A5.net)}, Strategy B {inr(B5.net)} net at 5 bp on a sealed holdout. A's profit came almost all from January 2026.</>, "backtest"],
+      <>Strategy A {inr(A5.net)} ({inr(lc.A_hold.net_outside_tender_only)} counting only trades a broker would allow), Strategy B {inr(B5.net)} net at 5 bp on a sealed holdout. A's profit came almost all from January 2026.</>, "backtest"],
     ["Trader alerts", "Do alerts flag real opportunities and stay quiet when there is nothing to act on?",
       <>{hot ? `${hot} alert${hot > 1 ? "s" : ""} today.` : "Quiet today."} {D.alerts.history.length} alerts in the record; one fires only beyond ±{k}σ from fair price.</>, "signals"],
     ["Contract lifecycle", "Does every entry and exit sit inside the contract calendar, including the tender period?",
-      <>Every trade starts after listing. B always exits before tender; A's {lc.A_hold.trades - lc.A_hold.outside_tender} tender trades are shown and can be left out.</>, "calendar"]
+      <>Every trade starts after listing. B always exits before tender; A's {lc.A_hold.trades - lc.A_hold.outside_tender} late exits are left out by default.</>, "calendar"]
   ];
   const fin = [
     ["Validated on unseen history?", "Yes. Three sealed tests, each run once after the rules were frozen in Git: Aug 2025 – May 2026, 2016–2019 and 2020–2023.", "backtest"],
@@ -151,12 +151,12 @@ export function Brief() {
     ["Trader-facing intelligence", "Build dashboards or alerts that highlight meaningful opportunities. Keep alerts quiet when there is no meaningful signal. Attribute performance to the strategy rather than simply to gold-price movement.",
       ["This site; the Signals page stays “Quiet” unless a contract is ±1.5σ from fair", `A full alert history: ${D.alerts.history.length} past alerts and what each gap did next, against ordinary days and the cost of a round trip`, `Every trade's profit split into gap and gold parts: gold's own move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's and ${Math.abs(att.B_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy B's holdout gross profit`], "backtest"],
     ["Contract lifecycle planning", "Track listing dates, liquidity development, tender periods, and expiry. Place every intended entry and exit inside the relevant contract calendar.",
-      ["Every contract's first and last day, its tender period, and how liquidity builds", `All trades start after listing. Strategy B exits before the tender period every time; Strategy A held ${lc.A_hold.trades - lc.A_hold.outside_tender} of ${lc.A_hold.trades} holdout trades into it, shown and excluded on request`], "calendar"]
+      ["Every contract's first and last day, its tender period, and how liquidity builds", `All trades start after listing. Strategy B exits before the tender period every time; Strategy A exited ${lc.A_hold.trades - lc.A_hold.outside_tender} of ${lc.A_hold.trades} holdout trades inside Parity's 5-day cut-off (${lc.A_hold.trades - lc.A_hold.outside_exchange_tender} inside MCX's own 3-day tender period); they are left out by default. Tender rule cited from the MCX contract specifications`], "calendar"]
   ];
   const fin = [
     ["Create a functional prototype that transforms exchange settlement data into a defensible analytical signal or intelligence product", "This site, rebuilt by two scripts from the official MCX files"],
     ["…and validates the approach using unseen historical data", `Three sealed tests, each run once: Aug 2025 – May 2026, then ${D.meta.sealed_contracts} contracts from 2016–2023, walled off in code until the rules were frozen`],
-    ["Report performance after relevant costs using the prices of the contracts actually held", `Every trade priced on the exact contracts held. Strategy A ${inr(A5.net)}, Strategy B ${inr(B5.net)} at 5 bp`],
+    ["Report performance after relevant costs using the prices of the contracts actually held", `Every trade priced on the exact contracts held. Strategy A ${inr(A5.net)} (${inr(lc.A_hold.net_outside_tender_only)} broker-allowed only), Strategy B ${inr(B5.net)} at 5 bp`],
     ["Clearly separate strategy performance from the impact of the underlying gold price", "Exact per-trade split into gap and gold parts, plus each trade plotted against gold's move"],
     ["A rigorous demonstration that no persistent edge survives costs is also a valid analytical outcome", `Our verdict: no dependable edge after costs. The fair-price model is ${inr(D.sealed.boot5.B.net)} over 2016–2023 at 5 bp, but its 95% range includes zero`]
   ];
@@ -281,7 +281,7 @@ function HonestyGap() {
     ["Costs", "Left out", "MCX fee, CTT, stamp duty, SEBI fee, brokerage and GST on all four legs"],
     ["Fills", "Settlement price, no slippage", "5 bp worse on every leg, each side"],
     ["Data", "The window the settings were chosen on", "A sealed window, run once after the rules were frozen in Git"],
-    ["Tender period", "Ignored", `Checked: Strategy A's ${D.trades.A_hold.filter(t => !t.ok_tender).length} trades held into it are shown`]
+    ["Tender period", "Ignored", `Checked against the MCX specification: Strategy A's ${D.trades.A_hold.filter(t => !t.ok_tender).length} late exits are left out by default`]
   ];
   const S = [["A", "Strategy A", ag, a5, "sealed holdout before costs (its tuning window lost money)", "sealed holdout, all costs, 5 bp"],
     ["B", "Strategy B", bg, b5, "development window it was tuned on, before costs", "sealed holdout, all costs, 5 bp"]];
@@ -317,21 +317,24 @@ function SealedTests({ s }) {
     <p className="note">Retraining (C) chose a stress filter on {C.years} training years: {inr(C.dev_net5)} at 5 bp, {inr(C.q1_2026)} of it in Q1 2026, against {inr(C.b_dev_net5)} for B's rules on the same days.
       Out of sample it did not beat B. In the March 2020 crash the small contracts moved the other way and the gap widened after entry (Feb–Jun 2020 at 5 bp: B {inr(S.covid.B)}, C {inr(S.covid.C)}).
       Choosing the setting year by year with only earlier years would have made {inr(C.wf_total)} on training data, an early warning that the edge comes in bursts.</p>
+    <p className="note"><b>Read the sealed columns, not the training number.</b> C's setting was the best of 72 tried (2 reference windows × 3 thresholds × 3 stress filters × 2 exits × 2 holding limits); the best of many settings looks good on its own training data partly by chance. A and B were frozen once, in 2025, before these years were opened.
+      <b> Costs for older years</b> use today's MCX fee, CTT, SEBI fee, stamp duty and GST rates. The real schedule differed in places (stamp duty was set state by state before July 2020), so 2016–2023 costs are an approximation. Fees and taxes are 18–35% of total costs at 5 bp in these years; the rest is slippage, which the slider already varies.</p>
   </Card>;
 }
 
 export function Backtest() {
-  const [key, setKey] = useState("A_hold"), [s, setS] = useState(5), [tonly, setTonly] = useState(false), [filter, setFilter] = useState("All"), [sort, setSort] = useState({ k: "entry", dir: "asc" }), [page, setPage] = useState(0);
+  const [key, setKey] = useState("A_hold"), [s, setS] = useState(5), [tonly, setTonly] = useState(true), [filter, setFilter] = useState("All"), [sort, setSort] = useState({ k: "entry", dir: "asc" }), [page, setPage] = useState(0);
   const all = D.trades[key], tr = tonly ? all.filter(t => t.ok_tender) : all, info = D.backtests[key];
   const near = info.rows.reduce((a, r) => Math.abs(r.slip - s) < Math.abs(a.slip - s) ? r : a);
   const inTender = all.length - all.filter(t => t.ok_tender).length;
+  const lc0 = Object.fromEntries(D.lifecycle_summary.map(x => [x.run, x]));
   const nets = tr.map(t => netAt(t, s)), tot = nets.reduce((a, b) => a + b, 0), hit = nets.filter(v => v > 0).length / nets.length * 100, gross = tr.reduce((a, t) => a + t.gross, 0);
   const gp = tr.reduce((a, t) => a + t.gap_part, 0), gd = tr.reduce((a, t) => a + t.gold_part, 0), ab = Math.abs(gp) + Math.abs(gd) || 1;
   const xs2 = tr.map(t => t.gold_move), mx = xs2.reduce((a, b) => a + b, 0) / xs2.length, my = tot / nets.length;
   const corr = xs2.reduce((a, x, i) => a + (x - mx) * (nets[i] - my), 0) / Math.sqrt(xs2.reduce((a, x) => a + (x - mx) ** 2, 0) * nets.reduce((a, y) => a + (y - my) ** 2, 0) || 1);
   const jan = tr.map((t, i) => t.entry.startsWith("2026-01") ? nets[i] : null).filter(v => v != null), rest = tot - jan.reduce((a, b) => a + b, 0);
   const V = {
-    A_hold: <><b>One event.</b> January 2026 alone made {inr(jan.reduce((a, b) => a + b, 0))} from {jan.length} trades; the other {tr.length - jan.length} trades made {inr(rest)}. Outside the crash, this rule loses after costs. {inTender} trades were held 1–3 business days into the <Term k="tender">tender period</Term>, which a broker would not allow; tick “Only trades a broker would allow” below to leave them out.</>,
+    A_hold: <><b>One event.</b> January 2026 alone made {inr(jan.reduce((a, b) => a + b, 0))} from {jan.length} trades; the other {tr.length - jan.length} trades made {inr(rest)}. Outside the crash, this rule loses after costs. {inTender} trades exited inside our 5-business-day cut-off ({lc0.A_hold.trades - lc0.A_hold.outside_exchange_tender} of them inside MCX's own 3-day <Term k="tender">tender period</Term>). They are left out by default; untick “Only trades a broker would allow” to include them.</>,
     B_hold: <><b>Positive, not proven.</b> It earned on GUINEA and PETAL, where a real premium exists, and lost on GOLDTEN, where there is none. With {info.rows[0].weeks} independent weeks the 95% range still includes zero at 5 bp.</>,
     A_test: <><b>Break-even near 3.5 bp.</b> Profitable only with near-perfect fills. Move the slider below 3.5 to see it turn positive.</>,
     B_dev: <><b><Term k="insample">In-sample</Term>.</b> These are the numbers the setting was chosen on, so they overstate. About 80% of the profit came from the swings of 1–15 April 2025.</>
@@ -357,7 +360,7 @@ export function Backtest() {
     <Reveal className="card controls-card">
       <div className="controls">
         <div className="ctl"><div className="lab">Strategy and period</div><Seg label="Strategy and period" value={key} onChange={pickKey} options={Object.entries(BT).map(([k, v]) => [k, v.name])} /></div>
-        <label className="toggle"><input type="checkbox" checked={tonly} onChange={e => { setTonly(e.target.checked); setPage(0); }} /><span>Only trades a broker would allow<br /><small>exit before the 5-day <Term k="tender">tender period</Term></small></span></label>
+        <label className="toggle"><input type="checkbox" checked={tonly} onChange={e => { setTonly(e.target.checked); setPage(0); }} /><span>Only trades a broker would allow<br /><small>exit at least 5 business days before expiry (<Term k="tender">tender</Term>)</small></span></label>
         <div className="slider"><div className="row"><label htmlFor="slip">Slippage per leg, each side</label><b><span>{s.toFixed(1)}</span> bp</b></div>
           <input id="slip" className="range" type="range" min="0" max="10" step="0.5" value={s} onChange={e => setS(+e.target.value)} />
           <div className="row ticks"><span>0 · perfect fills</span><span>5 · realistic</span><span>10 · poor</span></div></div>
@@ -483,7 +486,7 @@ export function Calendar() {
       Each bar is one contract from the first to the last day in our files. GOLDM expires around the 5th; the others at month end. Hover a bar for its liquidity.
     </Hero>
     <Takeaway>{D.meta.contracts} contracts, each tracked from listing to expiry. Strategy B always closed before the delivery (tender) period; Strategy A held {L.A_hold.trades - L.A_hold.outside_tender} of {L.A_hold.trades} holdout trades into it, which a broker would not allow. Leaving those out, A still made {inr(L.A_hold.net_outside_tender_only)} at 5 bp.</Takeaway>
-    <Card title={`${cs.length} contracts`} sub={<>The darker end of each bar is the 5-business-day <Term k="tender">tender period</Term>, when positions must already be closed. Shaded band: Dec 2025 – Mar 2026 crash.</>}
+    <Card title={`${cs.length} contracts`} sub={<>The darker end of each bar is the last 5 business days, which Parity keeps clear: stricter than the 3-trading-day <Term k="tender">tender period</Term> in the MCX contract specification. Shaded band: Dec 2025 – Mar 2026 crash.</>}
       actions={<div className="stack-r"><Seg label="Contract type" value={calF} onChange={setCalF} options={["All", ...SYMS].map(s => [s, s === "All" ? "All" : s.replace("GOLD", "") || "M"])} small />
         <Seg label="Trades shown" value={calT} onChange={setCalT} options={[["none", "No trades"], ["A_hold", "Strategy A trades"], ["B_hold", "Strategy B trades"]]} small /></div>}>
       <div className="legend"><span><i style={{ background: "var(--ink)", opacity: .55 }} />Tender period</span>{calT !== "none" && <><span><i style={{ background: "var(--good)" }} />Trade, profit</span><span><i style={{ background: "var(--bad)" }} />Trade, loss</span><span><i className="ring" />Exit inside tender period</span></>}<span><i className="box" />Crash period</span></div>
@@ -497,7 +500,7 @@ export function Calendar() {
       <More title="Every trade checked against its contract" hint="Entry after listing, exit before the tender period">
         <div className="tw"><table><thead><tr><th>Run</th><th className="n">Trades</th><th className="n">After listing</th><th className="n">Clear of tender</th><th className="n">Net, all</th><th className="n">Net, allowed</th></tr></thead>
           <tbody>{["A_test", "A_hold", "B_dev", "B_hold"].map(k => { const a = L[k]; return <tr key={k}><td><b>{nm[k]}</b></td><td className="n">{a.trades}</td><td className="n">{a.inside_life}</td><td className={"n " + (a.outside_tender < a.trades ? "neg" : "pos")}>{a.outside_tender}</td><td className="n">{inr(a.net_all)}</td><td className="n">{inr(a.net_outside_tender_only)}</td></tr>; })}</tbody></table></div>
-        <p className="note">Strategy A's force-exit was 3 calendar days before expiry, which can fall inside MCX's 5-business-day tender period. Strategy B exits 5 business days before expiry and is always clear. Net at 5 bp slippage.</p>
+        <p className="note">“Clear of tender” uses Parity's 5-business-day cut-off. Against the exchange rule alone (tender = last 3 trading days, expiry day included, per the MCX contract specifications for GOLDM, GOLDTEN, GOLDGUINEA and GOLDPETAL), Strategy A's sealed holdout had {L.A_hold.trades - L.A_hold.outside_exchange_tender} exits inside tender. Strategy A's force-exit was 3 calendar days before expiry; Strategy B exits 5 business days before expiry and is always clear. Net at 5 bp slippage.</p>
       </More>
     </div>
   </>;
@@ -528,6 +531,16 @@ export function Quality() {
         <div className="tw"><table><thead><tr><th>Measure</th><th className="n">Typical</th><th className="n">90% of days</th></tr></thead>
           <tbody>{D.close_vs_vwap.map(r => <tr key={r.symbol}><td>{r.symbol.startsWith("spread") ? <b>Gap {r.symbol.replace("spread ", "").replace("-", " − ")}</b> : r.symbol}</td><td className="n">{r.median_abs_gap_bp.toFixed(1)} bp</td><td className="n">{r.p90_abs_gap_bp.toFixed(1)} bp</td></tr>)}</tbody></table></div>
         <p className="note">The gap between two contracts is what a spread trade pays. A typical 7–8 bp there is why 5 bp per leg is our realistic slippage.</p>
+      </More>
+      <More title="Rules taken from the MCX contract specifications" hint="Official GOLDM, GOLDTEN, GOLDGUINEA and GOLDPETAL specification documents">
+        <div className="tw"><table><thead><tr><th>Rule</th><th>What the specification says</th><th>How Parity uses it</th></tr></thead><tbody>
+          <tr><td><b>Size and quote</b></td><td>GOLDM 100 g lot quoted per 10 g, 995 fineness; GOLDTEN 10 g per 10 g, GOLDGUINEA 8 g per 8 g, GOLDPETAL 1 g per 1 g, all 999</td><td>Every price converted to ₹ per gram of pure gold before contracts are compared</td></tr>
+          <tr><td><b>Calendar</b></td><td>GOLDM's last trading day is the 5th of the expiry month; the other three expire on the last calendar day of the month</td><td>Contract calendar and the GOLDM leg's expiry matching</td></tr>
+          <tr><td><b><Term k="tender">Tender period</Term></b></td><td>Staggered delivery in the last 3 trading days, expiry day included</td><td>Trades must exit 5 business days before expiry, which is stricter</td></tr>
+          <tr><td><b>Expiry-day settlement</b></td><td>Final settlement at the Due Date Rate, from the spot price polled that afternoon, not the futures closing price</td><td>{D.expiry_settle.outside} of {D.expiry_settle.rows.toLocaleString("en-IN")} closes sit outside the day's high–low; {D.expiry_settle.on_last_day} of them on a contract's last trading day. Kept as published; no strategy holds on that day</td></tr>
+          <tr><td><b>Price band and margin</b></td><td>3% daily price limit, widened in steps to 6% and 9%; initial margin at least 6% or SPAN, whichever is higher</td><td>Shown for context; the backtest assumes the position's margin is available</td></tr>
+        </tbody></table></div>
+        <p className="note">Source: MCX contract specification documents for each of the four contracts, downloaded from mcxindia.com.</p>
       </More>
       <More title="Each contract type" hint="Liquidity decides how far a price can be trusted">
       <div className="tw"><table><thead><tr><th>Contract</th><th className="n">Contracts</th><th className="n">Days</th><th className="n">No-trade days</th><th className="n">Gold traded / day</th><th className="n">Close vs trades</th></tr></thead>

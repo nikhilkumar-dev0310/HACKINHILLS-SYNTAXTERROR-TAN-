@@ -70,7 +70,7 @@ export const GLOSSARY = {
   sigma: ["σ (standard deviation)", "The typical size of a swing. A gap 1.5σ from usual is one and a half typical swings away."],
   vwap: ["VWAP", "Volume-weighted average price: the average of all the day's trades, weighted by size. Closer to what a real order gets than the official close."],
   premium: ["Premium", "How much more a contract costs than GOLDM per gram of pure gold, after moving GOLDM to the same expiry."],
-  tender: ["Tender period", "The last 5 business days before expiry, when contracts move toward physical delivery. Brokers close positions before it starts."],
+  tender: ["Tender period", "Under the MCX contract specification, the last 3 trading days of a gold contract, expiry day included, when open positions move into physical delivery. Brokers close positions days earlier, so Parity keeps the last 5 business days clear: stricter than the exchange rule."],
   settlement: ["Settlement price", "The official closing price MCX publishes for each contract every day."],
   rolldown: ["Roll-down", "The drift of a futures price toward spot as expiry nears, with nothing else changing."],
   sealed: ["Sealed test", "Data set aside and not looked at until the rules were frozen in Git, then run once. No second tries."],
