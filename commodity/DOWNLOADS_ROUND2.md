@@ -109,3 +109,22 @@ Those days have now been seen. The first sealed test is therefore shortened to
 2020-01-01 to 2023-10-09. Days 2023-10-10 to 2023-12-31 are used for neither development nor testing.
 ingest.py now writes rows inside sealed windows to clean/sealed_rows.csv and keeps them out of
 clean/gold_futures.csv, so no analysis script can read them before the one sealed run.
+
+## Round 3 declaration (2026-10-04, before any of this data is downloaded)
+- Download: every GOLDM, GOLDTEN, GOLDGUINEA and GOLDPETAL futures contract MCX lists in its
+  commodity-wise Bhavcopy (GOLDM from 2004, GOLDGUINEA from 2008, GOLDPETAL from 2011, GOLDTEN from
+  2025), whole contract life, through mcxindia.com's own Bhavcopy endpoint and its own XLS export.
+  No other symbols.
+- Existing files stay as they are (they produced the recorded results). New files are added only
+  for contracts not yet held, plus contracts still trading (expiry on or after 1 Oct 2026), which
+  are refreshed to the latest day.
+- DEV (training) = all market days before 2016-01-01, plus all market days from 2024-01-01 onward.
+  2023-10-10 to 2023-12-31 stays unused for testing. Sealed windows are unchanged:
+  2016-01-01 to 2019-12-31 and 2020-01-01 to 2023-10-09; ingest.py walls their rows off and no
+  analysis script reads them.
+- Training: any improved rule (for example a stress-regime filter for the fair-price strategy,
+  entry threshold, exit and holding rules) is chosen on DEV only, judged by walk-forward folds
+  inside DEV after full costs, then frozen in Git. The frozen rules run ONCE on 2020-01-01 to
+  2023-10-09 and ONCE on 2016-01-01 to 2019-12-31. Results are recorded as they come out.
+- Costs: today's MCX fee, CTT, stamp duty, SEBI fee, brokerage and GST are applied to every year,
+  including years before CTT existed (2013), which is conservative for older data.
