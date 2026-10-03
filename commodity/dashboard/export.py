@@ -122,6 +122,10 @@ def main():
     out["curves"] = curves
     # the "as of" day: after it, the files hold only contracts running into their own expiry
     out["meta"]["last_full"] = str(last.date())
+    _all = pd.concat([pd.read_csv(f, usecols=["date", "symbol", "expiry_date"]) for f in
+                      ("clean/gold_futures.csv", "clean/gold_futures_history.csv", "clean/sealed_rows.csv") if os.path.exists(f)])
+    out["meta"]["all"] = {"rows": int(len(_all)), "contracts": int(_all.groupby(["symbol", "expiry_date"]).ngroups),
+                          "first": str(_all.date.min())[:10], "last": str(_all.date.max())[:10]}
 
     # ---------- backtests (stored single runs)
     def summ(df, label, extra=None):
@@ -146,6 +150,36 @@ def main():
         "B_hold": summ(fvh.drop(columns="k"), "Strategy B · Sealed holdout", {"window": "6 Aug 2025 – 29 May 2026", "grams": 200}),
     }
     out["train_note"] = {"trades": 9, "gross": -3939}
+
+    # ---------- round 3: retrained Strategy C and the two sealed tests (strategy_c.py), run once each
+    ss = pd.read_csv(R + "sealed_summary.csv")
+    st = pd.read_csv(R + "sealed_trades.csv")
+    sealed_rows = [{"test": x.test, "strategy": x.strategy[0], "slip": int(x.slip_bp), "trades": int(x.trades),
+                    "gross": r(x.gross, 0), "cost": r(x.cost, 0), "net": r(x.net, 0), "hit": r(x.hit * 100, 0)} for x in ss.itertuples()]
+    boot = {}
+    for s_ in ("A", "B", "C"):
+        g = st[(st.slip_bp == 5) & st.strategy.str.startswith(s_)]
+        rng = np.random.default_rng(20261004)
+        v = g.net_rs.values
+        bs = np.array([rng.choice(v, len(v)).sum() for _ in range(20000)]) if len(v) else np.array([0.0])
+        boot[s_] = {"trades": int(len(v)), "net": r(v.sum(), 0), "lo": r(np.percentile(bs, 2.5), 0), "hi": r(np.percentile(bs, 97.5), 0),
+                    "p_pos": r((bs > 0).mean() * 100, 0)}
+    cov = st[(st.slip_bp == 5) & pd.to_datetime(st.entry).between("2020-02-15", "2020-06-30") & ~st.strategy.str.startswith("A")]
+    cp = json.load(open(R + "strategy_c_params.json"))
+    cd = pd.read_csv(R + "strategy_c_dev_trades.csv")
+    cd5 = cd[cd.slip_bp == 5].assign(y=lambda x: pd.to_datetime(x.entry).dt.year)
+    yearly = cd5.groupby("y").net_rs.sum()
+    q126 = cd5[pd.to_datetime(cd5.entry).between("2026-01-01", "2026-03-31")].net_rs.sum()
+    bd = pd.read_csv(R + "strategy_b_dev_alldata_trades.csv")
+    wf = pd.read_csv(R + "strategy_c_walkforward.csv")
+    out["sealed"] = {
+        "windows": {"test3": "2016 – 2019", "test2": "2020 – 9 Oct 2023"},
+        "rows": sealed_rows, "boot5": boot,
+        "covid": {k[0]: r(g.net_rs.sum(), 0) for k, g in cov.groupby("strategy")},
+        "c": {"rules": {k: cp[k] for k in ("ref", "k", "stress", "exit", "hold")},
+              "dev_trades": int(len(cd5)), "dev_net5": r(cd5.net_rs.sum(), 0), "years_pos": int((yearly > 0).sum()), "years": int(len(yearly)),
+              "q1_2026": r(q126, 0), "b_dev_net5": r(bd[bd.slip_bp == 5].net_rs.sum(), 0), "wf_total": r(wf.net_rs.sum(), 0)},
+    }
 
     def log(df, kind):
         w = df.pivot_table(index=[c for c in df.columns if c not in ("slip_bp", "cost_rs", "net_rs", "k")],
@@ -172,6 +206,11 @@ def main():
         {"when": "3 Oct 2026, 01:13 IST", "commit": "a8cda54", "what": "Sealed test 3 (2016–2019) declared before download"},
         {"when": "3 Oct 2026, 01:47 IST", "commit": "8f16845", "what": "Test 2 shortened to end 9 Oct 2023 (late-2023 days seen via 2024 files); sealed rows walled off in code"},
         {"when": "3 Oct 2026, 02:43 IST", "commit": "79129fc", "what": "2020 files set aside in the sealed file, unread"},
+        {"when": "4 Oct 2026, 00:53 IST", "commit": "391f24b", "what": "Round 3 declared before download: every contract of the four, pre-2016 joins training"},
+        {"when": "4 Oct 2026, 00:57 IST", "commit": "dc055dc", "what": "Strategy C grid and selection rule committed before the new data arrived"},
+        {"when": "4 Oct 2026, 01:05 IST", "commit": "a24b828", "what": "710 contracts (2004–2027) added; all 13,042 existing closes match MCX"},
+        {"when": "4 Oct 2026, 01:12 IST", "commit": "a984901", "what": "Strategy C frozen on training data only"},
+        {"when": "4 Oct 2026, 01:13 IST", "commit": "6df3bbd", "what": "Sealed tests 2016–2019 and 2020–2023 run once; results kept as they came"},
     ]
 
     # ---------- contracts (calendar) and data quality

@@ -69,10 +69,10 @@ function BriefQA() {
       <>Every trade starts after listing. B always exits before tender; A's {lc.A_hold.trades - lc.A_hold.outside_tender} tender trades are shown and can be left out.</>, "calendar"]
   ];
   const fin = [
-    ["Validated on unseen history?", "Yes. A sealed holdout, Aug 2025 – May 2026, run once after the rules were frozen in Git.", "backtest"],
+    ["Validated on unseen history?", "Yes. Three sealed tests, each run once after the rules were frozen in Git: Aug 2025 – May 2026, 2016–2019 and 2020–2023.", "backtest"],
     ["Reported after costs, on the contracts actually held?", "Yes. MCX fees, taxes, brokerage, GST and 0–10 bp slippage on every leg of the exact contract.", "backtest"],
     ["Strategy separated from gold's own move?", `Yes. Each trade is split exactly; gold's move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's gross profit.`, "backtest"],
-    ["Is there a persistent edge after costs?", "No dependable edge in quiet markets. The brief accepts a rigorous “no edge” as a valid outcome.", "brief"]
+    ["Is there a persistent edge after costs?", "No. The best rule stays slightly positive over 2016–2023 but within the range of luck; the 2026 crash paid, the 2020 crash did not. The brief accepts a rigorous “no edge”.", "backtest"]
   ];
   const Row = ({ n, h, q, a, to }) => <li className="qa-r"><span className="qa-n">{String(n).padStart(2, "0")}</span>
     <div className="qa-b">{h && <div className="qa-h">{h}</div>}<div className="qa-q">{q}</div><div className="qa-a">{a}</div></div><Go to={to}>See it</Go></li>;
@@ -110,7 +110,7 @@ export function Overview() {
     <Hero n={1} eyebrow="MCX gold futures · Problem 03" title={<>One metal, <span className="hl">four prices.</span></>}>
       <b>The problem:</b> MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, whether any gap can be traded after real costs, and tells a trader when one is worth a look.
     </Hero>
-    <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it; it paid only during the January 2026 crash.</Takeaway>
+    <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it. It paid in the January 2026 crash, and not reliably in eight more years of sealed tests.</Takeaway>
     <nav className="jump" aria-label="On this page"><a href="#latest" onClick={jump}>Latest data</a><a href="#asks" onClick={jump}>What the brief asks</a><a href="#downloads" onClick={jump}>Downloads</a></nav>
     <Snapshot />
     <BriefQA />
@@ -155,10 +155,10 @@ export function Brief() {
   ];
   const fin = [
     ["Create a functional prototype that transforms exchange settlement data into a defensible analytical signal or intelligence product", "This site, rebuilt by two scripts from the official MCX files"],
-    ["…and validates the approach using unseen historical data", `Sealed holdout Aug 2025 – May 2026, run once. Two more sealed tests (2020–2023, 2016–2019) declared before download; ${D.meta.sealed_contracts} contracts already set aside unread`],
+    ["…and validates the approach using unseen historical data", `Three sealed tests, each run once: Aug 2025 – May 2026, then ${D.meta.sealed_contracts} contracts from 2016–2023, walled off in code until the rules were frozen`],
     ["Report performance after relevant costs using the prices of the contracts actually held", `Every trade priced on the exact contracts held. Strategy A ${inr(A5.net)}, Strategy B ${inr(B5.net)} at 5 bp`],
     ["Clearly separate strategy performance from the impact of the underlying gold price", "Exact per-trade split into gap and gold parts, plus each trade plotted against gold's move"],
-    ["A rigorous demonstration that no persistent edge survives costs is also a valid analytical outcome", "Our verdict: no dependable edge in quiet markets; the gap paid only during the Jan 2026 crash. Sealed tests will check other crashes"]
+    ["A rigorous demonstration that no persistent edge survives costs is also a valid analytical outcome", `Our verdict: no dependable edge after costs. The fair-price model is ${inr(D.sealed.boot5.B.net)} over 2016–2023 at 5 bp, but its 95% range includes zero`]
   ];
   const warn = [
     ["Validate the returned Date against the requested date", "Every file identified by its contents; no row after its contract's expiry; every weekend date must be a known special session (Diwali Muhurat 2023, Budget days 2025 and 2026)"],
@@ -172,7 +172,7 @@ export function Brief() {
     <Hero n={2} eyebrow="Problem 03 · Commodity Derivatives Intelligence" title={<>What the brief asks, <span className="hl">and our answer.</span></>}>
       Build a data product from MCX's public futures data that finds and analyses price differences between gold contracts, validates it on unseen history, reports results after costs, and separates strategy performance from gold's own move. A rigorous “no edge after costs” is an accepted outcome.
     </Hero>
-    <Takeaway>All five directions in the brief are covered and every line of the final challenge is answered. Our honest result: after costs there is no dependable edge in quiet markets; the gap paid only during the January 2026 crash.</Takeaway>
+    <Takeaway>All five directions in the brief are covered and every line of the final challenge is answered. Our honest result: after costs there is no dependable edge. The gap paid in the January 2026 crash; tested once on 2016–2023, that did not repeat reliably.</Takeaway>
     <div className="grid g2">{dirs.map(([h, q, items, link], i) => <Reveal key={h} className={"dir" + (i === dirs.length - 1 ? " span2" : "")}>
       <div className="dir-h"><span className="fn">{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><Pill tone="good">Done</Pill></div>
       <q>{q}</q><ul>{items.map(t => <li key={t}>{t}</li>)}</ul><Go to={link}>See it</Go></Reveal>)}</div>
@@ -301,6 +301,25 @@ function HonestyGap() {
   </Card>;
 }
 
+/* Round 3: eight more years, sealed and run once (strategy_c.py). Net is linear in slippage, so the slider is exact. */
+function SealedTests({ s }) {
+  const S = D.sealed; if (!S) return null;
+  const at = (st, test) => { const g = sl => S.rows.find(r => r.strategy === st && r.test === test && r.slip === sl), a = g(0), b = g(5), c = g(10);
+    if (!a) return null; return { trades: a.trades, net: s <= 5 ? a.net + (b.net - a.net) * s / 5 : b.net + (c.net - b.net) * (s - 5) / 5 }; };
+  const ST = [["A", "Strategy A", "pairs, as frozen in 2025"], ["B", "Strategy B", "fair price, as frozen in 2025"], ["C", "Strategy C", "fair price retrained on 2008–15 and 2024–26"]];
+  const C = S.c, cell = v => v ? <td className={"n " + (v.net >= 0 ? "pos" : "neg")}>{inr(v.net)}<div className="dim sm">{v.trades} trades</div></td> : <td className="n dim">—</td>;
+  return <Card title="Eight more years, sealed" sub={<>Every contract MCX lists for 2016–2023, walled off until the rules were frozen in Git, then run once. Net after all costs at {s.toFixed(1)} bp slippage (use the slider above).</>}>
+    <div className="tw"><table className="sealed-t"><thead><tr><th>Strategy</th><th className="n">2016 – 2019</th><th className="n">2020 – 2023</th><th className="n">Both</th><th className="n">95% range at 5 bp</th></tr></thead>
+      <tbody>{ST.map(([k, n, d]) => { const a = at(k, "test3"), b = at(k, "test2"), bo = S.boot5[k];
+        const both = a && b ? { net: a.net + b.net, trades: a.trades + b.trades } : null;
+        return <tr key={k}><td><b>{n}</b><div className="dim sm">{d}</div></td>{cell(a)}{cell(b)}{cell(both)}
+          <td className="n dim">{inr(bo.lo)} to {inr(bo.hi)}<div className="sm">{bo.p_pos}% of resamples above zero</div></td></tr>; })}</tbody></table></div>
+    <p className="note">Retraining (C) chose a stress filter on {C.years} training years: {inr(C.dev_net5)} at 5 bp, {inr(C.q1_2026)} of it in Q1 2026, against {inr(C.b_dev_net5)} for B's rules on the same days.
+      Out of sample it did not beat B. In the March 2020 crash the small contracts moved the other way and the gap widened after entry (Feb–Jun 2020 at 5 bp: B {inr(S.covid.B)}, C {inr(S.covid.C)}).
+      Choosing the setting year by year with only earlier years would have made {inr(C.wf_total)} on training data, an early warning that the edge comes in bursts.</p>
+  </Card>;
+}
+
 export function Backtest() {
   const [key, setKey] = useState("A_hold"), [s, setS] = useState(5), [tonly, setTonly] = useState(false), [filter, setFilter] = useState("All"), [sort, setSort] = useState({ k: "entry", dir: "asc" }), [page, setPage] = useState(0);
   const all = D.trades[key], tr = tonly ? all.filter(t => t.ok_tender) : all, info = D.backtests[key];
@@ -356,6 +375,7 @@ export function Backtest() {
         <Chart deps={[key, s, tonly]} draw={host => lineChart(host, { dates: days, series: [{ label: "Cumulative", color: tot >= 0 ? "var(--good)" : "var(--bad)", values: cum }], band: CRASH, zero: true, area: true, yfmt: kfmt, tfmt: v => inr(v), aria: "Cumulative profit", h: 270 })} />
     </Card>
     <HonestyGap />
+    <SealedTests s={s} />
     <div className="more-list">
       <More title="Profit by month of entry" hint="Net at the selected slippage">
         <Chart className="bars" deps={[key, s, tonly]} draw={host => barChart(host, { labels: mk.map(fmon), values: mk.map(k => bm[k].v), yfmt: kfmt, tfmt: v => inr(v), short: i => MON[+mk[i].slice(5) - 1], extra: i => `<div class="r"><span>Trades</span><b>${bm[mk[i]].n}</b></div>`, aria: "Profit by month" })} />
@@ -447,7 +467,7 @@ export function Signals() {
       <Pager page={pg} pages={pages} set={setPage} prev="← Newer" next="Older →" />
     </More>
     <More title="Why quiet is the right answer most days" hint="What the alert record and the sealed test show">
-      <p className="prose"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about 47 bp in 10 trading days, against 3 bp on ordinary days, and a round trip costs about 24 bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. A stress filter for that case is planned and will be tested on 2020–2023 data before it is trusted.</p>
+      <p className="prose"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about {on.median_closed_bp_10d.toFixed(0)} bp in 10 trading days, against {off.median_closed_bp_10d.toFixed(0)} bp on ordinary days, and a round trip costs about {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. We then trained a stress filter for exactly that case on 2008–2015 and 2024–26. On the sealed 2016–2023 data it did not beat the plain rule: in the March 2020 crash the gap kept widening after entry.</p>
     </More>
     </div>
   </>;
@@ -492,7 +512,7 @@ export function Quality() {
     </Hero>
     <Takeaway>Every row passed the checks: 0 unexplained errors in {D.meta.rows.toLocaleString("en-IN")} rows. Of the {D.flags.length} flagged rows, {D.flags.filter(x => x.kind === "Previous close mismatch").length} follow a no-trade day and are left out; {D.flags.filter(x => x.kind === "Far from peers").length} are real prices far from their peers, mostly in the January 2026 crash, and are kept. No price was changed.</Takeaway>
     <div className="grid g4">
-      <Kpi label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts set aside, unread.`}><Num v={D.meta.files} intro /></Kpi>
+      <Kpi label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts, read only in the one sealed run.`}><Num v={D.meta.files} intro /></Kpi>
       <Kpi label="Contracts" note={`${fdate(D.meta.first)} – ${fdate(D.meta.last)}`}><Num v={D.meta.contracts} intro /></Kpi>
       <Kpi label="Rows checked" note="One row per contract per trading day"><Num v={D.meta.rows} intro /></Kpi>
       <Kpi tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
