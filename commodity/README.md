@@ -1,6 +1,6 @@
 # Gold spread analysis (MCX GOLDTEN / GOLDGUINEA / GOLDPETAL)
 
-**Live:** dashboard https://parity-mcx-gold.onrender.com · pitch https://parity-mcx-gold.onrender.com/pitch.html · report https://parity-mcx-gold.onrender.com/report.pdf (redeploys on every push to main)
+**Live (Vercel):** dashboard https://parity-gold-site.vercel.app · pitch https://parity-gold-site.vercel.app/pitch.html · report https://parity-gold-site.vercel.app/report.pdf (redeploys on every push to main). Mirror on Render: https://parity-mcx-gold.onrender.com
 
 
 ## Setup (once)
