@@ -5,9 +5,9 @@ import numpy as np
 FPS = 30
 TL = json.load(open("timeline.json")); N = TL["frames"]; EV = TL["events"]
 mot = np.array(json.load(open("motion.json")))
-CARD_OUT = 45                     # chapter card: 1.5 s instead of 2.2 s
+CARD_OUT = 40                     # chapter card: 1.5 s instead of 2.2 s
 MOT_SPEED, MIN_STILL = 1.4, 0.10 # motion plays at 1.25x; a still frame costs at least 0.12 of a frame
-READ_CPS, READ_PAD, READ_MIN = 17.0, 0.75, 2.3
+READ_CPS, READ_PAD, READ_MIN = 18.0, 0.55, 2.1
 from captions_fast import NEW, DROP
 
 # camera movement per source frame (moving camera counts as motion)

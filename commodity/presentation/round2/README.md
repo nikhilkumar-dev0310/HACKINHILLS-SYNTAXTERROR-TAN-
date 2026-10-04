@@ -1,6 +1,6 @@
 # Round 2 demo video
 
-`Parity_demo.mp4`: 3 min 22 s, 1080p, captioned, with a light music bed and soft interface sounds. The faster cut is made from the same capture: `pipeline/warp.py` squeezes still moments, plays motion at 1.4x and keeps every caption on screen long enough to read (`compose_fast.py`, `audio_fast.py`, `make_srt_fast.py`). `Parity_demo.srt` holds the same captions as subtitles, and doubles as a narration script if a team member records a voice-over.
+`Parity_demo.mp4`: 3 min 05 s, 1080p, 42 MB, captioned, with a light music bed and soft interface sounds. The faster cut is made from the same capture: `pipeline/warp.py` squeezes still moments, plays motion at 1.4x and keeps every caption on screen long enough to read (`compose_fast.py`, `audio_fast.py`, `make_srt_fast.py`). `Parity_demo.srt` holds the same captions as subtitles, and doubles as a narration script if a team member records a voice-over.
 
 Structure: a 15-second hook (four prices, one gold), eight chapters that each answer one question (front page, the brief, relative value, term structure, backtest, signals, contracts, data quality), and a 15-second recap with the team and a QR code to the repository.
 

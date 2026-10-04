@@ -5,9 +5,9 @@ the **Unstop stage list** is what actually opens and closes submissions, so it w
 
 | When (IST) | Stage | What to submit | Status |
 |---|---|---|---|
-| **5 Oct 2026, 6:29 PM** | Registration closes on Unstop | Team registered on Unstop, every member added | To confirm |
-| **5 Oct 2026, 11:59 PM** | Round 1: PPT | `presentation/round1/Parity_SyntaxTerror_Round1.pptx`, built in the official template. Team and roles on slide 1 are filled in | Deck ready |
-| 9 – 19 Oct 2026 | Round 2: prototype | Working prototype (the dashboard), demo video, GitHub repo link, documentation (README + report PDF) | Ready: live at https://parity-gold-site.vercel.app (Render mirror https://parity-mcx-gold.onrender.com); demo video `presentation/round2/Parity_demo.mp4` (3 min 22 s) |
+| **5 Oct 2026, 6:29 PM** (may also have moved with the PPT extension; check Unstop) | Registration closes on Unstop | Team registered on Unstop, every member added | To confirm |
+| **10 Oct 2026** (extended from 5 Oct, per the team on 4 Oct; confirm the exact time on Unstop) | Round 1: PPT | `presentation/round1/Parity_SyntaxTerror_Round1.pptx`, built in the official template. Team and roles on slide 1 are filled in | Deck ready |
+| 9 – 19 Oct 2026 | Round 2: prototype | Working prototype (the dashboard), demo video, GitHub repo link, documentation (README + report PDF) | Ready: live at https://parity-gold-site.vercel.app (Render mirror https://parity-mcx-gold.onrender.com); demo video `presentation/round2/Parity_demo.mp4` (3 min 05 s) |
 | 20 – 25 Oct 2026 | Round 3: social | LinkedIn post, Instagram reel, prototype video | To do |
 | 20 – 21 Nov 2026 | Grand finale, Manali (offline) | Live pitch and demo | Pitch ready (`presentation/parity-pitch.html`, timing in its README) |
 
