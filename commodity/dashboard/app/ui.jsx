@@ -19,17 +19,17 @@ export function Chart({ draw, deps = [], className = "", style }) {
   return <div ref={ref} className={"chart " + className} style={style} />;
 }
 
-/* Scroll reveal: children fade and rise once when they enter the viewport. */
+/* Scroll reveal: children fade and rise once when they enter the viewport.
+   "in" lives in React state, so a later className change (e.g. a mode switch) cannot strip it and hide the element. */
 export function useReveal() {
-  const ref = useRef(null);
-  useEffect(() => { const el = ref.current; if (!el) return;
-    if (reducedMotion() || !("IntersectionObserver" in window)) { el.classList.add("in"); return; }
-    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
-    io.observe(el); return () => io.disconnect(); }, []);
-  return ref;
+  const ref = useRef(null), [shown, setShown] = useState(() => reducedMotion() || !("IntersectionObserver" in window));
+  useEffect(() => { const el = ref.current; if (!el || shown) return;
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { setShown(true); io.disconnect(); } }), { rootMargin: "0px 0px -8% 0px" });
+    io.observe(el); return () => io.disconnect(); }, [shown]);
+  return [ref, shown];
 }
 export function Reveal({ as: Tag = "div", className = "", children, ...rest }) {
-  const ref = useReveal(); return <Tag ref={ref} className={"rv " + className} {...rest}>{children}</Tag>;
+  const [ref, shown] = useReveal(); return <Tag ref={ref} className={"rv " + className + (shown ? " in" : "")} {...rest}>{children}</Tag>;
 }
 
 export function Card({ fig, title, sub, actions, children, className = "", id }) {

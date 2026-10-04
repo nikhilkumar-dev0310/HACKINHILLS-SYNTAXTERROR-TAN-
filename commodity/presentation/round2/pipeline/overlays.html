@@ -1,0 +1,170 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"SG";src:url(../deck/fonts/sg.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"IN";src:url(../deck/fonts/in.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"JB";src:url(../deck/fonts/jb.woff) format("woff");font-weight:300 800}
+:root{--gold:#f5b83d;--gold2:#ffdc8e;--deep:#c98d0c;--ink:#f4efe4;--ink2:#b9b1a2;--ink3:#7d766a;--vault:#0b0c0f;
+  --m:#c79316;--ten:#5b98ea;--gui:#e0603f;--pet:#22a892;--good:#3cc995}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:IN,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.stage{position:absolute;inset:0;overflow:hidden}
+.dark{background:radial-gradient(ellipse at 50% 38%,#1a1710 0%,#0b0c0f 62%)}
+/* caption pill */
+#cap{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:inline-block;max-width:1420px;
+  background:rgba(22,19,13,.94);border:1.5px solid rgba(245,184,61,.35);border-radius:26px;padding:20px 40px 22px 150px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);color:#fff;white-space:normal}
+#cap .lab{font:600 17px/1 JB,monospace;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+#cap .txt{font:500 34px/1.32 IN;letter-spacing:-.01em;text-wrap:balance}
+#cap .txt b{color:#ffc552;font-weight:700}
+/* pari */
+#pari{position:absolute;left:0;top:0;width:180px;height:186px}
+/* generic */
+.k{font:600 22px/1 JB,monospace;letter-spacing:.18em;color:var(--gold);text-transform:uppercase}
+.h{font:600 92px/1.02 SG;letter-spacing:-.045em;color:var(--ink)}
+.h2{font:600 64px/1.06 SG;letter-spacing:-.04em;color:var(--ink)}
+.p{font:400 30px/1.4 IN;color:var(--ink2)}
+.gold{color:var(--gold)}
+.abs{position:absolute}
+.tile{position:absolute;width:390px;height:330px;border-radius:28px;background:linear-gradient(180deg,#1d1a13,#14120d);border:1.5px solid #3a3222;padding:30px 32px}
+.tile .nm{font:600 34px SG;letter-spacing:-.02em;color:var(--ink)}
+.tile .ds{font:400 22px IN;color:var(--ink2);margin-top:6px}
+.tile .q{font:600 44px JB;letter-spacing:-.02em;color:var(--ink);margin-top:34px}
+.tile .u{font:400 21px IN;color:var(--ink3);margin-top:6px}
+.tile .bar{position:absolute;left:0;top:0;bottom:0;width:8px;border-radius:28px 0 0 28px}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:#3a3222;margin:0 7px}
+.dot.on{background:var(--gold);box-shadow:0 0 0 6px rgba(245,184,61,.18)}
+.dot.done{background:#8a6a24}
+.chk{display:flex;align-items:center;gap:22px;font:500 36px IN;color:var(--ink);margin:0 0 22px}
+.chk i{width:46px;height:46px;border-radius:50%;background:var(--good);display:grid;place-items:center;flex:none}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a"/><stop offset=".55" stop-color="#f5b83d"/><stop offset="1" stop-color="#c98d0c"/></linearGradient></defs></svg>
+<div id="root" class="stage"></div>
+<script>
+const R = document.getElementById('root');
+const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ez = p => 1 - Math.pow(1 - cl(p), 3);                // ease out cubic
+const eio = p => (p = cl(p), p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const back = p => { p = cl(p); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const seg = (t, a, b) => cl((t - a) / (b - a));
+const inr = v => '₹' + Math.round(v).toLocaleString('en-IN');
+
+function pariSVG(mood = 'happy', blink = 0, wave = 0) {
+  const lid = 3.4 * (1 - blink);
+  const mouth = { happy: '<path d="M24 38.5q5 4.5 10 0" stroke="#1b1300" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    wow: '<ellipse cx="29" cy="40" rx="2.6" ry="3" fill="#1b1300"/>',
+    talk: '<path d="M24.5 38q4.5 5.5 9 0z" fill="#1b1300"/>' }[mood];
+  const arm = wave ? `<path d="M45 30q7-4 8-${10 + 4 * Math.sin(wave)}" stroke="#c98d0c" stroke-width="3" fill="none" stroke-linecap="round"/>` : '';
+  return `<svg viewBox="0 0 58 60" width="100%" height="100%"><g>
+    <ellipse cx="29" cy="58" rx="20" ry="2.5" fill="rgba(0,0,0,.35)"/>
+    <path d="M21 47v9M37 47v9" stroke="#c98d0c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M17 56h7M34 56h7" stroke="#c98d0c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M15 20h28l8 28H7z" fill="url(#gb)" stroke="#c98d0c" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M17 22h24" stroke="rgba(255,240,200,.8)" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="22.5" cy="32" rx="2.6" ry="${Math.max(.35, lid)}" fill="#1b1300"/><ellipse cx="35.5" cy="32" rx="2.6" ry="${Math.max(.35, lid)}" fill="#1b1300"/>
+    ${mouth}${arm}</g></svg>`;
+}
+function mark(size = 120, col = '#f5b83d') {
+  return `<svg width="${size}" height="${size * 26 / 30}" viewBox="9 11 30 26"><path d="M14 13h20l3.2 8.6H10.8z" fill="url(#gb)" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 26.4h20l3.2 8.6H10.8z" fill="url(#gb)" stroke="${col}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+
+/* ------------------------------------------------------------ caption: static element, cropped by the renderer */
+window.caption = (html, label) => {
+  document.body.style.background = 'transparent'; R.className = 'stage';
+  R.innerHTML = `<div id="cap"><div class="lab">${label}</div><div class="txt">${html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</div></div>`;
+  const r = document.getElementById('cap').getBoundingClientRect(); return [r.left, r.top, r.width, r.height];
+};
+window.pari = (mood, blink, wave) => {
+  document.body.style.background = 'transparent'; R.className = 'stage';
+  R.innerHTML = `<div id="pari">${pariSVG(mood, blink, wave)}</div>`;
+};
+
+/* ------------------------------------------------------------ intro */
+const C4 = [['GOLDM', '100 g bar · 99.5% pure', 149055, 'per 10 g', 14980, '--m'], ['GOLDTEN', '10 g bar · 99.9% pure', 149436, 'per 10 g', 14959, '--ten'],
+  ['GOLDGUINEA', '8 g coin · 99.9% pure', 119993, 'per 8 g', 15014, '--gui'], ['GOLDPETAL', '1 g · 99.9% pure', 15002, 'per 1 g', 15017, '--pet']];
+window.intro = t => {
+  R.className = 'stage dark'; document.body.style.background = '#0b0c0f';
+  const h1o = 1 - seg(t, 4.9, 5.4), h2o = seg(t, 5.4, 5.9) * (1 - seg(t, 8.5, 8.9)), h3o = seg(t, 8.9, 9.4) * (1 - seg(t, 11.6, 12.1));
+  let html = '';
+  // headline 1: words pop in
+  const w1 = ['Four', 'ways', 'to', 'buy', 'gold', 'on', 'MCX.'];
+  html += `<div class="abs h" style="left:0;right:0;top:${220 - 40 * seg(t, 4.9, 5.4)}px;text-align:center;opacity:${h1o}">` +
+    w1.map((w, i) => { const p = ez(seg(t, .25 + i * .16, .65 + i * .16)); return `<span style="display:inline-block;opacity:${p};transform:translateY(${(1 - p) * 40}px);margin:0 .12em" class="${i > 3 ? 'gold' : ''}">${w}</span>`; }).join('') + '</div>';
+  html += `<div class="abs h2" style="left:0;right:0;top:${230 - 30 * (1 - ez(seg(t, 5.4, 5.9)))}px;text-align:center;opacity:${h2o}">Same gold. <span class="gold">Which price is fair?</span></div>`;
+  html += `<div class="abs h2" style="left:0;right:0;top:230px;text-align:center;opacity:${h3o}">Per gram of pure gold, <span class="gold">they almost match.</span></div>`;
+  // tiles
+  const conv = eio(seg(t, 6.6, 8.6)), tilesOut = ez(seg(t, 11.6, 12.3));
+  C4.forEach(([n, d, q, u, g, c], i) => {
+    const p = back(seg(t, 1.8 + i * .22, 2.6 + i * .22)), x = 150 + i * 418, y = 420 + (1 - p) * 120 + tilesOut * 60;
+    const val = q + (g - q) * conv, flip = conv > .02;
+    const glow = seg(t, 9.0, 9.4) * (1 - seg(t, 11.0, 11.5));
+    html += `<div class="tile" style="left:${x}px;top:${y}px;opacity:${cl(p) * (1 - tilesOut)};${glow ? `box-shadow:0 0 0 ${3 * glow}px rgba(245,184,61,${.6 * glow}),0 0 60px rgba(245,184,61,${.25 * glow})` : ''}">
+      <div class="bar" style="background:var(${c})"></div><div class="nm">${n}</div><div class="ds">${d}</div>
+      <div class="q" style="position:relative;height:56px">
+        <span style="position:absolute;left:0;top:0;opacity:${1 - cl(conv * 2.2)};transform:translateY(${-34 * cl(conv * 2)}px)">${inr(q)}</span>
+        <span style="position:absolute;left:0;top:0;color:var(--gold);opacity:${cl(conv * 2.2 - 1.1)};transform:translateY(${34 * (1 - cl(conv * 2 - 1))}px)">${inr(g)}</span></div>
+      <div class="u">${conv > .5 ? 'per gram of pure gold' : u}</div></div>`;
+  });
+  // the formula chip
+  const fo = seg(t, 6.0, 6.5) * (1 - seg(t, 8.9, 9.4));
+  html += `<div class="abs" style="left:0;right:0;top:830px;text-align:center;opacity:${fo}"><span style="display:inline-block;padding:16px 30px;border-radius:999px;border:1.5px solid #5a4a26;background:#16130d;font:600 30px JB;color:var(--gold2)">price ÷ grams quoted ÷ purity</span></div>`;
+  const no = seg(t, 9.5, 10.0) * (1 - seg(t, 11.4, 11.9));
+  html += `<div class="abs p" style="left:0;right:0;top:840px;text-align:center;opacity:${no}">The small gaps that remain are where money can be made, <b style="color:var(--ink)">or lost</b>.</div>`;
+  // logo reveal
+  const lo = ez(seg(t, 12.1, 12.8));
+  html += `<div class="abs" style="left:0;right:0;top:${330 + (1 - lo) * 40}px;text-align:center;opacity:${lo}">
+     <div style="display:inline-flex;align-items:center;gap:30px">${mark(130)}<span style="font:700 150px/1 SG;letter-spacing:-.055em;color:var(--ink)">Parity</span></div>
+     <div class="k" style="margin-top:34px;font-size:26px">MCX gold futures intelligence</div>
+     <div class="p" style="margin-top:44px;opacity:${seg(t, 13.0, 13.5)}">A guided tour in <b style="color:var(--ink)">8 short stops</b></div></div>`;
+  R.innerHTML = html;
+  // pari pops in at the end
+  const pp = back(seg(t, 13.2, 13.9));
+  if (pp > 0) { const el = document.createElement('div'); el.className = 'abs'; el.style.cssText = `left:${1440}px;top:${600 + (1 - pp) * 300}px;width:170px;height:176px;opacity:${cl(pp * 1.5)}`;
+    el.innerHTML = pariSVG('happy', 0, t * 9); R.appendChild(el); }
+};
+
+/* ------------------------------------------------------------ chapter card */
+const CH = [['The front page', 'What does Parity show?'], ['The brief', 'Did we answer every question?'], ['Relative value', 'Are the four priced the same?'],
+  ['Term structure', 'Why do later dates cost more?'], ['Backtest', 'Can the gap make money?'], ['Signals', 'When should a trader look?'],
+  ['Contracts', 'Does every trade respect the calendar?'], ['Data quality', 'Can you trust the numbers?']];
+window.card = (i, t) => {
+  R.className = 'stage dark'; document.body.style.background = '#0b0c0f';
+  const [name, q] = CH[i - 1];
+  const a = ez(seg(t, .05, .55)), b = ez(seg(t, .25, .8)), c = ez(seg(t, .45, 1.0));
+  const sweep = eio(seg(t, 0, .9));
+  let html = `<div class="abs" style="left:${-400 + 2700 * sweep}px;top:0;bottom:0;width:260px;background:linear-gradient(90deg,transparent,rgba(245,184,61,.10),transparent);transform:skewX(-14deg)"></div>`;
+  html += `<div class="abs" style="left:160px;top:${300 + (1 - a) * 30}px;opacity:${a};font:700 230px/1 SG;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:2.5px rgba(245,184,61,.55)">${String(i).padStart(2, '0')}</div>`;
+  html += `<div class="abs k" style="left:560px;top:${360 + (1 - b) * 20}px;opacity:${b}">Stop ${i} of 8 · ${name}</div>`;
+  html += `<div class="abs h" style="left:560px;width:1240px;top:${410 + (1 - c) * 30}px;opacity:${c}">${q}</div>`;
+  html += `<div class="abs" style="left:560px;top:${640}px;opacity:${c}">` + CH.map((_, k) => `<span class="dot ${k + 1 === i ? 'on' : k + 1 < i ? 'done' : ''}"></span>`).join('') + '</div>';
+  R.innerHTML = html;
+};
+
+/* ------------------------------------------------------------ outro */
+const DONE = ['All four contracts compared fairly, per gram of pure gold', 'The futures curve explained: time vs real moves', 'Backtests after every fee, tax and slippage',
+  '8 sealed years: one rule failed, one held up', 'Quiet alerts that speak only when it matters', 'Every trade checked against the contract calendar'];
+window.outro = (t, qr) => {
+  R.className = 'stage dark'; document.body.style.background = '#0b0c0f';
+  let html = '';
+  const s1 = 1 - seg(t, 6.6, 7.1);
+  html += `<div class="abs" style="left:0;right:0;top:170px;display:flex;justify-content:center;opacity:${s1}"><div><div class="k" style="opacity:${ez(seg(t, 0, .5))}">What you just saw</div><div style="height:46px"></div>` +
+    DONE.map((d, i) => { const p = ez(seg(t, .4 + i * .55, .9 + i * .55)); return `<div class="chk" style="opacity:${p};transform:translateX(${(1 - p) * -40}px)"><i><svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#08130e" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>${d}</div>`; }).join('') + '</div></div>';
+  const v = ez(seg(t, 7.1, 7.7)) * (1 - seg(t, 10.6, 11.1));
+  html += `<div class="abs" style="left:0;right:0;top:${330 + (1 - v) * 30}px;text-align:center;opacity:${v}"><div class="k">The honest answer</div>
+     <div class="h" style="margin-top:34px">A small, real edge.</div><div class="h2" style="margin-top:18px;color:var(--gold)">Tested honestly, doubts included.</div></div>`;
+  const e = ez(seg(t, 11.1, 11.8));
+  html += `<div class="abs" style="left:200px;top:${250 + (1 - e) * 30}px;opacity:${e}">
+     <div style="display:flex;align-items:center;gap:22px">${mark(80)}<span style="font:700 92px/1 SG;letter-spacing:-.05em;color:var(--ink)">Parity</span></div>
+     <div class="k" style="margin-top:40px">Team</div><div class="h2" style="margin-top:14px">SYNTAX TERROR (TAN)</div>
+     <div class="p" style="margin-top:16px;color:var(--ink)">Nikhil Kumar · Sai Ganesh · Ishaan Chhabra</div>
+     <div class="p" style="margin-top:44px;font-size:24px">Hack in Hills ’26 · Problem 03: Commodity Derivatives Intelligence</div>
+     <div style="margin-top:10px;font:500 24px JB;color:var(--gold2)">github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-</div></div>`;
+  html += `<div class="abs" style="left:1390px;top:${300 + (1 - e) * 30}px;opacity:${e};text-align:center"><div style="background:#fff;padding:18px;border-radius:22px"><img src="${qr}" width="300" height="300" style="display:block;image-rendering:pixelated"></div>
+     <div class="p" style="font-size:22px;margin-top:16px">Scan for the code</div></div>`;
+  R.innerHTML = html;
+  const pp = back(seg(t, 11.6, 12.3));
+  if (pp > 0) { const el = document.createElement('div'); el.className = 'abs'; el.style.cssText = `left:1180px;top:${640 + (1 - pp) * 300}px;width:150px;height:155px;opacity:${cl(pp * 1.5)}`;
+    el.innerHTML = pariSVG('happy', 0, t * 9); R.appendChild(el); }
+};
+</script></body></html>

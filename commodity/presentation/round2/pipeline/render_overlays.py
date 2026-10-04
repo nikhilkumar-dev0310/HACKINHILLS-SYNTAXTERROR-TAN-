@@ -1,0 +1,53 @@
+"""Render intro, chapter cards, outro (frame sequences) and every caption / Pari sprite (transparent PNGs)."""
+import asyncio, json, os, sys, hashlib
+from playwright.async_api import async_playwright
+HERE = os.path.dirname(os.path.abspath(__file__))
+URL = "file://" + os.path.join(HERE, "overlays.html")
+QR = "file:///tmp/claude-0/-home-claude-hackinhills-syntaxterror-tan-/5b43e78d-9c0f-5ac5-b918-6a781f129e78/scratchpad/ppt/qr.png"
+FPS = 30
+LABELS = ["The front page", "The brief", "Relative value", "Term structure", "Backtest", "Signals", "Contracts", "Data quality"]
+
+def cap_key(text, label): return hashlib.md5((label + "|" + text).encode()).hexdigest()[:12]
+
+async def main(which):
+    os.makedirs("ov/intro", exist_ok=True); os.makedirs("ov/outro", exist_ok=True); os.makedirs("ov/cards", exist_ok=True); os.makedirs("ov/caps", exist_ok=True)
+    async with async_playwright() as p:
+        b = await p.chromium.launch(); pg = await b.new_page(viewport={"width": 1920, "height": 1080})
+        await pg.goto(URL); await pg.wait_for_timeout(500)
+        await pg.evaluate("document.fonts.ready")
+        if "caps" in which:
+            tl = json.load(open("timeline.json")) if os.path.exists("timeline.json") else {"events": []}
+            ch, meta = 0, {}
+            for e in tl["events"]:
+                if "card" in e: ch = e["card"]
+                if e.get("cap"):
+                    label = f"{ch:02d} · {LABELS[ch - 1]}"; k = cap_key(e["cap"], label)
+                    if k in meta: continue
+                    r = await pg.evaluate("([h,l]) => caption(h,l)", [e["cap"], label])
+                    await pg.screenshot(path=f"ov/caps/{k}.png", omit_background=True, clip={"x": r[0] - 2, "y": r[1] - 2, "width": r[2] + 4, "height": r[3] + 4})
+                    meta[k] = {"w": r[2] + 4, "h": r[3] + 4}
+            json.dump(meta, open("ov/caps/meta.json", "w"))
+            print("captions", len(meta))
+        if "pari" in which:
+            for mood in ("happy", "talk", "wow"):
+                for blink in (0, 1):
+                    await pg.evaluate("([m,b]) => pari(m,b,0)", [mood, blink])
+                    await pg.screenshot(path=f"ov/pari_{mood}_{blink}.png", omit_background=True, clip={"x": 0, "y": 0, "width": 180, "height": 186})
+        if "intro" in which:
+            n = round(15.0 * FPS)
+            for i in range(n):
+                await pg.evaluate("t => intro(t)", i / FPS); await pg.screenshot(path=f"ov/intro/{i:04d}.jpg", type="jpeg", quality=93)
+            print("intro", n)
+        if "cards" in which:
+            for c in range(1, 9):
+                for i in range(66):
+                    await pg.evaluate("([c,t]) => card(c,t)", [c, i / FPS]); await pg.screenshot(path=f"ov/cards/{c}_{i:03d}.jpg", type="jpeg", quality=93)
+            print("cards")
+        if "outro" in which:
+            n = round(15.0 * FPS)
+            for i in range(n):
+                await pg.evaluate("([t,q]) => outro(t,q)", [i / FPS, QR]); await pg.screenshot(path=f"ov/outro/{i:04d}.jpg", type="jpeg", quality=93)
+            print("outro", n)
+        await b.close()
+
+asyncio.run(main(sys.argv[1:] or ["pari", "intro", "cards", "outro"]))
