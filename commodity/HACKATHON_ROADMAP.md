@@ -7,7 +7,7 @@ the **Unstop stage list** is what actually opens and closes submissions, so it w
 |---|---|---|---|
 | **5 Oct 2026, 6:29 PM** | Registration closes on Unstop | Team registered on Unstop, every member added | To confirm |
 | **5 Oct 2026, 11:59 PM** | Round 1: PPT | `presentation/round1/Parity_SyntaxTerror_Round1.pptx`, built in the official template. Team and roles on slide 1 are filled in | Deck ready |
-| 9 – 19 Oct 2026 | Round 2: prototype | Working prototype (the dashboard), demo video, GitHub repo link, documentation (README + report PDF) | Ready: `presentation/round2/Parity_demo.mp4` (2 min 36 s, captioned; `record.py` re-records it) |
+| 9 – 19 Oct 2026 | Round 2: prototype | Working prototype (the dashboard), demo video, GitHub repo link, documentation (README + report PDF) | Ready: live at https://parity-mcx-gold.onrender.com; demo video `presentation/round2/Parity_demo.mp4` (4 min 55 s) |
 | 20 – 25 Oct 2026 | Round 3: social | LinkedIn post, Instagram reel, prototype video | To do |
 | 20 – 21 Nov 2026 | Grand finale, Manali (offline) | Live pitch and demo | Pitch ready (`presentation/parity-pitch.html`, timing in its README) |
 

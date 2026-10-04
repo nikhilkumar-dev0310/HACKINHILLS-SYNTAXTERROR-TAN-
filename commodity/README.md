@@ -1,5 +1,8 @@
 # Gold spread analysis (MCX GOLDTEN / GOLDGUINEA / GOLDPETAL)
 
+**Live:** dashboard https://parity-mcx-gold.onrender.com · pitch https://parity-mcx-gold.onrender.com/pitch.html · report https://parity-mcx-gold.onrender.com/report.pdf (redeploys on every push to main)
+
+
 ## Setup (once)
 Put `ingest.py`, `backtest.py` and this README in the same folder as `raw_clean/`
 (for you: `~/Documents/commodity/data/`). Then:
