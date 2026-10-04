@@ -2,11 +2,13 @@
 
     python lifecycle.py
 
-MCX gold contracts are compulsory/staggered delivery: the tender period starts 5 business days before
-expiry, and brokers square off open positions before it (e.g. 5 Feb 2026 expiry: close by 29 Jan 2026;
-28 Nov 2025 expiry: close by 21 Nov 2025). Here the last safe exit day is 5 business days before expiry
-(numpy business-day offset, Mon-Fri; exchange holidays ignored, which only makes the check stricter
-by at most a day).
+MCX gold contracts are compulsory (staggered) delivery. The MCX contract specifications for GOLDM,
+GOLDTEN, GOLDGUINEA and GOLDPETAL set the staggered-delivery tender period as the last 3 trading days
+of the contract, expiry day included. Brokers square off open positions earlier than that (e.g. 5 Feb
+2026 expiry: close by 29 Jan 2026; 28 Nov 2025 expiry: close by 21 Nov 2025). Here the last safe exit
+day is 5 business days before expiry (numpy business-day offset, Mon-Fri; exchange holidays ignored),
+which is stricter than the exchange rule. Each trade is also checked against the exchange rule itself:
+the tender period starts on the contract's 3rd-last trading day in our files.
 Checks, for every stored trade of both strategies:
   - entry on or after the contract's first trading day in our files
   - exit on or before the last safe exit day (outside the tender period)
@@ -39,6 +41,8 @@ def main():
 
     # contracts
     con = d.groupby(["symbol", "expiry_date"]).agg(first=("date", "min"), last=("date", "max"), days=("date", "size")).reset_index()
+    third_last = d.groupby(["symbol", "expiry_date"]).date.apply(lambda x: sorted(x)[-3] if len(x) >= 3 else min(x))
+    con["exchange_tender_start"] = con.set_index(["symbol", "expiry_date"]).index.map(third_last)
     con["last_safe_exit"] = pd.to_datetime(np.busday_offset(con.expiry_date.values.astype("datetime64[D]"), -TENDER_BDAYS, roll="backward"))
     con.to_csv(os.path.join(bt.RES, "lifecycle_contracts.csv"), index=False, date_format="%Y-%m-%d")
     C = con.set_index(["symbol", "expiry_date"])
@@ -59,12 +63,15 @@ def main():
             entry, exit_ = pd.Timestamp(t.entry), pd.Timestamp(t.exit)
             first = max(C.at[l, "first"] for l in legs)
             safe = min(C.at[l, "last_safe_exit"] for l in legs)
+            xt = min(C.at[l, "exchange_tender_start"] for l in legs)
             rows.append({"run": run, "what": getattr(t, "pair", None) or t.symbol, "expiry": t.expiry, "entry": t.entry, "exit": t.exit,
                          "last_safe_exit": safe.date(), "bdays_before_safe": int(np.busday_count(exit_.date(), safe.date())),
-                         "inside_life": entry >= first, "outside_tender": exit_ <= safe, "net_5bp": t.net_rs})
+                         "inside_life": entry >= first, "outside_tender": exit_ <= safe,
+                         "outside_exchange_tender": exit_ < xt, "net_5bp": t.net_rs})
     tr = pd.DataFrame(rows)
     tr.to_csv(os.path.join(bt.RES, "lifecycle_trades.csv"), index=False)
     s = tr.groupby("run").agg(trades=("net_5bp", "size"), inside_life=("inside_life", "sum"), outside_tender=("outside_tender", "sum"),
+                              outside_exchange_tender=("outside_exchange_tender", "sum"),
                               net_all=("net_5bp", "sum"))
     s["net_outside_tender_only"] = tr[tr.outside_tender].groupby("run").net_5bp.sum()
     s["net_of_tender_trades"] = tr[~tr.outside_tender].groupby("run").net_5bp.sum()
