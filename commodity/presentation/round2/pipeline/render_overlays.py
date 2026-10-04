@@ -16,7 +16,7 @@ async def main(which):
         await pg.goto(URL); await pg.wait_for_timeout(500)
         await pg.evaluate("document.fonts.ready")
         if "caps" in which:
-            tl = json.load(open("timeline.json")) if os.path.exists("timeline.json") else {"events": []}
+            tl = json.load(open(os.environ.get("TLF", "timeline.json")))
             ch, meta = 0, {}
             for e in tl["events"]:
                 if "card" in e: ch = e["card"]
@@ -26,7 +26,8 @@ async def main(which):
                     r = await pg.evaluate("([h,l]) => caption(h,l)", [e["cap"], label])
                     await pg.screenshot(path=f"ov/caps/{k}.png", omit_background=True, clip={"x": r[0] - 2, "y": r[1] - 2, "width": r[2] + 4, "height": r[3] + 4})
                     meta[k] = {"w": r[2] + 4, "h": r[3] + 4}
-            json.dump(meta, open("ov/caps/meta.json", "w"))
+            old = json.load(open("ov/caps/meta.json")) if os.path.exists("ov/caps/meta.json") else {}
+            old.update(meta); json.dump(old, open("ov/caps/meta.json", "w"))
             print("captions", len(meta))
         if "pari" in which:
             for mood in ("happy", "talk", "wow"):
@@ -38,6 +39,18 @@ async def main(which):
             for i in range(n):
                 await pg.evaluate("t => intro(t)", i / FPS); await pg.screenshot(path=f"ov/intro/{i:04d}.jpg", type="jpeg", quality=93)
             print("intro", n)
+        if "intro_fast" in which:
+            os.makedirs("ov/intro_fast", exist_ok=True); n = round(15.0 / 1.6 * FPS)
+            for i in range(n):
+                await pg.evaluate("t => intro(t)", min(15.0, i / FPS * 1.6)); await pg.screenshot(path=f"ov/intro_fast/{i:04d}.jpg", type="jpeg", quality=93)
+            print("intro_fast", n)
+        if "outro_fast" in which:
+            os.makedirs("ov/outro_fast", exist_ok=True)
+            warp = lambda s: s * 1.6 if s * 1.6 < 11.1 else 11.1 + (s - 11.1 / 1.6)
+            n = round((11.1 / 1.6 + 3.9) * FPS)
+            for i in range(n):
+                await pg.evaluate("([t,q]) => outro(t,q)", [warp(i / FPS), QR]); await pg.screenshot(path=f"ov/outro_fast/{i:04d}.jpg", type="jpeg", quality=93)
+            print("outro_fast", n)
         if "cards" in which:
             for c in range(1, 9):
                 for i in range(66):
