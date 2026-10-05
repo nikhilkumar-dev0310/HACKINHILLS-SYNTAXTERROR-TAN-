@@ -38,6 +38,8 @@ def run(cmd, env=None):
     p = subprocess.run(cmd, env={**os.environ, **(env or {})}, capture_output=True, text=True)
     print(p.stdout[-3000:], p.stderr[-3000:], sep="\n", flush=True)
     if p.returncode:
+        tail = " | ".join((p.stdout + p.stderr).strip().splitlines()[-6:])[:900]
+        print(f"::error title=Daily update failed::{' '.join(cmd[-2:])} (exit {p.returncode}): {tail}", flush=True)
         sys.exit(f"step failed: {' '.join(cmd)} (exit {p.returncode})")
     return p.stdout
 
@@ -73,12 +75,12 @@ def main():
     revised = both[both.close_o != both.close_n]
     if len(revised):
         print(revised[k + ["close_o", "close_n"]].head(20).to_string())
-        sys.exit(f"REJECTED: {len(revised)} rows already published changed their close. A person must check.")
+        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(revised)} rows already published changed their close. A person must check.")
     fresh = new[new.date > last]
     for d, g in fresh.groupby("date"):
         miss = sorted(set(SYMS) - set(g.symbol))
         if miss:
-            sys.exit(f"REJECTED: {d.date()} has no rows for {miss}")
+            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {d.date()} has no rows for {miss}")
     tr = fresh[(fresh.volume_lots > 0) & ~fresh.no_trade]
     if tr.close.isna().any() or (tr.close <= 0).any():
         sys.exit("REJECTED: missing or non-positive close on a traded row")
@@ -89,11 +91,11 @@ def main():
               "at the Due Date Rate, so this is expected on expiry days)")
         bad = off[off.date != off.expiry_date]
         if len(bad):
-            sys.exit(f"REJECTED: {len(bad)} closes outside the day's range on non-expiry days")
+            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(bad)} closes outside the day's range on non-expiry days")
     prev = new[(new.date <= last) & (new.volume_lots > 0)]
     ref = prev[prev.date == prev.date.max()].rs_per_g.median()
     if ((tr.rs_per_g < ref / 2) | (tr.rs_per_g > ref * 2)).any():
-        sys.exit(f"REJECTED: price per pure gram far from the previous day's median {ref:.0f}: unit or column error")
+        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: price per pure gram far from the previous day's median {ref:.0f}: unit or column error")
     print(f"checks passed: {len(fresh)} new rows on {fresh.date.nunique()} new trading day(s), "
           f"{len(both)} held rows unchanged", flush=True)
 
@@ -114,6 +116,7 @@ def main():
     run([sys.executable, "dashboard/build.py"])
     with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as f:
         f.write(f"through={nlast.date()}\nnew_rows={len(fresh)}\n")
+    print(f"::notice title=Updated::data through {nlast.date()}, {len(fresh)} new rows")
     print("UPDATED through", nlast.date())
     return 0
 

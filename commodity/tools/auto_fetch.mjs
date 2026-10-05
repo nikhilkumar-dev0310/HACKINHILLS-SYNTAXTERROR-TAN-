@@ -24,11 +24,13 @@ let ok = false;
 for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
   try {
     const r = await page.goto("https://www.mcxindia.com/market-data/bhavcopy", { waitUntil: "domcontentloaded", timeout: 90000 });
-    console.log("page status", r && r.status());
+    console.log("page status", r && r.status(), "title:", await page.title());
     await page.waitForSelector("#symbol-data", { state: "attached", timeout: 60000 });
     await page.waitForFunction(() => typeof window.ExportManager !== "undefined", null, { timeout: 60000 });
     ok = true;
-  } catch (e) { console.log("attempt", attempt, "failed:", e.message.split("\n")[0]); await page.waitForTimeout(15000 * attempt); }
+  } catch (e) {
+    let info = ""; try { info = ` url=${page.url()} title=${await page.title()} body=${(await page.evaluate(() => document.body ? document.body.innerText.slice(0, 160) : "")).replace(/\s+/g, " ")}`; } catch (_) {}
+    console.log("attempt", attempt, "failed:", e.message.split("\n")[0], info); await page.waitForTimeout(10000 * attempt); }
 }
 if (!ok) { console.error("MCX page did not load"); await browser.close(); process.exit(3); }
 
