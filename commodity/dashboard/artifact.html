@@ -676,7 +676,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --r:12px; --r-lg:20px; --r-sm:8px;
   --g-fill:rgba(255,255,255,.035); --g-fill-hover:rgba(255,255,255,.05);
   --g-rim:linear-gradient(155deg,rgba(255,255,255,.26),rgba(255,255,255,.07) 28%,rgba(255,255,255,.025) 60%,rgba(255,236,200,.12));
-  --g-hi:inset 0 1px 0 rgba(255,255,255,.07);
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.07); --g-edge:0 0 0 0 transparent;
   --g-shadow:0 1px 1px rgba(0,0,0,.35),0 18px 44px -22px rgba(0,0,0,.85);
   --g-blur:saturate(160%) blur(24px);
   --seg-on:rgba(255,255,255,.15); --seg-on-ink:#fff; --seg-on-shadow:0 1px 2px rgba(0,0,0,.4),inset 0 .5px 0 rgba(255,255,255,.18);
@@ -686,24 +686,36 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --mat-bar:saturate(180%) blur(20px); --mat-pop:saturate(180%) blur(40px); --scrim:rgba(0,0,0,.42);
 }
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
-  --panel:rgba(255,255,255,.62); --panel-2:rgba(255,255,255,.78); --panel-solid:#ffffff;
-  --glow-a:rgba(242,170,52,.22); --glow-b:rgba(214,150,70,.14); --glow-c:rgba(255,220,150,.20);
-  --g-fill:rgba(255,255,255,.58); --g-fill-hover:rgba(255,255,255,.72);
-  --g-rim:linear-gradient(155deg,rgba(255,255,255,.95),rgba(255,255,255,.5) 30%,rgba(120,100,60,.10) 70%,rgba(255,255,255,.7));
-  --g-hi:inset 0 1px 0 rgba(255,255,255,.9);
-  --g-shadow:0 1px 2px rgba(60,45,20,.06),0 18px 44px -24px rgba(60,45,20,.28);
-  --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(40,30,10,.16),0 0 0 .5px rgba(20,22,28,.08);
-  --glass-bar:rgba(246,244,239,.72); --glass:rgba(255,255,255,.66);
+  --bg:#ebe5da; --bg-2:#e3dccf; --panel:rgba(255,255,255,.6); --panel-2:rgba(255,255,255,.8); --panel-solid:#ffffff;
+  --line:rgba(70,52,20,.11); --line-2:rgba(70,52,20,.19); --hi:rgba(255,255,255,.55);
+  --ink-3:#5c5f66;
+  --glow-a:rgba(240,168,56,.42); --glow-b:rgba(226,128,70,.24); --glow-c:rgba(255,206,120,.40);
+  --g-fill:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.52));
+  --g-fill-hover:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.64));
+  --g-rim:linear-gradient(155deg,#fff,rgba(255,255,255,.75) 30%,rgba(255,255,255,.18) 62%,rgba(255,255,255,.85));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(120,88,30,.07);
+  --g-edge:0 0 0 .5px rgba(90,66,24,.16);
+  --g-shadow:0 1px 2px rgba(90,64,22,.07),0 6px 14px -6px rgba(90,64,22,.12),0 22px 44px -22px rgba(90,64,22,.34);
+  --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(60,44,16,.20),0 0 0 .5px rgba(60,44,16,.12);
+  --glass-bar:rgba(250,247,241,.70); --glass:rgba(255,255,255,.70);
+  --glass-edge:rgba(255,255,255,.85); --glass-hi:#fff; --sheen:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%);
+  --glass-shadow:0 30px 70px -20px rgba(80,58,20,.38),0 0 0 .5px rgba(80,58,20,.16); --scrim:rgba(60,46,22,.18);
 }}
 :root[data-theme="light"]{
-  --panel:rgba(255,255,255,.62); --panel-2:rgba(255,255,255,.78); --panel-solid:#ffffff;
-  --glow-a:rgba(242,170,52,.22); --glow-b:rgba(214,150,70,.14); --glow-c:rgba(255,220,150,.20);
-  --g-fill:rgba(255,255,255,.58); --g-fill-hover:rgba(255,255,255,.72);
-  --g-rim:linear-gradient(155deg,rgba(255,255,255,.95),rgba(255,255,255,.5) 30%,rgba(120,100,60,.10) 70%,rgba(255,255,255,.7));
-  --g-hi:inset 0 1px 0 rgba(255,255,255,.9);
-  --g-shadow:0 1px 2px rgba(60,45,20,.06),0 18px 44px -24px rgba(60,45,20,.28);
-  --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(40,30,10,.16),0 0 0 .5px rgba(20,22,28,.08);
-  --glass-bar:rgba(246,244,239,.72); --glass:rgba(255,255,255,.66);
+  --bg:#ebe5da; --bg-2:#e3dccf; --panel:rgba(255,255,255,.6); --panel-2:rgba(255,255,255,.8); --panel-solid:#ffffff;
+  --line:rgba(70,52,20,.11); --line-2:rgba(70,52,20,.19); --hi:rgba(255,255,255,.55);
+  --ink-3:#5c5f66;
+  --glow-a:rgba(240,168,56,.42); --glow-b:rgba(226,128,70,.24); --glow-c:rgba(255,206,120,.40);
+  --g-fill:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.52));
+  --g-fill-hover:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.64));
+  --g-rim:linear-gradient(155deg,#fff,rgba(255,255,255,.75) 30%,rgba(255,255,255,.18) 62%,rgba(255,255,255,.85));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(120,88,30,.07);
+  --g-edge:0 0 0 .5px rgba(90,66,24,.16);
+  --g-shadow:0 1px 2px rgba(90,64,22,.07),0 6px 14px -6px rgba(90,64,22,.12),0 22px 44px -22px rgba(90,64,22,.34);
+  --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(60,44,16,.20),0 0 0 .5px rgba(60,44,16,.12);
+  --glass-bar:rgba(250,247,241,.70); --glass:rgba(255,255,255,.70);
+  --glass-edge:rgba(255,255,255,.85); --glass-hi:#fff; --sheen:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%);
+  --glass-shadow:0 30px 70px -20px rgba(80,58,20,.38),0 0 0 .5px rgba(80,58,20,.16); --scrim:rgba(60,46,22,.18);
 }
 
 /* L0: the light behind the glass. Static, so it costs nothing while scrolling. */
@@ -714,7 +726,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
 
 /* L1: one glass for every raised surface */
 .card,.kpi,.take,.more,.quote,.dlbar,.status,.dir,.find,.hg-s,.jump a,.sheet a,.sheet button{
-  position:relative;background:var(--g-fill);border:0;border-radius:var(--r-lg);box-shadow:var(--g-hi),var(--g-shadow);
+  position:relative;background:var(--g-fill);border:0;border-radius:var(--r-lg);box-shadow:var(--g-hi),var(--g-edge),var(--g-shadow);
   transition:background-color var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),transform var(--dur-2) var(--ease)}
 .card::before,.kpi::before,.take::before,.more::before,.quote::before,.dlbar::before,.status::before,.dir::before,.find::before,.hg-s::before,.jump a::before,.sheet a::before,.sheet button::before{
   content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:var(--g-rim);
@@ -761,7 +773,7 @@ kbd{border-radius:6px}
 /* sidebar: a floating glass panel, like a macOS sidebar */
 @media (min-width:1101px){
   .rail{top:calc(var(--top) + 14px);height:calc(100vh - var(--top) - 28px);margin:14px 0 14px 14px;padding:18px 12px 18px 12px;border-right:0;border-radius:24px;
-    background:var(--g-fill);box-shadow:var(--g-hi),var(--g-shadow)}
+    background:var(--g-fill);box-shadow:var(--g-hi),var(--g-edge),var(--g-shadow)}
   .rail::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:var(--g-rim);
     -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
   .rail nav a{border-radius:12px}
@@ -806,6 +818,10 @@ kbd{border-radius:6px}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root{--g-fill:rgba(22,22,24,.92)}
 }
+
+/* light mode: the glass needs light to bend. Controls get a white raised face; the tab bar and bars read as frosted. */
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .search,:root:not([data-theme="dark"]) .iconbtn,:root:not([data-theme="dark"]) .theme,:root:not([data-theme="dark"]) .btn,:root:not([data-theme="dark"]) .pager button,:root:not([data-theme="dark"]) .dl-i{box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(80,58,20,.08)} }
+:root[data-theme="light"] .search,:root[data-theme="light"] .iconbtn,:root[data-theme="light"] .theme,:root[data-theme="light"] .btn,:root[data-theme="light"] .pager button,:root[data-theme="light"] .dl-i{box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(80,58,20,.08)}
 
 </style>
 <script>try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
