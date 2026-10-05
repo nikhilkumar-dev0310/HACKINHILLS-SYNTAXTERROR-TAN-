@@ -658,6 +658,155 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   .ind{transition:opacity 1ms!important}
 }
 
+/* ================================================================ LIQUID GLASS, one continuous palette
+   Dark: true black ground lit by warm gold light, neutral graphite greys (no blue cast), one gold accent.
+   Every raised surface is the same glass, so nothing reads as a stray grey slab:
+     L0 page     black + fixed warm glows (the light the glass refracts)
+     L1 surface  cards, KPIs, panels: 3.5% white tint, specular rim, soft shadow. No live blur here: behind
+                 them is only the static glow, so blur would look the same and cost smooth scrolling
+     L2 control  inputs, segmented controls, buttons inside L1: 6% white, hairline
+     L3 float    bars, sidebar, tab bar, menus, tooltips: Apple's material, saturate 180% + blur 20–40px
+   Values follow Apple's own web materials (nav bar: saturate(180%) blur(20px) at ~72% tint). */
+:root{
+  --bg:#050506; --bg-2:#0b0b0c; --panel:rgba(255,255,255,.035); --panel-2:rgba(30,30,32,.72); --panel-solid:#141415;
+  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.13); --hi:rgba(255,255,255,.055);
+  --ink:#f5f5f7; --ink-2:#a1a1a6; --ink-3:#86868b; --inv:#050506;
+  --gold:#f2b544; --gold-2:#ffd88a; --gold-soft:rgba(242,181,68,.13); --gold-ink:#1b1300;
+  --grid:rgba(255,255,255,.055); --glow-a:rgba(242,170,52,.20); --glow-b:rgba(196,120,38,.13); --glow-c:rgba(255,214,140,.07);
+  --r:12px; --r-lg:20px; --r-sm:8px;
+  --g-fill:rgba(255,255,255,.035); --g-fill-hover:rgba(255,255,255,.05);
+  --g-rim:linear-gradient(155deg,rgba(255,255,255,.26),rgba(255,255,255,.07) 28%,rgba(255,255,255,.025) 60%,rgba(255,236,200,.12));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.07);
+  --g-shadow:0 1px 1px rgba(0,0,0,.35),0 18px 44px -22px rgba(0,0,0,.85);
+  --g-blur:saturate(160%) blur(24px);
+  --seg-on:rgba(255,255,255,.15); --seg-on-ink:#fff; --seg-on-shadow:0 1px 2px rgba(0,0,0,.4),inset 0 .5px 0 rgba(255,255,255,.18);
+  --glass-bar:rgba(18,18,20,.66); --glass:rgba(34,34,37,.62);
+  --glass-edge:rgba(255,255,255,.14); --glass-hi:rgba(255,255,255,.16); --sheen:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 40%);
+  --glass-shadow:0 30px 70px -18px rgba(0,0,0,.75),0 0 0 .5px rgba(0,0,0,.6);
+  --mat-bar:saturate(180%) blur(20px); --mat-pop:saturate(180%) blur(40px); --scrim:rgba(0,0,0,.42);
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+  --panel:rgba(255,255,255,.62); --panel-2:rgba(255,255,255,.78); --panel-solid:#ffffff;
+  --glow-a:rgba(242,170,52,.22); --glow-b:rgba(214,150,70,.14); --glow-c:rgba(255,220,150,.20);
+  --g-fill:rgba(255,255,255,.58); --g-fill-hover:rgba(255,255,255,.72);
+  --g-rim:linear-gradient(155deg,rgba(255,255,255,.95),rgba(255,255,255,.5) 30%,rgba(120,100,60,.10) 70%,rgba(255,255,255,.7));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.9);
+  --g-shadow:0 1px 2px rgba(60,45,20,.06),0 18px 44px -24px rgba(60,45,20,.28);
+  --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(40,30,10,.16),0 0 0 .5px rgba(20,22,28,.08);
+  --glass-bar:rgba(246,244,239,.72); --glass:rgba(255,255,255,.66);
+}}
+:root[data-theme="light"]{
+  --panel:rgba(255,255,255,.62); --panel-2:rgba(255,255,255,.78); --panel-solid:#ffffff;
+  --glow-a:rgba(242,170,52,.22); --glow-b:rgba(214,150,70,.14); --glow-c:rgba(255,220,150,.20);
+  --g-fill:rgba(255,255,255,.58); --g-fill-hover:rgba(255,255,255,.72);
+  --g-rim:linear-gradient(155deg,rgba(255,255,255,.95),rgba(255,255,255,.5) 30%,rgba(120,100,60,.10) 70%,rgba(255,255,255,.7));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.9);
+  --g-shadow:0 1px 2px rgba(60,45,20,.06),0 18px 44px -24px rgba(60,45,20,.28);
+  --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(40,30,10,.16),0 0 0 .5px rgba(20,22,28,.08);
+  --glass-bar:rgba(246,244,239,.72); --glass:rgba(255,255,255,.66);
+}
+
+/* L0: the light behind the glass. Static, so it costs nothing while scrolling. */
+.bgfx{opacity:1}
+.bgfx i:nth-child(1){width:70vw;height:70vw;left:-18vw;top:-34vw;background:radial-gradient(circle,var(--glow-a),transparent 64%)}
+.bgfx i:nth-child(2){width:60vw;height:60vw;right:-22vw;top:28vh;background:radial-gradient(circle,var(--glow-b),transparent 64%)}
+.bgfx::after{content:"";position:absolute;width:55vw;height:55vw;left:22vw;bottom:-36vw;border-radius:50%;background:radial-gradient(circle,var(--glow-c),transparent 62%)}
+
+/* L1: one glass for every raised surface */
+.card,.kpi,.take,.more,.quote,.dlbar,.status,.dir,.find,.hg-s,.jump a,.sheet a,.sheet button{
+  position:relative;background:var(--g-fill);border:0;border-radius:var(--r-lg);box-shadow:var(--g-hi),var(--g-shadow);
+  transition:background-color var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease),transform var(--dur-2) var(--ease)}
+.card::before,.kpi::before,.take::before,.more::before,.quote::before,.dlbar::before,.status::before,.dir::before,.find::before,.hg-s::before,.jump a::before,.sheet a::before,.sheet button::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:var(--g-rim);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.card:hover,.more:hover,.more[open],.quote:hover{background:var(--g-fill-hover)}
+.stats .kpi{background:transparent;box-shadow:none;border-radius:0}
+.stats .kpi::before{display:none}
+/* surfaces nested in a card are lighter controls, not a second slab of glass */
+.card .status,.card .hg-s,.card .dir,.more .status{background:var(--hi);box-shadow:none;border-radius:var(--r)}
+.card .status::before,.card .hg-s::before,.more .status::before{opacity:.5}
+.take{border-left:0;padding-left:28px}
+.take::after{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,var(--gold-2),var(--gold))}
+.jump a{border-radius:999px;padding:7px 14px}
+.jump a:hover{background:var(--gold-soft);color:var(--ink)}
+.more summary{border-radius:var(--r-lg)}
+
+/* L2: controls, one family */
+.search,.iconbtn,.theme,.seg,.btn,.pager button,.dl-i,.gl-s,kbd{border:.5px solid var(--line-2);background:var(--hi);border-radius:var(--r)}
+.search,.iconbtn,.theme{height:36px;box-shadow:var(--g-hi)}
+.search:hover,.iconbtn:hover,.btn:hover,.pager button:hover:not([disabled]),.dl-i:hover{background:var(--gold-soft);border-color:color-mix(in srgb,var(--gold) 45%,transparent);color:var(--ink)}
+.theme,.seg{padding:3px;border-radius:calc(var(--r) - 1px)}
+.theme button,.seg button{border-radius:calc(var(--r) - 4px)}
+.theme button[aria-pressed="true"],.seg button[aria-pressed="true"]{background:var(--seg-on);color:var(--seg-on-ink);box-shadow:var(--seg-on-shadow)}
+.btn.dlb{border-color:color-mix(in srgb,var(--gold) 50%,transparent);color:var(--gold)}
+.btn.dlb:hover{color:var(--ink)}
+kbd{border-radius:6px}
+.pill{border-radius:999px;padding:3px 10px}
+.pill.neutral{border:.5px solid var(--line-2)}
+.dl-i{border-radius:var(--r)}
+.range{accent-color:var(--gold)}
+
+/* L3: floating layers, Apple materials */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .top{background:var(--glass-bar);-webkit-backdrop-filter:var(--mat-bar);backdrop-filter:var(--mat-bar);border-bottom:0;box-shadow:inset 0 -.5px 0 var(--line-2)}
+  .palette,.drawer,.sheet,.gloss,.tip{background:var(--sheen),var(--glass);-webkit-backdrop-filter:var(--mat-pop);backdrop-filter:var(--mat-pop);border:.5px solid var(--glass-edge);box-shadow:inset 0 .5px 0 var(--glass-hi),var(--glass-shadow)}
+  .palette{border-radius:22px}
+  .gloss,.tip{border-radius:14px}
+  .drawer{border-radius:24px 0 0 24px}
+  .sheet{border-radius:28px 28px 0 0}
+  .pal-i{border-radius:10px}
+  .overlay,.overlay.sheet-o{background:var(--scrim);-webkit-backdrop-filter:blur(2px) saturate(120%);backdrop-filter:blur(2px) saturate(120%)}
+}
+
+/* sidebar: a floating glass panel, like a macOS sidebar */
+@media (min-width:1101px){
+  .rail{top:calc(var(--top) + 14px);height:calc(100vh - var(--top) - 28px);margin:14px 0 14px 14px;padding:18px 12px 18px 12px;border-right:0;border-radius:24px;
+    background:var(--g-fill);box-shadow:var(--g-hi),var(--g-shadow)}
+  .rail::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;background:var(--g-rim);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+  .rail nav a{border-radius:12px}
+  .rail .ind{border-radius:12px;background:var(--gold-soft);box-shadow:inset 0 .5px 0 rgba(255,255,255,.12),inset 0 0 0 .5px color-mix(in srgb,var(--gold) 35%,transparent)}
+  .rail-f{padding:0 6px;font-size:11.5px}
+  .rail-f .kh{white-space:nowrap;font-size:11px;gap:4px}.rail-f kbd{min-width:17px;padding:0 4px}
+  main.page{padding-top:6px}
+}
+
+/* tablet strip and phone tab bar: glass, the tab bar floats as a capsule */
+@media (max-width:1100px){
+  .strip{background:var(--glass-bar);-webkit-backdrop-filter:var(--mat-bar);backdrop-filter:var(--mat-bar);border-bottom:0;box-shadow:inset 0 -.5px 0 var(--line-2)}
+  .strip a{border-radius:999px}
+  .strip .ind{background:var(--seg-on);border-radius:999px;box-shadow:var(--seg-on-shadow)}
+  .strip a[aria-current="page"]{color:var(--seg-on-ink)}
+  .strip a[aria-current="page"] .num{color:var(--gold);opacity:1}
+}
+@media (max-width:760px){
+  .tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;border-radius:30px;border-top:0;
+    background:var(--glass-bar);-webkit-backdrop-filter:var(--mat-pop);backdrop-filter:var(--mat-pop);box-shadow:inset 0 .5px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),var(--glass-shadow)}
+  .tabbar a,.tabbar button{border-radius:24px}
+  .tabbar .ind{border-radius:24px;background:var(--gold-soft);box-shadow:inset 0 .5px 0 rgba(255,255,255,.12)}
+  .sheet{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  main.page{padding-bottom:120px}
+}
+
+/* data marks in the one palette: gold for magnitude, white for the line it must clear */
+.h-bar{background:var(--hi);box-shadow:inset 0 0 0 .5px var(--line)}
+.h-bar i{background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 35%,transparent),color-mix(in srgb,var(--gold) 70%,transparent))}
+.hurdle li.over .h-bar i{background:linear-gradient(90deg,color-mix(in srgb,var(--warn) 50%,transparent),var(--warn))}
+.h-line{background:var(--ink);box-shadow:0 0 6px rgba(255,255,255,.35)}
+.gauge .track{border:0;box-shadow:inset 0 0 0 .5px var(--line-2);border-radius:99px}
+.gauge .needle{border-radius:6px;box-shadow:0 0 0 3px color-mix(in srgb,var(--bg) 80%,transparent),0 4px 14px -4px rgba(0,0,0,.6)}
+.hg-bar,.split{border-radius:99px}
+.tl .b{background:var(--bg)}
+
+/* graceful fallbacks */
+@media (prefers-reduced-transparency: reduce){
+  .tabbar,.strip,.top{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  :root{--g-fill:#121213;--glass-bar:#0b0b0c}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root{--g-fill:rgba(22,22,24,.92)}
+}
+
 </style>
 <script>try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
 <div id="root"></div>
