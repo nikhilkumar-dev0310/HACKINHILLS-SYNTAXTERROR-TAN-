@@ -691,7 +691,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --g-edge:0 0 0 .5px rgba(90,66,24,.16);
   --g-shadow:0 1px 2px rgba(90,64,22,.07),0 6px 14px -6px rgba(90,64,22,.12),0 22px 44px -22px rgba(90,64,22,.34);
   --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(60,44,16,.20),0 0 0 .5px rgba(60,44,16,.12);
-  --glass-bar:rgba(250,247,241,.70); --glass:rgba(255,255,255,.70);
+  --glass-bar:rgba(250,247,241,.48); --glass:rgba(255,255,255,.70);
   --glass-edge:rgba(255,255,255,.85); --glass-hi:#fff; --sheen:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%);
   --glass-shadow:0 30px 70px -20px rgba(80,58,20,.38),0 0 0 .5px rgba(80,58,20,.16); --scrim:rgba(60,46,22,.18);
 }}
@@ -707,7 +707,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --g-edge:0 0 0 .5px rgba(90,66,24,.16);
   --g-shadow:0 1px 2px rgba(90,64,22,.07),0 6px 14px -6px rgba(90,64,22,.12),0 22px 44px -22px rgba(90,64,22,.34);
   --seg-on:#ffffff; --seg-on-ink:#101215; --seg-on-shadow:0 1px 3px rgba(60,44,16,.20),0 0 0 .5px rgba(60,44,16,.12);
-  --glass-bar:rgba(250,247,241,.70); --glass:rgba(255,255,255,.70);
+  --glass-bar:rgba(250,247,241,.48); --glass:rgba(255,255,255,.70);
   --glass-edge:rgba(255,255,255,.85); --glass-hi:#fff; --sheen:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 45%);
   --glass-shadow:0 30px 70px -20px rgba(80,58,20,.38),0 0 0 .5px rgba(80,58,20,.16); --scrim:rgba(60,46,22,.18);
 }
