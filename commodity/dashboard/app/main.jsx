@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import { D, NAME, VIEWS, SYMS, SYM, EVENTS, GLOSSARY, fdate, pname, reducedMotion } from "./lib.js";
 import { AppCtx, Icon } from "./ui.jsx";
@@ -100,20 +100,54 @@ function News({ open, onClose }) {
   </div>;
 }
 
+/* ---------- a single indicator per nav that glides to whichever item is current */
+function useIndicator(view) {
+  const host = useRef(null), ind = useRef(null), snap = useRef(true);
+  const place = useCallback(() => { const h = host.current, i = ind.current; if (!h || !i) return;
+    const a = h.querySelector(':scope > [aria-current="page"]');
+    if (!a || !h.offsetParent && getComputedStyle(h).position !== "fixed") { i.classList.remove("ready"); snap.current = true; return; }
+    if (snap.current) i.classList.add("no-anim");
+    i.style.width = a.offsetWidth + "px"; i.style.height = a.offsetHeight + "px"; i.style.transform = `translate3d(${a.offsetLeft}px,${a.offsetTop}px,0)`;
+    i.classList.add("ready");
+    if (snap.current) { i.getBoundingClientRect(); requestAnimationFrame(() => i.classList.remove("no-anim")); snap.current = false; }
+    if (h.scrollWidth > h.clientWidth + 2) { const l = a.offsetLeft - (h.clientWidth - a.offsetWidth) / 2; h.scrollTo({ left: l, behavior: reducedMotion() ? "auto" : "smooth" }); }
+  }, []);
+  useLayoutEffect(place, [view, place]);
+  useEffect(() => { const h = host.current; if (!h) return; const ro = new ResizeObserver(() => { snap.current = true; place(); }); ro.observe(h); return () => ro.disconnect(); }, [place]);
+  return [host, ind];
+}
+const vIdx = id => VIEWS.findIndex(v => v[0] === id);
+
 /* ---------- app */
 function App() {
   const init = () => { const h = location.hash.slice(1); return PAGES[h] ? h : store.get("gsl-view", "overview"); };
-  const [view, setView] = useState(init), [theme, setTheme] = useTheme();
+  const [view, setView] = useState(init), [theme, setTheme] = useTheme(), [phase, setPhase] = useState("in"), [navN, setNavN] = useState(0);
+  const viewRef = useRef(view); viewRef.current = view;
+  const pend = useRef(null), tmr = useRef(0);
   const [pal, setPal] = useState(false), [news, setNews] = useState(false), [more, setMore] = useState(false);
   const [keysOn, setKeysOnS] = useState(() => store.get("gsl-keys", "on") !== "off");
   const [rvPair, setRvPair] = useState("M-GUINEA"), [calF, setCalF] = useState("All");
   const userNav = useRef(false);
   const setKeysOn = v => { setKeysOnS(v); store.set("gsl-keys", v ? "on" : "off"); };
-  const go = useCallback(id => { userNav.current = true; setMore(false); if (location.hash.slice(1) !== id) location.hash = id; else { setView(id); focusHead(); } }, []);
   const focusHead = () => requestAnimationFrame(() => { const h = document.querySelector("main h1"); if (h) h.focus({ preventScroll: true }); });
-  useEffect(() => { const on = () => { const h = location.hash.slice(1); if (PAGES[h]) { userNav.current = true; setView(h); } }; addEventListener("hashchange", on); return () => removeEventListener("hashchange", on); }, []);
+  /* Page change: the old page leaves (160 ms), the jump to the top happens while nothing is on screen, then the new
+     page arrives. A second click mid-way just retargets; nothing queues up, so rapid switching never lags behind. */
+  const commit = () => { tmr.current = 0; const id = pend.current; pend.current = null; if (!id) return;
+    scrollTo({ top: 0, behavior: "instant" }); setView(id); setPhase("in"); };
+  const navigate = useCallback(id => {
+    if (!PAGES[id]) return;
+    const cur = viewRef.current;
+    if (id === cur && !pend.current) { scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" }); focusHead(); return; }
+    document.documentElement.classList.toggle("nav-back", vIdx(id) < vIdx(cur));
+    pend.current = id; userNav.current = true; setNavN(n => n + 1);
+    if (reducedMotion()) { commit(); return; }
+    if (!tmr.current) { setPhase("out"); tmr.current = setTimeout(commit, 160); }
+  }, []);
+  const go = useCallback(id => { setMore(false); if (location.hash.slice(1) !== id) location.hash = id; else navigate(id); }, []);
+  useEffect(() => { const on = () => navigate(location.hash.slice(1)); addEventListener("hashchange", on); return () => { removeEventListener("hashchange", on); clearTimeout(tmr.current); }; }, []);
   useEffect(() => { document.title = view === "overview" ? `${NAME} · MCX gold futures` : `${label(view)} · ${NAME}`; store.set("gsl-view", view);
-    if (userNav.current) { scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" }); focusHead(); userNav.current = false; } }, [view]);
+    if (userNav.current) { focusHead(); userNav.current = false; } }, [view]);
+  const [railH, railI] = useIndicator(view), [stripH, stripI] = useIndicator(view), [tabH, tabI] = useIndicator(view + more);
   useEffect(() => { const k = e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setNews(false); setPal(p => !p); return; }
     if (pal || news || !keysOn || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
@@ -130,17 +164,17 @@ function App() {
     <div className="bgfx" aria-hidden="true"><i /><i /></div>
     <header className="top">
       <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><Mark /><span className="wm">{NAME}<small>MCX gold futures</small></span></a>
-      <div className="crumb" aria-hidden="true"><span className="num">{String(idx + 1).padStart(2, "0")} / 08</span>{label(view)}</div>
+      <div className="crumb" aria-hidden="true"><span key={view} className="roll"><span className="num">{String(idx + 1).padStart(2, "0")} / 08</span>{label(view)}</span></div>
       <div className="top-r">
         <button type="button" className="search" onClick={() => setPal(true)} aria-label="Search (Ctrl+K)"><Icon name="search" size={16} /><span className="sl">Search</span><kbd>{isMac ? "⌘" : "Ctrl"} K</kbd></button>
         <button type="button" className="iconbtn" onClick={() => setNews(true)} aria-label="What's new" title={newest ? `What's new · latest ${fdate(newest.date)}` : "What's new"}><Icon name="news" size={18} /></button>
         <ThemeSwitch theme={theme} setTheme={setTheme} />
       </div>
     </header>
-    <nav className="strip" aria-label="Sections">{VIEWS.map(([id, l], i) => <a key={id} href={"#" + id} aria-current={id === view ? "page" : undefined}><span className="num">{String(i + 1).padStart(2, "0")}</span>{l}</a>)}</nav>
+    <nav className="strip ind-host" aria-label="Sections" ref={stripH}><span className="ind" ref={stripI} aria-hidden="true" />{VIEWS.map(([id, l], i) => <a key={id} href={"#" + id} aria-current={id === view ? "page" : undefined}><span className="num">{String(i + 1).padStart(2, "0")}</span>{l}</a>)}</nav>
     <div className="shell">
       <aside className="rail">
-        <nav aria-label="Sections">{VIEWS.map(([id, l], i) => <a key={id} href={"#" + id} aria-current={id === view ? "page" : undefined} aria-keyshortcuts={keysOn ? String(i + 1) : undefined}>
+        <nav aria-label="Sections" className="ind-host" ref={railH}><span className="ind" ref={railI} aria-hidden="true" />{VIEWS.map(([id, l], i) => <a key={id} href={"#" + id} aria-current={id === view ? "page" : undefined} aria-keyshortcuts={keysOn ? String(i + 1) : undefined}>
           <span className="num">{String(i + 1).padStart(2, "0")}</span><span className="rl">{l}</span><kbd className="key" aria-hidden="true">{i + 1}</kbd></a>)}</nav>
         <div className="rail-f">
           <div className="live" title={D.meta.last_full !== D.meta.last ? `Full futures curve to ${fdate(D.meta.last_full)}. Later rows, to ${fdate(D.meta.last)}, cover only contracts running into their expiry.` : undefined}><span className="pulse" />Data through <b className="num">{fdate(D.meta.last_full || D.meta.last)}</b></div>
@@ -149,12 +183,12 @@ function App() {
             : <button type="button" className="linkbtn" onClick={() => setKeysOn(true)}>Turn on number-key shortcuts</button>}</div>
         </div>
       </aside>
-      <main id="main" key={view} className="page">
+      <main id="main" key={view} className={"page " + (phase === "out" ? "p-out" : "p-in")}>
         <Page />
         <footer className="foot"><span>Source: MCX Bhavcopy (mcxindia.com). Code and data: github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-</span><span>Exported <span className="num">{D.meta.exported}</span></span></footer>
       </main>
     </div>
-    <nav className="tabbar" aria-label="Sections">
+    <nav className="tabbar ind-host" aria-label="Sections" ref={tabH}><span className="ind" ref={tabI} aria-hidden="true" />
       {TABS.map(id => <a key={id} href={"#" + id} aria-current={id === view ? "page" : undefined}><Icon name={id} size={20} /><span>{id === "brief" ? "Brief" : label(id)}</span></a>)}
       <button type="button" aria-expanded={more} aria-current={!TABS.includes(view) ? "page" : undefined} onClick={() => setMore(m => !m)}><Icon name="more" size={20} /><span>More</span></button>
     </nav>
@@ -165,6 +199,7 @@ function App() {
         <button type="button" onClick={() => { setMore(false); setPal(true); }}><Icon name="search" size={20} />Search</button>
         <button type="button" onClick={() => { setMore(false); setNews(true); }}><Icon name="news" size={20} />What's new</button>
       </div></div>}
+    {navN > 0 && <div key={navN} className="navbar-p" aria-hidden="true" />}
     <Palette open={pal} onClose={() => setPal(false)} go={go} ctx={ctx} />
     <News open={news} onClose={() => setNews(false)} />
   </AppCtx.Provider>;

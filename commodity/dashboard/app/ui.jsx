@@ -78,17 +78,43 @@ export const Pill = ({ tone = "neutral", children, title }) => <span className={
 export const Legend = ({ items, band }) => <div className="legend">{items.map(([c, l]) => <span key={l}><i style={{ background: c }} />{l}</span>)}{band && <span><i className="box" />Crash period</span>}</div>;
 
 /* Jargon with a plain-English definition on hover, keyboard focus or tap. */
+/* Hover (mouse) opens after a short intent delay so sweeping the cursor across text does not flash cards; tap or
+   keyboard focus opens at once. The card grows out of the word it explains, with a small arrow pointing back to it. */
 export function Term({ k, children }) {
-  const [open, setOpen] = useState(false), [pos, setPos] = useState(null), ref = useRef(null), id = useId(), g = GLOSSARY[k];
+  const [open, setOpen] = useState(false), [pos, setPos] = useState(null), ref = useRef(null), tm = useRef(0), id = useId(), g = GLOSSARY[k];
+  const place = () => { const r = ref.current.getBoundingClientRect(), w = Math.min(320, innerWidth - 24), cx = r.left + r.width / 2;
+    const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2)), up = r.bottom + 150 > innerHeight && r.top > 160;
+    setPos({ left, w, up, top: r.bottom + 10, bottom: innerHeight - r.top + 10, ax: Math.max(14, Math.min(w - 14, cx - left)) }); };
+  const show = () => { clearTimeout(tm.current); place(); setOpen(true); };
+  const hide = () => { clearTimeout(tm.current); setOpen(false); };
+  useEffect(() => { if (!open) return; const off = () => setOpen(false);
+    const out = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    addEventListener("scroll", off, true); addEventListener("pointerdown", out, true);
+    return () => { removeEventListener("scroll", off, true); removeEventListener("pointerdown", out, true); }; }, [open]);
+  useEffect(() => () => clearTimeout(tm.current), []);
   if (!g) return children;
-  const show = () => { const r = ref.current.getBoundingClientRect(); const w = Math.min(300, innerWidth - 24);
-    setPos({ left: Math.max(12, Math.min(innerWidth - w - 12, r.left + r.width / 2 - w / 2)), top: r.bottom + 8, w, up: r.bottom + 120 > innerHeight, bottom: innerHeight - r.top + 8 }); setOpen(true); };
-  useEffect(() => { if (!open) return; const off = () => setOpen(false); addEventListener("scroll", off, true); return () => removeEventListener("scroll", off, true); }, [open]);
   return <>
-    <button type="button" ref={ref} className="term" aria-describedby={open ? id : undefined} onMouseEnter={show} onMouseLeave={() => setOpen(false)}
-      onFocus={show} onBlur={() => setOpen(false)} onClick={() => open ? setOpen(false) : show()} onKeyDown={e => e.key === "Escape" && setOpen(false)}>{children}</button>
-    {open && pos && createPortal(<div id={id} role="tooltip" className="gloss" style={{ left: pos.left, width: pos.w, ...(pos.up ? { bottom: pos.bottom } : { top: pos.top }) }}><b>{g[0]}</b>{g[1]}</div>, document.body)}
+    <span role="button" tabIndex={0} ref={ref} className={"term" + (open ? " on" : "")} aria-describedby={open ? id : undefined} aria-expanded={open}
+      onPointerEnter={e => { if (e.pointerType === "mouse") { clearTimeout(tm.current); tm.current = setTimeout(show, 90); } }}
+      onPointerLeave={e => { if (e.pointerType === "mouse") hide(); }}
+      onFocus={e => { if (e.target.matches(":focus-visible")) show(); }} onBlur={hide}
+      onClick={e => { e.stopPropagation(); e.preventDefault(); open ? hide() : show(); }}
+      onKeyDown={e => { if (e.key === "Escape") hide(); else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open ? hide() : show(); } }}>{children}</span>
+    {open && pos && createPortal(<div id={id} role="tooltip" className={"gloss" + (pos.up ? " up" : "")} style={{ left: pos.left, width: pos.w, "--ax": pos.ax + "px", ...(pos.up ? { bottom: pos.bottom } : { top: pos.top }) }}>
+      <b>{g[0]}</b>{g[1]}</div>, document.body)}
   </>;
+}
+
+/* Every definition on the site in one place, A to Z. */
+export function Glossary() {
+  const [q, setQ] = useState("");
+  const all = Object.entries(GLOSSARY).sort((a, b) => a[1][0].localeCompare(b[1][0], "en", { sensitivity: "base" }));
+  const list = all.filter(([, [t, d]]) => !q || (t + " " + d).toLowerCase().includes(q.toLowerCase()));
+  return <div className="glossary">
+    <label className="gl-s"><Icon name="search" size={16} /><input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={`Filter ${all.length} terms…`} aria-label="Filter the glossary" /></label>
+    <dl className="gl">{list.map(([key, [t, d]]) => <div key={key}><dt>{t}</dt><dd>{d}</dd></div>)}</dl>
+    {!list.length && <p className="note">No term matches “{q}”.</p>}
+  </div>;
 }
 
 export function Hero({ n, eyebrow, title, children, aside }) {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, reducedMotion } from "./lib.js";
+import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, GLOSSARY, reducedMotion } from "./lib.js";
 import { lineChart, barChart, scatter, groupBars, curveChart, alertStrip, calendarChart, liquidityChart } from "./charts.js";
-import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More } from "./ui.jsx";
+import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More, Glossary } from "./ui.jsx";
 import { Quotes, CostLineToday, CostLineReplay, Unique, AutoUpdate, DownloadLog, Limits } from "./extra.jsx";
 
 const roll = (a, n) => a.map((_, i) => { const w = a.slice(Math.max(0, i - n + 1), i + 1).filter(v => v != null); return a[i] == null || !w.length ? null : w.reduce((x, y) => x + y, 0) / w.length; });
@@ -36,19 +36,19 @@ function Snapshot() {
   const k = D.signals.threshold, L = latest(), hot = L.rows.filter(r => r.z != null && Math.abs(r.z) >= k);
   const csv = () => downloadCSV(`parity_latest_${L.date}.csv`, ["date", "contract", "expiry", "rs_per_pure_gram", "traded_kg", "days_to_expiry"],
     L.all.map(p => [L.date, p.symbol, p.expiry, p.rs_per_g, p.kg, p.dte]));
-  return <Card id="latest" title="Latest market data" sub={<>End of day {fdate(L.date)}, the last complete MCX Bhavcopy in our files. Prices are ₹ per gram of pure gold, so the four can be compared directly.</>}
+  return <Card id="latest" title="Latest market data" sub={<>End of day {fdate(L.date)}, the last complete MCX <Term k="bhavcopy">Bhavcopy</Term> in our files. Prices are ₹ per gram of pure gold, so the four can be compared directly.</>}
     actions={<CsvButton text="Download" label={`Download every contract traded on ${fdate(L.date)} (${L.all.length} rows, CSV)`} onClick={csv} />}>
     <div className={"status inset" + (hot.length ? " hot" : "")}><span className="dot" />
       <div><b>{hot.length ? `Signal today: ${hot.length} contract${hot.length > 1 ? "s" : ""} off fair price` : "Signal today: quiet. Every contract is close to its fair price."}</b>
-        <div className="muted">Our model's output. An alert fires when a contract sits more than {k}σ from its fair price.</div></div>
+        <div className="muted">Our model's output. An alert fires when a contract sits more than {k}<Term k="sigma">σ</Term> from its <Term k="fairprice">fair price</Term>.</div></div>
       <Go to="signals">How the signal works</Go></div>
-    <div className="tw"><table className="snap"><thead><tr><th>Contract</th><th className="ph-x">Expiry</th><th className="n">₹ / pure g</th><th className="n ph-x">Traded</th><th className="n">Premium<span className="ph-x"> vs GOLDM</span></th><th className="n ph-x">Usual</th><th>Signal</th></tr></thead>
+    <div className="tw"><table className="snap"><thead><tr><th>Contract</th><th className="ph-x">Expiry</th><th className="n">₹ / pure g</th><th className="n ph-x">Traded</th><th className="n"><Term k="premium">Premium</Term><span className="ph-x"> vs GOLDM</span></th><th className="n ph-x">Usual</th><th>Signal</th></tr></thead>
       <tbody>{L.rows.map(r => <tr key={r.symbol}><td className="nowrap"><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b><div className="dim sm">{SYM[r.symbol].d}<span className="ph-o"> · {fdate(r.expiry)}</span></div></td>
         <td className="mono nowrap ph-x">{fdate(r.expiry)}</td><td className="n" data-l="₹ / pure g">{r.rs == null ? "—" : r.rs.toLocaleString("en-IN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td><td className="n dim ph-x">{r.kg == null ? "—" : r.kg + " kg"}</td>
-        {r.ref ? <><td className="n dim" data-l="Premium">reference</td><td className="n dim ph-x">—</td><td data-l="Signal"><Pill>Benchmark</Pill></td></>
+        {r.ref ? <><td className="n dim" data-l="Premium">reference</td><td className="n dim ph-x">—</td><td data-l="Signal"><Pill><Term k="benchmark">Benchmark</Term></Pill></td></>
           : <><td className="n" data-l="Premium">{sgn(r.prem)} bp</td><td className="n dim ph-x">{sgn(r.usual)} bp</td>
             <td data-l="Signal">{Math.abs(r.z) >= k ? <Pill tone="warn">{r.z > 0 ? "Rich" : "Cheap"} · {sgn(r.z, 2, "σ")}</Pill> : <Pill tone="good">Normal · {sgn(r.z, 2, "σ")}</Pill>}</td></>}</tr>)}</tbody></table></div>
-    <p className="note">Premium is measured after moving GOLDM to the same expiry, so different expiry dates compare fairly. Parity does not forecast gold's price; the brief asks for a signal, a test on unseen data and results after costs. The MCX files are end-of-day, so “current” means the latest file. A scheduled job adds each new Bhavcopy and rebuilds this page every trading day.</p>
+    <p className="note">Premium is measured after moving GOLDM to the same expiry, so different expiry dates compare fairly. Parity does not forecast gold's price; the brief asks for a signal, a test on <Term k="outofsample">unseen data</Term> and results after costs. The MCX files are end-of-day, so “current” means the latest file. A scheduled job adds each new Bhavcopy and rebuilds this page every trading day.</p>
   </Card>;
 }
 
@@ -58,30 +58,30 @@ function BriefQA() {
   const lc = Object.fromEntries(D.lifecycle_summary.map(a => [a.run, a])), att = Object.fromEntries(D.attribution.map(a => [a.run, a]));
   const k = D.signals.threshold, hot = D.signals.rows.filter(r => Math.abs(r.z) >= k).length;
   const dirs = [
-    ["Relative value", "Once size, quote and purity are normalised, is one contract cheap or expensive against another?",
-      <>GOLDM and GOLDTEN match ({sgn(mt[0])} bp). The 8 g coin and 1 g contract carry a steady {Math.round(-mg[0])}–{Math.round(-mp[0])} bp premium.</>, "relative"],
-    ["Term structure and carry", "How much of a price change is mechanical roll-down, and how much is the curve itself moving?",
-      <>Roll-down is about {Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% a month for GOLDM; curve moves average {rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}%, so most change is the curve.</>, "term"],
-    ["Walk-forward backtest", "Replayed day by day with no look-ahead, after costs and thin days, does a strategy make money?",
-      <>Strategy A {inr(A5.net)} ({inr(lc.A_hold.net_outside_tender_only)} counting only trades a broker would allow), Strategy B {inr(B5.net)} net at 5 bp on a sealed holdout. A's profit came almost all from January 2026.</>, "backtest"],
+    [<Term k="relval">Relative value</Term>, "Once size, quote and purity are normalised, is one contract cheap or expensive against another?",
+      <>GOLDM and GOLDTEN match ({sgn(mt[0])} <Term k="bp">bp</Term>). The 8 g coin and 1 g contract carry a steady {Math.round(-mg[0])}–{Math.round(-mp[0])} bp <Term k="premium">premium</Term>.</>, "relative"],
+    [<><Term k="curve">Term structure</Term> and <Term k="carry">carry</Term></>, "How much of a price change is mechanical roll-down, and how much is the curve itself moving?",
+      <><Term k="rolldown">Roll-down</Term> is about {Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% a month for GOLDM; curve moves average {rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}%, so most change is the curve.</>, "term"],
+    [<><Term k="walkforward">Walk-forward</Term> backtest</>, "Replayed day by day with no look-ahead, after costs and thin days, does a strategy make money?",
+      <>Strategy A {inr(A5.net)} ({inr(lc.A_hold.net_outside_tender_only)} counting only trades a broker would allow), Strategy B {inr(B5.net)} net at 5 bp on a sealed <Term k="holdout">holdout</Term>. A's profit came almost all from January 2026.</>, "backtest"],
     ["Trader alerts", "Do alerts flag real opportunities and stay quiet when there is nothing to act on?",
-      <>{hot ? `${hot} alert${hot > 1 ? "s" : ""} today.` : "Quiet today."} {D.alerts.history.length} alerts in the record; one fires only beyond ±{k}σ from fair price.</>, "signals"],
+      <>{hot ? `${hot} alert${hot > 1 ? "s" : ""} today.` : "Quiet today."} {D.alerts.history.length} alerts in the record; one fires only beyond ±{k}<Term k="sigma">σ</Term> from <Term k="fairprice">fair price</Term>.</>, "signals"],
     ["Contract lifecycle", "Does every entry and exit sit inside the contract calendar, including the tender period?",
-      <>Every trade starts after listing. B always exits before tender; A's {lc.A_hold.trades - lc.A_hold.outside_tender} late exits are left out by default.</>, "calendar"]
+      <>Every trade starts after listing. B always exits before <Term k="tender">tender</Term>; A's {lc.A_hold.trades - lc.A_hold.outside_tender} late exits are left out by default.</>, "calendar"]
   ];
   const fin = [
-    ["Validated on unseen history?", "Yes. Three sealed tests, each run once after the rules were frozen in Git: Aug 2025 – May 2026, 2016–2019 and 2020–2023.", "backtest"],
-    ["Reported after costs, on the contracts actually held?", "Yes. MCX fees, taxes, brokerage, GST and 0–10 bp slippage on every leg of the exact contract.", "backtest"],
-    ["Strategy separated from gold's own move?", `Yes. Each trade is split exactly; gold's move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's gross profit.`, "backtest"],
-    ["Is there a persistent edge after costs?", "No. The best rule stays slightly positive over 2016–2023 but within the range of luck; the 2026 crash paid, the 2020 crash did not. The brief accepts a rigorous “no edge”.", "backtest"]
+    ["Validated on unseen history?", <>Yes. Three <Term k="sealed">sealed tests</Term>, each run once after the rules were frozen in Git: Aug 2025 – May 2026, 2016–2019 and 2020–2023.</>, "backtest"],
+    ["Reported after costs, on the contracts actually held?", <>Yes. MCX fees, taxes, brokerage, GST and 0–10 bp <Term k="slippage">slippage</Term> on every <Term k="leg">leg</Term> of the exact contract.</>, "backtest"],
+    ["Strategy separated from gold's own move?", <>Yes. Each trade is <Term k="attribution">split exactly</Term>; gold's move is {Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's <Term k="gross">gross</Term> profit.</>, "backtest"],
+    [<>Is there a persistent <Term k="edge">edge</Term> after costs?</>, <>No. The best rule stays slightly positive over 2016–2023 but within the <Term k="range95">range of luck</Term>; the 2026 crash paid, the 2020 crash did not. The brief accepts a rigorous “no edge”.</>, "backtest"]
   ];
   const Row = ({ n, h, q, a, to }) => <li className="qa-r"><span className="qa-n">{String(n).padStart(2, "0")}</span>
     <div className="qa-b">{h && <div className="qa-h">{h}</div>}<div className="qa-q">{q}</div><div className="qa-a">{a}</div></div><Go to={to}>See it</Go></li>;
   return <Card id="asks" title="What the problem statement asks, and our answer" sub="Problem 03 sets five analysis directions and a final challenge. Each one, answered in a line.">
     <div className="qa-g"><div className="lab">Five analysis directions</div>
-      <ol className="qa">{dirs.map(([h, q, a, to], i) => <Row key={h} n={i + 1} h={h} q={q} a={a} to={to} />)}</ol></div>
+      <ol className="qa">{dirs.map(([h, q, a, to], i) => <Row key={i} n={i + 1} h={h} q={q} a={a} to={to} />)}</ol></div>
     <div className="qa-g"><div className="lab">Final challenge</div>
-      <ol className="qa">{fin.map(([q, a, to], i) => <Row key={q} n={i + 6} q={q} a={a} to={to} />)}</ol></div>
+      <ol className="qa">{fin.map(([q, a, to], i) => <Row key={i} n={i + 6} q={q} a={a} to={to} />)}</ol></div>
     <Go to="brief">The full brief, quoted line by line</Go>
   </Card>;
 }
@@ -109,9 +109,9 @@ export function Overview() {
   const pr = D.prices;
   return <>
     <Hero n={1} eyebrow="MCX gold futures · Problem 03" title={<>One metal, <span className="hl">four prices.</span></>}>
-      <b>The problem:</b> MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, whether any gap can be traded after real costs, and tells a trader when one is worth a look.
+      <b>The problem:</b> MCX lists four gold <Term k="futures">futures</Term> that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, whether any gap can be traded after real costs, and tells a trader when one is worth a look.
     </Hero>
-    <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it. It paid in the January 2026 crash, and not reliably in eight more years of sealed tests.</Takeaway>
+    <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it. It paid in the January 2026 <Term k="crash">crash</Term>, and not reliably in eight more years of <Term k="sealed">sealed tests</Term>.</Takeaway>
     <Quotes />
     <nav className="jump" aria-label="On this page"><a href="#worth" onClick={jump}>Worth trading today?</a><a href="#unique" onClick={jump}>What makes Parity different</a><a href="#latest" onClick={jump}>Latest data</a><a href="#asks" onClick={jump}>What the brief asks</a><a href="#downloads" onClick={jump}>Downloads</a></nav>
     <CostLineToday go={<Go to="signals">Replay any day on the Signals page</Go>} />
@@ -146,15 +146,15 @@ export function Brief() {
   const rs = Object.fromEntries(D.rolldown.summary.map(a => [a.symbol, a]));
   const A5 = D.backtests.A_hold.rows.find(r => r.slip === 5), B5 = D.backtests.B_hold.rows.find(r => r.slip === 5);
   const dirs = [
-    ["Cross-contract relative value", "Normalize contract size, quotation base, and purity. Identify when one contract appears unusually cheap or expensive relative to another.",
+    ["Cross-contract relative value", <>Normalize contract size, quotation base, and <Term k="purity">purity</Term>. Identify when one contract appears unusually cheap or expensive relative to another.</>,
       [`All four contracts in ₹ per gram of pure gold; GOLDM vs GOLDTEN ${sgn(P5[0])} bp in quiet months proves the conversion`, "All six pairs measured for 2024, quiet 2025–26 months and the crash", "Strategy B flags a contract that strays from its fair price"], "relative"],
-    ["Term structure & carry", "Analyze the futures curve. Separate mechanical roll-down toward expiry from genuine changes in the curve.",
+    ["Term structure & carry", <>Analyze the <Term k="curve">futures curve</Term>. Separate mechanical <Term k="rolldown">roll-down</Term> toward <Term k="expiry">expiry</Term> from genuine changes in the curve.</>,
       ["Futures curve on any of three dates; carry measured from the data", "The curve's slope tracked month by month across all listed expiries, for every contract type", `Each month's price change split: roll-down about ${Math.abs(rs.GOLDM.avg_rolldown_pct).toFixed(1)}% vs curve moves of about ${rs.GOLDM.avg_abs_curve_move_pct.toFixed(1)}% a month for GOLDM`], "term"],
-    ["Walk-forward backtesting", "Replay historical contracts day by day without look-ahead bias. Account for transaction costs and thin-day liquidity.",
+    ["Walk-forward backtesting", <>Replay historical contracts day by day without <Term k="lookahead">look-ahead bias</Term>. Account for transaction costs and thin-day <Term k="liquidity">liquidity</Term>.</>,
       ["Signals at today's close, trades at the next day's price", "MCX fees, taxes and 0–10 bp slippage on every leg", "Days with under 1 kg traded are skipped; rules frozen in Git before each sealed test"], "backtest"],
     ["Trader-facing intelligence", "Build dashboards or alerts that highlight meaningful opportunities. Keep alerts quiet when there is no meaningful signal. Attribute performance to the strategy rather than simply to gold-price movement.",
       ["This site; the Signals page stays “Quiet” unless a contract is ±1.5σ from fair", `A full alert history: ${D.alerts.history.length} past alerts and what each gap did next, against ordinary days and the cost of a round trip`, `Every trade's profit split into gap and gold parts: gold's own move is ${Math.abs(att.A_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy A's and ${Math.abs(att.B_hold.gold_share_of_gross_pct).toFixed(1)}% of Strategy B's holdout gross profit`], "backtest"],
-    ["Contract lifecycle planning", "Track listing dates, liquidity development, tender periods, and expiry. Place every intended entry and exit inside the relevant contract calendar.",
+    ["Contract lifecycle planning", <>Track listing dates, liquidity development, <Term k="tender">tender periods</Term>, and expiry. Place every intended entry and exit inside the relevant contract calendar.</>,
       ["Every contract's first and last day, its tender period, and how liquidity builds", `All trades start after listing. Strategy B exits before the tender period every time; Strategy A exited ${lc.A_hold.trades - lc.A_hold.outside_tender} of ${lc.A_hold.trades} holdout trades inside Parity's 5-day cut-off (${lc.A_hold.trades - lc.A_hold.outside_exchange_tender} inside MCX's own 3-day tender period); they are left out by default. Tender rule cited from the MCX contract specifications`], "calendar"]
   ];
   const fin = [
@@ -168,25 +168,28 @@ export function Brief() {
     ["Validate the returned Date against the requested date", "Every file identified by its contents; no row after its contract's expiry; every weekend date must be a known special session (Diwali Muhurat 2023, Budget days 2025 and 2026)"],
     ["Requests use DD/MM/YYYY, responses MM/DD/YYYY; compact expiry format; space-padded symbols", "Downloaded files carry dates as “29 Aug 2025”, parsed with a fixed format, so day and month cannot swap; expiry parsed as 04SEP2026; symbols stripped"],
     ["Track contracts by expiry date, not a continuous near-month series", "Every price, pair and trade is tied to one contract's expiry; nothing is stitched"],
-    ["Settlement prices are not automatically executable fills", "Measured: the official close sits 17–26 bp from the day's average traded price. Strategy B fills at that average; all results shown at 0, 5 and 10 bp slippage"],
-    ["Volume is not market depth", "We only have daily volume, so we skip days under 1 kg traded and keep positions small (40–200 g). Depth cannot be measured from end-of-day files; stated as a limitation"],
+    [<><Term k="settlement">Settlement prices</Term> are not automatically executable fills</>, <>Measured: the official close sits 17–26 bp from the day's average traded price (<Term k="vwap">VWAP</Term>). Strategy B fills at that average; all results shown at 0, 5 and 10 bp slippage</>],
+    [<>Volume is not <Term k="depth">market depth</Term></>, "We only have daily volume, so we skip days under 1 kg traded and keep positions small (40–200 g). Depth cannot be measured from end-of-day files; stated as a limitation"],
     ["GOLDTEN only exists from 2025", "GOLDTEN pairs start April 2025 and are marked “not listed yet” for 2024"]
   ];
   return <>
     <Hero n={2} eyebrow="Problem 03 · Commodity Derivatives Intelligence" title={<>What the brief asks, <span className="hl">and our answer.</span></>}>
       Build a data product from MCX's public futures data that finds and analyses price differences between gold contracts, validates it on unseen history, reports results after costs, and separates strategy performance from gold's own move. A rigorous “no edge after costs” is an accepted outcome.
     </Hero>
-    <Takeaway>All five directions in the brief are covered and every line of the final challenge is answered. Our honest result: after costs there is no dependable edge. The gap paid in the January 2026 crash; tested once on 2016–2023, that did not repeat reliably.</Takeaway>
+    <Takeaway>All five directions in the brief are covered and every line of the final challenge is answered. Our honest result: after costs there is no dependable <Term k="edge">edge</Term>. The gap paid in the January 2026 crash; tested once on 2016–2023, that did not repeat reliably.</Takeaway>
     <div className="grid g2">{dirs.map(([h, q, items, link], i) => <Reveal key={h} className={"dir" + (i === dirs.length - 1 ? " span2" : "")}>
       <div className="dir-h"><span className="fn">{String(i + 1).padStart(2, "0")}</span><h3>{h}</h3><Pill tone="good">Done</Pill></div>
-      <q>{q}</q><ul>{items.map(t => <li key={t}>{t}</li>)}</ul><Go to={link}>See it</Go></Reveal>)}</div>
+      <q>{q}</q><ul>{items.map((t, j) => <li key={j}>{t}</li>)}</ul><Go to={link}>See it</Go></Reveal>)}</div>
     <Card title="The final challenge, line by line" sub="Quoted from the problem statement.">
       <div className="tw"><table><thead><tr><th>The brief says</th><th>What we did</th><th>Status</th></tr></thead>
         <tbody>{fin.map(r => <tr key={r[0]}><td className="quote">{r[0]}</td><td>{r[1]}</td><td><Pill tone="good">Done</Pill></td></tr>)}</tbody></table></div>
     </Card>
     <div className="more-list"><More title="Data warnings in the brief" hint="Six warnings, and what we did about each">
       <div className="tw"><table><thead><tr><th>Warning in the brief</th><th>How we handled it</th></tr></thead>
-        <tbody>{warn.map(r => <tr key={r[0]}><td style={{ maxWidth: 360 }}><b>{r[0]}</b></td><td>{r[1]}</td></tr>)}</tbody></table></div>
+        <tbody>{warn.map((r, i) => <tr key={i}><td style={{ maxWidth: 360 }}><b>{r[0]}</b></td><td>{r[1]}</td></tr>)}</tbody></table></div>
+    </More>
+    <More title={`Glossary · ${Object.keys(GLOSSARY).length} terms in plain English`} hint="Every dotted-underlined word on this site, A to Z. Hover or tap a dotted word anywhere for the same definition.">
+      <Glossary />
     </More></div>
   </>;
 }
@@ -198,9 +201,9 @@ export function Relative() {
   const p = P[pair], s = D.pair_series[pair];
   return <>
     <Hero n={3} eyebrow="Relative value" title={<>Six pairs, <span className="hl">two worlds.</span></>}>
-      Every pair of contracts compared per pure gram. 2024, the quiet months of 2025–26 and the Dec 2025 – Mar 2026 crash behave differently enough that we report them separately. GOLDTEN only started in April 2025.
+      Every pair of contracts compared per pure gram of gold. 2024, the quiet months of 2025–26 and the Dec 2025 – Mar 2026 crash behave differently enough that we report them separately. GOLDTEN only started in April 2025.
     </Hero>
-    <Takeaway>GOLDM and GOLDTEN trade at the same price. GOLDGUINEA and GOLDPETAL sit steadily above GOLDM. All the gaps blew out only in the December 2025 – March 2026 crash. Pick a pair to see it.</Takeaway>
+    <Takeaway>GOLDM and GOLDTEN trade at the same price. GOLDGUINEA and GOLDPETAL sit steadily above GOLDM. All the gaps blew out only in the December 2025 – March 2026 <Term k="crash">crash</Term>. Pick a pair to see it.</Takeaway>
     <Card title={pname(pair)} sub={<>Daily gap per pure gram, in <Term k="bp">bp</Term>. Above zero: {SHORT[pair.split("-")[0]]} is dearer.</>}
       actions={<Seg label="Pair" value={pair} onChange={setPair} options={D.pairs.map(q => [q.pair, q.pair.replace("M-", "GOLDM-")])} small />}>
       <div className="grid g-main">
@@ -208,9 +211,9 @@ export function Relative() {
           <Chart deps={[pair]} draw={host => lineChart(host, { dates: s.dates, series: [{ label: "Gap", color: "var(--teal)", values: s.bp }], band: CRASH, zero: true, area: true, hline: p.normal[0], yfmt: v => v + " bp", tfmt: v => sgn(v, 1, " bp"), aria: "Daily gap for " + pname(pair) })} /></div>
         <div className="stack">
           {p.y2024 && <Stat lab="2024" v={`${sgn(p.y2024[0])} bp`} rng={`95% range ${sgn(p.y2024[1])} to ${sgn(p.y2024[2])} · ${p.y2024[3]} weeks`} />}
-          <Stat tone="accent" lab="2025–26 quiet months" v={`${sgn(p.normal[0])} bp`} rng={`95% range ${sgn(p.normal[1])} to ${sgn(p.normal[2])} · ${p.normal[3]} weeks`} />
+          <Stat tone="accent" lab="2025–26 quiet months" v={`${sgn(p.normal[0])} bp`} rng={<><Term k="range95">95% range</Term> {sgn(p.normal[1])} to {sgn(p.normal[2])} · {p.normal[3]} weeks</>} />
           <Stat lab="Crash period" v={`${sgn(p.crash[0])} bp`} rng={`95% range ${sgn(p.crash[1])} to ${sgn(p.crash[2])} · ${p.crash[3]} weeks`} />
-          <Stat lab="Same sign in" v={p.cycles_same_sign} rng={`contract cycles · typical daily swing ${p.daily_sd} bp`} />
+          <Stat lab="Same sign in" v={p.cycles_same_sign} rng={<>contract cycles · typical daily swing (<Term k="sigma">1σ</Term>) {p.daily_sd} bp</>} />
         </div>
       </div>
     </Card>
@@ -232,8 +235,8 @@ export function Term_() {
     <Hero n={4} eyebrow="Term structure" title={<>Later expiries <span className="hl">cost more.</span></>}>
       Holding gold for longer ties up money, so contracts that expire later trade higher. We measure that <Term k="carry">cost of carry</Term> from the data itself and use it to line GOLDM up with the others.
     </Hero>
-    <Takeaway>Contracts that expire later cost more, because holding gold ties up money. That carry was about 4–6% a year until 2025 and 10–18% in 2026. Time alone moves GOLDM only about {Math.abs(D.rolldown.summary.find(r => r.symbol === "GOLDM").avg_rolldown_pct).toFixed(1)}% a month; gold's own moves are far bigger.</Takeaway>
-    <Card title="Futures curve" sub={`₹ per gram of pure gold against days to expiry, ${fdate(c.date)}.`}
+    <Takeaway>Contracts that expire later cost more, because holding gold ties up money. That <Term k="carry">carry</Term> was about 4–6% a year until 2025 and 10–18% in 2026. Time alone (<Term k="rolldown">roll-down</Term>) moves GOLDM only about {Math.abs(D.rolldown.summary.find(r => r.symbol === "GOLDM").avg_rolldown_pct).toFixed(1)}% a month; gold's own moves are far bigger.</Takeaway>
+    <Card title={<Term k="curve">Futures curve</Term>} sub={<>₹ per gram of pure gold against days to <Term k="expiry">expiry</Term>, {fdate(c.date)}.</>}
       actions={<Seg label="Date" value={day} onChange={setDay} options={[["today", "Latest"], ["t30", "30 days earlier"], ["t90", "90 days earlier"]]} />}>
       <Legend items={SYMS.map(s => [SYM[s].c, s]).concat([["transparent", "Dot size: gold traded that day"]])} />
       <Chart deps={[day]} draw={host => curveChart(host, c)} />
@@ -267,10 +270,10 @@ export function Term_() {
 
 /* ================================================================ BACKTEST */
 const BT = {
-  A_hold: { name: "A · sealed holdout", desc: "Strategy A: when the gap between two same-expiry small contracts is more than 2 standard deviations from its 10-day average, bet that it returns. 40 g per leg, filled at the next day's settlement price. Sealed holdout, Aug 2025 – May 2026, run once." },
-  B_hold: { name: "B · sealed holdout", desc: "Strategy B: fair price of a small contract = GOLDM moved to the same expiry + that contract's usual premium. Trade when it strays more than 1.5 standard deviations. 200 g per leg, filled at the next day's average traded price. Sealed holdout, 6 Aug 2025 – 29 May 2026, run once." },
-  A_test: { name: "A · test 1", desc: "Strategy A on its first sealed test, 1 May – 31 Jul 2025. Training before this lost money even before costs (9 trades, gross −₹3,939)." },
-  B_dev: { name: "B · development", desc: "Strategy B on the development window, up to 5 Aug 2025. Its setting (k = 1.5) was chosen here, so this is in-sample and flattering by design." }
+  A_hold: { name: "A · sealed holdout", desc: <>Strategy A: when the gap between two same-expiry small contracts is more than 2 <Term k="sigma">standard deviations</Term> from its 10-day average, bet that it returns. 40 g per <Term k="leg">leg</Term>, filled at the next day's <Term k="settlement">settlement price</Term>. Sealed <Term k="holdout">holdout</Term>, Aug 2025 – May 2026, run once.</> },
+  B_hold: { name: "B · sealed holdout", desc: <>Strategy B: <Term k="fairprice">fair price</Term> of a small contract = GOLDM moved to the same expiry + that contract's usual <Term k="premium">premium</Term>. Trade when it strays more than 1.5 <Term k="sigma">standard deviations</Term>. 200 g per <Term k="leg">leg</Term>, filled at the next day's average traded price (<Term k="vwap">VWAP</Term>). Sealed <Term k="holdout">holdout</Term>, 6 Aug 2025 – 29 May 2026, run once.</> },
+  A_test: { name: "A · test 1", desc: <>Strategy A on its first <Term k="sealed">sealed test</Term>, 1 May – 31 Jul 2025. Training before this lost money even before costs (9 trades, <Term k="gross">gross</Term> −₹3,939).</> },
+  B_dev: { name: "B · development", desc: <>Strategy B on the development window, up to 5 Aug 2025. Its setting (k = 1.5) was chosen here, so this is <Term k="insample">in-sample</Term> and flattering by design.</> }
 };
 const netAt = (t, s) => t.net0 + (t.net5 - t.net0) * s / 5;
 const posText = t => { const [a, b] = t.what.split("-"); return t.side === "long a/short b" ? `buy ${a}, sell ${b}` : t.side === "short a/long b" ? `sell ${a}, buy ${b}` : t.side.replace("X", t.what).replace(" / ", ", "); };
@@ -282,10 +285,10 @@ function HonestyGap() {
   const bg = D.backtests.B_dev.rows.find(r => r.slip === 0).gross, b5 = D.backtests.B_hold.rows.find(r => r.slip === 5).net;
   const typ = mode === "typical", max = Math.max(ag, bg);
   const rows = [
-    ["Costs", "Left out", "MCX fee, CTT, stamp duty, SEBI fee, brokerage and GST on all four legs"],
-    ["Fills", "Settlement price, no slippage", "5 bp worse on every leg, each side"],
-    ["Data", "The window the settings were chosen on", "A sealed window, run once after the rules were frozen in Git"],
-    ["Tender period", "Ignored", `Checked against the MCX specification: Strategy A's ${D.trades.A_hold.filter(t => !t.ok_tender).length} late exits are left out by default`]
+    ["Costs", "Left out", <>MCX fee, <Term k="ctt">CTT</Term>, <Term k="stampduty">stamp duty</Term>, SEBI fee, brokerage and GST on all four <Term k="leg">legs</Term></>],
+    ["Fills", "Settlement price, no slippage", <>5 bp worse on every leg, each side (<Term k="slippage">slippage</Term>)</>],
+    ["Data", <>The window the settings were chosen on (<Term k="insample">in-sample</Term>)</>, <>A <Term k="sealed">sealed window</Term>, run once after the rules were frozen in Git</>],
+    [<Term k="tender">Tender period</Term>, "Ignored", `Checked against the MCX specification: Strategy A's ${D.trades.A_hold.filter(t => !t.ok_tender).length} late exits are left out by default`]
   ];
   const S = [["A", "Strategy A", ag, a5, "sealed holdout before costs (its tuning window lost money)", "sealed holdout, all costs, 5 bp"],
     ["B", "Strategy B", bg, b5, "development window it was tuned on, before costs", "sealed holdout, all costs, 5 bp"]];
@@ -301,7 +304,7 @@ function HonestyGap() {
       </div>; })}
     </div>
     <div className="tw"><table className="hg-t"><thead><tr><th></th><th className={typ ? "on" : ""}>How most teams report</th><th className={!typ ? "on" : ""}>Our sealed test</th></tr></thead>
-      <tbody>{rows.map(r => <tr key={r[0]}><td><b>{r[0]}</b></td><td className={typ ? "on" : "dim"}>{r[1]}</td><td className={!typ ? "on" : "dim"}>{r[2]}</td></tr>)}</tbody></table></div>
+      <tbody>{rows.map((r, i) => <tr key={i}><td><b>{r[0]}</b></td><td className={typ ? "on" : "dim"}>{r[1]}</td><td className={!typ ? "on" : "dim"}>{r[2]}</td></tr>)}</tbody></table></div>
   </Card>;
 }
 
@@ -313,13 +316,13 @@ function SealedTests({ s }) {
   const ST = [["A", "Strategy A", "pairs, as frozen in 2025"], ["B", "Strategy B", "fair price, as frozen in 2025"], ["C", "Strategy C", "fair price retrained on 2008–15 and 2024–26"]];
   const C = S.c, cell = v => v ? <td className={"n " + (v.net >= 0 ? "pos" : "neg")}>{inr(v.net)}<div className="dim sm">{v.trades} trades</div></td> : <td className="n dim">—</td>;
   return <Card title="Eight more years, sealed" sub={<>Every contract MCX lists for 2016–2023, walled off until the rules were frozen in Git, then run once. Net after all costs at {s.toFixed(1)} bp slippage (use the slider above).</>}>
-    <div className="tw"><table className="sealed-t"><thead><tr><th>Strategy</th><th className="n">2016 – 2019</th><th className="n">2020 – 2023</th><th className="n">Both</th><th className="n">95% range at 5 bp</th></tr></thead>
+    <div className="tw"><table className="sealed-t"><thead><tr><th>Strategy</th><th className="n">2016 – 2019</th><th className="n">2020 – 2023</th><th className="n">Both</th><th className="n"><Term k="range95">95% range</Term> at 5 bp</th></tr></thead>
       <tbody>{ST.map(([k, n, d]) => { const a = at(k, "test3"), b = at(k, "test2"), bo = S.boot5[k];
         const both = a && b ? { net: a.net + b.net, trades: a.trades + b.trades } : null;
         return <tr key={k}><td><b>{n}</b><div className="dim sm">{d}</div></td>{cell(a)}{cell(b)}{cell(both)}
-          <td className="n dim">{inr(bo.lo)} to {inr(bo.hi)}<div className="sm">{bo.p_pos}% of resamples above zero</div></td></tr>; })}</tbody></table></div>
-    <p className="note">Retraining (C) chose a stress filter on {C.years} training years: {inr(C.dev_net5)} at 5 bp, {inr(C.q1_2026)} of it in Q1 2026, against {inr(C.b_dev_net5)} for B's rules on the same days.
-      Out of sample it did not beat B. In the March 2020 crash the small contracts moved the other way and the gap widened after entry (Feb–Jun 2020 at 5 bp: B {inr(S.covid.B)}, C {inr(S.covid.C)}).
+          <td className="n dim">{inr(bo.lo)} to {inr(bo.hi)}<div className="sm">{bo.p_pos}% of <Term k="bootstrap">resamples</Term> above zero</div></td></tr>; })}</tbody></table></div>
+    <p className="note">Retraining (C) chose a <Term k="stress">stress filter</Term> on {C.years} training years: {inr(C.dev_net5)} at 5 bp, {inr(C.q1_2026)} of it in Q1 2026, against {inr(C.b_dev_net5)} for B's rules on the same days.
+      <Term k="outofsample">Out of sample</Term> it did not beat B. In the March 2020 crash the small contracts moved the other way and the gap widened after entry (Feb–Jun 2020 at 5 bp: B {inr(S.covid.B)}, C {inr(S.covid.C)}).
       Choosing the setting year by year with only earlier years would have made {inr(C.wf_total)} on training data, an early warning that the edge comes in bursts.</p>
     <p className="note"><b>Read the sealed columns, not the training number.</b> C's setting was the best of 72 tried (2 reference windows × 3 thresholds × 3 stress filters × 2 exits × 2 holding limits); the best of many settings looks good on its own training data partly by chance. A and B were frozen once, in 2025, before these years were opened.
       <b> Costs for older years</b> use today's MCX fee, CTT, SEBI fee, stamp duty and GST rates. The real schedule differed in places (stamp duty was set state by state before July 2020), so 2016–2023 costs are an approximation. Fees and taxes are 18–35% of total costs at 5 bp in these years; the rest is slippage, which the slider already varies.</p>
@@ -339,8 +342,8 @@ export function Backtest() {
   const jan = tr.map((t, i) => t.entry.startsWith("2026-01") ? nets[i] : null).filter(v => v != null), rest = tot - jan.reduce((a, b) => a + b, 0);
   const V = {
     A_hold: <><b>One event.</b> January 2026 alone made {inr(jan.reduce((a, b) => a + b, 0))} from {jan.length} trades; the other {tr.length - jan.length} trades made {inr(rest)}. Outside the crash, this rule loses after costs. {inTender} trades exited inside our 5-business-day cut-off ({lc0.A_hold.trades - lc0.A_hold.outside_exchange_tender} of them inside MCX's own 3-day <Term k="tender">tender period</Term>). They are left out by default; untick “Only trades a broker would allow” to include them.</>,
-    B_hold: <><b>Positive, not proven.</b> It earned on GUINEA and PETAL, where a real premium exists, and lost on GOLDTEN, where there is none. With {info.rows[0].weeks} independent weeks the 95% range still includes zero at 5 bp.</>,
-    A_test: <><b>Break-even near 3.5 bp.</b> Profitable only with near-perfect fills. Move the slider below 3.5 to see it turn positive.</>,
+    B_hold: <><b>Positive, not proven.</b> It earned on GUINEA and PETAL, where a real premium exists, and lost on GOLDTEN, where there is none. With {info.rows[0].weeks} independent weeks the <Term k="range95">95% range</Term> still includes zero at 5 bp.</>,
+    A_test: <><b>Break-even near 3.5 bp.</b> Profitable only with near-perfect fills (low <Term k="slippage">slippage</Term>). Move the slider below 3.5 to see it turn positive.</>,
     B_dev: <><b><Term k="insample">In-sample</Term>.</b> These are the numbers the setting was chosen on, so they overstate. About 80% of the profit came from the swings of 1–15 April 2025.</>
   };
   const cons = ["All", ...new Set(tr.map(t => t.what))], f = cons.includes(filter) ? filter : "All";
@@ -399,7 +402,7 @@ export function Backtest() {
           <div><div className="lab">From gold's move</div><div className="bignum" style={{ color: "var(--gold)" }}><Num v={gd} f="inr" k="bt-gd" /></div></div></div>
         <div className="split" aria-hidden="true"><i style={{ width: (100 * Math.abs(gp) / ab).toFixed(1) + "%", background: "var(--teal)" }} /><i style={{ width: (100 * Math.abs(gd) / ab).toFixed(1) + "%", background: "var(--gold)" }} /></div>
         <p className="note">Gold's own move is <b>{(100 * Math.abs(gd) / ab).toFixed(1)}%</b> of the profit swing. Both legs hold the same grams, so gold's move cancels except for the gap still open and GOLDM's 99.5% purity.</p>
-        <dl className="kv"><dt>Correlation of net profit with gold's move</dt><dd>{corr.toFixed(2)}</dd><dt>Gross before costs</dt><dd>{inr(gp + gd)}</dd></dl>
+        <dl className="kv"><dt><Term k="correlation">Correlation</Term> of net profit with gold's move</dt><dd>{corr.toFixed(2)}</dd><dt>Gross before costs</dt><dd>{inr(gp + gd)}</dd></dl>
         <p className="note">{key === "A_hold" ? "The correlation comes from January 2026, when gold rose about 8% while the gaps widened and closed; outside January it is close to zero. The money came from the gap, not from gold's direction." : "A correlation near zero, or driven by a few large moves, means the strategy is not a disguised bet on gold."}</p>
           </div>
         </div>
@@ -417,8 +420,8 @@ export function Backtest() {
       </More>
       <More title="Costs charged on every leg" hint="Fees, taxes, brokerage and slippage on all four legs">
         <div className="tw"><table><thead><tr><th>Item</th><th>Rate</th><th>Basis</th></tr></thead><tbody>
-          {[["MCX transaction fee", "₹2.10 / lakh", "MCX filing, from 1 Oct 2024"], ["Commodity transaction tax", "0.01% sell", "Non-agri futures"], ["Stamp duty", "0.002% buy", "Broker charge sheets"], ["SEBI fee", "₹10 / crore", "Assumption"],
-            ["Brokerage", "₹20, max 0.03%", "Discount broker"], ["GST", "18%", "On brokerage and fees"], ["Slippage", "0–10 bp", "Slider above"]].map(r => <tr key={r[0]}><td>{r[0]}</td><td className="mono">{r[1]}</td><td>{r[2]}</td></tr>)}</tbody></table></div>
+          {[["MCX transaction fee", "₹2.10 / lakh", "MCX filing, from 1 Oct 2024"], [<Term k="ctt">Commodity transaction tax</Term>, "0.01% sell", "Non-agri futures"], [<Term k="stampduty">Stamp duty</Term>, "0.002% buy", "Broker charge sheets"], ["SEBI fee", "₹10 / crore", "Assumption"],
+            ["Brokerage", "₹20, max 0.03%", "Discount broker"], ["GST", "18%", "On brokerage and fees"], [<Term k="slippage">Slippage</Term>, "0–10 bp", "Slider above"]].map((r, i) => <tr key={i}><td>{r[0]}</td><td className="mono">{r[1]}</td><td>{r[2]}</td></tr>)}</tbody></table></div>
       </More>
     </div>
   </>;
@@ -443,20 +446,20 @@ export function Signals() {
     <Hero n={6} eyebrow="Signals" title={hot.length ? <>{hot.length} contract{hot.length > 1 ? "s" : ""} <span className="hl">off fair price.</span></> : <>Quiet. <span className="hl">No signal today.</span></>}>
       Each small contract is compared with its fair price: GOLDM moved to the same expiry, plus that contract's usual <Term k="premium">premium</Term>. A signal needs the gap to sit more than {k} <Term k="sigma">standard deviations</Term> from usual, using only past days.
     </Hero>
-    <Takeaway>{hot.length ? `${hot.length} contract${hot.length > 1 ? "s are" : " is"} more than ${k}σ from fair price.` : "Every contract is within its normal range, so there is nothing to act on."} When alerts do fire they mark big gaps: a median {on.median_closed_bp_10d.toFixed(0)} bp closes within 10 trading days, against a {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp round-trip cost. Most days the right answer is to wait.</Takeaway>
+    <Takeaway>{hot.length ? `${hot.length} contract${hot.length > 1 ? "s are" : " is"} more than ${k}σ from fair price.` : "Every contract is within its normal range, so there is nothing to act on."} When alerts do fire they mark big gaps: a <Term k="median">median</Term> {on.median_closed_bp_10d.toFixed(0)} bp closes within 10 trading days, against a {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp <Term k="roundtrip">round-trip</Term> cost. Most days the right answer is to wait.</Takeaway>
     <div className="grid g3">{rows.map((r, i) => { const onS = Math.abs(r.z) >= k; return <Reveal key={r.symbol} className="card sig">
       <div className="card-h"><div className="card-t"><h2><span className="sw" style={{ background: SYM[r.symbol].c }} />{r.symbol}</h2><p className="sub">{SYM[r.symbol].d} · expiry {fdate(r.expiry)}</p></div>
-        <Pill tone={onS ? "warn" : "good"}>{onS ? (r.z > 0 ? "Rich vs GOLDM" : "Cheap vs GOLDM") : "Normal"}</Pill></div>
+        <Pill tone={onS ? "warn" : "good"}>{onS ? <Term k="richcheap">{r.z > 0 ? "Rich vs GOLDM" : "Cheap vs GOLDM"}</Term> : "Normal"}</Pill></div>
       <Gauge z={r.z} k={k} />
-      <dl className="kv"><dt>Premium today</dt><dd>{sgn(r.premium_bp)} bp</dd><dt>Usual premium</dt><dd>{sgn(r.usual_bp)} bp</dd><dt>Typical swing (1σ)</dt><dd>{r.sd_bp.toFixed(1)} bp</dd><dt>Distance from usual</dt><dd><b>{sgn(r.z, 2, "σ")}</b></dd></dl>
+      <dl className="kv"><dt><Term k="premium">Premium</Term> today</dt><dd>{sgn(r.premium_bp)} bp</dd><dt>Usual premium</dt><dd>{sgn(r.usual_bp)} bp</dd><dt>Typical swing (<Term k="sigma">1σ</Term>)</dt><dd>{r.sd_bp.toFixed(1)} bp</dd><dt>Distance from usual</dt><dd><b>{sgn(r.z, 2, "σ")}</b></dd></dl>
       <Chart style={{ minHeight: 90, marginTop: 16 }} draw={host => lineChart(host, { dates: r.z_hist.dates, series: [{ label: "Distance", color: SYM[r.symbol].c, values: r.z_hist.z }], zero: true, h: 110, events: false, yfmt: v => v + "σ", tfmt: v => sgn(v, 2, "σ"), aria: "Recent distance from usual premium" })} />
       <p className="note">Last 90 market days to {fdate(r.date)}.</p></Reveal>; })}</div>
     <CostLineReplay />
     <div className="grid g4">
-      <Kpi label="Alert episodes" note={`${fdate(h[0].start)} – ${fdate(h[h.length - 1].start)}`}><Num v={h.length} intro /></Kpi>
+      <Kpi label={<Term k="alert">Alert episodes</Term>} note={`${fdate(h[0].start)} – ${fdate(h[h.length - 1].start)}`}><Num v={h.length} intro /></Kpi>
       <Kpi label="Closed halfway in 10 days" note={`vs ${off.closed_half_10d.toFixed(0)}% of ordinary days: alerts are not more likely to close`}><Num v={all.closed_half_10d_pct} f="pct" intro /><small>%</small></Kpi>
       <Kpi tone="accent" label="Gap closed in 10 days" note={`median after an alert, vs ${off.median_closed_bp_10d.toFixed(0)} bp on ordinary days`}><Num v={on.median_closed_bp_10d} intro /><small>bp</small></Kpi>
-      <Kpi label="Round-trip cost" note={`at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`}><Num v={on.round_trip_cost_bp_at_5bp} intro /><small>bp</small></Kpi>
+      <Kpi label={<Term k="roundtrip">Round-trip cost</Term>} note={`at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`}><Num v={on.round_trip_cost_bp_at_5bp} intro /><small>bp</small></Kpi>
     </div>
     <Reveal className="dlbar"><div><b>Alert history</b><span className="muted">{h.length} alert episodes since {fdate(h[0].start)}, with what each gap did over the next 20 trading days.</span></div>
       <CsvButton text="Download alerts" label={`Download all ${h.length} alert episodes as CSV`} onClick={() => csvAlerts(h.slice().reverse())} /></Reveal>
@@ -475,7 +478,7 @@ export function Signals() {
       <Pager page={pg} pages={pages} set={setPage} prev="← Newer" next="Older →" />
     </More>
     <More title="Why quiet is the right answer most days" hint="What the alert record and the sealed test show">
-      <p className="prose"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about {on.median_closed_bp_10d.toFixed(0)} bp in 10 trading days, against {off.median_closed_bp_10d.toFixed(0)} bp on ordinary days, and a round trip costs about {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our sealed test, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. We then trained a stress filter for exactly that case on 2008–2015 and 2024–26. On the sealed 2016–2023 data it did not beat the plain rule: in the March 2020 crash the gap kept widening after entry.</p>
+      <p className="prose"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about {on.median_closed_bp_10d.toFixed(0)} bp in 10 trading days, against {off.median_closed_bp_10d.toFixed(0)} bp on ordinary days, and a round trip costs about {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our <Term k="sealed">sealed test</Term>, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. We then trained a <Term k="stress">stress filter</Term> for exactly that case on 2008–2015 and 2024–26. On the sealed 2016–2023 data it did not beat the plain rule: in the March 2020 crash the gap kept widening after entry.</p>
     </More>
     </div>
   </>;
@@ -488,10 +491,10 @@ export function Calendar() {
   const L = Object.fromEntries(D.lifecycle_summary.map(a => [a.run, a])), nm = { A_test: "A · test 1", A_hold: "A · sealed holdout", B_dev: "B · development", B_hold: "B · sealed holdout" };
   return <>
     <Hero n={7} eyebrow="Contract calendar" title={<>Every contract <span className="hl">we hold.</span></>}>
-      Each bar is one contract from the first to the last day in our files. GOLDM expires around the 5th; the others at month end. Hover a bar for its liquidity.
+      Each bar is one contract from the first to the last day in our files. GOLDM expires around the 5th; the others at month end. Hover a bar for its <Term k="liquidity">liquidity</Term>.
     </Hero>
-    <Takeaway>{D.meta.contracts} contracts, each tracked from listing to expiry. Strategy B always closed before the delivery (tender) period; Strategy A held {L.A_hold.trades - L.A_hold.outside_tender} of {L.A_hold.trades} holdout trades into it, which a broker would not allow. Leaving those out, A still made {inr(L.A_hold.net_outside_tender_only)} at 5 bp.</Takeaway>
-    <Card title={`${cs.length} contracts`} sub={<>The darker end of each bar is the last 5 business days, which Parity keeps clear: stricter than the 3-trading-day <Term k="tender">tender period</Term> in the MCX contract specification. Shaded band: Dec 2025 – Mar 2026 crash.</>}
+    <Takeaway>{D.meta.contracts} contracts, each tracked from listing to expiry. Strategy B always closed before the delivery (<Term k="tender">tender</Term>) period; Strategy A held {L.A_hold.trades - L.A_hold.outside_tender} of {L.A_hold.trades} <Term k="holdout">holdout</Term> trades into it, which a broker would not allow. Leaving those out, A still made {inr(L.A_hold.net_outside_tender_only)} at 5 bp.</Takeaway>
+    <Card title={`${cs.length} contracts`} sub={<>The darker end of each bar is the last 5 business days, which Parity keeps clear: stricter than the 3-trading-day <Term k="tender">tender period</Term> in the MCX contract specification. Shaded band: Dec 2025 – Mar 2026 <Term k="crash">crash</Term>.</>}
       actions={<div className="stack-r"><Seg label="Contract type" value={calF} onChange={setCalF} options={["All", ...SYMS].map(s => [s, s === "All" ? "All" : s.replace("GOLD", "") || "M"])} small />
         <Seg label="Trades shown" value={calT} onChange={setCalT} options={[["none", "No trades"], ["A_hold", "Strategy A trades"], ["B_hold", "Strategy B trades"]]} small /></div>}>
       <div className="legend"><span><i style={{ background: "var(--ink)", opacity: .55 }} />Tender period</span>{calT !== "none" && <><span><i style={{ background: "var(--good)" }} />Trade, profit</span><span><i style={{ background: "var(--bad)" }} />Trade, loss</span><span><i className="ring" />Exit inside tender period</span></>}<span><i className="box" />Crash period</span></div>
@@ -518,7 +521,7 @@ export function Quality() {
     <Hero n={8} eyebrow="Data quality" title={<>Checked before <span className="hl">it is trusted.</span></>}>
       Every MCX <Term k="bhavcopy">Bhavcopy</Term> file is identified by its contents, duplicates are dropped, and every row passes these checks before any number on this site is computed.
     </Hero>
-    <Takeaway>Every row passed the checks: 0 unexplained errors in {D.meta.rows.toLocaleString("en-IN")} rows. Of the {D.flags.length} flagged rows, {D.flags.filter(x => x.kind === "Previous close mismatch").length} follow a no-trade day and are left out; {D.flags.filter(x => x.kind === "Far from peers").length} are real prices far from their peers, mostly in the January 2026 crash, and are kept. No price was changed.</Takeaway>
+    <Takeaway>Every row passed the checks: 0 unexplained errors in {D.meta.rows.toLocaleString("en-IN")} rows. Of the {D.flags.length} flagged rows, {D.flags.filter(x => x.kind === "Previous close mismatch").length} follow a <Term k="notrade">no-trade day</Term> and are left out; {D.flags.filter(x => x.kind === "Far from peers").length} are real prices far from their peers, mostly in the January 2026 crash, and are kept. No price was changed.</Takeaway>
     <div className="grid g4">
       <Kpi label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts, read only in the one sealed run.`}><Num v={D.meta.files} intro /></Kpi>
       <Kpi label="Contracts" note={`${fdate(D.meta.first)} – ${fdate(D.meta.last)}`}><Num v={D.meta.contracts} intro /></Kpi>
@@ -538,20 +541,20 @@ export function Quality() {
       <More title="Official close vs real trades" hint="Gap between the settlement price and the day's average traded price (VWAP)">
         <div className="tw"><table><thead><tr><th>Measure</th><th className="n">Typical</th><th className="n">90% of days</th></tr></thead>
           <tbody>{D.close_vs_vwap.map(r => <tr key={r.symbol}><td>{r.symbol.startsWith("spread") ? <b>Gap {r.symbol.replace("spread ", "").replace("-", " − ")}</b> : r.symbol}</td><td className="n">{r.median_abs_gap_bp.toFixed(1)} bp</td><td className="n">{r.p90_abs_gap_bp.toFixed(1)} bp</td></tr>)}</tbody></table></div>
-        <p className="note">The gap between two contracts is what a spread trade pays. A typical 7–8 bp there is why 5 bp per leg is our realistic slippage.</p>
+        <p className="note">The gap between two contracts is what a <Term k="spread">spread trade</Term> pays. A typical 7–8 bp there is why 5 bp per leg is our realistic slippage.</p>
       </More>
       <More title="Rules taken from the MCX contract specifications" hint="Official GOLDM, GOLDTEN, GOLDGUINEA and GOLDPETAL specification documents">
         <div className="tw"><table><thead><tr><th>Rule</th><th>What the specification says</th><th>How Parity uses it</th></tr></thead><tbody>
-          <tr><td><b>Size and quote</b></td><td>GOLDM 100 g lot quoted per 10 g, 995 fineness; GOLDTEN 10 g per 10 g, GOLDGUINEA 8 g per 8 g, GOLDPETAL 1 g per 1 g, all 999</td><td>Every price converted to ₹ per gram of pure gold before contracts are compared</td></tr>
+          <tr><td><b>Size and quote</b></td><td>GOLDM 100 g <Term k="lot">lot</Term> quoted per 10 g, 995 <Term k="purity">fineness</Term>; GOLDTEN 10 g per 10 g, GOLDGUINEA 8 g per 8 g, GOLDPETAL 1 g per 1 g, all 999</td><td>Every price converted to ₹ per gram of pure gold before contracts are compared</td></tr>
           <tr><td><b>Calendar</b></td><td>GOLDM's last trading day is the 5th of the expiry month; the other three expire on the last calendar day of the month</td><td>Contract calendar and the GOLDM leg's expiry matching</td></tr>
           <tr><td><b><Term k="tender">Tender period</Term></b></td><td>Staggered delivery in the last 3 trading days, expiry day included</td><td>Trades must exit 5 business days before expiry, which is stricter</td></tr>
-          <tr><td><b>Expiry-day settlement</b></td><td>Final settlement at the Due Date Rate, from the spot price polled that afternoon, not the futures closing price</td><td>{D.expiry_settle.outside} of {D.expiry_settle.rows.toLocaleString("en-IN")} closes sit outside the day's high–low; all {D.expiry_settle.on_last_day} on a contract's last trading day, none since October 2023. Kept as published; no strategy holds on that day</td></tr>
-          <tr><td><b>Price band and margin</b></td><td>3% daily price limit, widened in steps to 6% and 9%; initial margin at least 6% or SPAN, whichever is higher</td><td>Shown for context; the backtest assumes the position's margin is available</td></tr>
+          <tr><td><b>Expiry-day settlement</b></td><td>Final settlement at the <Term k="ddr">Due Date Rate</Term>, from the spot price polled that afternoon, not the futures closing price</td><td>{D.expiry_settle.outside} of {D.expiry_settle.rows.toLocaleString("en-IN")} closes sit outside the day's high–low; all {D.expiry_settle.on_last_day} on a contract's last trading day, none since October 2023. Kept as published; no strategy holds on that day</td></tr>
+          <tr><td><b><Term k="priceband">Price band</Term> and margin</b></td><td>3% daily price limit, widened in steps to 6% and 9%; initial margin at least 6% or <Term k="span">SPAN</Term>, whichever is higher</td><td>Shown for context; the backtest assumes the position's margin is available</td></tr>
         </tbody></table></div>
         <p className="note">Source: MCX contract specification documents for each of the four contracts, downloaded from mcxindia.com.</p>
       </More>
       <More title="Each contract type" hint="Liquidity decides how far a price can be trusted">
-      <div className="tw"><table><thead><tr><th>Contract</th><th className="n">Contracts</th><th className="n">Days</th><th className="n">No-trade days</th><th className="n">Gold traded / day</th><th className="n">Close vs trades</th></tr></thead>
+      <div className="tw"><table><thead><tr><th>Contract</th><th className="n">Contracts</th><th className="n">Days</th><th className="n"><Term k="notrade">No-trade days</Term></th><th className="n">Gold traded / day</th><th className="n">Close vs trades (<Term k="vwap">VWAP</Term>)</th></tr></thead>
         <tbody>{D.per_contract.map(r => <tr key={r.symbol}><td><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b> <span className="dim">{SYM[r.symbol].d}</span></td><td className="n">{r.contracts}</td><td className="n">{r.rows.toLocaleString("en-IN")}</td><td className="n">{r.no_trade_pct.toFixed(2)}%</td><td className="n">{r.median_kg_traded_per_day.toLocaleString("en-IN")} kg</td><td className="n">{r.close_vs_vwap_median_bp.toFixed(1)} bp</td></tr>)}</tbody></table></div>
       </More>
       <More title={`Flagged rows · ${D.flags.length}`} hint="Every row a check flagged, and what we did with it">

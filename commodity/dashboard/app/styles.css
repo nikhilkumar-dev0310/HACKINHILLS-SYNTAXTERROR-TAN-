@@ -106,7 +106,6 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border-radius:4px;border
 .rail nav a:hover{color:var(--ink);background:var(--hi)}
 .rail nav a[aria-current="page"]{color:var(--ink);font-weight:500}
 .rail nav a[aria-current="page"] .num{color:var(--gold)}
-.rail nav a[aria-current="page"]::before{content:"";position:absolute;left:-24px;top:8px;bottom:8px;width:2px;background:var(--gold)}
 .rail nav a .key{margin-left:auto;opacity:0;transition:opacity var(--dur-1) var(--ease)}
 .rail nav a:hover .key,.rail nav a:focus-visible .key{opacity:1}
 .nokeys .rail nav a .key{display:none}
@@ -122,8 +121,7 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border-radius:4px;border
 .linkbtn:hover{color:var(--ink)}
 @media (hover:none){.keys{display:none}}
 
-main.page{min-width:0;padding:0 clamp(16px,4vw,56px) 80px;display:flex;flex-direction:column;gap:28px;animation:enter var(--dur-3) var(--ease-emph)}
-@keyframes enter{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
+main.page{min-width:0;padding:0 clamp(16px,4vw,56px) 80px;display:flex;flex-direction:column;gap:28px}
 
 /* ---------------- hero */
 .hero{padding:clamp(28px,4vw,52px) 0 4px;display:flex;flex-direction:column;gap:14px}
@@ -242,10 +240,17 @@ td.quote{max-width:420px;font-style:italic;color:var(--ink-2)}
 .callout b{color:var(--gold)}
 
 /* glossary terms */
-.term{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:help;text-decoration:underline dotted;text-decoration-color:var(--ink-3);text-underline-offset:3px;text-decoration-thickness:1px}
-.term:hover,.term:focus-visible{text-decoration-color:var(--gold);color:var(--ink)}
-.gloss{position:fixed;z-index:100;padding:12px 14px;border-radius:var(--r);background:var(--panel-2);border:1px solid var(--line-2);box-shadow:0 18px 40px -16px rgba(0,0,0,.5);font-size:13px;line-height:1.5;color:var(--ink-2);animation:pop var(--dur-1) var(--ease)}
-.gloss b{display:block;color:var(--ink);font:600 13.5px var(--f-ui);margin-bottom:3px}
+.term{display:inline;cursor:help;-webkit-tap-highlight-color:transparent;
+  text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,var(--ink-3) 85%,transparent);text-underline-offset:3px;text-decoration-thickness:1.5px;
+  border-radius:3px;transition:color var(--dur-1) var(--ease),text-decoration-color var(--dur-1) var(--ease),background-color var(--dur-2) var(--ease)}
+.term:hover,.term:focus-visible,.term.on{text-decoration-color:var(--gold);color:var(--ink);background-color:var(--gold-soft)}
+.term:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gloss{position:fixed;z-index:100;padding:12px 14px 13px;border-radius:var(--r);background:var(--panel-2);border:1px solid var(--line-2);box-shadow:0 18px 40px -16px rgba(0,0,0,.5);
+  font-size:13px;line-height:1.55;color:var(--ink-2);pointer-events:none;transform-origin:var(--ax,50%) 0;animation:gloss-in 260ms cubic-bezier(.16,1,.3,1) both}
+.gloss.up{transform-origin:var(--ax,50%) 100%;animation-name:gloss-up}
+.gloss b{display:block;color:var(--gold);font:600 12px/1.4 var(--f-num);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+@keyframes gloss-in{from{opacity:0;transform:translateY(-6px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes gloss-up{from{opacity:0;transform:translateY(6px) scale(.94)}to{opacity:1;transform:none}}
 @keyframes pop{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 
 /* tables */
@@ -571,3 +576,78 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 @media (max-width:1100px){.quotes{grid-template-columns:repeat(2,minmax(0,1fr))}.unique .uq{grid-template-columns:repeat(2,minmax(0,1fr))}.steps4{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){.worth-g{grid-template-columns:1fr}.hurdle li,.hurdle.compact li{grid-template-columns:1fr 64px;row-gap:6px}.h-bar{grid-column:1 / -1;order:3}.h-s{grid-column:1 / -1;order:4}}
 @media (max-width:560px){.quotes{grid-template-columns:1fr 1fr;gap:10px}.quote{padding:12px}.q-p{font-size:19px}.q-p small{display:block;margin:2px 0 0}.q-f:last-child{display:none}.q-c .dim{display:none}.unique .uq,.steps4{grid-template-columns:1fr}}
+
+/* ---------------------------------------------------------------- page transitions and navigation indicators
+   Leaving: the page dips and fades in 160 ms (ease-in, so it gets out of the way). The scroll jump to the top happens
+   while nothing is visible. Arriving: the new page glides in on an expo-out curve, its sections following 40 ms apart.
+   Direction follows the section order: going forward rises from below, going back settles from above.
+   Only opacity and transform animate, so it stays on the compositor and holds 60 fps on long pages. */
+:root{--ease-out-x:cubic-bezier(.16,1,.3,1);--ease-in-q:cubic-bezier(.5,0,.75,0);--ease-spring:cubic-bezier(.34,1.32,.5,1)}
+@supports (transition-timing-function:linear(0,1)){:root{
+  --ease-spring:linear(0,.009,.035 2.1%,.141 4.4%,.723 12.9%,.938 16.7%,1.017 19.4%,1.067,1.099 24.3%,1.107 26.2%,1.104,1.091 30.5%,1.033 38%,1.004 43.4%,.991 48.9%,.994 64.4%,1)}}
+main.page{will-change:auto}
+main.page.p-in>*{animation:page-in 560ms var(--ease-out-x) backwards}
+main.page.p-in>*:nth-child(1){animation-delay:0ms}
+main.page.p-in>*:nth-child(2){animation-delay:40ms}
+main.page.p-in>*:nth-child(3){animation-delay:80ms}
+main.page.p-in>*:nth-child(4){animation-delay:120ms}
+main.page.p-in>*:nth-child(5){animation-delay:160ms}
+main.page.p-in>*:nth-child(n+6){animation-delay:190ms}
+.nav-back main.page.p-in>*{animation-name:page-in-back}
+main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-events:none}
+.nav-back main.page.p-out{animation-name:page-out-back}
+@keyframes page-in{from{opacity:0;transform:translate3d(0,26px,0)}to{opacity:1;transform:none}}
+@keyframes page-in-back{from{opacity:0;transform:translate3d(0,-18px,0)}to{opacity:1;transform:none}}
+@keyframes page-out{to{opacity:0;transform:translate3d(0,-14px,0) scale(.992)}}
+@keyframes page-out-back{to{opacity:0;transform:translate3d(0,14px,0) scale(.992)}}
+
+/* a thin gold bar sweeps across the top on every page change */
+.navbar-p{position:fixed;left:0;right:0;top:0;height:2px;z-index:120;pointer-events:none;transform-origin:0 50%;background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold-2));
+  animation:navbar 720ms var(--ease-out-x) forwards;box-shadow:0 0 12px var(--gold)}
+@keyframes navbar{0%{transform:scaleX(0);opacity:1}55%{transform:scaleX(.82);opacity:1}100%{transform:scaleX(1);opacity:0}}
+
+/* section counter in the header rolls to the new number */
+.crumb .roll{display:inline-flex;gap:10px;align-items:center;animation:roll 420ms var(--ease-out-x) both}
+.nav-back .crumb .roll{animation-name:roll-back}
+@keyframes roll{from{opacity:0;transform:translateY(60%)}to{opacity:1;transform:none}}
+@keyframes roll-back{from{opacity:0;transform:translateY(-60%)}to{opacity:1;transform:none}}
+
+/* one indicator per nav that glides to the active item on a spring */
+.rail nav.ind-host{position:relative}
+.ind{position:absolute;left:0;top:0;pointer-events:none;z-index:0;border-radius:6px;opacity:0;
+  transition:transform 520ms var(--ease-spring),width 520ms var(--ease-spring),height 520ms var(--ease-spring),opacity 200ms var(--ease)}
+.ind.ready{opacity:1}
+.ind.no-anim{transition:none}
+.ind-host>a,.ind-host>button{position:relative;z-index:1}
+.rail .ind{background:var(--gold-soft);box-shadow:inset 2px 0 0 var(--gold)}
+.rail nav a[aria-current="page"]{background:transparent}
+.rail nav a:active{transform:scale(.98)}
+.rail nav a{transition:color var(--dur-2) var(--ease),background var(--dur-2) var(--ease),transform 120ms var(--ease)}
+@media (max-width:1100px){
+  .strip .ind{background:var(--ink);border-radius:4px}
+  .strip a[aria-current="page"]{background:transparent;transition:color 260ms var(--ease) 60ms}
+}
+@media (max-width:760px){
+
+  .tabbar .ind{background:var(--gold-soft);border-radius:10px}
+  .tabbar a,.tabbar button{transition:color 260ms var(--ease),transform 160ms var(--ease)}
+  .tabbar a:active,.tabbar button:active{transform:scale(.92)}
+  .tabbar [aria-current="page"] svg{animation:tab-pop 480ms var(--ease-spring)}
+  @keyframes tab-pop{0%{transform:scale(.8)}100%{transform:none}}
+}
+
+/* glossary list */
+.glossary{display:flex;flex-direction:column;gap:14px}
+.gl-s{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--hi);color:var(--ink-3);max-width:420px}
+.gl-s input{flex:1;min-width:0;border:0;background:none;font:inherit;color:var(--ink);outline:none}
+.gl-s:focus-within{border-color:var(--gold)}
+.gl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px;margin:0}
+.gl>div{padding:12px 0;border-bottom:1px solid var(--line);break-inside:avoid}
+.gl dt{font:600 13px/1.4 var(--f-ui);color:var(--ink);margin-bottom:3px}
+.gl dd{margin:0;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+@media (max-width:760px){.gl{grid-template-columns:1fr}}
+
+@media (prefers-reduced-motion: reduce){
+  main.page.p-in>*,main.page.p-out,.navbar-p,.crumb .roll,.gloss{animation:none!important}
+  .ind{transition:opacity 1ms!important}
+}

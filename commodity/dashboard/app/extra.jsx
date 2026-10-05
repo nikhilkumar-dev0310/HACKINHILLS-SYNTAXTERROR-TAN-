@@ -27,10 +27,10 @@ export function Quotes() {
       return <Reveal key={q.symbol} className="quote" role="listitem">
         <div className="q-h"><span className="sw" style={{ background: SYM[q.symbol].c }} /><b>{q.symbol}</b></div><div className="dim sm q-d">{SYM[q.symbol].d}</div>
         <div className="q-p"><span className="num">{inr(q.close)}</span><small>{UNIT[q.symbol]}</small></div>
-        <div className={"q-c " + (up ? "pos" : dn ? "neg" : "dim")}>{up ? "▲" : dn ? "▼" : "■"} {inr(Math.abs(q.chg))} ({sgn(q.chg_pct, 2, "%")})<div className="dim">previous close {inr(q.prev_close)}</div></div>
+        <div className={"q-c " + (up ? "pos" : dn ? "neg" : "dim")}>{up ? "▲" : dn ? "▼" : "■"} {inr(Math.abs(q.chg))} ({sgn(q.chg_pct, 2, "%")})<div className="dim">previous <Term k="settlement">close</Term> {inr(q.prev_close)}</div></div>
         <Spark values={pr[q.symbol].slice(from)} color={SYM[q.symbol].c} />
         <div className="q-f"><span>₹ per gram of pure gold</span><b className="num">{q.rs_per_g.toLocaleString("en-IN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</b></div>
-        <div className="q-f dim"><span>Expiry {fdate(q.expiry)}</span><span>{q.lots.toLocaleString("en-IN")} lots</span></div>
+        <div className="q-f dim"><span><Term k="expiry">Expiry</Term> {fdate(q.expiry)}</span><span>{q.lots.toLocaleString("en-IN")} <Term k="lot">lots</Term></span></div>
       </Reveal>; })}
   </div>;
 }
@@ -55,7 +55,7 @@ export function CostLineToday({ go }) {
   const over = SMALL.filter(s => both(H[s].gap[i], H[s].z[i]));
   const big = SMALL.map(s => [s, H[s].gap[i]]).filter(x => x[1] != null).sort((a, b) => b[1] - a[1])[0];
   return <Card id="worth" className="worth" title="Is any gap worth trading today?"
-    sub={<>{fdate(H.dates[i])}. A gap is worth a look only if it passes two checks: it is bigger than the <Term k="costline">cost line</Term> ({line.toFixed(1)} bp, twice the {rt.toFixed(1)} bp a round trip costs at 5 bp slippage), and it is unusual for that contract (beyond ±{D.signals.threshold}<Term k="sigma">σ</Term>).</>}>
+    sub={<>{fdate(H.dates[i])}. A gap is worth a look only if it passes two checks: it is bigger than the <Term k="costline">cost line</Term> ({line.toFixed(1)} <Term k="bp">bp</Term>, twice the {rt.toFixed(1)} bp a <Term k="roundtrip">round trip</Term> costs at 5 bp <Term k="slippage">slippage</Term>), and it is unusual for that contract (beyond ±{D.signals.threshold}<Term k="sigma">σ</Term>).</>}>
     <div className="worth-g">
       <div className="worth-a"><div className={"worth-v " + (over.length ? "yes" : "no")}>{over.length ? "Worth a look." : "No."}</div>
         <p>{over.length ? `${over.join(", ")} ${over.length > 1 ? "pass" : "passes"} both checks today. Read the Signals page before acting.`
@@ -73,12 +73,12 @@ export function CostLineReplay() {
       if (have) days++; if (hit) any++; if (c) cost++; }
     return { any, days, per, cost }; }, []);
   const year = H.dates[i].slice(0, 4);
-  return <Card title="Replay every day since October 2023" sub={<>Drag to any market day and see where each gap stood against the {line.toFixed(1)} bp cost line and the ±{D.signals.threshold}σ alert rule. Usual levels use only days before the one shown.</>}>
+  return <Card title="Replay every day since October 2023" sub={<>Drag to any market day and see where each gap stood against the {line.toFixed(1)} bp <Term k="costline">cost line</Term> and the ±{D.signals.threshold}<Term k="sigma">σ</Term> alert rule. Usual levels use only days before the one shown.</>}>
     <div className="slider"><div className="row"><label htmlFor="replay">Market day</label><b className="num">{fdate(H.dates[i])}</b></div>
       <input id="replay" className="range" type="range" min="0" max={n - 1} step="1" value={i} onChange={e => setI(+e.target.value)} />
       <div className="row ticks"><span>{fmon(H.dates[0])}</span><span>{year}</span><span>{fmon(H.dates[n - 1])}</span></div></div>
     <Bars i={i} />
-    <p className="note">Over {stats.days.toLocaleString("en-IN")} market days, some contract sat above the cost line on {stats.cost} ({(100 * stats.cost / stats.days).toFixed(0)}%), mostly GOLDPETAL, whose premium swings widely day to day.
+    <p className="note">Over {stats.days.toLocaleString("en-IN")} market days, some contract sat above the cost line on {stats.cost} ({(100 * stats.cost / stats.days).toFixed(0)}%), mostly GOLDPETAL, whose <Term k="premium">premium</Term> swings widely day to day.
       That is why the cost line alone is not enough. Both checks passed on <b>{stats.any}</b> days ({(100 * stats.any / stats.days).toFixed(0)}%): {SMALL.map(s => `${s} ${stats.per[s]}`).join(", ")}.</p>
   </Card>;
 }
@@ -88,27 +88,27 @@ export function Unique() {
   const A = D.meta.all, up = D.provenance.updates, last = up[0];
   const items = [
     ["23 years of MCX history", `${A.rows.toLocaleString("en-IN")} daily rows, ${A.contracts} contracts, ${fdate(A.first)} – ${fdate(A.last)}.`, "The usual shortcut: the last two or three years only, so the rules never meet a different market."],
-    ["Eight sealed years", "2016–2023 were walled off until the rules were frozen in Git, then opened once. Plus a sealed holdout in 2025–26.", "The usual shortcut: one test window, chosen after looking at the data."],
+    [<>Eight <Term k="sealed">sealed</Term> years</>, <>2016–2023 were walled off until the rules were frozen in Git, then opened once. Plus a sealed <Term k="holdout">holdout</Term> in 2025–26.</>, "The usual shortcut: one test window, chosen after looking at the data."],
     [last ? "Updates itself every trading day" : "Built to update itself daily", last ? `A scheduled job fetches the new MCX Bhavcopy, checks it, rebuilds the site and publishes. Last run ${last.run_ist} IST, data through ${fdate(last.data_through)}.` : "A scheduled job fetches each new MCX Bhavcopy, checks it, rebuilds the site and publishes. No one feeds it by hand.", "The usual shortcut: a snapshot that goes stale the day after it is built."],
-    ["A fair price, not just pairs", "Each small contract is priced off GOLDM, which trades 20–60× more gold, moved to the same expiry with that day's carry.", "The usual shortcut: compare thin contracts with each other and trade the noise."],
-    ["The exchange's own rules", "Tender period and expiry-day settlement taken from MCX's contract specifications; every trade checked against them.", "The usual shortcut: trade right up to expiry, into compulsory delivery."],
-    ["An honest verdict", "Every trade split into gap vs gold's move; bootstrap ranges and t-statistics shown; the answer is “a small edge, not proven”.", "The usual shortcut: a big headline from perfect fills and no costs."]
+    [<>A <Term k="fairprice">fair price</Term>, not just pairs</>, <>Each small contract is priced off GOLDM, which trades 20–60× more gold, moved to the same expiry with that day's <Term k="carry">carry</Term>.</>, <>The usual shortcut: compare thin (low-<Term k="liquidity">liquidity</Term>) contracts with each other and trade the noise.</>],
+    ["The exchange's own rules", <><Term k="tender">Tender period</Term> and expiry-day settlement taken from MCX's contract specifications; every trade checked against them.</>, "The usual shortcut: trade right up to expiry, into compulsory delivery."],
+    ["An honest verdict", <>Every trade <Term k="attribution">split into gap vs gold's move</Term>; <Term k="bootstrap">bootstrap</Term> ranges and <Term k="tstat">t-statistics</Term> shown; the answer is “a small <Term k="edge">edge</Term>, not proven”.</>, "The usual shortcut: a big headline from perfect fills and no costs."]
   ];
   return <Card id="unique" className="unique" title="What makes Parity different" sub="Six things you can check on this site, each against the shortcut it avoids.">
-    <ol className="uq">{items.map(([h, a, b], k) => <li key={h}><span className="uq-n">{String(k + 1).padStart(2, "0")}</span><div><b>{h}</b><p>{a}</p><p className="dim sm">{b}</p></div></li>)}</ol>
+    <ol className="uq">{items.map(([h, a, b], k) => <li key={k}><span className="uq-n">{String(k + 1).padStart(2, "0")}</span><div><b>{h}</b><p>{a}</p><p className="dim sm">{b}</p></div></li>)}</ol>
   </Card>;
 }
 
 /* ---------------------------------------------------------------- automatic updates and the download log */
 export function AutoUpdate() {
   const up = D.provenance.updates;
-  const steps = [["Fetch", "Every trading day at 03:30 IST (retry 08:00), GitHub Actions starts the job on a team computer, which opens the official MCX Bhavcopy page and downloads every gold futures contract still trading. MCX refuses cloud servers, so the job cannot run in a data centre."],
+  const steps = [["Fetch", <>Every trading day at 03:30 IST (retry 08:00), GitHub Actions starts the job on a team computer, which opens the official MCX <Term k="bhavcopy">Bhavcopy</Term> page and downloads every gold futures contract still trading. MCX refuses cloud servers, so the job cannot run in a data centre.</>],
     ["Check", "The update is rejected if a published price changed, a contract type is missing, a close is outside its day's range off expiry day, or a price is out by a unit error."],
-    ["Rebuild", "Prices, premiums, the curve, roll-down, alerts and the contract calendar are recomputed. Strategy rules and sealed test results stay frozen."],
+    ["Rebuild", <>Prices, premiums, the <Term k="curve">curve</Term>, <Term k="rolldown">roll-down</Term>, alerts and the contract calendar are recomputed. Strategy rules and <Term k="sealed">sealed test</Term> results stay frozen.</>],
     ["Publish", "The job commits the new files; Vercel redeploys the site from GitHub within minutes."]];
   return <Card id="auto" title={up.length ? "Updates itself every trading day" : "Built to update itself every trading day"}
     sub={<>{up.length ? "No one feeds this site by hand." : "Once a team computer is registered as the job's runner, no one feeds this site by hand."} The workflow is .github/workflows/daily-data.yml; the checks are in commodity/tools/daily_update.py.</>}>
-    <ol className="steps4">{steps.map(([h, t], k) => <li key={h}><span className="tn">{k + 1}</span><b>{h}</b><p>{t}</p></li>)}</ol>
+    <ol className="steps4">{steps.map(([h, t], k) => <li key={k}><span className="tn">{k + 1}</span><b>{h}</b><p>{t}</p></li>)}</ol>
     {up.length ? <div className="tw"><table><thead><tr><th>Run (IST)</th><th>Data through</th><th className="n">New days</th><th className="n">New rows</th><th className="n">Rows held</th></tr></thead>
       <tbody>{up.slice(0, 8).map(u => <tr key={u.run_ist}><td className="mono">{u.run_ist}</td><td className="mono">{fdate(u.data_through)}</td><td className="n">{u.new_days}</td><td className="n">{u.new_rows}</td><td className="n">{u.rows_total.toLocaleString("en-IN")}</td></tr>)}</tbody></table></div>
       : <p className="note">The first automatic run will be listed here once it has published new data.</p>}
@@ -130,14 +130,14 @@ export function DownloadLog() {
 export function Limits() {
   const v = D.close_vs_vwap.find(r => r.symbol.startsWith("spread")), b = D.backtests.B_hold.rows.find(r => r.slip === 5);
   const L = [
-    "Prices are end-of-day settlements from the Bhavcopy, not fills from the order book. Real trades happen during the day.",
-    `The Bhavcopy has volume but no order-book depth, so slippage is assumed, not measured. The close and the day's average traded price differ by a typical ${v ? v.median_abs_gap_bp.toFixed(1) : "7–8"} bp on a spread, which is why 5 bp per leg is our realistic case.`,
+    <>Prices are end-of-day <Term k="settlement">settlements</Term> from the <Term k="bhavcopy">Bhavcopy</Term>, not fills from the order book. Real trades happen during the day.</>,
+    <>The Bhavcopy has volume but no order-book <Term k="depth">depth</Term>, so <Term k="slippage">slippage</Term> is assumed, not measured. The close and the day's average traded price differ by a typical {v ? v.median_abs_gap_bp.toFixed(1) : "7–8"} bp on a <Term k="spread">spread</Term>, which is why 5 bp per <Term k="leg">leg</Term> is our realistic case.</>,
     "GOLDTEN has traded only since April 2025, so its history is short.",
-    `Samples are small: Strategy B made ${b.trades} trades on its sealed holdout, too few to prove an edge (t = ${b.t == null ? "—" : b.t.toFixed(2)} at 5 bp).`,
+    <>Samples are small: Strategy B made {b.trades} trades on its sealed holdout, too few to prove an <Term k="edge">edge</Term> (<Term k="tstat">t</Term> = {b.t == null ? "—" : b.t.toFixed(2)} at 5 bp).</>,
     "Fees and taxes for 2016–2023 use today's rates; the real schedule differed in places, so those costs are approximate.",
     "One crash (January 2026) dominates the recent results. Without it, the pairs rule loses after costs."
   ];
   return <More title="What this data cannot tell you" hint="Limits worth knowing before trusting any number here">
-    <ul className="lim">{L.map(x => <li key={x}>{x}</li>)}</ul>
+    <ul className="lim">{L.map((x, i) => <li key={i}>{x}</li>)}</ul>
   </More>;
 }
