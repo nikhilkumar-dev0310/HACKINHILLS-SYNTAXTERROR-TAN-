@@ -173,27 +173,40 @@ for i, (k, h, its) in enumerate(cols):
 notes(s, "Four MCX contracts hold the same metal but quote it four ways. Converted to rupees per gram of pure gold they nearly match. "
          "The gaps that remain are real money: the coin's steady premium, and a 2.7% gap during the 2026 crash.")
 
-# ------------------------------------------------------------------ 3 SOLUTION
+# ------------------------------------------------------------------ 3 SOLUTION (v3: live link, why Parity, result up front)
+SITE = "https://parity-gold-site.vercel.app"
 s = S[2]; clear(s)
 title(s, "Parity tells a trader when a price gap is real", "Solution")
-pic = s.shapes.add_picture(os.path.join(HERE, "dash-overview.png"), Inches(1.0), Inches(3.15), width=Inches(10.6)); pic.name = "Dashboard screenshot"
-pic.line.color.rgb = LINE; pic.line.width = Pt(1.5)
-box(s, 1.0, 9.95, 3.55, 0.6, fill=GOOD, line=None, radius=0.5, name="Prototype badge")
-text(s, 1.0, 9.95, 3.55, 0.6, "WORKING PROTOTYPE", size=17, bold=True, color=WHITE, font=HEAD, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-text(s, 4.8, 9.95, 6.8, 0.6, "8 pages, search and downloads, runs offline as one file", size=17, color=INK2, anchor=MSO_ANCHOR.MIDDLE)
-feats = [("scale", "Fair comparison", "All four contracts in ₹ per gram of pure gold"),
-         ("bell", "Quiet alerts", "Speaks up only when a contract strays far from its fair price"),
-         ("flask", "Honest backtests", "After every MCX fee and tax, on data the rules never saw"),
-         ("calendar", "Contract calendar", "Every trade checked against delivery dates")]
+pic = s.shapes.add_picture(os.path.join(HERE, "dash-overview-v3.png"), Inches(1.0), Inches(3.05), width=Inches(10.2)); pic.name = "Dashboard screenshot"
+pic.line.color.rgb = LINE; pic.line.width = Pt(1.5); pic.click_action.hyperlink.address = SITE
+box(s, 1.0, 8.12, 3.0, 0.6, fill=GOOD, line=None, radius=0.5, name="Live badge")
+text(s, 1.0, 8.12, 3.0, 0.6, "LIVE PROTOTYPE", size=17, bold=True, color=WHITE, font=HEAD, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+lt = text(s, 4.2, 8.12, 7.0, 0.6, [[("parity-gold-site.vercel.app", {"bold": True, "color": GOLD, "size": 21}), ("   8 pages, open in any browser", {"size": 17, "color": INK2})]], anchor=MSO_ANCHOR.MIDDLE, name="Live link")
+lt.click_action.hyperlink.address = SITE
+box(s, 1.0, 9.0, 10.2, 1.65, fill=GOLDBG, line=None, name="Result")
+icon(s, "flask", 1.3, 9.3, 0.8)
+text(s, 2.35, 9.17, 8.65, 1.4, [[("TESTED ONCE ON 8 YEARS IT NEVER SAW", {"bold": True, "size": 18, "color": GOLD, "font": HEAD})],
+                               [("The fair-price rule made money in all 3 sealed tests, after every cost. The edge is small, and we say so.", {"size": 20})]], after=4)
+feats = [("scale", "Fair comparison", "all four in ₹ per pure gram"), ("bell", "Quiet alerts", "only when a price strays far from fair"),
+         ("flask", "Honest backtests", "after every fee, tax and slippage"), ("calendar", "Contract calendar", "every trade vs delivery dates")]
+text(s, 11.75, 3.05, 7.2, 0.4, "WHAT IT DOES", size=18, bold=True, color=GOLD, font=HEAD)
 for i, (k, h, d) in enumerate(feats):
-    y = 3.15 + i * 1.32
-    icon(s, k, 12.1, y + 0.05, 0.8)
-    text(s, 13.15, y, 5.85, 1.25, [[(h, {"bold": True, "size": 23})], [(d, {"size": 19, "color": INK2})]], after=2)
-box(s, 12.1, 8.6, 6.9, 1.95, fill=GOLDBG, line=None, name="Unique value")
-text(s, 12.4, 8.8, 6.4, 1.7, [[("UNIQUE VALUE", {"bold": True, "size": 18, "color": GOLD, "font": HEAD})],
-                               [("Honest by design: rules locked in Git before every test, 3 sealed tests run once, and losses shown too.", {"size": 20})]], after=4)
-notes(s, "Parity is a working dashboard. It compares the four contracts fairly, raises an alert only when one strays far from fair price, "
-         "backtests every rule after real costs on unseen data, and checks every trade against the contract calendar.")
+    y = 3.55 + i * 0.78
+    icon(s, k, 11.75, y, 0.62)
+    text(s, 12.6, y, 6.4, 0.62, [[(h, {"bold": True, "size": 21}), ("  " + d, {"size": 18, "color": INK2})]], anchor=MSO_ANCHOR.MIDDLE)
+box(s, 11.75, 6.85, 7.25, 3.8, name="Why Parity")
+text(s, 12.05, 7.02, 6.8, 0.4, "WHY PARITY, NOT A SNAPSHOT", size=18, bold=True, color=GOLD, font=HEAD)
+why = [("23 years of MCX data", "710 contracts, 2003–2026, every row checked"),
+       ("8 sealed years, tested once", "rules frozen in Git before the data was opened"),
+       ("Fair price off GOLDM", "the contract with 20–60× the volume, not thin pairs"),
+       ("MCX's own rules", "every trade checked against the delivery period")]
+for i, (h, d) in enumerate(why):
+    y = 7.5 + i * 0.77
+    text(s, 12.05, y, 0.6, 0.7, f"0{i + 1}", size=20, bold=True, color=GOLD, font=HEAD)
+    text(s, 12.65, y, 6.2, 0.75, [[(h, {"bold": True, "size": 20})], [(d, {"size": 16, "color": INK2})]], after=0)
+notes(s, "Parity is live at parity-gold-site.vercel.app. It compares the four contracts fairly, raises an alert only when a contract strays far from its fair price, "
+         "backtests every rule after real costs, and checks every trade against the contract calendar. What sets it apart: 23 years of MCX data, eight years sealed and tested once, "
+         "a fair price built off GOLDM, and the exchange's own delivery rules. Tested once on eight unseen years, the fair-price rule made money in all three sealed tests, but the edge is small, and we say so.")
 
 # ------------------------------------------------------------------ 4 ARCHITECTURE
 s = S[3]; clear(s)
@@ -224,7 +237,8 @@ for i, (k, h, its) in enumerate(cols):
     icon(s, k, x, 7.85, 0.62)
     text(s, x + 0.8, 7.85, 5.0, 0.62, h.upper(), size=19, bold=True, color=GOLD, font=HEAD, anchor=MSO_ANCHOR.MIDDLE)
     bullets(s, x, 8.65, 5.8, 1.9, its, size=20, after=4)
-text(s, 1.0, 10.55, 18, 0.4, "Code: github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-", size=16, color=INK2)
+ct = text(s, 1.0, 10.55, 18, 0.4, [[("Live: ", {"color": INK2}), ("parity-gold-site.vercel.app", {"color": GOLD, "bold": True}), ("     Code: github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-", {"color": INK2})]], size=16)
+ct.click_action.hyperlink.address = SITE
 notes(s, "Official MCX files go in. They are cleaned and checked, every analysis writes its results to a file, and one export feeds the dashboard, report and pitch.")
 
 # ------------------------------------------------------------------ 5 MARKET
@@ -253,7 +267,7 @@ notes(s, "Gold futures on MCX trade about 28 thousand crore rupees a day, 3.4 ti
 # ------------------------------------------------------------------ 6 FUTURE
 s = S[5]; clear(s)
 title(s, "What comes next", "Future scope")
-items = [("activity", "Live paper trading", "Run the fair-price rule every day on new MCX files, before any real money"),
+items = [("activity", "Live paper trading", "Daily MCX update pipeline is built; next, a day-by-day paper record of the fair-price rule"),
          ("clock", "Intraday prices", "Measure real trading costs instead of assuming them"),
          ("bell", "Alerts on your phone", "Email and Telegram alerts that show the cost of acting"),
          ("layers", "Longer history", "Measure the coin and 1 g premiums back to 2008"),
@@ -297,8 +311,10 @@ text(s, 1.0, 4.75, 18.0, 2.4, "Thank you!", size=150, bold=True, font="Caveat", 
 text(s, 1.0, 7.45, 18.0, 0.6, [[("SYNTAX TERROR (TAN)", {"bold": True, "color": GOLD}), ("  ·  Parity, MCX gold futures intelligence", {"color": INK2})]],
      size=26, font=HEAD, align=PP_ALIGN.CENTER)
 text(s, 1.0, 8.2, 18.0, 0.5, "Nikhil Kumar  ·  Sai Ganesh  ·  Ishaan Chhabra", size=22, color=INK2, align=PP_ALIGN.CENTER)
-s.shapes.add_picture(os.path.join(HERE, "qr.png"), Inches(17.35), Inches(8.55), Inches(1.75), Inches(1.75)).name = "Repository QR"
-text(s, 15.6, 10.4, 3.5, 0.4, "Code on GitHub", size=16, color=INK2, align=PP_ALIGN.RIGHT)
+q = s.shapes.add_picture(os.path.join(HERE, "qr-site.png"), Inches(17.35), Inches(8.55), Inches(1.75), Inches(1.75)); q.name = "Live site QR"; q.click_action.hyperlink.address = SITE
+lk = text(s, 1.0, 8.85, 18.0, 0.5, [[("Try it live: ", {"color": INK2}), ("parity-gold-site.vercel.app", {"bold": True, "color": GOLD})]], size=24, align=PP_ALIGN.CENTER, name="Live link")
+lk.click_action.hyperlink.address = SITE
+text(s, 14.6, 10.4, 4.5, 0.4, "Scan for the live site", size=16, color=INK2, align=PP_ALIGN.RIGHT)
 
 prs.save(os.path.join(HERE, "parity-round1.pptx"))
 print("saved")
