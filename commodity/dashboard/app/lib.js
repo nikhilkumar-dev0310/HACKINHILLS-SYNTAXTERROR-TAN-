@@ -77,6 +77,8 @@ export const GLOSSARY = {
   insample: ["In-sample", "The same data the settings were chosen on. Results there look better than they will on new data."],
   bhavcopy: ["Bhavcopy", "MCX's official daily file: every contract's prices, volume and open interest."],
   purity: ["Purity", "Share of pure gold. GOLDM is 995 (99.5%); GOLDTEN, GOLDGUINEA and GOLDPETAL are 999 (99.9%)."],
+  costline: ["Cost line", "Twice what a round trip costs (fees, taxes and 5 bp slippage on all four legs). Gaps usually close only part of the way, so a gap must be about twice the cost before trading it can pay."],
+  tstat: ["t-statistic", "Average profit per trade divided by its uncertainty. Below about 2 (or above −2), the result could easily be luck."],
   range95: ["95% range", "From resampling whole weeks of results: the true average sits inside it 95 times in 100."],
   gross: ["Gross and net", "Gross is profit before costs. Net is after MCX fees, taxes, brokerage and slippage."],
   walkforward: ["Walk-forward", "Replaying the market one day at a time, using only what was known on that day."],

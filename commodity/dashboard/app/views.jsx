@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, reducedMotion } from "./lib.js";
 import { lineChart, barChart, scatter, groupBars, curveChart, alertStrip, calendarChart, liquidityChart } from "./charts.js";
 import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More } from "./ui.jsx";
+import { Quotes, CostLineToday, CostLineReplay, Unique, AutoUpdate, DownloadLog, Limits } from "./extra.jsx";
 
 const roll = (a, n) => a.map((_, i) => { const w = a.slice(Math.max(0, i - n + 1), i + 1).filter(v => v != null); return a[i] == null || !w.length ? null : w.reduce((x, y) => x + y, 0) / w.length; });
 const kfmt = v => v === 0 ? "0" : (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k");
@@ -47,7 +48,7 @@ function Snapshot() {
         {r.ref ? <><td className="n dim" data-l="Premium">reference</td><td className="n dim ph-x">—</td><td data-l="Signal"><Pill>Benchmark</Pill></td></>
           : <><td className="n" data-l="Premium">{sgn(r.prem)} bp</td><td className="n dim ph-x">{sgn(r.usual)} bp</td>
             <td data-l="Signal">{Math.abs(r.z) >= k ? <Pill tone="warn">{r.z > 0 ? "Rich" : "Cheap"} · {sgn(r.z, 2, "σ")}</Pill> : <Pill tone="good">Normal · {sgn(r.z, 2, "σ")}</Pill>}</td></>}</tr>)}</tbody></table></div>
-    <p className="note">Premium is measured after moving GOLDM to the same expiry, so different expiry dates compare fairly. Parity does not forecast gold's price; the brief asks for a signal, a test on unseen data and results after costs. The MCX files are end-of-day, so “current” means the latest file: add newer Bhavcopy files and rebuild to move this table forward.</p>
+    <p className="note">Premium is measured after moving GOLDM to the same expiry, so different expiry dates compare fairly. Parity does not forecast gold's price; the brief asks for a signal, a test on unseen data and results after costs. The MCX files are end-of-day, so “current” means the latest file. A scheduled job adds each new Bhavcopy and rebuilds this page every trading day.</p>
   </Card>;
 }
 
@@ -111,7 +112,10 @@ export function Overview() {
       <b>The problem:</b> MCX lists four gold futures that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, whether any gap can be traded after real costs, and tells a trader when one is worth a look.
     </Hero>
     <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it. It paid in the January 2026 crash, and not reliably in eight more years of sealed tests.</Takeaway>
-    <nav className="jump" aria-label="On this page"><a href="#latest" onClick={jump}>Latest data</a><a href="#asks" onClick={jump}>What the brief asks</a><a href="#downloads" onClick={jump}>Downloads</a></nav>
+    <Quotes />
+    <nav className="jump" aria-label="On this page"><a href="#worth" onClick={jump}>Worth trading today?</a><a href="#unique" onClick={jump}>What makes Parity different</a><a href="#latest" onClick={jump}>Latest data</a><a href="#asks" onClick={jump}>What the brief asks</a><a href="#downloads" onClick={jump}>Downloads</a></nav>
+    <CostLineToday go={<Go to="signals">Replay any day on the Signals page</Go>} />
+    <Unique />
     <Snapshot />
     <BriefQA />
     <Downloads />
@@ -371,7 +375,7 @@ export function Backtest() {
       <Kpi label="Net profit" note={<>{info.grams} g per leg · <Term k="gross">gross</Term> {inr(gross)}</>}><span className={tot >= 0 ? "pos" : "neg"}><Num v={tot} f="inr" k="bt-net" /></span></Kpi>
       <Kpi label="Trades" note={tonly ? `${inTender} trade${inTender === 1 ? "" : "s"} held into the tender period left out` : `from ${info.rows[0].weeks} independent entry weeks · ${inTender} held into the tender period`}><Num v={tr.length} k="bt-n" /></Kpi>
       <Kpi label="Won after costs" note={`of trades at ${s.toFixed(1)} bp slippage`}><Num v={hit} f="pct" k="bt-hit" /><small>%</small></Kpi>
-      <Kpi label={<><Term k="range95">95% range</Term> at {near.slip} bp</>} note={`${near.p_pos}% of resamples above zero${tonly ? " (all trades)" : ""}`}><span className="val-sm"><Num v={near.ci[0]} f="inr" k="bt-lo" /> to <Num v={near.ci[1]} f="inr" k="bt-hi" /></span></Kpi>
+      <Kpi label={<><Term k="range95">95% range</Term> at {near.slip} bp</>} note={<>{near.p_pos}% of resamples above zero{tonly ? " (all trades)" : ""}{near.t != null && <> · <Term k="tstat">t</Term> = {near.t.toFixed(2)}{Math.abs(near.t) < 2 ? ", could be luck" : ""}</>}</>}><span className="val-sm"><Num v={near.ci[0]} f="inr" k="bt-lo" /> to <Num v={near.ci[1]} f="inr" k="bt-hi" /></span></Kpi>
     </div>
     <Card title="Cumulative profit" sub="After all costs, at the selected slippage, by exit date."
       actions={<CsvButton text="Download trades" label={`Download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view as CSV`} onClick={csv} />}>
@@ -447,6 +451,7 @@ export function Signals() {
       <dl className="kv"><dt>Premium today</dt><dd>{sgn(r.premium_bp)} bp</dd><dt>Usual premium</dt><dd>{sgn(r.usual_bp)} bp</dd><dt>Typical swing (1σ)</dt><dd>{r.sd_bp.toFixed(1)} bp</dd><dt>Distance from usual</dt><dd><b>{sgn(r.z, 2, "σ")}</b></dd></dl>
       <Chart style={{ minHeight: 90, marginTop: 16 }} draw={host => lineChart(host, { dates: r.z_hist.dates, series: [{ label: "Distance", color: SYM[r.symbol].c, values: r.z_hist.z }], zero: true, h: 110, events: false, yfmt: v => v + "σ", tfmt: v => sgn(v, 2, "σ"), aria: "Recent distance from usual premium" })} />
       <p className="note">Last 90 market days to {fdate(r.date)}.</p></Reveal>; })}</div>
+    <CostLineReplay />
     <div className="grid g4">
       <Kpi label="Alert episodes" note={`${fdate(h[0].start)} – ${fdate(h[h.length - 1].start)}`}><Num v={h.length} intro /></Kpi>
       <Kpi label="Closed halfway in 10 days" note={`vs ${off.closed_half_10d.toFixed(0)}% of ordinary days: alerts are not more likely to close`}><Num v={all.closed_half_10d_pct} f="pct" intro /><small>%</small></Kpi>
@@ -520,7 +525,10 @@ export function Quality() {
       <Kpi label="Rows checked" note="One row per contract per trading day"><Num v={D.meta.rows} intro /></Kpi>
       <Kpi tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
     </div>
+    <AutoUpdate />
     <div className="more-list">
+      <DownloadLog />
+      <Limits />
       <More title="Integrity checks" hint="Share of rows failing each check">
         <div className="tw"><table><thead><tr><th>Check</th><th className="n">Failing</th><th>Status</th></tr></thead>
           <tbody>{integ.map(r => { const sub = r.check.trim().startsWith("..."), ok = r.errors === 0;

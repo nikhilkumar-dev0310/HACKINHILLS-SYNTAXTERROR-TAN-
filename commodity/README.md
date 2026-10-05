@@ -2,6 +2,8 @@
 
 **Live (Vercel):** dashboard https://parity-gold-site.vercel.app · pitch https://parity-gold-site.vercel.app/pitch.html · report https://parity-gold-site.vercel.app/report.pdf (redeploys on every push to main). Mirror on Render: https://parity-mcx-gold.onrender.com
 
+**Data updates itself.** `.github/workflows/daily-data.yml` fetches each new MCX Bhavcopy every trading day, checks it (`commodity/tools/daily_update.py`), rebuilds the site and pushes; Vercel redeploys. MCX blocks cloud servers, so the job runs on a team computer registered as a GitHub self-hosted runner: one-time setup in `commodity/tools/RUNNER_SETUP.md`.
+
 
 ## Setup (once)
 Put `ingest.py`, `backtest.py` and this README in the same folder as `raw_clean/`

@@ -14,7 +14,8 @@ import { gzipSync } from "node:zlib";
 const [since, out] = process.argv.slice(2);
 if (!since || !out) { console.error("usage: node tools/auto_fetch.mjs YYYY-MM-DD out.json.gz"); process.exit(2); }
 
-const browser = await chromium.launch({ args: ["--disable-blink-features=AutomationControlled"] });
+// PARITY_CHROME=chrome uses the computer's installed Google Chrome instead of Playwright's bundled Chromium.
+const browser = await chromium.launch({ args: ["--disable-blink-features=AutomationControlled"], ...(process.env.PARITY_CHROME ? { channel: process.env.PARITY_CHROME } : {}) });
 const ctx = await browser.newContext({
   userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
   locale: "en-IN", timezoneId: "Asia/Kolkata", viewport: { width: 1366, height: 900 },

@@ -79,6 +79,32 @@ def main():
                     "z_hist": {"dates": [str(x.date()) for x in zs.index], "z": [r(v, 2) for v in zs]}})
     out["signals"] = {"threshold": json.load(open(R + "fairvalue_params.json"))["k"], "rows": sig}
 
+    # ---------- the cost line, day by day: how far each small contract sits from its usual premium (bp)
+    # Same contract the signal watches (most gold traded that day). A gap only pays if it is bigger than a round trip costs.
+    hz = {}
+    for s in ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]:
+        g = ok[ok.symbol == s].copy()
+        g = g.sort_values("x_grams").groupby(level=0).tail(1).sort_index()
+        hz[s] = g
+    hd = sorted(set().union(*[set(g.index) for g in hz.values()]))
+    out["hurdle"] = {"dates": [str(x.date()) for x in hd],
+                     **{s: {"gap": [r(abs(g.prem_bp.get(x) - g.ref_bp.get(x))) if x in g.index and pd.notna(g.ref_bp.get(x)) else None for x in hd],
+                            "z": [r(g.z.get(x), 2) if x in g.index and pd.notna(g.z.get(x)) else None for x in hd]} for s, g in hz.items()}}
+
+    # ---------- latest quote per contract type: the most-traded contract on the last day, with its day change
+    lastd = tr.date.max()
+    q = []
+    for s in SYMS:
+        g = tr[(tr.date == lastd) & (tr.symbol == s)]
+        if g.empty:
+            continue
+        x = g.loc[g.grams.idxmax()]
+        q.append({"symbol": s, "date": str(lastd.date()), "expiry": str(x.expiry_date.date()), "close": r(x.close, 0),
+                  "prev_close": r(x.prev_close, 0), "chg": r(x.close - x.prev_close, 0),
+                  "chg_pct": r((x.close / x.prev_close - 1) * 100, 2) if x.prev_close else None,
+                  "lots": int(x.volume_lots), "oi": int(x.open_interest_lots), "rs_per_g": r(x.rs_per_g, 1)})
+    out["quotes"] = q
+
     # ---------- pairs: all periods (accuracy.py output) + normal vs crash split
     acc = pd.read_csv(R + "accuracy_pairs.csv")
     _, t = ac.load()
@@ -142,7 +168,8 @@ def main():
             n, net, ci, pp = un.bootstrap(g)
             rows.append({"slip": int(sl), "trades": int(len(g)), "gross": r(g.gross_rs.sum(), 0), "cost": r(g.cost_rs.sum(), 0),
                          "net": r(g.net_rs.sum(), 0), "hit": r((g.net_rs > 0).mean() * 100, 0),
-                         "ci": [r(ci[0], 0), r(ci[1], 0)], "p_pos": r(pp * 100, 0), "weeks": int(n)})
+                         "ci": [r(ci[0], 0), r(ci[1], 0)], "p_pos": r(pp * 100, 0), "weeks": int(n),
+                         "t": r(g.net_rs.mean() / (g.net_rs.std(ddof=1) / np.sqrt(len(g))), 2) if len(g) > 2 and g.net_rs.std(ddof=1) > 0 else None})
         return {"label": label, **(extra or {}), "rows": rows}
 
     test = pd.read_csv(R + "test_trades.csv")
@@ -283,6 +310,15 @@ def main():
         out["changelog"] = changelog()
     except Exception as e:                       # no Git available: the page simply shows an empty log
         print("changelog skipped:", e); out["changelog"] = []
+    _src = pd.concat([pd.read_csv(f, usecols=["date", "symbol", "expiry_date", "source_file"]) for f in
+                      ("clean/gold_futures.csv", "clean/gold_futures_history.csv", "clean/sealed_rows.csv") if os.path.exists(f)])
+    pv = _src.groupby("source_file").agg(symbol=("symbol", "first"), expiry=("expiry_date", "first"), rows=("date", "size"),
+                                         first=("date", "min"), last=("date", "max")).reset_index()
+    pv["expiry"] = pv.expiry.astype(str).str[:10]
+    out["provenance"] = {"files": pv.sort_values(["expiry", "symbol"], ascending=[False, True])
+                         .rename(columns={"source_file": "file"}).to_dict(orient="records"),
+                         "updates": pd.read_csv(R + "update_log.csv").tail(30).iloc[::-1].to_dict(orient="records")
+                         if os.path.exists(R + "update_log.csv") else []}
     json.dump(out, open(os.path.join(HERE, "data.json"), "w"), separators=(",", ":"), default=str)
     print("wrote dashboard/data.json", os.path.getsize(os.path.join(HERE, "data.json")) // 1024, "KB")
 

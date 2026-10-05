@@ -2,6 +2,11 @@
 # Every trading day, after MCX publishes the Bhavcopy, this fetches the gold futures still trading,
 # checks them (commodity/tools/daily_update.py), rebuilds the site and commits. Vercel and Render
 # redeploy from main on every push, so the live site updates with no person involved.
+#
+# Where it runs: MCX's firewall answers 403 "Access Denied" to cloud data centres (tested 5 Oct 2026 from
+# GitHub's US runners and from Vercel's Mumbai region), so the job runs on a team computer registered as a
+# self-hosted runner with the label parity-mcx (commodity/tools/RUNNER_SETUP.md). If that computer is
+# asleep at the scheduled time, GitHub keeps the job queued and it runs as soon as the computer is back.
 name: Daily MCX data update
 
 on:
@@ -19,10 +24,11 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, parity-mcx]
     timeout-minutes: 30
     defaults:
       run:
+        shell: bash
         working-directory: commodity
     steps:
       - uses: actions/checkout@v4
@@ -40,11 +46,12 @@ jobs:
         run: |
           pip install -r tools/requirements.txt
           npm install --no-save --prefix tools playwright@1.48.2
-          npx --prefix tools playwright install --with-deps chromium
+          npx --prefix tools playwright install chromium
       - name: Fetch, check and rebuild
         id: upd
         env:
           NODE_PATH: ${{ github.workspace }}/commodity/tools/node_modules
+          PARITY_CHROME: ${{ vars.PARITY_CHROME }}
         run: python tools/daily_update.py
       - name: Tests
         run: python -m unittest discover -s tests -q
