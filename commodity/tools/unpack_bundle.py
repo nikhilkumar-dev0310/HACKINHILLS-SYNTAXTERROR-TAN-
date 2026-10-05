@@ -20,7 +20,9 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 from ingest import RAW, read_one  # noqa: E402
 
-LIVE_FROM = pd.Timestamp("2026-10-01")
+# Contracts expiring on/after this date are still trading: their files are replaced by the fresh copy.
+# The daily job (tools/daily_update.py) sets LIVE_FROM to the last date already held.
+LIVE_FROM = pd.Timestamp(os.environ.get("LIVE_FROM", "2026-10-01"))
 
 
 def parse(content):

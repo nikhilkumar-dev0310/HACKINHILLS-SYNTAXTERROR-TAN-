@@ -1,3 +1,6 @@
 
 # browser download bundles; their contents are already in commodity/raw_clean
 commodity/data_bundles/
+
+commodity/tools/node_modules/
+commodity/tools/package*.json
