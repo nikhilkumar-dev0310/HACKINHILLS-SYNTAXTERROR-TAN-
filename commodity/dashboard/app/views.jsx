@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, GLOSSARY, reducedMotion } from "./lib.js";
+import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, GLOSSARY, SRC, reducedMotion } from "./lib.js";
 import { lineChart, barChart, scatter, groupBars, curveChart, alertStrip, calendarChart, liquidityChart } from "./charts.js";
 import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More, Glossary } from "./ui.jsx";
 import { Quotes, CostLineToday, CostLineReplay, Unique, AutoUpdate, DownloadLog, Limits } from "./extra.jsx";
@@ -315,7 +315,7 @@ function SealedTests({ s }) {
     if (!a) return null; return { trades: a.trades, net: s <= 5 ? a.net + (b.net - a.net) * s / 5 : b.net + (c.net - b.net) * (s - 5) / 5 }; };
   const ST = [["A", "Strategy A", "pairs, as frozen in 2025"], ["B", "Strategy B", "fair price, as frozen in 2025"], ["C", "Strategy C", "fair price retrained on 2008–15 and 2024–26"]];
   const C = S.c, cell = v => v ? <td className={"n " + (v.net >= 0 ? "pos" : "neg")}>{inr(v.net)}<div className="dim sm">{v.trades} trades</div></td> : <td className="n dim">—</td>;
-  return <Card title="Eight more years, sealed" sub={<>Every contract MCX lists for 2016–2023, walled off until the rules were frozen in Git, then run once. Net after all costs at {s.toFixed(1)} bp slippage (use the slider above).</>}>
+  return <Card src={SRC.sealed} srcNote="Run once, after the rules were frozen in Git; never re-run." title="Eight more years, sealed" sub={<>Every contract MCX lists for 2016–2023, walled off until the rules were frozen in Git, then run once. Net after all costs at {s.toFixed(1)} bp slippage (use the slider above).</>}>
     <div className="tw"><table className="sealed-t"><thead><tr><th>Strategy</th><th className="n">2016 – 2019</th><th className="n">2020 – 2023</th><th className="n">Both</th><th className="n"><Term k="range95">95% range</Term> at 5 bp</th></tr></thead>
       <tbody>{ST.map(([k, n, d]) => { const a = at(k, "test3"), b = at(k, "test2"), bo = S.boot5[k];
         const both = a && b ? { net: a.net + b.net, trades: a.trades + b.trades } : null;
@@ -375,10 +375,10 @@ export function Backtest() {
       <p className="note">{BT[key].desc}</p>
     </Reveal>
     <div className="grid g4">
-      <Kpi label="Net profit" note={<>{info.grams} g per leg · <Term k="gross">gross</Term> {inr(gross)}</>}><span className={tot >= 0 ? "pos" : "neg"}><Num v={tot} f="inr" k="bt-net" /></span></Kpi>
-      <Kpi label="Trades" note={tonly ? `${inTender} trade${inTender === 1 ? "" : "s"} held into the tender period left out` : `from ${info.rows[0].weeks} independent entry weeks · ${inTender} held into the tender period`}><Num v={tr.length} k="bt-n" /></Kpi>
-      <Kpi label="Won after costs" note={`of trades at ${s.toFixed(1)} bp slippage`}><Num v={hit} f="pct" k="bt-hit" /><small>%</small></Kpi>
-      <Kpi label={<><Term k="range95">95% range</Term> at {near.slip} bp</>} note={<>{near.p_pos}% of resamples above zero{tonly ? " (all trades)" : ""}{near.t != null && <> · <Term k="tstat">t</Term> = {near.t.toFixed(2)}{Math.abs(near.t) < 2 ? ", could be luck" : ""}</>}</>}><span className="val-sm"><Num v={near.ci[0]} f="inr" k="bt-lo" /> to <Num v={near.ci[1]} f="inr" k="bt-hi" /></span></Kpi>
+      <Kpi src={SRC[key]} srcNote="Totals are recomputed in your browser from this file at the slippage you choose." label="Net profit" note={<>{info.grams} g per leg · <Term k="gross">gross</Term> {inr(gross)}</>}><span className={tot >= 0 ? "pos" : "neg"}><Num v={tot} f="inr" k="bt-net" /></span></Kpi>
+      <Kpi src={SRC[key]} label="Trades" note={tonly ? `${inTender} trade${inTender === 1 ? "" : "s"} held into the tender period left out` : `from ${info.rows[0].weeks} independent entry weeks · ${inTender} held into the tender period`}><Num v={tr.length} k="bt-n" /></Kpi>
+      <Kpi src={SRC[key]} srcNote="Totals are recomputed in your browser from this file at the slippage you choose." label="Won after costs" note={`of trades at ${s.toFixed(1)} bp slippage`}><Num v={hit} f="pct" k="bt-hit" /><small>%</small></Kpi>
+      <Kpi src={SRC[key]} srcNote="Range from resampling whole entry weeks 10,000 times (uncertainty.py), run in dashboard/export.py." label={<><Term k="range95">95% range</Term> at {near.slip} bp</>} note={<>{near.p_pos}% of resamples above zero{tonly ? " (all trades)" : ""}{near.t != null && <> · <Term k="tstat">t</Term> = {near.t.toFixed(2)}{Math.abs(near.t) < 2 ? ", could be luck" : ""}</>}</>}><span className="val-sm"><Num v={near.ci[0]} f="inr" k="bt-lo" /> to <Num v={near.ci[1]} f="inr" k="bt-hi" /></span></Kpi>
     </div>
     <Card title="Cumulative profit" sub="After all costs, at the selected slippage, by exit date."
       actions={<CsvButton text="Download trades" label={`Download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view as CSV`} onClick={csv} />}>
@@ -456,10 +456,10 @@ export function Signals() {
       <p className="note">Last 90 market days to {fdate(r.date)}.</p></Reveal>; })}</div>
     <CostLineReplay />
     <div className="grid g4">
-      <Kpi label={<Term k="alert">Alert episodes</Term>} note={`${fdate(h[0].start)} – ${fdate(h[h.length - 1].start)}`}><Num v={h.length} intro /></Kpi>
-      <Kpi label="Closed halfway in 10 days" note={`vs ${off.closed_half_10d.toFixed(0)}% of ordinary days: alerts are not more likely to close`}><Num v={all.closed_half_10d_pct} f="pct" intro /><small>%</small></Kpi>
-      <Kpi tone="accent" label="Gap closed in 10 days" note={`median after an alert, vs ${off.median_closed_bp_10d.toFixed(0)} bp on ordinary days`}><Num v={on.median_closed_bp_10d} intro /><small>bp</small></Kpi>
-      <Kpi label={<Term k="roundtrip">Round-trip cost</Term>} note={`at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`}><Num v={on.round_trip_cost_bp_at_5bp} intro /><small>bp</small></Kpi>
+      <Kpi src={SRC.alerts} label={<Term k="alert">Alert episodes</Term>} note={`${fdate(h[0].start)} – ${fdate(h[h.length - 1].start)}`}><Num v={h.length} intro /></Kpi>
+      <Kpi src={SRC.alertsSum} label="Closed halfway in 10 days" note={`vs ${off.closed_half_10d.toFixed(0)}% of ordinary days: alerts are not more likely to close`}><Num v={all.closed_half_10d_pct} f="pct" intro /><small>%</small></Kpi>
+      <Kpi src={SRC.alertsBase} tone="accent" label="Gap closed in 10 days" note={`median after an alert, vs ${off.median_closed_bp_10d.toFixed(0)} bp on ordinary days`}><Num v={on.median_closed_bp_10d} intro /><small>bp</small></Kpi>
+      <Kpi src={SRC.alertsBase} label={<Term k="roundtrip">Round-trip cost</Term>} note={`at 5 bp slippage. Alerts clear it at the median (${on.median_closed_bp_10d.toFixed(0)} bp), barely on average (${on.mean_closed_bp_10d.toFixed(0)} bp)`}><Num v={on.round_trip_cost_bp_at_5bp} intro /><small>bp</small></Kpi>
     </div>
     <Reveal className="dlbar"><div><b>Alert history</b><span className="muted">{h.length} alert episodes since {fdate(h[0].start)}, with what each gap did over the next 20 trading days.</span></div>
       <CsvButton text="Download alerts" label={`Download all ${h.length} alert episodes as CSV`} onClick={() => csvAlerts(h.slice().reverse())} /></Reveal>
@@ -523,10 +523,10 @@ export function Quality() {
     </Hero>
     <Takeaway>Every row passed the checks: 0 unexplained errors in {D.meta.rows.toLocaleString("en-IN")} rows. Of the {D.flags.length} flagged rows, {D.flags.filter(x => x.kind === "Previous close mismatch").length} follow a <Term k="notrade">no-trade day</Term> and are left out; {D.flags.filter(x => x.kind === "Far from peers").length} are real prices far from their peers, mostly in the January 2026 crash, and are kept. No price was changed.</Takeaway>
     <div className="grid g4">
-      <Kpi label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts, read only in the one sealed run.`}><Num v={D.meta.files} intro /></Kpi>
-      <Kpi label="Contracts" note={`${fdate(D.meta.first)} – ${fdate(D.meta.last)}`}><Num v={D.meta.contracts} intro /></Kpi>
-      <Kpi label="Rows checked" note="One row per contract per trading day"><Num v={D.meta.rows} intro /></Kpi>
-      <Kpi tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
+      <Kpi src={SRC.files} label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts, read only in the one sealed run.`}><Num v={D.meta.files} intro /></Kpi>
+      <Kpi src={SRC.prices} label="Contracts" note={`${fdate(D.meta.first)} – ${fdate(D.meta.last)}`}><Num v={D.meta.contracts} intro /></Kpi>
+      <Kpi src={SRC.prices} label="Rows checked" note="One row per contract per trading day"><Num v={D.meta.rows} intro /></Kpi>
+      <Kpi src={SRC.integrity} tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
     </div>
     <AutoUpdate />
     <div className="more-list">

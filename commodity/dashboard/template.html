@@ -1,4 +1,5 @@
 <title>Parity · MCX gold futures</title>
+<!--__META__-->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2215%22 fill=%22%23f5b83d%22/%3E%3Cg transform=%22translate(8 8)%22 fill=%22%231b1300%22 stroke=%22%231b1300%22 stroke-width=%222.4%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M14 13h20l3.2 8.6H10.8z%22/%3E%3Cpath d=%22M14 26.4h20l3.2 8.6H10.8z%22/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7,7 +8,45 @@
 /*__CSS__*/
 </style>
 <script>try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
+<!-- Loading screen: drawn by plain HTML and CSS before any script runs; the app fades it out after its first paint. -->
+<style>
+#boot{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#050506;color:#f5f5f7;transition:opacity .45s cubic-bezier(.2,0,0,1),transform .45s cubic-bezier(.2,0,0,1),visibility 0s .45s;font-family:"Space Grotesk",Inter,system-ui,sans-serif}
+#boot.done{opacity:0;transform:scale(1.015);visibility:hidden}
+#boot .bx{display:flex;flex-direction:column;align-items:center;gap:22px}
+#boot svg{width:64px;height:52px;overflow:visible}
+#boot .b{fill:#f2b544;stroke:#f2b544;stroke-width:1.4;stroke-linejoin:round;animation:boot-in .7s cubic-bezier(.2,.9,.25,1.15) both}
+#boot .b2{animation-delay:.12s}
+#boot .wm{font-weight:600;font-size:30px;letter-spacing:-.035em;animation:boot-fade .6s .2s both}
+#boot .ln{width:160px;height:2px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;animation:boot-fade .6s .3s both}
+#boot .ln i{display:block;width:40%;height:100%;border-radius:2px;background:linear-gradient(90deg,transparent,#f2b544,transparent);animation:boot-run 1.1s cubic-bezier(.45,0,.55,1) infinite}
+#boot .cap{font:500 11px/1.4 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#86868b;animation:boot-fade .6s .35s both;text-align:center}
+#boot .slow{display:none;font:400 13px/1.5 Inter,system-ui,sans-serif;color:#a1a1a6;text-align:center;max-width:300px}
+#boot .slow a{color:#f2b544}
+#boot.late .slow,#boot.fail .slow{display:block}#boot.fail .ln{display:none}
+@keyframes boot-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes boot-fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes boot-run{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot{background:#ebe5da;color:#101215}:root:not([data-theme="dark"]) #boot .b{fill:#9a6a0a;stroke:#9a6a0a}
+  :root:not([data-theme="dark"]) #boot .ln{background:rgba(0,0,0,.08)}:root:not([data-theme="dark"]) #boot .ln i{background:linear-gradient(90deg,transparent,#9a6a0a,transparent)}:root:not([data-theme="dark"]) #boot .cap,:root:not([data-theme="dark"]) #boot .slow{color:#5f6672}:root:not([data-theme="dark"]) #boot .slow a{color:#835a07}}
+:root[data-theme="light"] #boot{background:#ebe5da;color:#101215}:root[data-theme="light"] #boot .b{fill:#9a6a0a;stroke:#9a6a0a}:root[data-theme="light"] #boot .ln{background:rgba(0,0,0,.08)}
+:root[data-theme="light"] #boot .ln i{background:linear-gradient(90deg,transparent,#9a6a0a,transparent)}:root[data-theme="light"] #boot .cap,:root[data-theme="light"] #boot .slow{color:#5f6672}:root[data-theme="light"] #boot .slow a{color:#835a07}
+@media (prefers-reduced-motion:reduce){#boot *{animation:none!important}#boot{transition:none}}
+@media print{#boot{display:none}}
+</style>
+<div id="boot" role="status" aria-live="polite"><div class="bx">
+  <svg viewBox="9 11 30 26" aria-hidden="true"><path class="b" d="M14 13h20l3.2 8.6H10.8z"/><path class="b b2" d="M14 26.4h20l3.2 8.6H10.8z"/></svg>
+  <div class="wm">Parity</div><div class="ln"><i></i></div>
+  <div class="cap">MCX gold futures · 23 years of data</div>
+  <div class="slow">This is taking longer than usual. <a href="javascript:location.reload()">Reload</a>. If it keeps happening, the page or its data may not have loaded fully.</div>
+</div></div>
+<noscript><style>#boot{display:none}</style></noscript>
+<script>
+(function () { var b = document.getElementById("boot");
+  setTimeout(function () { if (b && b.isConnected) b.classList.add("late"); }, 8000);
+  addEventListener("error", function () { if (b && b.isConnected) b.classList.add("fail"); });
+})();
+</script>
 <div id="root"></div>
 <noscript><p style="padding:24px;font-family:sans-serif">Parity draws its charts with JavaScript. Please enable it to view the analysis.</p></noscript>
-<script>window.__PARITY_DATA__ = /*__DATA__*/null;</script>
+<script>window.__PARITY_DATA__ = /*__DATA__*/null; window.__PARITY_BUILD__ = /*__BUILD__*/null;</script>
 <script>/*__APP__*/</script>

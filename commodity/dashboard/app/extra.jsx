@@ -2,8 +2,8 @@
    the automatic update log, the per-file download log, and what the data cannot tell you.
    Every number is read from data.json; nothing here is typed in. */
 import { useMemo, useState } from "react";
-import { D, SYM, SYMS, inr, sgn, fdate, fmon, T } from "./lib.js";
-import { Card, Pill, Term, Icon, Reveal, Pager, CsvButton, downloadCSV, Seg, More } from "./ui.jsx";
+import { D, SYM, SYMS, SRC, inr, sgn, fdate, fmon, T } from "./lib.js";
+import { Card, Pill, Term, Icon, Reveal, Pager, CsvButton, downloadCSV, Seg, More, Src } from "./ui.jsx";
 
 const UNIT = { GOLDM: "per 10 g", GOLDTEN: "per 10 g", GOLDGUINEA: "per 8 g", GOLDPETAL: "per 1 g" };
 const SMALL = ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];
@@ -29,7 +29,7 @@ export function Quotes() {
   return <div className="quotes" role="list" aria-label={`Latest settlement prices, ${fdate(D.quotes[0].date)}`}>
     {D.quotes.map(q => { const up = q.chg > 0, dn = q.chg < 0;
       return <Reveal key={q.symbol} className="quote" role="listitem">
-        <div className="q-h"><span className="sw" style={{ background: SYM[q.symbol].c }} /><b>{q.symbol}</b></div><div className="dim sm q-d">{SYM[q.symbol].d}</div>
+        <div className="q-h"><span className="sw" style={{ background: SYM[q.symbol].c }} /><b>{q.symbol}</b><Src src={SRC.prices} note={`MCX close on ${fdate(q.date)} for the contract expiring ${fdate(q.expiry)}, the one with the most gold traded that day.`} /></div><div className="dim sm q-d">{SYM[q.symbol].d}</div>
         <div className="q-p"><span className="num">{inr(q.close)}</span><small>{UNIT[q.symbol]}</small></div>
         <div className={"q-c " + (up ? "pos" : dn ? "neg" : "dim")}>{up ? "▲" : dn ? "▼" : "■"} {inr(Math.abs(q.chg))} ({sgn(q.chg_pct, 2, "%")})<div className="dim">previous <Term k="settlement">close</Term> {inr(q.prev_close)}</div></div>
         <Spark values={pr[q.symbol].slice(from)} color={SYM[q.symbol].c} />
@@ -58,7 +58,7 @@ export function CostLineToday({ go }) {
   const H = D.hurdle, i = H.dates.length - 1, line = costLine(), rt = roundTrip();
   const over = SMALL.filter(s => both(H[s].gap[i], H[s].z[i]));
   const big = SMALL.map(s => [s, H[s].gap[i]]).filter(x => x[1] != null).sort((a, b) => b[1] - a[1])[0];
-  return <Card id="worth" className="worth" title="Is any gap worth trading today?"
+  return <Card id="worth" className="worth" src={SRC.signals} title="Is any gap worth trading today?"
     sub={<>{fdate(H.dates[i])}. A gap is worth a look only if it passes two checks: it is bigger than the <Term k="costline">cost line</Term> ({line.toFixed(1)} <Term k="bp">bp</Term>, twice the {rt.toFixed(1)} bp a <Term k="roundtrip">round trip</Term> costs at 5 bp <Term k="slippage">slippage</Term>), and it is unusual for that contract (beyond ±{D.signals.threshold}<Term k="sigma">σ</Term>).</>}>
     <div className="worth-g">
       <div className="worth-a"><div className={"worth-v " + (over.length ? "yes" : "no")}>{over.length ? "Worth a look." : "No."}</div>

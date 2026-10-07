@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Component, useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import { D, NAME, VIEWS, SYMS, SYM, EVENTS, GLOSSARY, fdate, pname, reducedMotion } from "./lib.js";
 import { AppCtx, Icon } from "./ui.jsx";
@@ -46,6 +46,8 @@ function buildItems(go, ctx) {
   Object.entries(GLOSSARY).forEach(([k, [t, d]]) => it.push({ id: "g" + k, group: "Terms", title: t, hint: "Definition", keys: d, icon: "book", def: d }));
   [["light", "Light theme", "sun"], ["dark", "Dark theme", "moon"], ["system", "Auto theme", "auto"]].forEach(([v, t, ic]) => it.push({ id: "t" + v, group: "Actions", title: t, keys: "theme mode colour color", icon: ic, run: () => ctx.setTheme(v) }));
   it.push({ id: "anews", group: "Actions", title: "What's new: data and test log", keys: "changelog updates uploads", icon: "news", run: () => ctx.setNews(true) });
+  it.push({ id: "ahelp", group: "Actions", title: "Keyboard shortcuts", hint: "?", keys: "help keys keyboard shortcuts hotkeys", icon: "keys", run: () => ctx.setKeysSheet(true) });
+  it.push({ id: "aprint", group: "Actions", title: "Print or save this page as PDF", keys: "print pdf save paper export", icon: "print", run: () => setTimeout(() => print(), 120) });
   it.push({ id: "akeys", group: "Actions", title: ctx.keysOn ? "Turn off number-key shortcuts" : "Turn on number-key shortcuts", keys: "keyboard shortcuts keys", icon: "more", run: () => ctx.setKeysOn(!ctx.keysOn) });
   return it;
 }
@@ -118,13 +120,95 @@ function useIndicator(view) {
 }
 const vIdx = id => VIEWS.findIndex(v => v[0] === id);
 
+/* ---------- freshness: how current the data is, and when the scheduled job next looks for a new MCX file.
+   The job runs at 03:30 IST Tuesday to Saturday (after each Monday-Friday session), with a retry at 08:00 IST. */
+const DAY = 864e5, IST = 5.5 * 36e5, WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const istNow = () => Date.now() + IST;                                    // read with getUTC* to get IST fields
+const ymd = t => new Date(t).toISOString().slice(0, 10);
+function freshness(now = istNow()) {
+  const last = D.meta.last_full || D.meta.last, base = Math.floor(now / DAY) * DAY;
+  let next = null;
+  for (let d = 0; d < 9 && !next; d++) for (const [h, m] of [[3, 30], [8, 0]]) {
+    const t = base + d * DAY + (h * 60 + m) * 6e4, w = new Date(t).getUTCDay();
+    if (w >= 2 && w <= 6 && t > now) { next = t; break; } }
+  // the newest weekday session whose 08:00 retry has already passed
+  let exp = base - DAY; while (true) { const w = new Date(exp).getUTCDay(); if (w >= 1 && w <= 5 && exp + DAY + 8.5 * 36e5 <= now) break; exp -= DAY; }
+  let lag = 0; for (let t = Date.parse(last + "T00:00:00Z") + DAY; t <= exp; t += DAY) { const w = new Date(t).getUTCDay(); if (w >= 1 && w <= 5) lag++; }
+  const nd = new Date(next), today = Math.floor(next / DAY) * DAY === base;
+  const nextTxt = `${today ? "today" : WD[nd.getUTCDay()] + " " + nd.getUTCDate() + " " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][nd.getUTCMonth()]}, ${String(nd.getUTCHours()).padStart(2, "0")}:${String(nd.getUTCMinutes()).padStart(2, "0")} IST`;
+  const nextShort = `${today ? "today" : WD[nd.getUTCDay()]} ${String(nd.getUTCHours()).padStart(2, "0")}:${String(nd.getUTCMinutes()).padStart(2, "0")} IST`;
+  return { last, lag, stale: lag >= 2, expected: ymd(exp), nextTxt, nextShort };
+}
+function Fresh({ compact }) {
+  const [f, setF] = useState(freshness);
+  useEffect(() => { const t = setInterval(() => setF(freshness()), 6e4); return () => clearInterval(t); }, []);
+  const tip = f.stale
+    ? `Behind by ${f.lag} trading days: MCX's file for ${fdate(f.expected)} should be in by now. A market holiday can also cause this; the next check is ${f.nextTxt}.`
+    : `Up to date. New sessions are added after MCX publishes its end-of-day file; the next check is ${f.nextTxt}.`;
+  if (compact) return <span className={"fresh-c" + (f.stale ? " stale" : "")} title={tip}>Data {fdate(f.last)} · next check {f.nextTxt}</span>;
+  return <div className={"live" + (f.stale ? " stale" : "")} title={tip}>
+    <span className="pulse" />{f.stale ? "Data may be behind · " : "Data through "}<b className="num">{fdate(f.last)}</b>
+    <span className="next">Next check {f.nextShort}</span></div>;
+}
+
+/* ---------- build stamp, written by dashboard/build.py */
+const BUILD = window.__PARITY_BUILD__ || {};
+
+/* ---------- keyboard shortcuts sheet ("?") */
+function Keys({ open, onClose }) {
+  const ref = useRef(null), back = useRef(null);
+  useEffect(() => { if (open) { back.current = document.activeElement; setTimeout(() => ref.current && ref.current.focus(), 0); } else if (back.current && back.current.focus) back.current.focus(); }, [open]);
+  if (!open) return null;
+  const mod = isMac ? "⌘" : "Ctrl";
+  const rows = [[[mod, "K"], "Search sections, pairs, contracts and terms"], [["/"], "Search, too"], [["1", "–", "8"], "Jump to a section"],
+    [["?"], "This list"], [["Esc"], "Close any panel or definition"], [["Tab"], "Move between controls; dotted terms and sources are focusable"],
+    [["Enter"], "Open a dotted term's definition or a number's source"], [[mod, "P"], "Print or save the page as a PDF"]];
+  return <div className="overlay" onMouseDown={e => e.target === e.currentTarget && onClose()} onKeyDown={e => { if (e.key === "Escape" || e.key === "?") { e.preventDefault(); onClose(); } }}>
+    <div className="palette keysheet" role="dialog" aria-modal="true" aria-labelledby="keys-h" tabIndex={-1} ref={ref}>
+      <header><h2 id="keys-h">Keyboard shortcuts</h2><button type="button" className="iconbtn" aria-label="Close" onClick={onClose}><Icon name="close" /></button></header>
+      <dl>{rows.map(([k, d], i) => <div key={i}><dt>{k.map((x, j) => x === "–" ? <span key={j} className="dim"> – </span> : <kbd key={j}>{x}</kbd>)}</dt><dd>{d}</dd></div>)}</dl>
+      <p className="sub">Number keys can be turned off in the side menu if they get in your way.</p>
+    </div>
+  </div>;
+}
+
+/* ---------- when a page fails to draw, say so plainly instead of showing a blank screen */
+class Guard extends Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  componentDidCatch(err) { try { console.error("Parity page error:", err); } catch (e) {} }
+  render() {
+    if (!this.state.err) return this.props.children;
+    return <section className="card oops" role="alert">
+      <div className="lab">Something went wrong</div>
+      <h2>This page could not be drawn.</h2>
+      <p className="sub">The rest of the site still works. Reloading usually fixes it; if it does not, the message below helps us find the cause.</p>
+      <code className="oops-m">{String(this.state.err && this.state.err.message || this.state.err).slice(0, 240)}</code>
+      <div className="oops-a"><button type="button" className="btn" onClick={() => location.reload()}><Icon name="reload" size={16} />Reload</button>
+        <a className="btn ghost" href="#overview" onClick={() => this.setState({ err: null })}>Go to the overview</a></div>
+    </section>;
+  }
+}
+
+/* ---------- an address that is not one of the eight sections */
+function NotFound({ hash, go, openSearch }) {
+  return <section className="card oops nf">
+    <div className="lab">404 · page not found</div>
+    <h1 tabIndex={-1}>No page called “#{hash}”.</h1>
+    <p className="sub">Parity has eight sections. Pick one, or search for a contract, pair or term.</p>
+    <ol className="nf-l">{VIEWS.map(([id, l], i) => <li key={id}><a href={"#" + id} onClick={e => { e.preventDefault(); go(id); }}><span className="num">{String(i + 1).padStart(2, "0")}</span>{l}</a></li>)}</ol>
+    <div className="oops-a"><button type="button" className="btn" onClick={openSearch}><Icon name="search" size={16} />Search the site</button></div>
+  </section>;
+}
+
 /* ---------- app */
 function App() {
-  const init = () => { const h = location.hash.slice(1); return PAGES[h] ? h : store.get("gsl-view", "overview"); };
+  const bad = h => h && h !== "main" && !PAGES[h];
+  const init = () => { const h = location.hash.slice(1); return PAGES[h] ? h : bad(h) ? "404" : store.get("gsl-view", "overview"); };
   const [view, setView] = useState(init), [theme, setTheme] = useTheme(), [phase, setPhase] = useState("in"), [navN, setNavN] = useState(0);
   const viewRef = useRef(view); viewRef.current = view;
-  const pend = useRef(null), tmr = useRef(0);
-  const [pal, setPal] = useState(false), [news, setNews] = useState(false), [more, setMore] = useState(false);
+  const pend = useRef(null), tmr = useRef(0), lost = useRef(location.hash.slice(1));
+  const [pal, setPal] = useState(false), [news, setNews] = useState(false), [more, setMore] = useState(false), [keysSheet, setKeysSheet] = useState(false);
   const [keysOn, setKeysOnS] = useState(() => store.get("gsl-keys", "on") !== "off");
   const [rvPair, setRvPair] = useState("M-GUINEA"), [calF, setCalF] = useState("All");
   const userNav = useRef(false);
@@ -135,7 +219,7 @@ function App() {
   const commit = () => { tmr.current = 0; const id = pend.current; pend.current = null; if (!id) return;
     scrollTo({ top: 0, behavior: "instant" }); setView(id); setPhase("in"); };
   const navigate = useCallback(id => {
-    if (!PAGES[id]) return;
+    if (!PAGES[id]) { if (bad(id)) { lost.current = id; pend.current = "404"; commit(); } return; }
     const cur = viewRef.current;
     if (id === cur && !pend.current) { scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" }); focusHead(); return; }
     document.documentElement.classList.toggle("nav-back", vIdx(id) < vIdx(cur));
@@ -145,26 +229,41 @@ function App() {
   }, []);
   const go = useCallback(id => { setMore(false); if (location.hash.slice(1) !== id) location.hash = id; else navigate(id); }, []);
   useEffect(() => { const on = () => navigate(location.hash.slice(1)); addEventListener("hashchange", on); return () => { removeEventListener("hashchange", on); clearTimeout(tmr.current); }; }, []);
-  useEffect(() => { document.title = view === "overview" ? `${NAME} · MCX gold futures` : `${label(view)} · ${NAME}`; store.set("gsl-view", view);
+  useEffect(() => { document.title = view === "overview" ? `${NAME} · MCX gold futures` : view === "404" ? `Page not found · ${NAME}` : `${label(view)} · ${NAME}`; if (PAGES[view]) store.set("gsl-view", view);
     if (userNav.current) { focusHead(); userNav.current = false; } }, [view]);
   const [railH, railI] = useIndicator(view), [stripH, stripI] = useIndicator(view), [tabH, tabI] = useIndicator(view + more);
   useEffect(() => { const k = e => {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setNews(false); setPal(p => !p); return; }
-    if (pal || news || !keysOn || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setNews(false); setKeysSheet(false); setPal(p => !p); return; }
+    if (pal || news || keysSheet || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
+    if (e.key === "?") { e.preventDefault(); setKeysSheet(true); return; }
+    if (!keysOn || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
     if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
     if (e.key === "/") { e.preventDefault(); setPal(true); return; }
     const n = "12345678".indexOf(e.key); if (n < 0 || e.key.length !== 1) return; e.preventDefault(); go(VIEWS[n][0]); };
-    addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, [pal, news, keysOn]);
+    addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, [pal, news, keysOn, keysSheet]);
   useEffect(() => { document.documentElement.classList.toggle("nokeys", !keysOn); }, [keysOn]);
-  const ctx = { view, go, rvPair, setRvPair, calF, setCalF, theme, setTheme, keysOn, setKeysOn, setNews, setPal };
+  const ctx = { view, go, rvPair, setRvPair, calF, setCalF, theme, setTheme, keysOn, setKeysOn, setNews, setPal, setKeysSheet };
   const Page = PAGES[view], idx = VIEWS.findIndex(v => v[0] === view);
+  /* the loading screen leaves once the first page has painted */
+  useEffect(() => { const b = document.getElementById("boot"); if (!b) return;
+    const t0 = window.__PARITY_T0 || 0, wait = Math.max(0, 650 - (performance.now() - t0));
+    const t = setTimeout(() => { b.classList.add("done"); setTimeout(() => b.remove(), 520); }, reducedMotion() ? 0 : wait); return () => clearTimeout(t); }, []);
+  /* printing: always the light theme, every "more" panel opened, then put back */
+  useEffect(() => { let opened = [], prev = null, on = false;
+    const before = () => { if (on) return; on = true; prev = document.documentElement.getAttribute("data-theme"); document.documentElement.setAttribute("data-theme", "light");
+      opened = [...document.querySelectorAll("main details:not([open])")]; opened.forEach(d => d.open = true);
+      document.querySelectorAll("main .rv").forEach(e => e.classList.add("in")); };
+    const after = () => { if (!on) return; on = false; prev ? document.documentElement.setAttribute("data-theme", prev) : document.documentElement.removeAttribute("data-theme"); opened.forEach(d => d.open = false); opened = []; };
+    addEventListener("beforeprint", before); addEventListener("afterprint", after);
+    return () => { removeEventListener("beforeprint", before); removeEventListener("afterprint", after); }; }, []);
   const newest = D.changelog && D.changelog[0];
   return <AppCtx.Provider value={ctx}>
     <a className="skip" href="#main" onClick={e => { e.preventDefault(); focusHead(); }}>Skip to content</a>
     <div className="bgfx" aria-hidden="true"><i /><i /></div>
     <header className="top">
       <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><Mark /><span className="wm">{NAME}<small>MCX gold futures</small></span></a>
-      <div className="crumb" aria-hidden="true"><span key={view} className="roll"><span className="num">{String(idx + 1).padStart(2, "0")} / 08</span>{label(view)}</span></div>
+      <div className="crumb" aria-hidden="true"><span key={view} className="roll"><span className="num">{idx < 0 ? "—" : String(idx + 1).padStart(2, "0")} / 08</span>{view === "404" ? "Not found" : label(view)}</span></div>
       <div className="top-r">
         <button type="button" className="search" onClick={() => setPal(true)} aria-label="Search (Ctrl+K)"><Icon name="search" size={16} /><span className="sl">Search</span><kbd>{isMac ? "⌘" : "Ctrl"} K</kbd></button>
         <button type="button" className="iconbtn" onClick={() => setNews(true)} aria-label="What's new" title={newest ? `What's new · latest ${fdate(newest.date)}` : "What's new"}><Icon name="news" size={18} /></button>
@@ -177,15 +276,21 @@ function App() {
         <nav aria-label="Sections" className="ind-host" ref={railH}><span className="ind" ref={railI} aria-hidden="true" />{VIEWS.map(([id, l], i) => <a key={id} href={"#" + id} aria-current={id === view ? "page" : undefined} aria-keyshortcuts={keysOn ? String(i + 1) : undefined}>
           <span className="num">{String(i + 1).padStart(2, "0")}</span><span className="rl">{l}</span><kbd className="key" aria-hidden="true">{i + 1}</kbd></a>)}</nav>
         <div className="rail-f">
-          <div className="live" title={D.meta.last_full !== D.meta.last ? `Full futures curve to ${fdate(D.meta.last_full)}. Later rows, to ${fdate(D.meta.last)}, cover only contracts running into their expiry.` : undefined}><span className="pulse" />Data through <b className="num">{fdate(D.meta.last_full || D.meta.last)}</b></div>
+          <Fresh />
           <div>Official MCX Bhavcopy · end of day</div>
-          <div className="keys">{keysOn ? <><span className="kh"><kbd>1</kbd>–<kbd>8</kbd> sections · <kbd>/</kbd> search</span><button type="button" className="linkbtn" onClick={() => setKeysOn(false)}>Turn off shortcuts</button></>
+          <div className="keys">{keysOn ? <><span className="kh"><kbd>1</kbd>–<kbd>8</kbd> sections · <kbd>/</kbd> search · <button type="button" className="linkbtn kq" onClick={() => setKeysSheet(true)} aria-label="All keyboard shortcuts" title="All keyboard shortcuts"><kbd>?</kbd></button></span><button type="button" className="linkbtn" onClick={() => setKeysOn(false)}>Turn off shortcuts</button></>
             : <button type="button" className="linkbtn" onClick={() => setKeysOn(true)}>Turn on number-key shortcuts</button>}</div>
         </div>
       </aside>
       <main id="main" key={view} className={"page " + (phase === "out" ? "p-out" : "p-in")}>
-        <Page />
-        <footer className="foot"><span>Source: MCX Bhavcopy (mcxindia.com). Code and data: github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-</span><span>Exported <span className="num">{D.meta.exported}</span></span></footer>
+        <div className="print-h" aria-hidden="true"><b>{NAME}</b> · {view === "404" ? "Page not found" : label(view)} · data through {fdate(D.meta.last_full || D.meta.last)} · parity-gold-site.vercel.app/#{view}</div>
+        <Guard key={view}>{Page ? <Page /> : <NotFound hash={lost.current} go={go} openSearch={() => setPal(true)} />}</Guard>
+        <footer className="foot">
+          <div className="foot-a"><span className="foot-b"><span className="num">v{BUILD.version || "dev"}</span>{BUILD.built && <> · built <span className="num">{BUILD.built}</span></>}{BUILD.commit && <> · after commit <a className="num" href={`https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/commit/${BUILD.commit}`} target="_blank" rel="noopener">{BUILD.commit}</a></>}</span>
+            <Fresh compact /></div>
+          <div className="foot-a"><span>SYNTAX TERROR (TAN) · Nikhil Kumar, Sai Ganesh, Ishaan Chhabra · Hack in Hills ’26</span>
+            <span>Prices: official MCX Bhavcopy, mcxindia.com · <a href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-" target="_blank" rel="noopener">Code and data on GitHub</a> · <a href="#quality" onClick={e => { e.preventDefault(); go("quality"); }}>Known limits</a> · <button type="button" className="linkbtn" onClick={() => setKeysSheet(true)}>Shortcuts</button></span></div>
+        </footer>
       </main>
     </div>
     <nav className="tabbar ind-host" aria-label="Sections" ref={tabH}><span className="ind" ref={tabI} aria-hidden="true" />
@@ -202,6 +307,7 @@ function App() {
     {navN > 0 && <div key={navN} className="navbar-p" aria-hidden="true" />}
     <Palette open={pal} onClose={() => setPal(false)} go={go} ctx={ctx} />
     <News open={news} onClose={() => setNews(false)} />
+    <Keys open={keysSheet} onClose={() => setKeysSheet(false)} />
   </AppCtx.Provider>;
 }
 

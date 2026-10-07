@@ -816,3 +816,84 @@ kbd{border-radius:6px}
 /* light mode: the glass needs light to bend. Controls get a white raised face; the tab bar and bars read as frosted. */
 @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .search,:root:not([data-theme="dark"]) .iconbtn,:root:not([data-theme="dark"]) .theme,:root:not([data-theme="dark"]) .btn,:root:not([data-theme="dark"]) .pager button,:root:not([data-theme="dark"]) .dl-i{box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(80,58,20,.08)} }
 :root[data-theme="light"] .search,:root[data-theme="light"] .iconbtn,:root[data-theme="light"] .theme,:root[data-theme="light"] .btn,:root[data-theme="light"] .pager button,:root[data-theme="light"] .dl-i{box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(80,58,20,.08)}
+
+/* ================================================================== SMALL DETAILS (7 Oct 2026)
+   number sources, data freshness, shortcut sheet, error and 404 states, build footer, print */
+
+/* where a number comes from: a quiet file icon that wakes up when you look at the number */
+.src{display:inline-grid;place-items:center;width:20px;height:20px;margin-left:6px;vertical-align:-4px;border-radius:6px;color:var(--ink-3);cursor:help;
+  opacity:.38;transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),background-color var(--dur-1) var(--ease);-webkit-tap-highlight-color:transparent}
+.kpi:hover .src,.quote:hover .src,.card-h:hover .src,.src:focus-visible,.src.on{opacity:1}
+.src:hover,.src.on{color:var(--gold);background:var(--gold-soft)}
+.src:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.kpi:has(.lab-s){position:relative}
+.kpi .lab .src{position:absolute;top:8px;right:8px;margin:0;width:18px;height:18px}
+.q-h .src{margin-left:auto}
+.card-h h2 .src{vertical-align:2px}
+@media (hover:none){.src{opacity:.6}}
+.gloss.src-tip code{display:block;margin:2px 0 6px;font:500 12px/1.45 var(--f-num);color:var(--ink);word-break:break-all}
+.gloss.src-tip .src-l{display:block;color:var(--ink-2)}
+.gloss.src-tip .src-t{display:block;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+
+/* data freshness in the side menu: green when current, amber when a session looks missing */
+.live .next{flex-basis:100%;padding-left:15px;color:var(--ink-3);font-size:11.5px}
+.live.stale .pulse,.live.stale .pulse::after{background:var(--warn)}
+.live.stale b{color:var(--warn)}
+.fresh-c.stale{color:var(--warn)}
+
+/* "more" panels respond to the pointer like every other control */
+.more summary{transition:background-color var(--dur-1) var(--ease)}
+.more summary:hover{background:color-mix(in srgb,var(--gold) 6%,transparent)}
+.more summary:hover .chev{transform:translateY(-50%) rotate(45deg);border-color:var(--gold)}
+.more[open] summary:hover .chev{transform:translateY(-50%) rotate(225deg)}
+
+/* keyboard shortcut sheet */
+.keysheet{width:min(520px,calc(100vw - 24px));padding:20px 22px 18px;gap:12px;outline:none}
+.keysheet header{display:flex;align-items:center;justify-content:space-between}
+.keysheet h2{font-size:20px}
+.keysheet dl{margin:0;display:flex;flex-direction:column}
+.keysheet dl>div{display:grid;grid-template-columns:132px 1fr;gap:14px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.keysheet dt{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.keysheet dd{margin:0;color:var(--ink-2);font-size:13.5px}
+.keysheet .sub{margin:4px 0 0;font-size:12.5px;color:var(--ink-3)}
+
+/* error and not-found states */
+.oops{display:flex;flex-direction:column;gap:10px;padding:32px;margin-top:8px}
+.oops h1,.oops h2{font-size:clamp(26px,3vw,34px);letter-spacing:-.03em}
+.oops .sub{max-width:560px}
+.oops-m{display:block;padding:10px 12px;border-radius:var(--r);background:var(--hi);font:12px/1.5 var(--f-num);color:var(--ink-2);word-break:break-word}
+.oops-a{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn.ghost{background:transparent}
+.nf-l{list-style:none;margin:8px 0 4px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.nf-l a{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r);border:1px solid var(--line);color:var(--ink);text-decoration:none;
+  transition:background-color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+.nf-l a:hover{background:var(--gold-soft);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+.nf-l .num{color:var(--gold);font-size:12px}
+
+/* footer: who made it, which build, how fresh the data is */
+.foot{flex-direction:column;gap:8px}
+.foot-a{display:flex;justify-content:space-between;gap:6px 16px;flex-wrap:wrap}
+.foot a{color:var(--ink-2);text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:2px}
+.foot a:hover{color:var(--ink);text-decoration-color:var(--gold)}
+.foot .linkbtn{color:var(--ink-2);text-decoration-color:var(--line-2)}
+.print-h{display:none}
+
+/* print and save as PDF: just the page, in ink on paper */
+@media print{
+  @page{margin:14mm 12mm}
+  html,body{background:#fff!important}
+  .top,.strip,.rail,.tabbar,.bgfx,.navbar-p,.overlay,.skip,.src,.acts,.jump,.pager,.dl-i,.btn,.theme,.search,.iconbtn,#boot{display:none!important}
+  .shell{display:block!important;padding:0!important;margin:0!important;max-width:none!important}
+  main.page{padding:0!important;margin:0!important;max-width:none!important;animation:none!important}
+  main.page>*{animation:none!important}
+  .rv{opacity:1!important;transform:none!important}
+  *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;text-shadow:none!important}
+  .card,.kpi,.take,.more,.quote,.dir{background:#fff!important;border:1px solid #d8d3c8!important;break-inside:avoid}
+  .card::before,.kpi::before,.take::before,.more::before{display:none!important}
+  .print-h{display:block;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #d8d3c8;font:11px/1.4 var(--f-num);color:#5f6672}
+  .print-h b{color:#101215}
+  a{color:inherit!important}
+  .foot{break-inside:avoid}
+  .tw{overflow:visible!important}
+}
+.linkbtn.kq{text-decoration:none}.linkbtn.kq:hover kbd{border-color:var(--gold);color:var(--ink)}

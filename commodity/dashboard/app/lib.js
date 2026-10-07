@@ -22,6 +22,20 @@ export const r2 = v => v == null || !isFinite(v) ? null : Math.round(v * 100) / 
 export const pname = k => k.split("-").map(s => SHORT[s]).join(" − ");
 export const P = Object.fromEntries(D.pairs.map(p => [p.pair, p]));
 export const CRASH = D.crash_window;
+/* Where the numbers come from: shown on hover next to key figures. Paths are relative to commodity/ in the repository. */
+export const SRC = {
+  prices: { file: "clean/gold_futures.csv", by: "ingest.py, from the MCX Bhavcopy files in raw_clean/" },
+  A_test: { file: "results/test_trades.csv", by: "backtest.py" }, A_hold: { file: "results/holdout_trades.csv", by: "backtest.py" },
+  B_dev: { file: "results/fairvalue_dev_trades.csv", by: "fairvalue.py" }, B_hold: { file: "results/fairvalue_holdout_trades.csv", by: "fairvalue.py" },
+  alerts: { file: "results/alerts_history.csv", by: "alerts.py" }, alertsBase: { file: "results/alerts_baseline.csv", by: "alerts.py" },
+  alertsSum: { file: "results/alerts_summary.csv", by: "alerts.py" },
+  files: { file: "raw_clean/*.xls", by: "counted by dashboard/export.py" },
+  integrity: { file: "results/testbed_integrity.csv", by: "testbed.py; flags listed by dashboard/export.py" },
+  sealed: { file: "results/sealed_summary.csv", by: "strategy_c.py, run once" },
+  pairs: { file: "results/accuracy_pairs.csv", by: "accuracy.py" },
+  curve: { file: "clean/gold_futures.csv", by: "curve.py and dashboard/export.py" },
+  signals: { file: "results/fairvalue_params.json", by: "fairvalue.py (fair price), today's z in dashboard/export.py" }
+};
 export const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export const VIEWS = [
@@ -47,7 +61,11 @@ export const ICON = {
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   term2: '<path d="M4 19h16M7 15V9M12 15V5M17 15v-3"/>',
-  book: '<path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M5 16a4 4 0 0 1 4-4h10"/>'
+  book: '<path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M5 16a4 4 0 0 1 4-4h10"/>',
+  file: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h4"/>',
+  keys: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+  print: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+  reload: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>'
 };
 
 /* Market events drawn on time charts. Every one is either in our own data (the dated row) or in a cited report;

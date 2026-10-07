@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useId, createContext, useContext } from "react";
 import { createPortal } from "react-dom";
-import { ICON, GLOSSARY, inr, reducedMotion } from "./lib.js";
+import { ICON, GLOSSARY, D, inr, reducedMotion } from "./lib.js";
 
 export const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
@@ -32,10 +32,10 @@ export function Reveal({ as: Tag = "div", className = "", children, ...rest }) {
   const [ref, shown] = useReveal(); return <Tag ref={ref} className={"rv " + className + (shown ? " in" : "")} {...rest}>{children}</Tag>;
 }
 
-export function Card({ fig, title, sub, actions, children, className = "", id }) {
+export function Card({ fig, title, sub, actions, children, className = "", id, src, srcNote }) {
   return <Reveal as="section" className={"card " + className} id={id} aria-label={typeof title === "string" ? title : undefined}>
     {(title || actions) && <header className="card-h">
-      <div className="card-t">{title && <h2>{title}</h2>}{sub && <p className="sub">{sub}</p>}</div>
+      <div className="card-t">{title && <h2>{title}{src && <Src src={src} note={srcNote} />}</h2>}{sub && <p className="sub">{sub}</p>}</div>
       {actions && <div className="acts">{actions}</div>}
     </header>}
     {children}
@@ -65,8 +65,8 @@ export function Num({ v, f = "int", k, intro = false, dur = 400 }) {
   return <span ref={span} className="numv" />;
 }
 
-export function Kpi({ label, children, note, tone = "", big }) {
-  return <Reveal className={"kpi " + tone + (big ? " big" : "")}><div className="lab">{label}</div><div className="val">{children}</div>{note && <div className="note">{note}</div>}</Reveal>;
+export function Kpi({ label, children, note, tone = "", big, src, srcNote }) {
+  return <Reveal className={"kpi " + tone + (big ? " big" : "")}><div className={"lab" + (src ? " lab-s" : "")}>{src ? <><span>{label}</span><Src src={src} note={srcNote} /></> : label}</div><div className="val">{children}</div>{note && <div className="note">{note}</div>}</Reveal>;
 }
 
 export function Seg({ options, value, onChange, label, small }) {
@@ -77,13 +77,13 @@ export function Seg({ options, value, onChange, label, small }) {
 export const Pill = ({ tone = "neutral", children, title }) => <span className={"pill " + tone} title={title}>{children}</span>;
 export const Legend = ({ items, band }) => <div className="legend">{items.map(([c, l]) => <span key={l}><i style={{ background: c }} />{l}</span>)}{band && <span><i className="box" />Crash period</span>}</div>;
 
-/* Jargon with a plain-English definition on hover, keyboard focus or tap. */
-/* Hover (mouse) opens after a short intent delay so sweeping the cursor across text does not flash cards; tap or
-   keyboard focus opens at once. The card grows out of the word it explains, with a small arrow pointing back to it. */
-export function Term({ k, children }) {
-  const [open, setOpen] = useState(false), [pos, setPos] = useState(null), ref = useRef(null), tm = useRef(0), id = useId(), g = GLOSSARY[k];
-  const place = () => { const r = ref.current.getBoundingClientRect(), w = Math.min(320, innerWidth - 24), cx = r.left + r.width / 2;
-    const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2)), up = r.bottom + 150 > innerHeight && r.top > 160;
+/* One small tooltip engine, used by dotted terms and by number sources.
+   Hover (mouse) opens after a short intent delay so sweeping the cursor across text does not flash cards; tap or
+   keyboard focus opens at once. The card grows out of the trigger, with a small arrow pointing back to it. */
+export function Tip({ cls, body, label, children, wide }) {
+  const [open, setOpen] = useState(false), [pos, setPos] = useState(null), ref = useRef(null), tm = useRef(0), id = useId();
+  const place = () => { const r = ref.current.getBoundingClientRect(), w = Math.min(wide ? 360 : 320, innerWidth - 24), cx = r.left + r.width / 2;
+    const left = Math.max(12, Math.min(innerWidth - w - 12, cx - w / 2)), up = r.bottom + 160 > innerHeight && r.top > 170;
     setPos({ left, w, up, top: r.bottom + 10, bottom: innerHeight - r.top + 10, ax: Math.max(14, Math.min(w - 14, cx - left)) }); };
   const show = () => { clearTimeout(tm.current); place(); setOpen(true); };
   const hide = () => { clearTimeout(tm.current); setOpen(false); };
@@ -92,17 +92,32 @@ export function Term({ k, children }) {
     addEventListener("scroll", off, true); addEventListener("pointerdown", out, true);
     return () => { removeEventListener("scroll", off, true); removeEventListener("pointerdown", out, true); }; }, [open]);
   useEffect(() => () => clearTimeout(tm.current), []);
-  if (!g) return children;
   return <>
-    <span role="button" tabIndex={0} ref={ref} className={"term" + (open ? " on" : "")} aria-describedby={open ? id : undefined} aria-expanded={open}
+    <span role="button" tabIndex={0} ref={ref} className={cls + (open ? " on" : "")} aria-label={label} aria-describedby={open ? id : undefined} aria-expanded={open}
       onPointerEnter={e => { if (e.pointerType === "mouse") { clearTimeout(tm.current); tm.current = setTimeout(show, 90); } }}
       onPointerLeave={e => { if (e.pointerType === "mouse") hide(); }}
       onFocus={e => { if (e.target.matches(":focus-visible")) show(); }} onBlur={hide}
       onClick={e => { e.stopPropagation(); e.preventDefault(); open ? hide() : show(); }}
       onKeyDown={e => { if (e.key === "Escape") hide(); else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open ? hide() : show(); } }}>{children}</span>
-    {open && pos && createPortal(<div id={id} role="tooltip" className={"gloss" + (pos.up ? " up" : "")} style={{ left: pos.left, width: pos.w, "--ax": pos.ax + "px", ...(pos.up ? { bottom: pos.bottom } : { top: pos.top }) }}>
-      <b>{g[0]}</b>{g[1]}</div>, document.body)}
+    {open && pos && createPortal(<div id={id} role="tooltip" className={"gloss" + (wide ? " src-tip" : "") + (pos.up ? " up" : "")} style={{ left: pos.left, width: pos.w, "--ax": pos.ax + "px", ...(pos.up ? { bottom: pos.bottom } : { top: pos.top }) }}>
+      {body}</div>, document.body)}
   </>;
+}
+
+/* Jargon with a plain-English definition on hover, keyboard focus or tap. */
+export function Term({ k, children }) {
+  const g = GLOSSARY[k];
+  if (!g) return children;
+  return <Tip cls="term" body={<><b>{g[0]}</b>{g[1]}</>}>{children}</Tip>;
+}
+
+/* Where a number comes from: the file it was read from, the script that wrote it, and when the site was exported. */
+export function Src({ src, note }) {
+  if (!src) return null;
+  return <Tip cls="src" wide label={`Where this comes from: ${src.file}`}
+    body={<><b>Where this comes from</b><code>commodity/{src.file}</code><span className="src-l">Written by {src.by}.</span>{note && <span className="src-l">{note}</span>}
+      <span className="src-t">Site exported <span className="num">{D.meta.exported}</span></span></>}>
+    <Icon name="file" size={13} sw={1.8} /></Tip>;
 }
 
 /* Every definition on the site in one place, A to Z. */
