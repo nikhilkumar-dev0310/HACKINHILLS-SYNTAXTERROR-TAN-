@@ -551,7 +551,7 @@ export function Quality() {
           <tr><td><b>Expiry-day settlement</b></td><td>Final settlement at the <Term k="ddr">Due Date Rate</Term>, from the spot price polled that afternoon, not the futures closing price</td><td>{D.expiry_settle.outside} of {D.expiry_settle.rows.toLocaleString("en-IN")} closes sit outside the day's high–low; all {D.expiry_settle.on_last_day} on a contract's last trading day, none since October 2023. Kept as published; no strategy holds on that day</td></tr>
           <tr><td><b><Term k="priceband">Price band</Term> and margin</b></td><td>3% daily price limit, widened in steps to 6% and 9%; initial margin at least 6% or <Term k="span">SPAN</Term>, whichever is higher</td><td>Shown for context; the backtest assumes the position's margin is available</td></tr>
         </tbody></table></div>
-        <p className="note">Source: MCX contract specification documents for each of the four contracts, downloaded from mcxindia.com.</p>
+        <p className="note">Source: MCX contract specification documents for each of the four contracts, listed on MCX's <a href="https://www.mcxindia.com/products/bullion/gold" target="_blank" rel="noopener noreferrer">Gold product page</a> (mcxindia.com → Products → Bullion → Gold).</p>
       </More>
       <More title="Each contract type" hint="Liquidity decides how far a price can be trusted">
       <div className="tw"><table><thead><tr><th>Contract</th><th className="n">Contracts</th><th className="n">Days</th><th className="n"><Term k="notrade">No-trade days</Term></th><th className="n">Gold traded / day</th><th className="n">Close vs trades (<Term k="vwap">VWAP</Term>)</th></tr></thead>
