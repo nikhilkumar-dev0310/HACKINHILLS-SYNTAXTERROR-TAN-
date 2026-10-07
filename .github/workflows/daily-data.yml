@@ -41,8 +41,13 @@ jobs:
           echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
           echo "/usr/local/bin" >> "$GITHUB_PATH"
           export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-          python3 --version && node --version && git --version
-          python3 -m venv "$HOME/.parity-venv"
+          # Prefer a stable Python the pinned packages ship wheels for; a beta (e.g. 3.15) would have to compile them.
+          PY=""
+          for c in python3.12 python3.11 python3.13 python3.10; do if command -v "$c" >/dev/null; then PY="$c"; break; fi; done
+          [ -n "$PY" ] || { echo "No Python 3.10-3.13 found. Run: brew install python@3.12"; exit 1; }
+          "$PY" --version && node --version && git --version
+          rm -rf "$HOME/.parity-venv"
+          "$PY" -m venv "$HOME/.parity-venv"
           echo "$HOME/.parity-venv/bin" >> "$GITHUB_PATH"
       - name: Install
         run: |
