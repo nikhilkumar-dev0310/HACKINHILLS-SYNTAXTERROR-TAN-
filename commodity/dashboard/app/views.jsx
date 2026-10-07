@@ -523,7 +523,7 @@ export function Quality() {
     </Hero>
     <Takeaway>Every row passed the checks: 0 unexplained errors in {D.meta.rows.toLocaleString("en-IN")} rows. Of the {D.flags.length} flagged rows, {D.flags.filter(x => x.kind === "Previous close mismatch").length} follow a <Term k="notrade">no-trade day</Term> and are left out; {D.flags.filter(x => x.kind === "Far from peers").length} are real prices far from their peers, mostly in the January 2026 crash, and are kept. No price was changed.</Takeaway>
     <div className="grid g4">
-      <Kpi src={SRC.files} label="Files read" note={`MCX Bhavcopy downloads, deduplicated. ${D.meta.sealed_contracts} sealed-test contracts, read only in the one sealed run.`}><Num v={D.meta.files} intro /></Kpi>
+      <Kpi src={SRC.files} label="Files read" note={`Unique MCX Bhavcopy files (${D.meta.files} downloaded; ${D.meta.files - D.provenance.files.length} were exact copies of another). ${D.meta.sealed_contracts} sealed-test contracts, read only in the one sealed run.`}><Num v={D.provenance.files.length} intro /></Kpi>
       <Kpi src={SRC.prices} label="Contracts" note={`${fdate(D.meta.first)} – ${fdate(D.meta.last)}`}><Num v={D.meta.contracts} intro /></Kpi>
       <Kpi src={SRC.prices} label="Rows checked" note="One row per contract per trading day"><Num v={D.meta.rows} intro /></Kpi>
       <Kpi src={SRC.integrity} tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
