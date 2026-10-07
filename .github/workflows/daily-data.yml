@@ -58,7 +58,7 @@ jobs:
         id: upd
         env:
           NODE_PATH: ${{ github.workspace }}/commodity/tools/node_modules
-          PARITY_CHROME: ${{ vars.PARITY_CHROME }}
+          PARITY_CHROME: ${{ vars.PARITY_CHROME || 'chrome' }}
         run: python tools/daily_update.py
       - name: Tests
         run: python -m unittest discover -s tests -q
