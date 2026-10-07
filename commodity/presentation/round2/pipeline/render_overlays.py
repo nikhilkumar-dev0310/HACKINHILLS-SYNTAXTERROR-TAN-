@@ -3,7 +3,7 @@ import asyncio, json, os, sys, hashlib
 from playwright.async_api import async_playwright
 HERE = os.path.dirname(os.path.abspath(__file__))
 URL = "file://" + os.path.join(HERE, "overlays.html")
-QR = "file:///tmp/claude-0/-home-claude-hackinhills-syntaxterror-tan-/5b43e78d-9c0f-5ac5-b918-6a781f129e78/scratchpad/ppt/qr.png"
+QR = "file://" + os.path.abspath(os.path.join(HERE, "..", "..", "round1", "assets", "qr-site.png"))   # the live site
 FPS = 30
 LABELS = ["The front page", "The brief", "Relative value", "Term structure", "Backtest", "Signals", "Contracts", "Data quality"]
 
@@ -15,6 +15,10 @@ async def main(which):
         b = await p.chromium.launch(); pg = await b.new_page(viewport={"width": 1920, "height": 1080})
         await pg.goto(URL); await pg.wait_for_timeout(500)
         await pg.evaluate("document.fonts.ready")
+        # the intro's four price cards show the latest closes the site shows (dashboard/data.json)
+        D = json.load(open(os.path.join(HERE, "..", "..", "..", "dashboard", "data.json")))
+        Q = {q["symbol"]: q for q in D["quotes"]}
+        await pg.evaluate("q => { C4 = C4.map(c => [c[0], c[1], q[c[0]].close, c[3], Math.round(q[c[0]].rs_per_g), c[5]]); }", Q)
         if "caps" in which:
             tl = json.load(open(os.environ.get("TLF", "timeline.json")))
             ch, meta = 0, {}

@@ -1,9 +1,9 @@
 <!doctype html>
 <html><head><meta charset="utf-8">
 <style>
-@font-face{font-family:"SG";src:url(../deck/fonts/sg.woff) format("woff");font-weight:300 800}
-@font-face{font-family:"IN";src:url(../deck/fonts/in.woff) format("woff");font-weight:300 800}
-@font-face{font-family:"JB";src:url(../deck/fonts/jb.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"SG";src:url(fonts/sg.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"IN";src:url(fonts/in.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"JB";src:url(fonts/jb.woff) format("woff");font-weight:300 800}
 :root{--gold:#f5b83d;--gold2:#ffdc8e;--deep:#c98d0c;--ink:#f4efe4;--ink2:#b9b1a2;--ink3:#7d766a;--vault:#0b0c0f;
   --m:#c79316;--ten:#5b98ea;--gui:#e0603f;--pet:#22a892;--good:#3cc995}
 *{box-sizing:border-box}
@@ -81,7 +81,7 @@ window.pari = (mood, blink, wave) => {
 };
 
 /* ------------------------------------------------------------ intro */
-const C4 = [['GOLDM', '100 g bar · 99.5% pure', 149055, 'per 10 g', 14980, '--m'], ['GOLDTEN', '10 g bar · 99.9% pure', 149436, 'per 10 g', 14959, '--ten'],
+let C4 = [['GOLDM', '100 g bar · 99.5% pure', 149055, 'per 10 g', 14980, '--m'], ['GOLDTEN', '10 g bar · 99.9% pure', 149436, 'per 10 g', 14959, '--ten'],
   ['GOLDGUINEA', '8 g coin · 99.9% pure', 119993, 'per 8 g', 15014, '--gui'], ['GOLDPETAL', '1 g · 99.9% pure', 15002, 'per 1 g', 15017, '--pet']];
 window.intro = t => {
   R.className = 'stage dark'; document.body.style.background = '#0b0c0f';
@@ -143,13 +143,14 @@ window.card = (i, t) => {
 
 /* ------------------------------------------------------------ outro */
 const DONE = ['All four contracts compared fairly, per gram of pure gold', 'The futures curve explained: time vs real moves', 'Backtests after every fee, tax and slippage',
-  '8 sealed years: one rule failed, one held up', 'Quiet alerts that speak only when it matters', 'Every trade checked against the contract calendar'];
+  '8 sealed years: one rule failed, one held up', 'Quiet alerts that speak only when it matters', 'Every trade checked against the contract calendar',
+  'Updates itself after every MCX trading day'];
 window.outro = (t, qr) => {
   R.className = 'stage dark'; document.body.style.background = '#0b0c0f';
   let html = '';
   const s1 = 1 - seg(t, 6.6, 7.1);
   html += `<div class="abs" style="left:0;right:0;top:170px;display:flex;justify-content:center;opacity:${s1}"><div><div class="k" style="opacity:${ez(seg(t, 0, .5))}">What you just saw</div><div style="height:46px"></div>` +
-    DONE.map((d, i) => { const p = ez(seg(t, .4 + i * .55, .9 + i * .55)); return `<div class="chk" style="opacity:${p};transform:translateX(${(1 - p) * -40}px)"><i><svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#08130e" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>${d}</div>`; }).join('') + '</div></div>';
+    DONE.map((d, i) => { const p = ez(seg(t, .4 + i * .5, .9 + i * .5)); return `<div class="chk" style="opacity:${p};transform:translateX(${(1 - p) * -40}px)"><i><svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#08130e" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>${d}</div>`; }).join('') + '</div></div>';
   const v = ez(seg(t, 7.1, 7.7)) * (1 - seg(t, 10.6, 11.1));
   html += `<div class="abs" style="left:0;right:0;top:${330 + (1 - v) * 30}px;text-align:center;opacity:${v}"><div class="k">The honest answer</div>
      <div class="h" style="margin-top:34px">A small, real edge.</div><div class="h2" style="margin-top:18px;color:var(--gold)">Tested honestly, doubts included.</div></div>`;
@@ -159,9 +160,11 @@ window.outro = (t, qr) => {
      <div class="k" style="margin-top:40px">Team</div><div class="h2" style="margin-top:14px">SYNTAX TERROR (TAN)</div>
      <div class="p" style="margin-top:16px;color:var(--ink)">Nikhil Kumar · Sai Ganesh · Ishaan Chhabra</div>
      <div class="p" style="margin-top:44px;font-size:24px">Hack in Hills ’26 · Problem 03: Commodity Derivatives Intelligence</div>
-     <div style="margin-top:10px;font:500 24px JB;color:var(--gold2)">github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-</div></div>`;
+     <div style="margin-top:26px;display:flex;align-items:center;gap:14px"><span style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;background:rgba(46,204,138,.14);color:#4fe0a2;font:700 20px SG;letter-spacing:.08em"><i style="width:10px;height:10px;border-radius:50%;background:#4fe0a2;display:block"></i>LIVE</span>
+       <span style="font:600 38px SG;letter-spacing:-.01em;color:var(--gold)">parity-gold-site.vercel.app</span></div>
+     <div style="margin-top:10px;font:500 20px JB;color:var(--ink2,#9a9aa0)">Code: github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-</div></div>`;
   html += `<div class="abs" style="left:1390px;top:${300 + (1 - e) * 30}px;opacity:${e};text-align:center"><div style="background:#fff;padding:18px;border-radius:22px"><img src="${qr}" width="300" height="300" style="display:block;image-rendering:pixelated"></div>
-     <div class="p" style="font-size:22px;margin-top:16px">Scan for the code</div></div>`;
+     <div class="p" style="font-size:22px;margin-top:16px">Scan to open the live site</div></div>`;
   R.innerHTML = html;
   const pp = back(seg(t, 11.6, 12.3));
   if (pp > 0) { const el = document.createElement('div'); el.className = 'abs'; el.style.cssText = `left:1180px;top:${640 + (1 - pp) * 300}px;width:150px;height:155px;opacity:${cl(pp * 1.5)}`;

@@ -185,7 +185,7 @@ for i, (n, d, px, q, pg) in enumerate(cards):
 text(s, 1.0, 6.35, 18, 0.4, f"Main contract of each type, MCX closing prices, {longdate(QDATE)}, as on the live site. Different quotes, nearly the same gold price.", size=17, color=INK2)
 cols = [("search", "Problem", ["Quotes differ by size and purity, so they cannot be compared at a glance",
                                 "Is a price gap real, or just a unit mix-up?"]),
-        ("activity", "Impact", ["The 8 g coin costs 0.6–0.7% more per gram, in all 41 contract months since late 2023",
+        ("activity", "Impact", [f"The 8 g coin costs 0.6–0.7% more per gram, in all {[q for q in D['pairs'] if q['pair'] == 'M-GUINEA'][0]['cycles_same_sign'].split('/')[1]} contract months since late 2023",
                                 "In the 2026 gold crash, small contracts sat 2.7% above GOLDM"]),
         ("target", "Theme alignment", ["Problem 03: Commodity Derivatives Intelligence",
                                        "Covers fair value, futures curve, backtest, alerts and contract calendar"])]

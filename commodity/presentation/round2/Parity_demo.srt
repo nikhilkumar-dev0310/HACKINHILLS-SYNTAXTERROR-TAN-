@@ -68,7 +68,7 @@ In the Dec 2025 – Mar 2026 crash that gap blew out past 2.6%.
 
 18
 00:01:01,400 --> 00:01:05,650
-Dearer in all 41 contract months: a lasting premium, not a mistake.
+Dearer in all 42 contract months: a lasting premium, not a mistake.
 
 19
 00:01:07,033 --> 00:01:10,650
@@ -91,11 +91,11 @@ Time moves GOLDM only about 0.6% a month. Gold moves far more.
 Buy the cheap one, sell the dear one. Do you make money?
 
 24
-00:01:26,833 --> 00:01:30,183
+00:01:26,833 --> 00:01:30,150
 Slippage is lost on every fill. With perfect fills…
 
 25
-00:01:30,233 --> 00:01:33,383
+00:01:30,200 --> 00:01:33,383
 …profit looks big. At 10 bp most of it vanishes.
 
 26
@@ -164,24 +164,32 @@ The dark end is the run-up to delivery. Strategy B always exits before it.
 
 42
 00:02:44,033 --> 00:02:48,250
-Built on 723 official MCX files: 12,021 rows, 0 unexplained errors.
+Built on 724 official MCX files: 12,069 rows, 0 unexplained errors.
 
 43
 00:02:48,300 --> 00:02:52,183
 Rules like the delivery period come from MCX's own documents.
 
 44
-00:02:52,233 --> 00:02:54,450
-And for late nights: dark mode.
+00:02:52,233 --> 00:02:58,217
+It updates itself: after every trading day a job fetches MCX's new file, checks it and republishes.
 
 45
-00:02:54,721 --> 00:02:58,908
-What you just saw: a fair comparison, the curve explained, honest backtests, 8 sealed years, quiet alerts, and the contract calendar.
+00:02:58,267 --> 00:03:02,517
+A failed check never reaches the site: it keeps the last good data.
 
 46
-00:02:58,971 --> 00:03:01,408
-The honest answer: a small, real edge. Tested honestly, doubts included.
+00:03:02,567 --> 00:03:04,783
+And for late nights: dark mode.
 
 47
-00:03:01,471 --> 00:03:05,371
+00:03:05,054 --> 00:03:09,242
+What you just saw: a fair comparison, the curve explained, honest backtests, 8 sealed years, quiet alerts, and the contract calendar.
+
+48
+00:03:09,304 --> 00:03:11,742
+The honest answer: a small, real edge. Tested honestly, doubts included.
+
+49
+00:03:11,804 --> 00:03:15,704
 Parity by SYNTAX TERROR (TAN): Nikhil Kumar, Sai Ganesh, Ishaan Chhabra.

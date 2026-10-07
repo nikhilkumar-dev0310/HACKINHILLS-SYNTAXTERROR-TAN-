@@ -1,0 +1,9 @@
+frames/
+ov/
+*.mp4
+*.wav
+*.log
+timeline*.json
+motion.json
+layout_fast.json
+__pycache__/
