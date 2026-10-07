@@ -29,7 +29,7 @@ for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
     const r = await page.goto("https://www.mcxindia.com/market-data/bhavcopy", { waitUntil: "domcontentloaded", timeout: 90000 });
     console.log("page status", r && r.status(), "title:", await page.title());
     await page.waitForSelector("#symbol-data", { state: "attached", timeout: 60000 });
-    await page.waitForFunction(() => typeof window.ExportManager !== "undefined", null, { timeout: 60000 });
+    await page.waitForFunction(() => typeof ExportManager !== "undefined", null, { timeout: 60000 });
     ok = true;
   } catch (e) {
     let info = ""; try { info = ` url=${page.url()} title=${await page.title()} body=${(await page.evaluate(() => document.body ? document.body.innerText.slice(0, 160) : "")).replace(/\s+/g, " ")}`; } catch (_) {}
