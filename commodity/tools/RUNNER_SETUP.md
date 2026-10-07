@@ -30,8 +30,10 @@ Needs: a Mac, Linux or Windows computer that is usually on and online; repo admi
 The computer needs Git, Python 3.10 or newer and Node 18 or newer already installed (on a Mac: `brew install python node`);
 the job installs the Python packages and a browser itself, in its own virtual environment.
 On a Mac, run once: `sudo mkdir -p /Users/runner/hostedtoolcache && sudo chown -R $(whoami) /Users/runner`.
-On a Mac with Google Chrome installed you can set the repository variable or environment `PARITY_CHROME=chrome`
-to use the real Chrome instead of the bundled Chromium.
+The job uses the computer's own Google Chrome, in the background: first Chrome's modern headless mode (no window),
+and only if MCX refuses that, a small muted window placed off-screen. One tab, no images or fonts, closed after about
+a minute; the whole job runs at low priority (`nice`). Set the repository variable `PARITY_CHROME=chromium` to use
+Playwright's bundled browser instead (MCX usually refuses it).
 
 ## What the job will never do
 

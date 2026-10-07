@@ -15,27 +15,55 @@ const [since, out] = process.argv.slice(2);
 if (!since || !out) { console.error("usage: node tools/auto_fetch.mjs YYYY-MM-DD out.json.gz"); process.exit(2); }
 
 // PARITY_CHROME=chrome uses the computer's installed Google Chrome instead of Playwright's bundled Chromium.
-// MCX's firewall turns away headless browsers (403 Access Denied) even from a home connection, so with the real
-// Chrome the window is opened normally (headed), exactly like a person visiting the page. It closes when done.
-const browser = await chromium.launch({ args: ["--disable-blink-features=AutomationControlled"], ...(process.env.PARITY_CHROME ? { channel: process.env.PARITY_CHROME, headless: false } : {}) });
-const ctx = await browser.newContext({
-  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-  locale: "en-IN", timezoneId: "Asia/Kolkata", viewport: { width: 1366, height: 900 },
-});
-const page = await ctx.newPage();
-let ok = false;
-for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
-  try {
-    const r = await page.goto("https://www.mcxindia.com/market-data/bhavcopy", { waitUntil: "domcontentloaded", timeout: 90000 });
-    console.log("page status", r && r.status(), "title:", await page.title());
-    await page.waitForSelector("#symbol-data", { state: "attached", timeout: 60000 });
-    await page.waitForFunction(() => typeof ExportManager !== "undefined", null, { timeout: 60000 });
-    ok = true;
-  } catch (e) {
-    let info = ""; try { info = ` url=${page.url()} title=${await page.title()} body=${(await page.evaluate(() => document.body ? document.body.innerText.slice(0, 160) : "")).replace(/\s+/g, " ")}`; } catch (_) {}
-    console.log("attempt", attempt, "failed:", e.message.split("\n")[0], info); await page.waitForTimeout(10000 * attempt); }
+// MCX's firewall turns away Playwright's old-style headless browser (403 Access Denied) even from a home
+// connection. So with the real Chrome the job runs quietly in the background:
+//   1. "hidden": Chrome's modern headless mode (the full browser, no window at all);
+//   2. if MCX refuses that, "offscreen": a normal Chrome window placed off the screen, small, muted.
+// Either way it is one tab, images/fonts/video are not downloaded, and Chrome quits as soon as the files are in
+// (about a minute a day, a few hundred MB of memory while it runs, nothing afterwards).
+const LEAN = ["--disable-blink-features=AutomationControlled", "--no-first-run", "--no-default-browser-check",
+  "--disable-extensions", "--disable-sync", "--disable-background-networking", "--disable-component-update",
+  "--mute-audio", "--renderer-process-limit=2", "--js-flags=--max-old-space-size=256"];
+const CHROME = process.env.PARITY_CHROME;
+const MODES = CHROME ? ["hidden", "offscreen"] : ["bundled"];
+
+async function openMcx(mode) {
+  const args = [...LEAN];
+  if (mode === "hidden") args.push("--headless=new", "--window-size=1366,900");
+  if (mode === "offscreen") args.push("--window-position=-2400,-2400", "--window-size=900,700");
+  const browser = await chromium.launch({ args, ...(CHROME ? { channel: CHROME, headless: false } : {}) });
+  const ver = browser.version().split(".")[0];
+  const ctx = await browser.newContext({
+    userAgent: mode === "hidden"
+      ? `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${ver}.0.0.0 Safari/537.36`
+      : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+    locale: "en-IN", timezoneId: "Asia/Kolkata", viewport: { width: 1366, height: 900 },
+  });
+  await ctx.route("**/*", r => (["image", "font", "media"].includes(r.request().resourceType()) ? r.abort() : r.continue()));
+  const page = await ctx.newPage();
+  const tries = mode === "hidden" ? 1 : 3;
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    try {
+      const r = await page.goto("https://www.mcxindia.com/market-data/bhavcopy", { waitUntil: "domcontentloaded", timeout: 90000 });
+      console.log(mode, "page status", r && r.status(), "title:", await page.title());
+      await page.waitForSelector("#symbol-data", { state: "attached", timeout: 60000 });
+      await page.waitForFunction(() => typeof ExportManager !== "undefined", null, { timeout: 60000 });
+      console.log("MCX page ready in", mode, "mode");
+      return { browser, page };
+    } catch (e) {
+      let info = ""; try { info = ` url=${page.url()} title=${await page.title()} body=${(await page.evaluate(() => document.body ? document.body.innerText.slice(0, 160) : "")).replace(/\s+/g, " ")}`; } catch (_) {}
+      console.log(mode, "attempt", attempt, "failed:", e.message.split("\n")[0], info);
+      if (attempt < tries) await page.waitForTimeout(10000 * attempt);
+    }
+  }
+  await browser.close();
+  return null;
 }
-if (!ok) { console.error("MCX page did not load"); await browser.close(); process.exit(3); }
+
+let got = null;
+for (const m of MODES) { got = await openMcx(m); if (got) break; }
+if (!got) { console.error("MCX page did not load"); process.exit(3); }
+const { browser, page } = got;
 
 const res = await page.evaluate(async (since) => {
   const SY = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];

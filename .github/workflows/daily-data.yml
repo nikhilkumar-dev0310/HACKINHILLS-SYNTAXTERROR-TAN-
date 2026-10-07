@@ -46,20 +46,23 @@ jobs:
           for c in python3.12 python3.11 python3.13 python3.10; do if command -v "$c" >/dev/null; then PY="$c"; break; fi; done
           [ -n "$PY" ] || { echo "No Python 3.10-3.13 found. Run: brew install python@3.12"; exit 1; }
           "$PY" --version && node --version && git --version
-          rm -rf "$HOME/.parity-venv"
-          "$PY" -m venv "$HOME/.parity-venv"
+          # Reuse the job's own virtual environment between runs; rebuild it only if the Python version changed.
+          V="$HOME/.parity-venv"
+          if [ ! -x "$V/bin/python" ] || [ "$("$V/bin/python" -V)" != "$("$PY" -V)" ]; then rm -rf "$V"; "$PY" -m venv "$V"; fi
           echo "$HOME/.parity-venv/bin" >> "$GITHUB_PATH"
       - name: Install
         run: |
-          pip install -r tools/requirements.txt
-          npm install --no-save --prefix tools playwright@1.48.2
-          npx --prefix tools playwright install chromium
+          pip install -q --disable-pip-version-check -r tools/requirements.txt
+          [ -d tools/node_modules/playwright ] || npm install --no-save --no-audit --no-fund --prefix tools playwright@1.48.2
+          # The computer's own Google Chrome is used, so Playwright's bundled browser is only fetched when asked for.
+          if [ "${{ vars.PARITY_CHROME || 'chrome' }}" = "chromium" ]; then npx --prefix tools playwright install chromium; fi
       - name: Fetch, check and rebuild
         id: upd
         env:
           NODE_PATH: ${{ github.workspace }}/commodity/tools/node_modules
           PARITY_CHROME: ${{ vars.PARITY_CHROME || 'chrome' }}
-        run: python tools/daily_update.py
+        # Low priority, so the job never slows down whatever else the computer is doing.
+        run: nice -n 10 python tools/daily_update.py
       - name: Tests
         run: python -m unittest discover -s tests -q
       - name: Commit and push
@@ -69,4 +72,5 @@ jobs:
           git add -A raw_clean clean results dashboard/data.json dashboard/index.html dashboard/artifact.html
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -m "Daily data: MCX Bhavcopy through ${{ steps.upd.outputs.through }} (+${{ steps.upd.outputs.new_rows }} rows)"
+          git pull --rebase origin main
           git push origin HEAD:main
