@@ -142,7 +142,7 @@ text(s, 1.0, 5.95, 8.6, 0.4, "TEAM NAME", size=18, bold=True, color=GOLD, font=H
 text(s, 1.0, 6.35, 8.6, 0.75, "SYNTAX TERROR (TAN)", size=40, bold=True, font=HEAD, name="Team name")
 text(s, 1.0, 7.25, 8.6, 1.0, [[("Project: ", {"bold": True}), ("Parity, MCX gold futures intelligence", {})],
                               [("Problem 03: ", {"bold": True}), ("Commodity Derivatives Intelligence", {})]], size=22, color=INK2, after=4)
-chips = [("check", "Working prototype", 3.35), ("database", "710 contracts", 2.65), ("shield", "3 sealed tests", 2.8)]
+chips = [("check", "Working prototype", 3.35), ("database", f"{D['meta']['all']['contracts']} contracts", 2.65), ("shield", "3 sealed tests", 2.8)]
 cx = 1.0
 for k, t, w in chips:
     box(s, cx, 8.75, w, 0.7, fill=GOLDBG, line=None, radius=0.5, name=t)
@@ -164,7 +164,7 @@ for i, (n, r) in enumerate(team):
     icon(s, "users" if i else "target", 10.85, y + 0.05, 0.8, filled=(i == 0))
     text(s, 11.9, y, 6.9, 0.5, n, size=28, bold=True, name=f"Member {i + 1}")
     text(s, 11.9, y + 0.52, 6.9, 0.85, r, size=20, color=INK2)
-notes(s, "We are SYNTAX TERROR (TAN). Our project, Parity, answers Problem 03 with a working prototype built on 710 official MCX gold contracts. It is live at parity-gold-site.vercel.app and updates itself every trading day.")
+notes(s, "We are SYNTAX TERROR (TAN). Our project, Parity, answers Problem 03 with a working prototype built on " + str(D["meta"]["all"]["contracts"]) + " official MCX gold contracts. It is live at parity-gold-site.vercel.app and updates itself every trading day.")
 
 # ------------------------------------------------------------------ 2 PROBLEM
 s = S[1]; clear(s)
@@ -220,7 +220,7 @@ for i, (k, h, d) in enumerate(feats):
     text(s, 12.6, y, 6.4, 0.62, [[(h, {"bold": True, "size": 21}), ("  " + d, {"size": 18, "color": INK2})]], anchor=MSO_ANCHOR.MIDDLE)
 box(s, 11.75, 6.85, 7.25, 3.8, name="Why Parity")
 text(s, 12.05, 7.02, 6.8, 0.4, "WHY PARITY, NOT A SNAPSHOT", size=18, bold=True, color=GOLD, font=HEAD)
-why = [("23 years of MCX data, updated daily", "710 contracts since 2003; each new day fetched and checked"),
+why = [("23 years of MCX data, updated daily", f"{D['meta']['all']['contracts']} contracts since 2003; each new day fetched and checked"),
        ("8 sealed years, tested once", "rules frozen in Git before the data was opened"),
        ("Fair price off GOLDM", "the contract with 20–60× the volume, not thin pairs"),
        ("MCX's own rules", "every trade checked against the delivery period")]
@@ -319,7 +319,7 @@ for i, (h, d) in enumerate(pts):
     icon(s, ["zap", "check", "shield"][i], 11.9, y + 0.05, 0.75, filled=(i != 0))
     text(s, 12.9, y, 6.1, 1.6, [[(h, {"bold": True, "size": 24})], [(d, {"size": 20, "color": INK2})]], after=2)
 box(s, 1.0, 9.0, 18.0, 1.7, fill=GOLDBG, line=None, name="Data")
-for i, (b, sm) in enumerate([("710", "MCX contracts, 2003–2026"), ("55,457", "daily rows checked"), ("0", "unexplained data errors"), ("3", "sealed tests, each run once")]):
+for i, (b, sm) in enumerate([(str(D["meta"]["all"]["contracts"]), "MCX contracts, 2003–2026"), (f"{D['meta']['all']['rows']:,}", "daily rows checked"), ("0", "unexplained data errors"), ("3", "sealed tests, each run once")]):
     x = 1.4 + i * 4.5
     text(s, x, 9.12, 4.2, 0.85, b, size=40, bold=True, color=GOLD, font=HEAD)
     text(s, x, 9.98, 4.2, 0.55, sm, size=18, color=INK2)
