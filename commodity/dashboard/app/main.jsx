@@ -2,6 +2,7 @@ import { Component, useEffect, useLayoutEffect, useMemo, useRef, useState, useCa
 import { createRoot } from "react-dom/client";
 import { D, NAME, VIEWS, SYMS, SYM, EVENTS, GLOSSARY, fdate, pname, reducedMotion } from "./lib.js";
 import { AppCtx, Icon } from "./ui.jsx";
+import { setGoldCursor } from "./goldcursor.js";
 
 /* The Equal Ingot: two gold bars as an equals sign. When a contract is off fair price today, the lower bar steps right. */
 const HOT = D.signals.rows.filter(r => Math.abs(r.z) >= D.signals.threshold).length;
@@ -48,6 +49,7 @@ function buildItems(go, ctx) {
   it.push({ id: "anews", group: "Actions", title: "What's new: data and test log", keys: "changelog updates uploads", icon: "news", run: () => ctx.setNews(true) });
   it.push({ id: "ahelp", group: "Actions", title: "Keyboard shortcuts", hint: "?", keys: "help keys keyboard shortcuts hotkeys", icon: "keys", run: () => ctx.setKeysSheet(true) });
   it.push({ id: "aprint", group: "Actions", title: "Print or save this page as PDF", keys: "print pdf save paper export", icon: "print", run: () => setTimeout(() => print(), 120) });
+  it.push({ id: "agold", group: "Actions", title: ctx.goldOn ? "Use the normal cursor" : "Use the gold cursor", keys: "cursor mouse pointer gold trail sparkle effect", icon: "more", run: () => ctx.setGoldOn(!ctx.goldOn) });
   it.push({ id: "akeys", group: "Actions", title: ctx.keysOn ? "Turn off number-key shortcuts" : "Turn on number-key shortcuts", keys: "keyboard shortcuts keys", icon: "more", run: () => ctx.setKeysOn(!ctx.keysOn) });
   return it;
 }
@@ -213,6 +215,9 @@ function App() {
   const [rvPair, setRvPair] = useState("M-GUINEA"), [calF, setCalF] = useState("All");
   const userNav = useRef(false);
   const setKeysOn = v => { setKeysOnS(v); store.set("gsl-keys", v ? "on" : "off"); };
+  const [goldOn, setGoldOnS] = useState(() => store.get("parity-gold-cursor", "on") !== "off");
+  const setGoldOn = v => { setGoldOnS(v); store.set("parity-gold-cursor", v ? "on" : "off"); };
+  useEffect(() => { setGoldCursor(goldOn); }, [goldOn]);
   const focusHead = () => requestAnimationFrame(() => { const h = document.querySelector("main h1"); if (h) h.focus({ preventScroll: true }); });
   /* Page change: the old page leaves (160 ms), the jump to the top happens while nothing is on screen, then the new
      page arrives. A second click mid-way just retargets; nothing queues up, so rapid switching never lags behind. */
@@ -243,7 +248,7 @@ function App() {
     const n = "12345678".indexOf(e.key); if (n < 0 || e.key.length !== 1) return; e.preventDefault(); go(VIEWS[n][0]); };
     addEventListener("keydown", k); return () => removeEventListener("keydown", k); }, [pal, news, keysOn, keysSheet]);
   useEffect(() => { document.documentElement.classList.toggle("nokeys", !keysOn); }, [keysOn]);
-  const ctx = { view, go, rvPair, setRvPair, calF, setCalF, theme, setTheme, keysOn, setKeysOn, setNews, setPal, setKeysSheet };
+  const ctx = { view, go, rvPair, setRvPair, calF, setCalF, theme, setTheme, keysOn, setKeysOn, goldOn, setGoldOn, setNews, setPal, setKeysSheet };
   const Page = PAGES[view], idx = VIEWS.findIndex(v => v[0] === view);
   /* the loading screen leaves once the first page has painted */
   useEffect(() => { const b = document.getElementById("boot"); if (!b) return;
@@ -289,7 +294,7 @@ function App() {
           <div className="foot-a"><span className="foot-b"><span className="num">v{BUILD.version || "dev"}</span>{BUILD.built && <> · built <span className="num">{BUILD.built}</span></>}{BUILD.commit && <> · after commit <a className="num" href={`https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/commit/${BUILD.commit}`} target="_blank" rel="noopener">{BUILD.commit}</a></>}</span>
             <Fresh compact /></div>
           <div className="foot-a"><span>SYNTAX TERROR (TAN) · Nikhil Kumar, Sai Ganesh, Ishaan Chhabra · Hack in Hills ’26</span>
-            <span>Prices: official MCX Bhavcopy, mcxindia.com · <a href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-" target="_blank" rel="noopener">Code and data on GitHub</a> · <a href="#quality" onClick={e => { e.preventDefault(); go("quality"); }}>Known limits</a> · <button type="button" className="linkbtn" onClick={() => setKeysSheet(true)}>Shortcuts</button></span></div>
+            <span>Prices: official MCX Bhavcopy, mcxindia.com · <a href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-" target="_blank" rel="noopener">Code and data on GitHub</a> · <a href="#quality" onClick={e => { e.preventDefault(); go("quality"); }}>Known limits</a> · <button type="button" className="linkbtn" onClick={() => setKeysSheet(true)}>Shortcuts</button> · <button type="button" className="linkbtn" aria-pressed={goldOn} onClick={() => setGoldOn(!goldOn)}>{goldOn ? "Normal cursor" : "Gold cursor"}</button></span></div>
         </footer>
       </main>
     </div>
