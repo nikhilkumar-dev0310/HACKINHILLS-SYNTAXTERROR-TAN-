@@ -2,7 +2,7 @@
    Self-contained and switchable. setGoldCursor(false) restores the normal cursor and stops all drawing.
    To remove it from the site completely: delete this file and its import and call in main.jsx.
 
-   Kept light: the trail canvas only animates while flecks are visible, at most 48 at a time.
+   Kept light: the trail canvas only animates while flecks are visible, at most 60 at a time.
    Off automatically on touch screens; no trail when the system asks for reduced motion, or when printing. */
 
 const svg = s => `url("data:image/svg+xml,${encodeURIComponent(s)}")`;
@@ -36,11 +36,11 @@ const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function size() { dpr = Math.min(2, devicePixelRatio || 1); cvs.width = innerWidth * dpr; cvs.height = innerHeight * dpr; }
 
 function spawn(x, y, vx, vy) {
-  if (parts.length >= 48) parts.shift();
+  if (parts.length >= 60) parts.shift();
   const r = Math.random(), kind = r < .45 ? "glint" : r < .75 ? "bar" : "coin";
   parts.push({ x, y, kind, vx: vx * .06 + (Math.random() - .5) * .5, vy: vy * .06 + Math.random() * .3 - .2,
-    rot: Math.random() * 6.28, vr: (Math.random() - .5) * .14, s: kind === "glint" ? 2.4 + Math.random() * 2 : 2.6 + Math.random() * 1.8,
-    c: (light() ? COLS_LIGHT : COLS)[(Math.random() * 5) | 0], t: 0, life: 520 + Math.random() * 380 });
+    rot: Math.random() * 6.28, vr: (Math.random() - .5) * .14, s: kind === "glint" ? 4 + Math.random() * 3 : 3.6 + Math.random() * 2.2,
+    c: (light() ? COLS_LIGHT : COLS)[(Math.random() * 5) | 0], t: 0, life: 850 + Math.random() * 450 });
 }
 
 function draw(p, a) {
@@ -67,7 +67,7 @@ function tick(now) {
   parts = parts.filter(p => (p.t += dt) < p.life);
   for (const p of parts) {
     p.vy += .0016 * dt; p.x += p.vx * dt * .06; p.y += p.vy * dt * .06; p.rot += p.vr * dt * .06;
-    const k = p.t / p.life; draw(p, (1 - k) * (k < .12 ? k / .12 : 1) * .9);
+    const k = p.t / p.life; draw(p, (1 - k) * (k < .1 ? k / .1 : 1));
   }
   raf = parts.length ? requestAnimationFrame(tick) : (prevT = 0, 0);
 }
@@ -76,8 +76,8 @@ function move(e) {
   if (e.pointerType !== "mouse") return;
   if (!last) { last = { x: e.clientX, y: e.clientY }; return; }
   const dx = e.clientX - last.x, dy = e.clientY - last.y, d = Math.hypot(dx, dy);
-  if (d < 16) return;                           // one fleck per ~16 px of travel: a trace, not a spray
-  const n = Math.min(3, Math.floor(d / 16));
+  if (d < 12) return;                           // one fleck per ~12 px of travel: a trace, not a spray
+  const n = Math.min(3, Math.floor(d / 12));
   for (let i = 1; i <= n; i++) spawn(last.x + dx * i / n, last.y + dy * i / n, dx, dy);
   last = { x: e.clientX, y: e.clientY };
   if (!raf) raf = requestAnimationFrame(tick);
