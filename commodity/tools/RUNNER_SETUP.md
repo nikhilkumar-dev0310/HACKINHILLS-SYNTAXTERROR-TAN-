@@ -27,7 +27,9 @@ Needs: a Mac, Linux or Windows computer that is usually on and online; repo admi
 5. Test: repository → **Actions → Daily MCX data update → Run workflow**. In a few minutes a commit
    "Daily data: MCX Bhavcopy through …" appears on `main` (or the run says there is no new trading day yet).
 
-The computer needs Git; the job installs Python 3.11, Node 20, the Python packages and a browser itself.
+The computer needs Git, Python 3.10 or newer and Node 18 or newer already installed (on a Mac: `brew install python node`);
+the job installs the Python packages and a browser itself, in its own virtual environment.
+On a Mac, run once: `sudo mkdir -p /Users/runner/hostedtoolcache && sudo chown -R $(whoami) /Users/runner`.
 On a Mac with Google Chrome installed you can set the repository variable or environment `PARITY_CHROME=chrome`
 to use the real Chrome instead of the bundled Chromium.
 

@@ -34,14 +34,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: commodity/tools/requirements.txt
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+      # The team computer's own Python and Node are used. setup-python/setup-node would try to install
+      # system packages with sudo, which an unattended job cannot do.
+      - name: Python and Node from this computer
+        run: |
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/bin" >> "$GITHUB_PATH"
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          python3 --version && node --version && git --version
+          python3 -m venv "$HOME/.parity-venv"
+          echo "$HOME/.parity-venv/bin" >> "$GITHUB_PATH"
       - name: Install
         run: |
           pip install -r tools/requirements.txt
