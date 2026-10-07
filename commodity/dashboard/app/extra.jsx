@@ -10,6 +10,8 @@ const SMALL = ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];
 const base = () => { const b = Object.fromEntries(D.alerts.baseline.map(x => [String(x.alert_day).toLowerCase(), x])); return b; };
 export const roundTrip = () => base()["true"].round_trip_cost_bp_at_5bp;
 export const costLine = () => 2 * roundTrip();
+const isAuto = u => /GitHub Actions/.test(u.source || "");
+const autoRuns = () => D.provenance.updates.filter(isAuto);
 const both = (g, z) => g != null && z != null && g >= costLine() && Math.abs(z) >= D.signals.threshold;
 
 /* ---------------------------------------------------------------- price cards with a 6-month sparkline */
@@ -85,7 +87,7 @@ export function CostLineReplay() {
 
 /* ---------------------------------------------------------------- what makes Parity different */
 export function Unique() {
-  const A = D.meta.all, up = D.provenance.updates, last = up[0];
+  const A = D.meta.all, last = autoRuns()[0];
   const items = [
     ["23 years of MCX history", `${A.rows.toLocaleString("en-IN")} daily rows, ${A.contracts} contracts, ${fdate(A.first)} – ${fdate(A.last)}.`, "The usual shortcut: the last two or three years only, so the rules never meet a different market."],
     [<>Eight <Term k="sealed">sealed</Term> years</>, <>2016–2023 were walled off until the rules were frozen in Git, then opened once. Plus a sealed <Term k="holdout">holdout</Term> in 2025–26.</>, "The usual shortcut: one test window, chosen after looking at the data."],
@@ -101,17 +103,18 @@ export function Unique() {
 
 /* ---------------------------------------------------------------- automatic updates and the download log */
 export function AutoUpdate() {
-  const up = D.provenance.updates;
+  const up = D.provenance.updates, auto = autoRuns();
   const steps = [["Fetch", <>Every trading day at 03:30 IST (retry 08:00), GitHub Actions starts the job on a team computer, which opens the official MCX <Term k="bhavcopy">Bhavcopy</Term> page and downloads every gold futures contract still trading. MCX refuses cloud servers, so the job cannot run in a data centre.</>],
     ["Check", "The update is rejected if a published price changed, a contract type is missing, a close is outside its day's range off expiry day, or a price is out by a unit error."],
     ["Rebuild", <>Prices, premiums, the <Term k="curve">curve</Term>, <Term k="rolldown">roll-down</Term>, alerts and the contract calendar are recomputed. Strategy rules and <Term k="sealed">sealed test</Term> results stay frozen.</>],
     ["Publish", "The job commits the new files; Vercel redeploys the site from GitHub within minutes."]];
-  return <Card id="auto" title={up.length ? "Updates itself every trading day" : "Built to update itself every trading day"}
-    sub={<>{up.length ? "No one feeds this site by hand." : "Once a team computer is registered as the job's runner, no one feeds this site by hand."} The workflow is .github/workflows/daily-data.yml; the checks are in commodity/tools/daily_update.py.</>}>
+  return <Card id="auto" title={auto.length ? "Updates itself every trading day" : "Built to update itself every trading day"}
+    sub={<>{auto.length ? "No one feeds this site by hand." : "Once a team computer is registered as the job's runner, no one feeds this site by hand."} The workflow is .github/workflows/daily-data.yml; the checks are in commodity/tools/daily_update.py.</>}>
     <ol className="steps4">{steps.map(([h, t], k) => <li key={k}><span className="tn">{k + 1}</span><b>{h}</b><p>{t}</p></li>)}</ol>
-    {up.length ? <div className="tw"><table><thead><tr><th>Run (IST)</th><th>Data through</th><th className="n">New days</th><th className="n">New rows</th><th className="n">Rows held</th></tr></thead>
-      <tbody>{up.slice(0, 8).map(u => <tr key={u.run_ist}><td className="mono">{u.run_ist}</td><td className="mono">{fdate(u.data_through)}</td><td className="n">{u.new_days}</td><td className="n">{u.new_rows}</td><td className="n">{u.rows_total.toLocaleString("en-IN")}</td></tr>)}</tbody></table></div>
+    {up.length ? <div className="tw"><table><thead><tr><th>Run (IST)</th><th>Data through</th><th className="n">New days</th><th className="n">New rows</th><th className="n">Rows held</th><th>How</th></tr></thead>
+      <tbody>{up.slice(0, 8).map(u => <tr key={u.run_ist}><td className="mono">{u.run_ist}</td><td className="mono">{fdate(u.data_through)}</td><td className="n">{u.new_days}</td><td className="n">{u.new_rows}</td><td className="n">{u.rows_total.toLocaleString("en-IN")}</td><td className="dim">{isAuto(u) ? "Scheduled job" : "By hand, from the MCX page, same checks"}</td></tr>)}</tbody></table></div>
       : <p className="note">The first automatic run will be listed here once it has published new data.</p>}
+    {up.length > 0 && !auto.length && <p className="note">Updates so far were run by hand through the same checks; the scheduled job takes over once a team computer is registered as its runner.</p>}
   </Card>;
 }
 export function DownloadLog() {

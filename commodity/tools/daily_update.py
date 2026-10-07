@@ -110,7 +110,7 @@ def main():
             w.writerow(["run_ist", "data_through", "new_days", "new_rows", "rows_total", "contracts_total", "source"])
         w.writerow([pd.Timestamp.now(tz="Asia/Kolkata").strftime("%Y-%m-%d %H:%M"), str(nlast.date()),
                     fresh.date.nunique(), len(fresh), len(new), new.groupby(["symbol", "expiry_date"]).ngroups,
-                    "MCX Bhavcopy, commodity-wise, fetched by GitHub Actions"])
+                    os.environ.get("PARITY_SOURCE", "MCX Bhavcopy, commodity-wise, fetched by GitHub Actions")])
     # export again so the log line appears on the site
     run([sys.executable, "dashboard/export.py"])
     run([sys.executable, "dashboard/build.py"])
