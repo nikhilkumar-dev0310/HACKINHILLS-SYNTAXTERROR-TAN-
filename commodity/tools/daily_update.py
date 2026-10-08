@@ -48,6 +48,39 @@ def load():
     return pd.read_csv(CLEAN, parse_dates=["date", "expiry_date"])
 
 
+def check_update(old, new, last):
+    """The publish gate. Returns (fresh rows, held rows matched, note) or exits with REJECTED.
+    Kept as one function so tests/test_daily_update.py can feed it good and bad updates."""
+    k = ["symbol", "expiry_date", "date"]
+    both = old.merge(new, on=k, suffixes=("_o", "_n"))
+    revised = both[both.close_o != both.close_n]
+    if len(revised):
+        print(revised[k + ["close_o", "close_n"]].head(20).to_string())
+        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(revised)} rows already published changed their close. A person must check.")
+    fresh = new[new.date > last]
+    for d, g in fresh.groupby("date"):
+        miss = sorted(set(SYMS) - set(g.symbol))
+        if miss:
+            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {d.date()} has no rows for {miss}")
+    tr = fresh[(fresh.volume_lots > 0) & ~fresh.no_trade]
+    if tr.close.isna().any() or (tr.close <= 0).any():
+        sys.exit("REJECTED: missing or non-positive close on a traded row")
+    note = None
+    off = tr[(tr.close < tr.low - 0.5) | (tr.close > tr.high + 0.5)]
+    if len(off):
+        print(off[k + ["low", "close", "high"]].to_string())
+        note = (f"note: {len(off)} new closes sit outside the day's low-high range (MCX settles expiring contracts "
+                "at the Due Date Rate, so this is expected on expiry days)")
+        bad = off[off.date != off.expiry_date]
+        if len(bad):
+            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(bad)} closes outside the day's range on non-expiry days")
+    prev = new[(new.date <= last) & (new.volume_lots > 0)]
+    ref = prev[prev.date == prev.date.max()].rs_per_g.median()
+    if ((tr.rs_per_g < ref / 2) | (tr.rs_per_g > ref * 2)).any():
+        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: price per pure gram far from the previous day's median {ref:.0f}: unit or column error")
+    return fresh, both, note
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--bundle")
@@ -70,32 +103,9 @@ def main():
         return 0
 
     # ---- checks on what changed
-    k = ["symbol", "expiry_date", "date"]
-    both = old.merge(new, on=k, suffixes=("_o", "_n"))
-    revised = both[both.close_o != both.close_n]
-    if len(revised):
-        print(revised[k + ["close_o", "close_n"]].head(20).to_string())
-        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(revised)} rows already published changed their close. A person must check.")
-    fresh = new[new.date > last]
-    for d, g in fresh.groupby("date"):
-        miss = sorted(set(SYMS) - set(g.symbol))
-        if miss:
-            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {d.date()} has no rows for {miss}")
-    tr = fresh[(fresh.volume_lots > 0) & ~fresh.no_trade]
-    if tr.close.isna().any() or (tr.close <= 0).any():
-        sys.exit("REJECTED: missing or non-positive close on a traded row")
-    off = tr[(tr.close < tr.low - 0.5) | (tr.close > tr.high + 0.5)]
-    if len(off):
-        print(off[k + ["low", "close", "high"]].to_string())
-        print(f"note: {len(off)} new closes sit outside the day's low-high range (MCX settles expiring contracts "
-              "at the Due Date Rate, so this is expected on expiry days)")
-        bad = off[off.date != off.expiry_date]
-        if len(bad):
-            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(bad)} closes outside the day's range on non-expiry days")
-    prev = new[(new.date <= last) & (new.volume_lots > 0)]
-    ref = prev[prev.date == prev.date.max()].rs_per_g.median()
-    if ((tr.rs_per_g < ref / 2) | (tr.rs_per_g > ref * 2)).any():
-        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: price per pure gram far from the previous day's median {ref:.0f}: unit or column error")
+    fresh, both, note = check_update(old, new, last)
+    if note:
+        print(note)
     print(f"checks passed: {len(fresh)} new rows on {fresh.date.nunique()} new trading day(s), "
           f"{len(both)} held rows unchanged", flush=True)
 
