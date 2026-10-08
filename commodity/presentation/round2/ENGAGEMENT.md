@@ -22,6 +22,15 @@ evidence is. Pop-psychology claims are left out or flagged.
 a riser that cuts dead on the reveal, a low room tone so pauses don't sound like a fault, and a resolving
 chord on the address. The final mix is normalised to −14 LUFS integrated, −1 dBTP true peak (web standard).
 
+**Visual attention layer (v3.1).** Small, continuous, meaningful motion, so the eye has a reason to stay:
+the camera "breathes" (about 1.5% zoom and a few pixels of drift on slow cycles), so the picture is never
+frozen; edges darken slightly when the camera is close in on a number (a spotlight); a single soft light
+sweep crosses each caption as it appears; a brief brightness bloom lands exactly on the four key sounds (the
+number, the reveal, the crash, the twist), the same audio-visual synchrony as above; slow gold dust drifts on
+the statement cards. Each is kept below the level where it reads as an effect rather than as life in the
+picture. Sound effects sit under the music bed (v3.1: 8–10 dB quieter than v3), with the twist still the
+loudest single sound.
+
 **Avoided:** logo or team intros before the hook; captions that repeat a narration word for word; a sound on
 every click; fake urgency; inflated or unexplained numbers; "in conclusion"; credits after the call to action.
 

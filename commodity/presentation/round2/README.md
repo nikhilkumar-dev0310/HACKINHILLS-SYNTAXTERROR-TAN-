@@ -1,6 +1,6 @@
 # Round 2 demo video
 
-`Parity_demo.mp4`: about 1 min 45 s, 1080p, with a music bed whose intensity follows the story and sound effects synced to what happens on screen. `Parity_demo.srt` holds the captions as subtitles.
+`Parity_demo.mp4`: about 1 min 45 s, 1080p, with a music bed whose intensity follows the story, quiet sound effects synced to what happens on screen, and a subtle visual attention layer (breathing camera, spotlight, caption light sweep, bloom on the key moments). `Parity_demo.srt` holds the captions as subtitles.
 
 **v3 (8 Oct 2026): a story, not a tour.** It opens on the strategy's profit on unseen data and asks why we aren't trading it; asks the viewer to guess whether any gap is worth trading today before revealing the answer; shows four fast proofs (23 years of MCX data, slippage you control, the typical-report-vs-ours switch, the contract calendar and the sealed years); then the peak, "Too good to be true?", and the honest twist (January 2026 made the money; outside the crash the rule loses; picking the best of 72 settings is mostly noise); and ends on a true open question: tomorrow's answer is on the live site, not in the video. Why each choice was made, with the research behind it: [`ENGAGEMENT.md`](ENGAGEMENT.md). A voice-over script is in [`VOICEOVER.md`](VOICEOVER.md); save a recording as `pipeline/voice.wav` and rebuild, and the music ducks under it.
 

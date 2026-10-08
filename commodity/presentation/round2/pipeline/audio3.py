@@ -143,8 +143,10 @@ def riser(d):
 def room():
     N = n; w = lowpass(rng.standard_normal(N).astype(np.float32), 500); return w * db(-46)
 
-G = {"impact": -4, "impact_big": -1, "land": -6, "click": -7, "tick": -17, "whoosh": -4, "whoosh_soft": -7,
-     "reveal": -3, "alert": -6, "cost": -9, "shimmer": -10, "end_chime": -5}
+# Effects sit under the music: the meaningful ones a few dB below the bed's level at that moment, the
+# background ones well below; the twist's impact is still the loudest single sound (v3.1: about 8-10 dB quieter)
+G = {"impact": -13, "impact_big": -9, "land": -15, "click": -17, "tick": -27, "whoosh": -15, "whoosh_soft": -18,
+     "reveal": -12, "alert": -15, "cost": -18, "shimmer": -20, "end_chime": -13}
 for e in EV:
     t = e["f"] / FPS; s = e.get("sfx")
     if s == "impact": add(fx, t, sub_hit(55, 1.0), 0, db(G[s]))
@@ -163,10 +165,10 @@ for e in EV:
             p = k / 14.0; at = d * (1 - (1 - min(1, p)) ** 1.6)
             if p > 1: break
             add(fx, t + at, tick(), 0.2 * np.sin(k), db(G["tick"])); k += 1
-    if "rise" in e: d = e["rise"] / FPS; add(fx, t, riser(d), 0, db(-12))
+    if "rise" in e: d = e["rise"] / FPS; add(fx, t, riser(d), 0, db(-21))
     if "predict" in e:                                  # one soft tick as each "your guess" dot fills
         d = e["predict"] / FPS
-        for i in range(1, 4): add(fx, t + i * d / 3.2, bell([88], 0.4, 9), 0, db(-12))
+        for i in range(1, 4): add(fx, t + i * d / 3.2, bell([88], 0.4, 9), 0, db(-21))
 fx += room()[:, None] * np.array([1, 1], np.float32)
 
 # ------------------------------------------------------------------ optional voice-over, with the music ducked under it

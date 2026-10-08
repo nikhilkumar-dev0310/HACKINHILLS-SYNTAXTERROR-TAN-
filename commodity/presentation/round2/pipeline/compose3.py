@@ -70,6 +70,10 @@ for e in sorted([e for e in OUT_EV if "cap" in e], key=lambda e: e["f"]):
     if e["cap"]: cur_cap = [hashlib.md5(e["cap"].encode()).hexdigest()[:12], e["f"], TOTAL]
 if cur_cap: cap_segs.append(cur_cap)
 pred = [(e["f"], e["predict"]) for e in OUT_EV if "predict" in e]
+# v3.1 attention layer: tied to meaning, low amplitude
+BLOOM = {e["f"]: (0.07 if e["sfx"] in ("impact", "impact_big") else 0.04) for e in OUT_EV if e.get("sfx") in ("impact", "impact_big", "reveal", "alert")}
+_g = np.random.default_rng(5)
+DUST = _g.uniform(0, 1, (46, 5))                                                                 # x, y, size, speed, phase
 
 # ------------------------------------------------------------------ drawing
 def blend(dst, src, x, y, a=1.0):
@@ -97,14 +101,49 @@ DARK = np.full((OH, OW, 3), (13, 11, 10), np.uint8)
 def page(g):
     f = KEEP[min(g, N - 1)]
     im = cv2.imread(os.path.join(HERE, "frames3", f"{f:05d}.jpg"))
-    x0, y0, W = cam_src[f]; H = W * VH / VW
+    x0, y0, W = cam_src[f]
+    # breathing camera: never perfectly still (about 1.5% zoom, a few pixels of drift, slow periods)
+    z = 1 + 0.015 * (0.5 - 0.5 * math.cos(2 * math.pi * g / (FPS * 9.0)))
+    W2 = W / z; x0 = x0 + (W - W2) / 2 + 4 * math.sin(2 * math.pi * g / (FPS * 13.0)); W = W2
+    y0 = y0 + (W * z - W) * VH / VW / 2 + 3 * math.sin(2 * math.pi * g / (FPS * 11.0) + 1)
+    x0 = min(max(x0, 0), VW - W); H = W * VH / VW; y0 = min(max(y0, 0), VH - H)
     sx, sy, sw, sh = x0 * DSF, y0 * DSF, W * DSF, H * DSF
     if sw > OW * 1.02:
         out = cv2.resize(im[int(sy):int(sy + sh), int(sx):int(sx + sw)], (OW, OH), interpolation=cv2.INTER_AREA)
     else:
         M = np.float32([[OW / sw, 0, -sx * OW / sw], [0, OH / sh, -sy * OH / sh]])
         out = cv2.warpAffine(im, M, (OW, OH), flags=cv2.INTER_CUBIC)
-    return (out.astype(np.float32) * VIG).astype(np.uint8)
+    zoom = VW / W
+    spot = 1 - 0.10 * min(1.0, max(0.0, (zoom - 1.35) / 0.6)) * np.clip((_r - 0.35) / 0.8, 0, 1) ** 1.4   # spotlight when close in
+    return (out.astype(np.float32) * VIG * spot[:, :, None]).astype(np.uint8)
+
+def dust(img, g):
+    """Slow gold dust on the dark statement cards."""
+    for x, y, sz, sp, ph in DUST:
+        px = int((x * OW + 18 * math.sin(g / 40 + ph * 6)) % OW)
+        py = int((y * OH - g * (0.4 + sp * 0.9)) % OH)
+        a = 0.18 + 0.32 * (0.5 + 0.5 * math.sin(g / 23 + ph * 9))
+        r_ = int(1 + sz * 2.6)
+        y0, y1, x0, x1 = max(0, py - r_), min(OH, py + r_ + 1), max(0, px - r_), min(OW, px + r_ + 1)
+        if y1 > y0 and x1 > x0:
+            patch = img[y0:y1, x0:x1].astype(np.float32)
+            gold = np.array([61, 184, 245], np.float32)
+            img[y0:y1, x0:x1] = (patch * (1 - a) + gold * a).astype(np.uint8)
+
+def sheen(img, k, s, g, x, y):
+    """A soft light sweep across a caption once, as it appears."""
+    p = (g - s - 4) / 16.0
+    if not 0 <= p <= 1: return
+    c = img_cap(k); h, w = c.shape[:2]
+    cx = int(-120 + (w + 240) * p)
+    xs = np.arange(w)[None, :]
+    band = np.exp(-((xs - cx - (np.arange(h)[:, None] - h / 2) * 0.35) ** 2) / (2 * 38.0 ** 2)) * (c[:, :, 3] / 255.0) * 0.22
+    y0, x0 = max(0, y), max(0, x)
+    reg = img[y0:y0 + h, x0:x0 + w].astype(np.float32)
+    band = band[:reg.shape[0], :reg.shape[1], None]
+    img[y0:y0 + h, x0:x0 + w] = np.clip(reg + band * 255, 0, 255).astype(np.uint8)
+
+def img_cap(k): return img(os.path.join(OV, "caps", k + ".png"))
 
 def frame(g):
     b = beat[g]
@@ -113,6 +152,7 @@ def frame(g):
     elif b and b[0] != "cut":
         name, i, d = b
         out = img(os.path.join(OV, "beats", name, f"{i:04d}.jpg"), cv2.IMREAD_COLOR).copy()
+        if name not in ("black",): dust(out, g)
         fin = 1.0 if name in ("end",) or i >= 6 else (i + 1) / 7            # cross-fade in over 6 frames
         fout = 1.0 if name in ("end",) or i < d - 6 else (d - i) / 7        # and out over 6, except the last card: hard cut
         a = min(fin, fout)
@@ -129,10 +169,17 @@ def frame(g):
                 c = img(os.path.join(OV, "caps", k + ".png"))
                 pin = ezo((g - s) / 8); pout = 1 - max(0.0, (g - e) / 8) if g > e else 1.0
                 h, w = c.shape[:2]
-                blend(out, c, (OW - w) // 2, OH - 58 - h + int(22 * (1 - pin)), pin * pout)
+                cx_, cy_ = (OW - w) // 2, OH - 58 - h + int(22 * (1 - pin))
+                blend(out, c, cx_, cy_, pin * pout)
+                sheen(out, k, s, g, cx_, cy_)
         for s, d in pred:
             if s <= g < s + d:
                 blend(out, img(os.path.join(OV, "predict", f"{g - s:04d}.png")), 0, 0, 1.0)
+    # a soft bloom exactly on the four key sounds (the number, the reveal, the crash, the twist)
+    for f0, amt in BLOOM.items():
+        if f0 <= g < f0 + 9:
+            a = amt * (1 - (g - f0) / 9) ** 2
+            out = np.clip(out.astype(np.float32) * (1 + a) + 255 * a * 0.25, 0, 255).astype(np.uint8)
     return out
 
 def writer(path):
