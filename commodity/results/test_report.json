@@ -1,12 +1,12 @@
 {
-  "run_at": "2026-10-08 20:41 IST",
-  "commit": "b295121",
-  "tests": 10344,
-  "passed": 10344,
+  "run_at": "2026-10-08 22:11 IST",
+  "commit": "f56d77f",
+  "tests": 10353,
+  "passed": 10353,
   "failed": 0,
   "skipped": 0,
-  "seconds": 56.8,
-  "checks": 251,
+  "seconds": 56.6,
+  "checks": 259,
   "files": [
     {
       "name": "test_analysis",
@@ -53,8 +53,8 @@
       "file": "tests/test_docs.py",
       "about": "The front-page README states only what the data and results say.",
       "checks": 17,
-      "tests": 29,
-      "passed": 29,
+      "tests": 30,
+      "passed": 30,
       "failed": 0,
       "skipped": 0
     },
@@ -185,6 +185,16 @@
       "checks": 14,
       "tests": 84,
       "passed": 84,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_video",
+      "file": "tests/test_video.py",
+      "about": "The demo video says only what the data says: every number in its subtitles is checked.",
+      "checks": 8,
+      "tests": 8,
+      "passed": 8,
       "failed": 0,
       "skipped": 0
     }

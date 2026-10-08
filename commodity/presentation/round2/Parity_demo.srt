@@ -1,195 +1,95 @@
 1
-00:00:00,187 --> 00:00:02,000
-Four ways to buy gold on MCX.
+00:00:00,600 --> 00:00:04,367
+₹1,53,382 profit, on a year our rules never saw.
 
 2
-00:00:03,375 --> 00:00:05,312
-Same gold. Which price is fair?
+00:00:04,400 --> 00:00:06,967
+So why aren't we trading it?
 
 3
-00:00:05,562 --> 00:00:07,375
-Per gram of pure gold, they almost match.
+00:00:09,400 --> 00:00:13,767
+Per gram of pure gold, they should cost exactly the same.
 
 4
-00:00:07,562 --> 00:00:09,317
-Meet Parity: MCX gold futures intelligence. A guided tour in 8 short stops.
+00:00:13,800 --> 00:00:19,467
+Parity measures every gap, every trading day, after every cost.
 
 5
-00:00:10,700 --> 00:00:15,083
-This is Parity. Each page answers one question about MCX gold futures.
+00:00:19,500 --> 00:00:22,933
+Your guess: is any gap worth trading today?
 
 6
-00:00:15,133 --> 00:00:18,083
-Dotted words explain themselves. Just hover.
+00:00:22,967 --> 00:00:26,933
+No. The biggest gap is 40.5 bp. A trade needs 47.6.
 
 7
-00:00:18,133 --> 00:00:21,517
-Every page starts with the answer: the In short box.
+00:00:26,967 --> 00:00:30,000
+Most days, the honest answer is wait.
 
 8
-00:00:21,567 --> 00:00:24,917
-Latest closes, all four in ₹ per gram of pure gold.
+00:00:30,333 --> 00:00:32,500
+Rewind to January 2026…
 
 9
-00:00:24,967 --> 00:00:28,850
-Premium: how much dearer than GOLDM. Usual: its normal level.
+00:00:32,533 --> 00:00:36,700
+…the gold crash. Every gap blew through the cost line.
 
 10
-00:00:28,900 --> 00:00:32,550
-All near their usual level today, so the signal is quiet.
+00:00:37,033 --> 00:00:40,600
+23 years of official MCX data. 711 contracts.
 
 11
-00:00:32,600 --> 00:00:35,283
-Lost? Ctrl + K searches the whole site.
+00:00:40,933 --> 00:00:45,100
+Every fee. Every tax. And slippage you control.
 
 12
-00:00:36,667 --> 00:00:41,517
-The brief asked for five things. Each card: the ask, what we built, the proof.
+00:00:45,133 --> 00:00:50,167
+Past 12 bp of slippage, no result survives.
 
 13
-00:00:41,567 --> 00:00:45,283
-All five done. Every line of the final challenge answered.
+00:00:51,433 --> 00:00:54,567
+Most teams would report this…
 
 14
-00:00:46,667 --> 00:00:50,283
-Contracts compared two at a time, per gram of pure gold.
+00:00:54,600 --> 00:00:58,767
+…we report this. Up to 89% of the headline disappears.
 
 15
-00:00:50,333 --> 00:00:53,583
-GOLDM vs GOLDTEN hugs zero: same gold, same price.
+00:00:59,100 --> 00:01:04,667
+Every trade placed inside its contract's calendar. None held into delivery.
 
 16
-00:00:53,633 --> 00:00:57,417
-The 8 g coin is always dearer: about 60 bp (0.6%) per gram.
+00:01:05,000 --> 00:01:09,767
+Rules frozen in Git. Eight years kept sealed, then opened once.
 
 17
-00:00:57,467 --> 00:01:01,350
-In the Dec 2025 – Mar 2026 crash that gap blew out past 2.6%.
+00:01:12,800 --> 00:01:15,633
+January 2026 alone made ₹2,39,815.
 
 18
-00:01:01,400 --> 00:01:05,650
-Dearer in all 42 contract months: a lasting premium, not a mistake.
+00:01:15,667 --> 00:01:18,500
+The other 111 trades lost ₹86,433.
 
 19
-00:01:07,033 --> 00:01:10,650
-Each dot is one contract. Further right = expires later.
+00:01:18,533 --> 00:01:21,767
+Outside the crash, the rule loses money.
 
 20
-00:01:10,700 --> 00:01:14,250
-Later costs more, like rent on gold: the cost of carry.
+00:01:22,100 --> 00:01:25,800
+Best of 72 settings? A 65% chance that's noise.
 
 21
-00:01:14,300 --> 00:01:17,783
-90 days ago the line sat elsewhere: gold itself moved.
+00:01:25,833 --> 00:01:28,800
+A small edge. Not proven. We say so.
 
 22
-00:01:17,833 --> 00:01:21,783
-Time moves GOLDM only about 0.6% a month. Gold moves far more.
+00:01:29,133 --> 00:01:33,367
+Checked by 10,344 automated tests, before every update.
 
 23
-00:01:23,167 --> 00:01:26,783
-Buy the cheap one, sell the dear one. Do you make money?
+00:01:33,700 --> 00:01:37,000
+And it updates itself, every trading day.
 
 24
-00:01:26,833 --> 00:01:30,150
-Slippage is lost on every fill. With perfect fills…
-
-25
-00:01:30,200 --> 00:01:33,383
-…profit looks big. At 10 bp most of it vanishes.
-
-26
-00:01:33,433 --> 00:01:36,983
-So every result is shown at 5 bp, the realistic middle.
-
-27
-00:01:37,033 --> 00:01:41,250
-Strategy A's profit came almost all from one crash month: Jan 2026.
-
-28
-00:01:41,300 --> 00:01:45,817
-Strategy B, the fair-price rule: fewer trades, steadier, still positive.
-
-29
-00:01:45,867 --> 00:01:50,017
-Most backtests skip costs and test on the data they were tuned on…
-
-30
-00:01:50,067 --> 00:01:52,917
-…so the numbers look huge. Not real money.
-
-31
-00:01:52,967 --> 00:01:56,283
-Ours: real costs, on data the rules had never seen.
-
-32
-00:01:56,333 --> 00:02:01,283
-The hardest exam: 8 sealed years (2016–2023), opened only after the rules froze.
-
-33
-00:02:01,333 --> 00:02:05,950
-Strategy A failed. Strategy B made money in both windows: small, but real.
-
-34
-00:02:06,000 --> 00:02:10,517
-A bet on gold rising? No. Every trade's profit splits into gap and gold.
-
-35
-00:02:11,900 --> 00:02:15,817
-Is any contract far from fair price now? Black marker = today.
-
-36
-00:02:15,867 --> 00:02:19,550
-Past the red ticks, an alert fires. Today all are normal.
-
-37
-00:02:19,600 --> 00:02:24,317
-66 alerts since 2023. Typically the gap closed 51 bp within 10 trading days.
-
-38
-00:02:24,367 --> 00:02:28,917
-Each alert logs what happened next. Most days the honest answer is: wait.
-
-39
-00:02:30,300 --> 00:02:33,817
-Each bar is one contract, first trading day to expiry.
-
-40
-00:02:33,867 --> 00:02:37,983
-Each dash is a trade: green won, red lost. Pink = the 2026 crash.
-
-41
-00:02:38,033 --> 00:02:42,650
-The dark end is the run-up to delivery. Strategy B always exits before it.
-
-42
-00:02:44,033 --> 00:02:48,250
-Built on 724 official MCX files: 12,069 rows, 0 unexplained errors.
-
-43
-00:02:48,300 --> 00:02:52,183
-Rules like the delivery period come from MCX's own documents.
-
-44
-00:02:52,233 --> 00:02:58,217
-It updates itself: after every trading day a job fetches MCX's new file, checks it and republishes.
-
-45
-00:02:58,267 --> 00:03:02,517
-A failed check never reaches the site: it keeps the last good data.
-
-46
-00:03:02,567 --> 00:03:04,783
-And for late nights: dark mode.
-
-47
-00:03:05,054 --> 00:03:09,242
-What you just saw: a fair comparison, the curve explained, honest backtests, 8 sealed years, quiet alerts, and the contract calendar.
-
-48
-00:03:09,304 --> 00:03:11,742
-The honest answer: a small, real edge. Tested honestly, doubts included.
-
-49
-00:03:11,804 --> 00:03:15,704
-Parity by SYNTAX TERROR (TAN): Nikhil Kumar, Sai Ganesh, Ishaan Chhabra.
+00:01:37,333 --> 00:01:39,500
+That was 6 October.

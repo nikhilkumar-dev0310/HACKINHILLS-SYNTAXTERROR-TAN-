@@ -15,7 +15,7 @@ whether a gap is worth a look.
 | **Live site** | **https://parity-gold-site.vercel.app** (updates itself every trading day) |
 | Pitch | https://parity-gold-site.vercel.app/pitch.html |
 | Report (PDF) | https://parity-gold-site.vercel.app/report.pdf · [`commodity/report/`](commodity/report/) |
-| Demo video | [`commodity/presentation/round2/Parity_demo.mp4`](commodity/presentation/round2/Parity_demo.mp4) (3 min 16 s, subtitles in `.srt`) |
+| Demo video | [`commodity/presentation/round2/Parity_demo.mp4`](commodity/presentation/round2/Parity_demo.mp4) (1 min 46 s, subtitles in `.srt`; how it holds attention: [`ENGAGEMENT.md`](commodity/presentation/round2/ENGAGEMENT.md)) |
 | Round 1 deck | [`commodity/presentation/round1/`](commodity/presentation/round1/) |
 | Full technical write-up | [`commodity/README.md`](commodity/README.md) |
 
@@ -73,7 +73,7 @@ Three standard checks, run on training years only so the sealed results stay unt
 
 [![Tests](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml/badge.svg)](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml)
 
-About 10,000 automated tests (251 distinct checks, run per contract, per raw file and per trade log so a failure
+About 10,000 automated tests (259 distinct checks, run per contract, per raw file and per trade log so a failure
 names exactly what broke). They run on GitHub on every push, and on the team computer before the daily job may
 publish; the latest run is shown on the site's Data quality page. Standard-library `unittest`, no extra packages.
 
@@ -90,6 +90,7 @@ publish; the latest run is shown on the site's Data quality page. Standard-libra
 | `test_site_data.py`, `test_site_build.py`, `test_site_format.py` | The site shows exactly the computed numbers; every term defined, every source file real; rupee and date formatting checked in Node |
 | `test_robustness.py`, `test_statistics.py` | Break-even slippage, Sharpe tests, ADF, half-life, regime breaks and the bootstraps, each on cases with a known answer, then the stored results recomputed |
 | `test_events.py` | Every dated note on the charts, including each stated price move, matches the MCX prices of that day |
+| `test_video.py` | Every number in the demo video's subtitles matches the data; counts never overstate |
 | `test_docs.py` | This README's results table, figures, data claims, test counts and links match the computed files; the published test report is complete |
 
 ```bash

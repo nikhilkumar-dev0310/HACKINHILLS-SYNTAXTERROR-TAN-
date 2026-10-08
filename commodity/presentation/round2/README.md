@@ -1,7 +1,12 @@
 # Round 2 demo video
 
-`Parity_demo.mp4`: 3 min 16 s, 1080p, 43 MB, captioned, with a light music bed and soft interface sounds. The faster cut is made from the same capture: `pipeline/warp.py` squeezes still moments, plays motion at 1.4x and keeps every caption on screen long enough to read (`compose_fast.py`, `audio_fast.py`, `make_srt_fast.py`). `Parity_demo.srt` holds the same captions as subtitles, and doubles as a narration script if a team member records a voice-over.
+`Parity_demo.mp4`: about 1 min 45 s, 1080p, with a music bed whose intensity follows the story and sound effects synced to what happens on screen. `Parity_demo.srt` holds the captions as subtitles.
 
+**v3 (8 Oct 2026): a story, not a tour.** It opens on the strategy's profit on unseen data and asks why we aren't trading it; asks the viewer to guess whether any gap is worth trading today before revealing the answer; shows four fast proofs (23 years of MCX data, slippage you control, the typical-report-vs-ours switch, the contract calendar and the sealed years); then the peak, "Too good to be true?", and the honest twist (January 2026 made the money; outside the crash the rule loses; picking the best of 72 settings is mostly noise); and ends on a true open question: tomorrow's answer is on the live site, not in the video. Why each choice was made, with the research behind it: [`ENGAGEMENT.md`](ENGAGEMENT.md). A voice-over script is in [`VOICEOVER.md`](VOICEOVER.md); save a recording as `pipeline/voice.wav` and rebuild, and the music ducks under it.
+
+To rebuild: `python3 pipeline/capture3.py` (about 20 min), then `pipeline/run3.sh` (about 10 min). Every number on screen is read from `dashboard/data.json` or the page itself, so a rebuild always matches the site.
+
+## Previous cut (v2, kept reproducible)
 Structure: a 15-second hook (four prices, one gold), eight chapters that each answer one question (front page, the brief, relative value, term structure, backtest, signals, contracts, data quality), and a recap with the team and a QR code to the live site. Re-shot on 7 Oct 2026 on the current site (data through 6 Oct 2026); chapter 8 now shows the daily automatic update. Every number in a caption is read from `dashboard/data.json`, so a re-shoot always matches the site.
 
 To re-shoot: `python3 pipeline/capture.py` (about 30 min on 2 CPUs), then `pipeline/run_fast.sh` (about 10 min).
