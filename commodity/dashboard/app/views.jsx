@@ -99,6 +99,7 @@ function Downloads() {
   return <Card id="downloads" title="Download the data" sub="Everything on this site comes from these tables. CSV files open in Excel or Google Sheets.">
     <div className="dl">{items.map(([t, d, fn]) => <button key={t} type="button" className="dl-i" onClick={fn} aria-label={`Download ${t} as CSV: ${d}`}>
       <Icon name="download" size={18} /><span><b>{t}</b><small>{d}</small></span><span className="dl-x">CSV</span></button>)}</div>
+    <p className="note">For checking our work. These tables are compiled by Team SYNTAX TERROR (TAN); reusing them elsewhere, including in another hackathon entry, needs our written permission (<a href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/blob/main/LICENSE" target="_blank" rel="noopener">licence</a>). The prices themselves are MCX's public Bhavcopy.</p>
   </Card>;
 }
 
@@ -329,6 +330,30 @@ function SealedTests({ s }) {
   </Card>;
 }
 
+/* Skill, tuning or luck? overfit.py, on training years only; the sealed years are never opened. Every number from data.json. */
+function LuckCheck() {
+  const O = D.overfit; if (!O) return null;
+  const P = O.pbo, L = O.placebo, N = O.no_carry, beat = 100 * (1 - L.share_placebo_at_or_above_b);
+  return <Card src={SRC.overfit} srcNote="Computed on training years only; the sealed 2016–2023 years are never opened." title="Skill, tuning or luck?"
+    sub="Three standard checks, run on the training years only, so the sealed results above stay untouched.">
+    <div className="grid g3">
+      <Kpi src={SRC.overfit} label={<Term k="pbo">Overfitting (PBO)</Term>} tone={P.value > 0.5 ? "warn" : ""}
+        note={`Best of ${P.settings} settings in one half of the ${P.blocks.length} training years, checked on the other half, ${P.splits} ways. It landed in the bottom half ${Math.round(100 * P.value)}% of the time.`}>
+        <Num v={100 * P.value} f="pct" k="pbo" /><small>%</small></Kpi>
+      <Kpi src={SRC.overfit} label={<>Strategy B vs a <Term k="placebo">placebo</Term></>}
+        note={`B made ${inr(L.strategy_b_net)} on ${L.trades} trades. ${L.runs.toLocaleString("en-IN")} random-timing strategies with the same contracts, holding times and costs: median ${inr(L.placebo_median)}; ${(100 * L.share_placebo_at_or_above_b).toFixed(1)}% did as well.`}>
+        <Num v={beat} f="pct" k="plac" /><small>% of random runs beaten</small></Kpi>
+      <Kpi src={SRC.overfit} label={<>Without the <Term k="carry">carry</Term> adjustment</>}
+        note={`Same rules with GOLDM not moved to the other contract's expiry: ${N.trades} trades. With it: ${inr(N.with_carry_net)} on ${N.with_carry_trades}.`}>
+        <span className={N.net >= 0 ? "pos" : "neg"}>{inr(N.net)}</span></Kpi>
+    </div>
+    <p className="note"><b>What this says.</b> Picking the best of many settings mostly picks noise ({Math.round(100 * P.value)}% is worse than a coin toss), which is why Strategy C, the tuned one, did not beat B in the sealed years.
+      B's timing does carry information: it beat {beat.toFixed(0)}% of random-timing strategies with the same costs, a borderline result (about 1 in {Math.round(1 / Math.max(L.share_placebo_at_or_above_b, 1e-3))} random runs did as well).
+      The carry adjustment puts each contract's fair price at the right level, but on these years it did not add profit {N.net > N.with_carry_net ? `(${inr(N.net)} without it against ${inr(N.with_carry_net)} with it)` : ""}; we report that rather than hide it.
+      Method: Bailey, Borwein, López de Prado and Zhu (2017), combinatorially symmetric cross-validation, at {P.slip_bp} bp slippage.</p>
+  </Card>;
+}
+
 export function Backtest() {
   const [key, setKey] = useState("A_hold"), [s, setS] = useState(5), [tonly, setTonly] = useState(true), [filter, setFilter] = useState("All"), [sort, setSort] = useState({ k: "entry", dir: "asc" }), [page, setPage] = useState(0);
   const all = D.trades[key], tr = tonly ? all.filter(t => t.ok_tender) : all, info = D.backtests[key];
@@ -386,6 +411,7 @@ export function Backtest() {
     </Card>
     <HonestyGap />
     <SealedTests s={s} />
+    <LuckCheck />
     <div className="more-list">
       <More title="Profit by month of entry" hint="Net at the selected slippage">
         <Chart className="bars" deps={[key, s, tonly]} draw={host => barChart(host, { labels: mk.map(fmon), values: mk.map(k => bm[k].v), yfmt: kfmt, tfmt: v => inr(v), short: i => MON[+mk[i].slice(5) - 1], extra: i => `<div class="r"><span>Trades</span><b>${bm[mk[i]].n}</b></div>`, aria: "Profit by month" })} />

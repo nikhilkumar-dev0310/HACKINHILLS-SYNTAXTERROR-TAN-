@@ -6,6 +6,7 @@ Everything comes from clean/gold_futures.csv and the files in results/ that the 
 wrote. Trade logs are the stored ones from the single TEST / HOLDOUT runs; they are not re-run here.
 """
 import json
+import math
 import os
 import sys
 
@@ -28,6 +29,21 @@ R = "results/"
 
 def r(x, n=1):
     return None if x is None or (isinstance(x, float) and np.isnan(x)) else round(float(x), n)
+
+
+def finite(o):
+    """Replace NaN and infinity (from pandas) with None, all the way down."""
+    if isinstance(o, dict):
+        return {k: finite(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [finite(v) for v in o]
+    if isinstance(o, float) and not math.isfinite(o):
+        return None
+    if isinstance(o, np.floating):
+        return float(o) if np.isfinite(o) else None
+    if isinstance(o, np.integer):
+        return int(o)
+    return o
 
 
 def main():
@@ -289,6 +305,8 @@ def main():
             x["ok_tender"] = bool(Lt.loc[k, "outside_tender"]) if k in Lt.index else None
             x["safe_exit"] = str(Lt.loc[k, "last_safe_exit"]) if k in Lt.index else None
     out["attribution"] = pd.read_csv(R + "attribution_summary.csv").to_dict(orient="records")
+    _of = R + "overfit.json"                     # overfit.py: PBO, placebo and no-carry checks on DEV years only
+    out["overfit"] = json.load(open(_of)) if os.path.exists(_of) else None
     out["lifecycle_summary"] = pd.read_csv(R + "lifecycle_summary.csv").to_dict(orient="records")
     rd = pd.read_csv(R + "rolldown_monthly.csv")
     out["rolldown"] = {"goldm": rd[rd.symbol == "GOLDM"][["month", "expiry", "carry_pa_pct", "total_pct", "rolldown_pct", "curve_move_pct"]].round(2).to_dict(orient="records"),
@@ -319,7 +337,8 @@ def main():
                          .rename(columns={"source_file": "file"}).to_dict(orient="records"),
                          "updates": pd.read_csv(R + "update_log.csv").tail(30).iloc[::-1].to_dict(orient="records")
                          if os.path.exists(R + "update_log.csv") else []}
-    json.dump(out, open(os.path.join(HERE, "data.json"), "w"), separators=(",", ":"), default=str)
+    # NaN and infinity are not valid JSON: write them as null so any JSON reader can open the file
+    json.dump(finite(out), open(os.path.join(HERE, "data.json"), "w"), separators=(",", ":"), default=str, allow_nan=False)
     print("wrote dashboard/data.json", os.path.getsize(os.path.join(HERE, "data.json")) // 1024, "KB")
 
 

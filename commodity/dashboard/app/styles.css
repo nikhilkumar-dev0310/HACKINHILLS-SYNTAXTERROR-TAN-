@@ -184,6 +184,7 @@ main.page{min-width:0;padding:0 clamp(16px,4vw,56px) 80px;display:flex;flex-dire
 .kpi .note{font-size:13px;color:var(--ink-2)}
 .kpi.big .val{font-size:clamp(32px,3.4vw,48px);line-height:1;letter-spacing:-.04em;white-space:nowrap}
 .kpi.accent .val{color:var(--gold)}
+.kpi.warn .val{color:var(--warn)}
 .kpi.sm{padding:16px 18px;gap:6px}
 .kpi.sm .val{font-size:24px}
 .numv{font-variant-numeric:tabular-nums}

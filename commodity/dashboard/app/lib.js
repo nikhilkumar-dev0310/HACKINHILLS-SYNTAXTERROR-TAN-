@@ -34,7 +34,8 @@ export const SRC = {
   sealed: { file: "results/sealed_summary.csv", by: "strategy_c.py, run once" },
   pairs: { file: "results/accuracy_pairs.csv", by: "accuracy.py" },
   curve: { file: "clean/gold_futures.csv", by: "curve.py and dashboard/export.py" },
-  signals: { file: "results/fairvalue_params.json", by: "fairvalue.py (fair price), today's z in dashboard/export.py" }
+  signals: { file: "results/fairvalue_params.json", by: "fairvalue.py (fair price), today's z in dashboard/export.py" },
+  overfit: { file: "results/overfit.json", by: "overfit.py, on training years only" }
 };
 export const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -114,6 +115,8 @@ export const GLOSSARY = {
   lookahead: ["Look-ahead bias", "Accidentally using information a trader could not have had on that day, such as that day's closing price for a trade placed during the day. It makes backtests look far better than reality."],
   liquidity: ["Liquidity", "How easily a contract can be traded without moving its price. Here measured as kilograms of gold traded a day; days under 1 kg are skipped."],
   lot: ["Lot", "The smallest amount you can trade. GOLDM: 100 g. GOLDTEN: 10 g. GOLDGUINEA: 8 g. GOLDPETAL: 1 g (MCX contract specifications)."],
+  pbo: ["Probability of backtest overfitting", "Split the training years into two halves every possible way; pick the best setting on one half and check it on the other. The share of splits where the pick lands in the bottom half is the PBO. 50% means picking the best setting is a coin toss."],
+  placebo: ["Placebo", "A fake strategy that trades at random times with the same contracts, holding times and costs. If the real rule does no better, its timing adds nothing."],
   bootstrap: ["Resampling (bootstrap)", "Re-drawing whole weeks of trade results at random, thousands of times, to see how much the total could vary by chance alone."],
   median: ["Median", "The middle value: half the cases are above it, half below. Less swayed by one extreme day than the average."],
   annualised: ["Annualised", "Scaled to a yearly rate, so short and long periods can be compared. 1% over three months is about 4% annualised."],
