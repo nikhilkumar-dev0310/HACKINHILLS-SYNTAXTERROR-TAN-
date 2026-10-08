@@ -173,7 +173,7 @@ C4 = save(fig, "kg.png")
 # ================================================================ document
 def on_page(c, doc):
     c.saveState(); c.setFont("DV", 7.5); c.setFillColor(MUTED)
-    c.drawString(18 * mm, 10 * mm, "Parity · Data book · SYNTAX TERROR (TAN) · Hack in Hills '26, Problem 03")
+    c.drawString(18 * mm, 10 * mm, "Parity · Data book · © 2026 SYNTAX TERROR (TAN) · reuse needs our written permission (LICENSE)")
     c.drawRightString(A4[0] - 18 * mm, 10 * mm, f"{doc.page}")
     c.restoreState()
 

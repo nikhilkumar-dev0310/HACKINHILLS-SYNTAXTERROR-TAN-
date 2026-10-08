@@ -1,0 +1,21 @@
+Copyright (c) 2026 Team SYNTAX TERROR (TAN): Nikhil Kumar, Sai Ganesh, Ishaan Chhabra.
+All rights reserved.
+
+This repository (the code, the analysis and results, the documents, the website, and the compiled
+"Parity" data books and data files, including commodity/clean/, commodity/data_bundles/,
+commodity/report/ and the downloads offered on the Parity website) is published for viewing and
+evaluation only: so that judges of Hack in Hills '26 and other readers can inspect, run and check
+the work.
+
+You may view, download and run it for that purpose. You may not copy, redistribute, publish, or
+use any part of it in another work, product or competition submission (including any other team's
+Hack in Hills entry), in whole or in part, without the prior written permission of the team.
+Attribution alone is not permission.
+
+The underlying end-of-day prices are published by Multi Commodity Exchange of India Ltd (MCX) in its
+Bhavcopy and remain subject to MCX's own terms; this notice covers the team's selection, cleaning,
+validation, compilation, analysis and presentation of that data, not MCX's prices themselves.
+
+Requests for permission: open an issue on this repository.
+
+THE MATERIAL IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. NOTHING HERE IS INVESTMENT ADVICE.

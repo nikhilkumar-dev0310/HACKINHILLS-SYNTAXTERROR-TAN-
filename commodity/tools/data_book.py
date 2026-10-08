@@ -93,7 +93,7 @@ def frame(pno, left_label):
     c.setStrokeColor(LINE); c.setLineWidth(.6); c.line(ML, H - MT + 6, W - MR, H - MT + 6); c.line(ML, MB + 4, W - MR, MB + 4)
     T(ML, H - MT + 12, "PARITY · MCX GOLD FUTURES DATA BOOK", "SB", 7.5, GOLD)
     T(W - MR, H - MT + 12, left_label, "S", 7.5, INK3, "r")
-    T(ML, MB - 6, "Source: official MCX Bhavcopy, commodity-wise files (mcxindia.com). Values as published.", "S", 7, INK3)
+    T(ML, MB - 6, "Source: official MCX Bhavcopy (mcxindia.com), values as published · Compilation © 2026 SYNTAX TERROR (TAN) · reuse needs our written permission (LICENSE)", "S", 7, INK3)
     T(W - MR, MB - 6, f"{pno} / {TOTAL}", "M", 7.5, INK2, "r")
 def colhead(y):
     x = ML
@@ -122,6 +122,7 @@ for k, v in [("Rows", f"{N:,} daily rows, one per contract per trading day"), ("
     T(ML + 20, y, k.upper(), "SB", 8.5, INK3); T(ML + 120, y, v, "S", 12, INK); y -= 24
 T(ML + 20, 90, "Team: Nikhil Kumar · Sai Ganesh · Ishaan Chhabra", "S", 10, INK2)
 T(ML + 20, 72, "Live site: parity-gold-site.vercel.app · Code: github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-", "S", 9, INK3)
+T(ML + 20, 54, "© 2026 SYNTAX TERROR (TAN). All rights reserved. Reuse, including in another competition entry, needs our written permission (LICENSE).", "S", 8.5, INK3)
 c.showPage()
 
 # ---------------------------------------------------------------- guide
