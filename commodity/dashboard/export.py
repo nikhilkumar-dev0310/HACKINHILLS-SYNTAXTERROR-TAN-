@@ -307,6 +307,10 @@ def main():
     out["attribution"] = pd.read_csv(R + "attribution_summary.csv").to_dict(orient="records")
     _of = R + "overfit.json"                     # overfit.py: PBO, placebo and no-carry checks on DEV years only
     out["overfit"] = json.load(open(_of)) if os.path.exists(_of) else None
+    _rb = R + "robustness.json"                  # robustness.py: break-even slippage, Sharpe tests, half-lives, regimes
+    out["robustness"] = json.load(open(_rb)) if os.path.exists(_rb) else None
+    _tr = R + "test_report.json"                 # tools/run_tests.py: the latest full test run
+    out["tests"] = json.load(open(_tr)) if os.path.exists(_tr) else None
     out["lifecycle_summary"] = pd.read_csv(R + "lifecycle_summary.csv").to_dict(orient="records")
     rd = pd.read_csv(R + "rolldown_monthly.csv")
     out["rolldown"] = {"goldm": rd[rd.symbol == "GOLDM"][["month", "expiry", "carry_pa_pct", "total_pct", "rolldown_pct", "curve_move_pct"]].round(2).to_dict(orient="records"),

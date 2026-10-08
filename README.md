@@ -47,6 +47,12 @@ Three standard checks, run on training years only so the sealed results stay unt
   and costs. Its timing carries some information, but only about 1 in 19 random runs did as well: borderline.
 - **Without the carry adjustment** the same rules made ₹1,02,383 on 73 trades, against ₹79,982 on 72 with it.
   The adjustment puts each fair price at the right level but did not add profit on these years; we report that.
+- **How much can go wrong:** every result that made money before slippage breaks even at between 4.3 and 11.9 bp of
+  slippage per leg; we test at 5. Strategy C's deflated Sharpe ratio is 4%: its sealed result is what picking the best
+  of 72 settings gives by chance ([`commodity/robustness.py`](commodity/robustness.py)).
+- **Do the gaps come back?** GOLDTEN and GOLDGUINEA gaps halve in 7.2 and 7.8 market days and pass a stationarity
+  test. GOLDPETAL's level jumped abruptly in November 2024 (about −150 bp to about +90 bp over GOLDM); we found no
+  exchange notice that explains it, and say so.
 
 ## What is in it
 
@@ -67,9 +73,9 @@ Three standard checks, run on training years only so the sealed results stay unt
 
 [![Tests](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml/badge.svg)](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml)
 
-About 10,000 automated tests (195 distinct checks, run per contract, per raw file and per trade log so a failure
+About 10,000 automated tests (251 distinct checks, run per contract, per raw file and per trade log so a failure
 names exactly what broke). They run on GitHub on every push, and on the team computer before the daily job may
-publish. Standard-library `unittest`, no extra packages.
+publish; the latest run is shown on the site's Data quality page. Standard-library `unittest`, no extra packages.
 
 | File | What it proves |
 |---|---|
@@ -82,12 +88,14 @@ publish. Standard-library `unittest`, no extra packages.
 | `test_analysis.py` | Profit split adds up, overfitting statistic behaves on known cases, alerts fire only beyond the threshold |
 | `test_daily_update.py` | The publish gate rejects changed history, missing contracts, bad prices and unit errors |
 | `test_site_data.py`, `test_site_build.py`, `test_site_format.py` | The site shows exactly the computed numbers; every term defined, every source file real; rupee and date formatting checked in Node |
-| `test_docs.py` | This README's results table, figures, data claims, test counts and links match the computed files |
+| `test_robustness.py`, `test_statistics.py` | Break-even slippage, Sharpe tests, ADF, half-life, regime breaks and the bootstraps, each on cases with a known answer, then the stored results recomputed |
+| `test_events.py` | Every dated note on the charts, including each stated price move, matches the MCX prices of that day |
+| `test_docs.py` | This README's results table, figures, data claims, test counts and links match the computed files; the published test report is complete |
 
 ```bash
 cd commodity
 pip install -r tools/requirements.txt
-python -m unittest discover -s tests        # about a minute
+python tools/run_tests.py                   # about a minute; writes results/test_report.json
 ```
 
 ## Reproduce
@@ -99,6 +107,7 @@ python backtest.py train      # Strategy A on training dates; sealed runs refuse
 python fairvalue.py dev       # Strategy B, development window
 python strategy_c.py dev      # Strategy C grid on development years
 python overfit.py             # overfitting, placebo and no-carry checks (training years only)
+python robustness.py          # break-even slippage, Sharpe tests, half-lives, regimes (stored results only)
 python dashboard/export.py && node dashboard/build_app.mjs && python dashboard/build.py   # rebuild the site
 ```
 

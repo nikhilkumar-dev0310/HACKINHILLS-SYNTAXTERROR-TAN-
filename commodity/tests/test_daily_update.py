@@ -115,7 +115,7 @@ class Workflow(unittest.TestCase):
         self.assertIn("runs-on: [self-hosted, parity-mcx]", self.Y)
 
     def test_runs_tests_before_it_commits(self):
-        self.assertLess(self.Y.index("unittest"), self.Y.index("git commit"))
+        self.assertLess(self.Y.index("tools/run_tests.py"), self.Y.index("git commit"))
 
     def test_scheduled_after_mcx_publishes(self):
         self.assertIn('cron: "0 22 * * 1-5"', self.Y)       # 03:30 IST Tue-Sat

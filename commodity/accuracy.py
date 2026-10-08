@@ -46,7 +46,7 @@ def carry_table(t):
             if 20 <= days <= 40:
                 rows.append({"date": dt, "symbol": sym, "days": days,
                              "carry_pa": np.log(b.close / a.close) * 365 / days})
-    c = pd.DataFrame(rows)
+    c = pd.DataFrame(rows, columns=["date", "symbol", "days", "carry_pa"])
     daily = c.groupby("date").carry_pa.median()
     full = daily.reindex(pd.DatetimeIndex(sorted(t.date.unique())))
     fallback = full.shift(1).rolling(20, min_periods=1).median()        # past days only

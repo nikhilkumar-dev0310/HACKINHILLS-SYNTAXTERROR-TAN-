@@ -33,12 +33,13 @@ jobs:
       - name: Install
         run: pip install -q -r tools/requirements.txt scipy
       - name: Run the tests
-        run: python -m unittest discover -s tests -v 2>&1 | tee test-output.txt | tail -n 40
+        run: python tools/run_tests.py 2>&1 | tee test-output.txt | tail -n 40
       - name: Summary
         if: always()
         run: |
           {
             echo "### Parity test suite"
-            grep -E "^Ran |^OK|^FAILED" test-output.txt || true
+            grep -E "tests \(" test-output.txt || true
+            grep -E "^FAILED" test-output.txt || true
           } >> "$GITHUB_STEP_SUMMARY"
-          grep -q "^OK" test-output.txt
+          ! grep -q "^FAILED" test-output.txt && grep -q " 0 failed" test-output.txt

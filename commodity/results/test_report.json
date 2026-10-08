@@ -1,0 +1,193 @@
+{
+  "run_at": "2026-10-08 20:41 IST",
+  "commit": "b295121",
+  "tests": 10344,
+  "passed": 10344,
+  "failed": 0,
+  "skipped": 0,
+  "seconds": 56.8,
+  "checks": 251,
+  "files": [
+    {
+      "name": "test_analysis",
+      "file": "tests/test_analysis.py",
+      "about": "The analysis building blocks: attribution, alerts, roll-down, overfitting check and resampling.",
+      "checks": 18,
+      "tests": 135,
+      "passed": 135,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_clean_data",
+      "file": "tests/test_clean_data.py",
+      "about": "The cleaned dataset, contract by contract: one test per check per contract, so a failure names the contract.",
+      "checks": 20,
+      "tests": 8540,
+      "passed": 8540,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_costs",
+      "file": "tests/test_costs.py",
+      "about": "Transaction costs: every fee and tax charged on the right side, at the right rate, on the right base.",
+      "checks": 10,
+      "tests": 87,
+      "passed": 87,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_daily_update",
+      "file": "tests/test_daily_update.py",
+      "about": "The daily job's publish gate: good updates pass, every kind of bad update is rejected.",
+      "checks": 15,
+      "tests": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_docs",
+      "file": "tests/test_docs.py",
+      "about": "The front-page README states only what the data and results say.",
+      "checks": 17,
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_events",
+      "file": "tests/test_events.py",
+      "about": "The dated event notes on the site's charts (EVENTS in dashboard/app/lib.js), checked against the MCX data.",
+      "checks": 8,
+      "tests": 48,
+      "passed": 48,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_ingest",
+      "file": "tests/test_ingest.py",
+      "about": "Reading one MCX Bhavcopy download (ingest.read_one), on small hand-made files that reproduce each format trap.",
+      "checks": 11,
+      "tests": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_no_lookahead",
+      "file": "tests/test_no_lookahead.py",
+      "about": "No look-ahead, anywhere a signal is computed: rewriting the future must not change the past.",
+      "checks": 11,
+      "tests": 209,
+      "passed": 209,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_protocol",
+      "file": "tests/test_protocol.py",
+      "about": "The test protocol itself: rules frozen before the sealed data, sealed results never touched afterwards.",
+      "checks": 15,
+      "tests": 33,
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_raw_files",
+      "file": "tests/test_raw_files.py",
+      "about": "Provenance: every MCX file in raw_clean/ is re-read from scratch and checked against the clean data.",
+      "checks": 4,
+      "tests": 727,
+      "passed": 727,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_robustness",
+      "file": "tests/test_robustness.py",
+      "about": "robustness.py: each statistic on cases with a known answer, then the stored results recomputed.",
+      "checks": 28,
+      "tests": 35,
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_site_build",
+      "file": "tests/test_site_build.py",
+      "about": "The published site: built pages, every term it defines, every source it cites, everything it links to.",
+      "checks": 24,
+      "tests": 210,
+      "passed": 210,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_site_data",
+      "file": "tests/test_site_data.py",
+      "about": "The website's numbers: every figure in dashboard/data.json must match the files it was computed from.",
+      "checks": 21,
+      "tests": 95,
+      "passed": 95,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_site_format",
+      "file": "tests/test_site_format.py",
+      "about": "The site's own formatting helpers (dashboard/app/lib.js), run in Node with the real exported data.",
+      "checks": 2,
+      "tests": 22,
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_specs",
+      "file": "tests/test_specs.py",
+      "about": "Contract specifications: every module must agree on lot size, quote size and purity.",
+      "checks": 9,
+      "tests": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_statistics",
+      "file": "tests/test_statistics.py",
+      "about": "The resampling and carry calculations behind the site's 95% ranges and fair prices, on known cases.",
+      "checks": 14,
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_strategies",
+      "file": "tests/test_strategies.py",
+      "about": "Unit tests for the strategy code: costs, no look-ahead, forced exits, the stress filter and the sealed guard.",
+      "checks": 10,
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_trade_logs",
+      "file": "tests/test_trade_logs.py",
+      "about": "Every stored trade log, checked trade by trade against the rules and against the raw prices.",
+      "checks": 14,
+      "tests": 84,
+      "passed": 84,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "where": "local"
+}

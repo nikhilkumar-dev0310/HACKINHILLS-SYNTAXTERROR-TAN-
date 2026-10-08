@@ -96,11 +96,27 @@ export function Unique() {
     ["Updates itself every trading day", last ? `A scheduled job fetches the new MCX Bhavcopy, checks it, rebuilds the site and publishes. Last update ${last.run_ist} IST, data through ${fdate(last.data_through)}.` : `A scheduled job fetches each new MCX Bhavcopy, checks it, rebuilds the site and publishes. Live since ${fdate(LIVE_SINCE)}; no one feeds it by hand.`, "The usual shortcut: a snapshot that goes stale the day after it is built."],
     [<>A <Term k="fairprice">fair price</Term>, not just pairs</>, <>Each small contract is priced off GOLDM, which trades 20–60× more gold, moved to the same expiry with that day's <Term k="carry">carry</Term>.</>, <>The usual shortcut: compare thin (low-<Term k="liquidity">liquidity</Term>) contracts with each other and trade the noise.</>],
     ["The exchange's own rules", <><Term k="tender">Tender period</Term> and expiry-day settlement taken from MCX's contract specifications; every trade checked against them.</>, "The usual shortcut: trade right up to expiry, into compulsory delivery."],
+    [<>Tested for luck, not just profit</>, D.overfit && D.robustness ? <>Picking the best of 72 settings is checked for <Term k="pbo">overfitting</Term> ({Math.round(100 * D.overfit.pbo.value)}%), against a <Term k="placebo">placebo</Term> of 2,000 random strategies, with a <Term k="dsr">deflated Sharpe</Term> and each result's <Term k="breakeven">break-even slippage</Term>.</> : "Overfitting, placebo and break-even checks on every result.", "The usual shortcut: the best of many settings reported as if it were the only one tried."],
+    [`Checked by ${D.tests ? D.tests.tests.toLocaleString("en-IN") : "thousands of"} automated tests`, <>Every stored trade re-derived from MCX prices, the frozen rules pinned by fingerprint, every number on this site and in the README checked against its file. They run before each day's data may be published.</>, "The usual shortcut: a demo that worked on the day it was recorded."],
+    ["Says what it cannot explain", <>Each MCX file quirk is named, not smoothed over, and GOLDPETAL's abrupt November 2024 jump is flagged as unexplained rather than given a convenient cause. Event notes are tested against the prices.</>, "The usual shortcut: a confident story for every wiggle in the chart."],
     ["An honest verdict", <>Every trade <Term k="attribution">split into gap vs gold's move</Term>; <Term k="bootstrap">bootstrap</Term> ranges and <Term k="tstat">t-statistics</Term> shown; the answer is “a small <Term k="edge">edge</Term>, not proven”.</>, "The usual shortcut: a big headline from perfect fills and no costs."]
   ];
-  return <Card id="unique" className="unique" title="What makes Parity different" sub="Six things you can check on this site, each against the shortcut it avoids.">
+  return <Card id="unique" className="unique" title="What makes Parity different" sub={`${items.length} things you can check on this site, each against the shortcut it avoids.`}>
     <ol className="uq">{items.map(([h, a, b], k) => <li key={k}><span className="uq-n">{String(k + 1).padStart(2, "0")}</span><div><b>{h}</b><p>{a}</p><p className="dim sm">{b}</p></div></li>)}</ol>
   </Card>;
+}
+
+/* A slim line of checkable facts near the top of the Overview; each opens the section that proves it. */
+export function Proof() {
+  const A = D.meta.all, T_ = D.tests, last = autoRuns()[0];
+  const items = [
+    [`${Number(A.last.slice(0, 4)) - Number(A.first.slice(0, 4))} years of MCX data`, "quality", `${A.contracts} contracts since ${fdate(A.first)}`],
+    ["3 sealed tests", "backtest", "rules frozen in Git first"],
+    T_ && [`${T_.tests.toLocaleString("en-IN")} tests ${T_.failed ? "run" : "passing"}`, "quality", `latest run ${T_.run_at}`],
+    ["Updated every trading day", "quality", last ? `last ${last.run_ist} IST` : "by a scheduled job"]
+  ].filter(Boolean);
+  return <nav className="proof" aria-label="Checkable facts">{items.map(([b, to, t]) =>
+    <a key={b} href={"#" + to}><b>{b}</b><small>{t}</small></a>)}</nav>;
 }
 
 /* ---------------------------------------------------------------- automatic updates and the download log */

@@ -34,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0      # full history, so the protocol tests can read when each frozen file was committed
       # The team computer's own Python and Node are used. setup-python/setup-node would try to install
       # system packages with sudo, which an unattended job cannot do.
       - name: Python and Node from this computer
@@ -64,7 +65,11 @@ jobs:
         # Low priority, so the job never slows down whatever else the computer is doing.
         run: nice -n 10 python tools/daily_update.py
       - name: Tests
-        run: python -m unittest discover -s tests -q
+        # Runs the full suite and records the result for the site's Data quality page; a failure stops the publish.
+        run: |
+          python tools/run_tests.py
+          python dashboard/export.py
+          python dashboard/build.py
       - name: Commit and push
         run: |
           git config user.name "parity-data-bot"

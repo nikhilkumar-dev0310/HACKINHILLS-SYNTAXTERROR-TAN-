@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { D, P, CRASH, SYM, SYMS, SHORT, MON, T, inr, sgn, fdate, fmon, pname, r2, slug, NAME, GLOSSARY, SRC, reducedMotion } from "./lib.js";
 import { lineChart, barChart, scatter, groupBars, curveChart, alertStrip, calendarChart, liquidityChart } from "./charts.js";
 import { Chart, Card, Kpi, Num, Seg, Pill, Legend, Term, Hero, Reveal, Pager, Icon, CsvButton, downloadCSV, useApp, Takeaway, More, Glossary } from "./ui.jsx";
-import { Quotes, CostLineToday, CostLineReplay, Unique, AutoUpdate, DownloadLog, Limits } from "./extra.jsx";
+import { Quotes, CostLineToday, CostLineReplay, Unique, AutoUpdate, DownloadLog, Limits, Proof } from "./extra.jsx";
 
 const roll = (a, n) => a.map((_, i) => { const w = a.slice(Math.max(0, i - n + 1), i + 1).filter(v => v != null); return a[i] == null || !w.length ? null : w.reduce((x, y) => x + y, 0) / w.length; });
 const kfmt = v => v === 0 ? "0" : (Math.abs(v) >= 1e5 ? (v / 1e5).toFixed(1) + "L" : (v / 1e3).toFixed(0) + "k");
@@ -113,6 +113,7 @@ export function Overview() {
       <b>The problem:</b> MCX lists four gold <Term k="futures">futures</Term> that differ only in size and <Term k="purity">purity</Term>. Per gram of pure gold they should cost the same. Parity checks whether they do, whether any gap can be traded after real costs, and tells a trader when one is worth a look.
     </Hero>
     <Takeaway>They mostly match. Where they don't, the gap is usually too small to pay for the costs of trading it. It paid in the January 2026 <Term k="crash">crash</Term>, and not reliably in eight more years of <Term k="sealed">sealed tests</Term>.</Takeaway>
+    <Proof />
     <Quotes />
     <nav className="jump" aria-label="On this page"><a href="#worth" onClick={jump}>Worth trading today?</a><a href="#unique" onClick={jump}>What makes Parity different</a><a href="#latest" onClick={jump}>Latest data</a><a href="#asks" onClick={jump}>What the brief asks</a><a href="#downloads" onClick={jump}>Downloads</a></nav>
     <CostLineToday go={<Go to="signals">Replay any day on the Signals page</Go>} />
@@ -197,6 +198,48 @@ export function Brief() {
 
 /* ================================================================ RELATIVE VALUE */
 const Stat = ({ lab, v, rng, tone = "" }) => <div className={"kpi sm " + tone}><div className="lab">{lab}</div><div className="val">{v}</div><div className="note">{rng}</div></div>;
+/* The latest full test run (tools/run_tests.py): what is checked, and that it all passed. */
+export function TestReport() {
+  const R = D.tests; if (!R) return null;
+  const ok = R.failed === 0, files = R.files.filter(f => f.tests > 0).slice().sort((a, b) => b.tests - a.tests);
+  const NAME = n => n.replace(/^test_/, "").replace(/_/g, " ");
+  return <Card id="tests" src={SRC.tests} title={`Checked by ${R.tests.toLocaleString("en-IN")} automated tests`}
+    sub={<>Run on GitHub's servers on every change to the code, and on the team computer before each day's data may be published. If one fails, nothing is published.</>}
+    actions={<a className="btn" href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml" target="_blank" rel="noopener">See every run</a>}>
+    <div className="grid g3">
+      <Kpi src={SRC.tests} tone={ok ? "" : "warn"} label="Latest run" note={`${R.run_at}${R.commit ? `, code version ${R.commit}` : ""}. ${R.seconds.toFixed(0)} seconds.`}>
+        <span className={ok ? "pos" : "neg"}>{ok ? "All passed" : `${R.failed} failed`}</span></Kpi>
+      <Kpi src={SRC.tests} label="Distinct checks" note={`Each run once per contract, raw file, trade log or term, so a failure names exactly what broke. ${R.skipped ? R.skipped + " skipped." : ""}`}>
+        <Num v={R.checks} k="tchecks" /><small>in {R.files.length} files</small></Kpi>
+      <Kpi src={SRC.tests} label="Every stored trade re-derived" note="From the raw MCX prices: gross profit, costs, dates, the contract calendar, one position at a time.">
+        <Num v={(R.files.find(f => f.name === "test_trade_logs") || {}).tests || 0} k="tlogs" /><small>log checks</small></Kpi>
+    </div>
+    <div className="more-list"><More title={`What each of the ${files.length} test files proves`} hint="Sorted by number of tests">
+      <div className="tw"><table><thead><tr><th>What is tested</th><th className="n">Tests</th><th>Result</th></tr></thead>
+        <tbody>{files.map(f => <tr key={f.name}><td><b className="cap">{NAME(f.name)}</b><br /><small className="dim">{f.about}</small></td><td className="n">{f.tests.toLocaleString("en-IN")}</td>
+          <td>{f.failed ? <Pill tone="bad">{f.failed} failed</Pill> : <Pill tone="good">Passed</Pill>}</td></tr>)}</tbody></table></div>
+    </More></div>
+  </Card>;
+}
+
+/* Does each premium come back, how fast, and when did its level shift? robustness.py */
+function Behaviour() {
+  const R = D.robustness; if (!R) return null;
+  const st = R.stationarity.rows, rg = R.regimes.rows;
+  return <Card src={SRC.robust} title="How fast gaps close, and when their level shifted"
+    sub={<>Each small contract's <Term k="premium">premium</Term> over GOLDM, same expiry. <Term k="halflife">Half-life</Term> and an <Term k="adf">ADF stationarity test</Term> on the daily series; <Term k="regime">regimes</Term> found in the monthly averages.</>}>
+    <div className="tw"><table><thead><tr><th>Contract</th><th className="n"><Term k="halflife">Half-life</Term></th><th>Returns to a fixed level?</th><th>Regimes (monthly average premium)</th></tr></thead>
+      <tbody>{st.map(r => { const g = rg.find(x => x.symbol === r.symbol);
+        return <tr key={r.symbol}><td className="nowrap"><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b><br /><small className="dim">{r.days} days from {fdate(r.first)}</small></td>
+          <td className="n">{r.half_life_days} days</td>
+          <td>{r.stationary_at ? <Pill tone="good">Yes, at {r.stationary_at}</Pill> : <Pill tone="warn">Not proven</Pill>}<br /><small className="dim">ADF {r.adf} (5% line {R.stationarity.critical["5%"]})</small></td>
+          <td>{g.regimes.map((x, i) => <div key={i} className="regime"><span className="mono">{fmon(x.from + "-01")} – {fmon(x.to + "-01")}</span> <b>{sgn(x.mean_bp)} bp</b>
+            {i > 0 && (g.breaks[i - 1].nearest_event ? <small className="dim"> · within a month of: {g.breaks[i - 1].nearest_event.event}</small> : <small className="dim"> · no dated event within a month</small>)}</div>)}</td></tr>; })}</tbody></table></div>
+    {(() => { const pb = rg.find(x => x.symbol === "GOLDPETAL"), bk = pb && pb.breaks[0];
+      return <p className="note"><b>What this says.</b> GOLDTEN's and GOLDGUINEA's gaps close halfway in about a week and pass the stationarity test, which is what a gap trade needs. GOLDPETAL's level itself shifted{bk ? <>, once, in {fmon(bk.month + "-01")}: from {sgn(bk.before_bp)} bp to {sgn(bk.after_bp)} bp on average, abruptly, and no exchange notice we could find explains it</> : ""}. So its "usual" premium is a moving target; that is why Strategy B measures the usual premium from past days only, and why its PETAL trades won less often over all training years ({Math.round(100 * R.stationarity.b_win_rate_training.GOLDPETAL.won)}% of {R.stationarity.b_win_rate_training.GOLDPETAL.trades}, against {Math.round(100 * R.stationarity.b_win_rate_training.GOLDGUINEA.won)}% of {R.stationarity.b_win_rate_training.GOLDGUINEA.trades} for GOLDGUINEA). Breaks are dated by the data alone, using a test that finds a false break in pure noise about 3% of the time; events are context, not proof of cause.</p>; })()}
+  </Card>;
+}
+
 export function Relative() {
   const { rvPair: pair, setRvPair: setPair } = useApp();
   const p = P[pair], s = D.pair_series[pair];
@@ -218,6 +261,7 @@ export function Relative() {
         </div>
       </div>
     </Card>
+    <Behaviour />
     <div className="more-list"><More title="All six pairs in one table" hint="Mean gap by period, with its 95% range. Click a row to chart it.">
       <div className="tw"><table><thead><tr><th>Pair</th><th className="n">2024</th><th className="n">2025–26 quiet</th><th className="n">95% range</th><th className="n">Crash period</th><th className="n">All days</th><th className="n">Cycles</th></tr></thead>
         <tbody>{D.pairs.map(q => { const zero = q.normal[1] <= 0 && q.normal[2] >= 0;
@@ -354,6 +398,32 @@ function LuckCheck() {
   </Card>;
 }
 
+/* How much can go wrong before the profit is gone? robustness.py, from stored results; nothing sealed is re-run. */
+function Robustness() {
+  const R = D.robustness; if (!R) return null;
+  const be = R.breakeven.rows, sh = R.sharpe.rows, dc = R.sharpe.deflated_c, nb = R.neighbourhood;
+  const WIN = { holdout: "Aug 2025 – May 2026", test3: "2016 – 2019", test2: "2020 – 2023" };
+  const psrOf = (t, st) => (sh.find(x => x.test === t && x.strategy === st) || {}).psr;
+  const rows = ["holdout", "test3", "test2"].flatMap(t => ["A", "B", "C"].map(st => be.find(x => x.test === t && x.strategy === st)).filter(Boolean));
+  const ok = be.filter(x => x.breakeven_bp != null);
+  return <Card src={SRC.robust} title="How much can go wrong before the profit is gone?"
+    sub={<>Every sealed and holdout result, with the <Term k="slippage">slippage</Term> it can absorb and the odds its edge is real. From the stored results; nothing sealed is re-run.</>}>
+    <div className="grid g3">
+      <Kpi src={SRC.robust} label={<>Most <Term k="breakeven">break-even slippage</Term></>} note={`Of ${be.length} results, ${ok.length} were profitable before slippage; the most forgiving survives up to this much per leg, each side. We test at 5 bp.`}>
+        <Num v={Math.max(...ok.map(x => x.breakeven_bp))} f="d1" k="bemax" /><small>bp</small></Kpi>
+      <Kpi src={SRC.robust} tone={dc.dsr < 0.5 ? "warn" : ""} label={<>Strategy C, <Term k="dsr">deflated Sharpe</Term></>}
+        note={`C's ${dc.trades} sealed trades against the best of ${dc.trials} settings that luck alone would give. Approximate: the spread across settings is estimated from the training years.`}>
+        <Num v={100 * dc.dsr} f="pct" k="dsr" /><small>%</small></Kpi>
+      <Kpi src={SRC.robust} label="Neighbouring settings also profitable" note={`Of the ${nb.neighbours} settings one step from C's choice, ${nb.neighbours_positive} also made money on the training years (${nb.all_positive} of all ${nb.all_settings}). A lone island would be a warning sign.`}>
+        <Num v={nb.neighbours_positive} f="int" k="nbp" /><small>of {nb.neighbours}</small></Kpi>
+    </div>
+    <div className="tw"><table><thead><tr><th>Window</th><th>Strategy</th><th className="n">Net at 0 bp</th><th className="n">Net at 5 bp</th><th className="n"><Term k="breakeven">Break-even</Term></th><th className="n"><Term k="psr">Edge is real</Term></th></tr></thead>
+      <tbody>{rows.map(r => <tr key={r.test + r.strategy}><td>{WIN[r.test]}</td><td>{r.strategy}</td><td className={"n " + (r.net0 >= 0 ? "pos" : "neg")}>{inr(r.net0)}</td><td className={"n " + (r.net5 >= 0 ? "pos" : "neg")}>{inr(r.net5)}</td>
+        <td className="n">{r.breakeven_bp != null ? `${r.breakeven_bp.toFixed(1)} bp` : <span className="dim">loses at 0 bp</span>}</td><td className="n">{psrOf(r.test, r.strategy) != null ? `${Math.round(100 * psrOf(r.test, r.strategy))}%` : "–"}</td></tr>)}</tbody></table></div>
+    <p className="note"><b>What this says.</b> No result survives much worse fills than 12 bp per leg, and several turn to losses between 4 and 6 bp. "Edge is real" is the <Term k="psr">probabilistic Sharpe ratio</Term> of each result's trades at 5 bp. Strategy C's {Math.round(100 * dc.dsr)}% <Term k="dsr">deflated Sharpe</Term> says its sealed result is about what picking the best of {dc.trials} settings gives by chance, which agrees with the <Term k="pbo">overfitting</Term> check above.</p>
+  </Card>;
+}
+
 export function Backtest() {
   const [key, setKey] = useState("A_hold"), [s, setS] = useState(5), [tonly, setTonly] = useState(true), [filter, setFilter] = useState("All"), [sort, setSort] = useState({ k: "entry", dir: "asc" }), [page, setPage] = useState(0);
   const all = D.trades[key], tr = tonly ? all.filter(t => t.ok_tender) : all, info = D.backtests[key];
@@ -412,6 +482,7 @@ export function Backtest() {
     <HonestyGap />
     <SealedTests s={s} />
     <LuckCheck />
+    <Robustness />
     <div className="more-list">
       <More title="Profit by month of entry" hint="Net at the selected slippage">
         <Chart className="bars" deps={[key, s, tonly]} draw={host => barChart(host, { labels: mk.map(fmon), values: mk.map(k => bm[k].v), yfmt: kfmt, tfmt: v => inr(v), short: i => MON[+mk[i].slice(5) - 1], extra: i => `<div class="r"><span>Trades</span><b>${bm[mk[i]].n}</b></div>`, aria: "Profit by month" })} />
@@ -555,6 +626,7 @@ export function Quality() {
       <Kpi src={SRC.integrity} tone="accent" label="Unexplained errors" note={`${D.flags.length} rows flagged, each explained below`}>0</Kpi>
     </div>
     <AutoUpdate />
+    <TestReport />
     <div className="more-list">
       <DownloadLog />
       <Limits />

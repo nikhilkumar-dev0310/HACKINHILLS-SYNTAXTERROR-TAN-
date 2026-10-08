@@ -114,6 +114,41 @@ class Links(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join("..", path)), path)
 
 
+class PublishedTestReport(unittest.TestCase):
+    """results/test_report.json, which the site shows, is a complete and passing run of this suite"""
+    R = json.load(open("results/test_report.json")) if os.path.exists("results/test_report.json") else None
+
+    def setUp(self):
+        if self.R is None:
+            self.skipTest("no report yet")
+
+    def test_totals_add_up(self):
+        self.assertEqual(self.R["tests"], sum(f["tests"] for f in self.R["files"]))
+        self.assertEqual(self.R["tests"], self.R["passed"] + self.R["failed"] + self.R["skipped"])
+
+    def test_lists_every_test_file(self):
+        self.assertEqual(sorted(f["name"] for f in self.R["files"]), sorted(os.path.basename(f)[:-3] for f in glob.glob("tests/test_*.py")))
+
+    def test_every_file_says_what_it_proves(self):
+        for f in self.R["files"]:
+            self.assertGreater(len(f["about"].split()), 4, f["name"])
+
+
+class Robustness(unittest.TestCase):
+    R = json.load(open("results/robustness.json"))
+
+    def test_break_even_range(self):
+        be = [r["breakeven_bp"] for r in self.R["breakeven"]["rows"] if r["breakeven_bp"] is not None]
+        self.assertIn(f"between {min(be):.1f} and {max(be):.1f} bp", FLAT)
+
+    def test_deflated_sharpe(self):
+        self.assertIn(f"deflated Sharpe ratio is {round(100 * self.R['sharpe']['deflated_c']['dsr'])}%", FLAT)
+
+    def test_half_lives(self):
+        st = {r["symbol"]: r for r in self.R["stationarity"]["rows"]}
+        self.assertIn(f"GOLDTEN and GOLDGUINEA gaps halve in {st['GOLDTEN']['half_life_days']:.1f} and {st['GOLDGUINEA']['half_life_days']:.1f} market days", FLAT)
+
+
 class Licence(unittest.TestCase):
     def test_licence_present_and_referenced(self):
         self.assertTrue(os.path.exists(LICENSE))

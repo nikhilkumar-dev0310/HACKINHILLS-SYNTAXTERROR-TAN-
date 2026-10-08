@@ -35,7 +35,9 @@ export const SRC = {
   pairs: { file: "results/accuracy_pairs.csv", by: "accuracy.py" },
   curve: { file: "clean/gold_futures.csv", by: "curve.py and dashboard/export.py" },
   signals: { file: "results/fairvalue_params.json", by: "fairvalue.py (fair price), today's z in dashboard/export.py" },
-  overfit: { file: "results/overfit.json", by: "overfit.py, on training years only" }
+  overfit: { file: "results/overfit.json", by: "overfit.py, on training years only" },
+  robust: { file: "results/robustness.json", by: "robustness.py, from stored results and development data" },
+  tests: { file: "results/test_report.json", by: "tools/run_tests.py, on every push and before every daily publish" }
 };
 export const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -76,9 +78,11 @@ export const EVENTS = [
   { date: "2024-07-23", tag: "Duty cut to 6%", text: "Union Budget cuts customs duty on gold to 6%. GOLDM −5.5% on the day.", src: "Business Today, 23 Jul 2024; MCX Bhavcopy" },
   { date: "2025-02-01", tag: "Budget", text: "Union Budget day: special Saturday session.", src: "Saturday row in the MCX files" },
   { date: "2025-04-01", tag: "GOLDTEN lists", text: "GOLDTEN (10 g, 999) starts trading.", src: "Outlook Money, 1 Apr 2025" },
-  { date: "2026-01-30", tag: "Gold −10%", text: "Gold falls about 10% in a day. GOLDM settles at its daily limit (−10.4%); the small contracts settle 12% lower.", src: "News Arena and Motilal Oswal, 30 Jan 2026; MCX Bhavcopy" },
+  { date: "2025-09-22", tag: "Six expiries", text: "MCX lists six expiries of each small gold contract instead of three; GOLDM gains more months too.", src: "MCX circular MCX/TRD/456/2025, 11 Sep 2025; expiry counts in the MCX files" },
+  { date: "2026-01-30", tag: "Crash", text: "Gold's crash day. GOLDM's most-traded contract settles 15.0% lower; its near month and every small contract settle 12% lower, their daily limit.", src: "MCX Bhavcopy, 30 Jan 2026" },
   { date: "2026-02-01", tag: "Budget", text: "Union Budget day: special Sunday session. GOLDM −5.6%.", src: "Sunday row in the MCX files" },
-  { date: "2026-05-13", tag: "Duty 6% → 15%", text: "Import duty on gold raised from 6% to 15%, effective that day. GOLDM +5.5%.", src: "Customs Notification 16/2026; LiveLaw, 13 May 2026" }
+  { date: "2026-05-13", tag: "Duty 6% → 15%", text: "Import duty on gold raised from 6% to 15%, effective that day. GOLDM +5.5%.", src: "Customs Notification 16/2026; LiveLaw, 13 May 2026" },
+  { date: "2026-07-13", tag: "Delivery widened", text: "MCX accepts gold from more refiners for delivery on all its gold futures.", src: "Business Standard, 6 Jul 2026" }
 ];
 
 /* Plain-English definitions shown on hover/focus of dotted terms and searchable in the command menu. */
@@ -116,6 +120,12 @@ export const GLOSSARY = {
   liquidity: ["Liquidity", "How easily a contract can be traded without moving its price. Here measured as kilograms of gold traded a day; days under 1 kg are skipped."],
   lot: ["Lot", "The smallest amount you can trade. GOLDM: 100 g. GOLDTEN: 10 g. GOLDGUINEA: 8 g. GOLDPETAL: 1 g (MCX contract specifications)."],
   pbo: ["Probability of backtest overfitting", "Split the training years into two halves every possible way; pick the best setting on one half and check it on the other. The share of splits where the pick lands in the bottom half is the PBO. 50% means picking the best setting is a coin toss."],
+  halflife: ["Half-life", "How many market days it takes a gap to close halfway back to its usual level, estimated from how much of each day's gap is still there the next day. Shorter means faster mean reversion."],
+  adf: ["Stationarity test (ADF)", "The augmented Dickey-Fuller test asks whether a series keeps returning to a fixed level or can wander off for good. Passing it at 5% means a lasting drift is unlikely; failing it means the level itself can shift."],
+  regime: ["Regime", "A stretch of months in which a premium sits around one level. A break is where the data says the level changed; we date breaks from the data alone, then look for an exchange or policy event within a month."],
+  breakeven: ["Break-even slippage", "The slippage per leg, each side, at which a result's net profit falls to exactly zero. If real fills are worse than this, the result is a loss."],
+  psr: ["Probabilistic Sharpe ratio", "The probability that a strategy's true risk-adjusted return is above zero, allowing for how few trades there were and for lopsided or fat-tailed results (Bailey and López de Prado, 2012)."],
+  dsr: ["Deflated Sharpe ratio", "The same probability, but measured against the best result luck alone would produce from all the settings that were tried, here 72 (Bailey and López de Prado, 2014). Below 50% means the result is what trying many settings would give by chance."],
   placebo: ["Placebo", "A fake strategy that trades at random times with the same contracts, holding times and costs. If the real rule does no better, its timing adds nothing."],
   bootstrap: ["Resampling (bootstrap)", "Re-drawing whole weeks of trade results at random, thousands of times, to see how much the total could vary by chance alone."],
   median: ["Median", "The middle value: half the cases are above it, half below. Less swayed by one extreme day than the average."],
