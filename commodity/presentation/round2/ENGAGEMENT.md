@@ -20,14 +20,19 @@ evidence is. Pop-psychology claims are left out or flagged.
 **Sound levels** (mixing practice, not research): music bed well under the captions' moments, effects
 14–25 dB below the loudest moment, one loudest effect (the twist), near-silence while the viewer guesses,
 a riser that cuts dead on the reveal, a low room tone so pauses don't sound like a fault, and a resolving
-chord on the address. The final mix is normalised to −14 LUFS integrated, −1 dBTP true peak (web standard).
+chord on the address. The final mix is normalised to −16 LUFS integrated, −1.5 dBTP true peak.
+
+**v3.2, softer sound.** Viewers found the bed sharp. The hi-hats and claps (bright noise bursts) are gone, the
+arpeggio and top line are an octave lower and pure tones, the music is rolled off above about 3 kHz and the
+effects above 4.5 kHz, ticks and clicks are lower pitched, and the whole mix is 2 dB quieter. Energy above
+5 kHz is now 42 dB below the total.
 
 **Visual attention layer (v3.1).** Small, continuous, meaningful motion, so the eye has a reason to stay:
-the camera "breathes" (about 1.5% zoom and a few pixels of drift on slow cycles), so the picture is never
-frozen; edges darken slightly when the camera is close in on a number (a spotlight); a single soft light
-sweep crosses each caption as it appears; a brief brightness bloom lands exactly on the four key sounds (the
-number, the reveal, the crash, the twist), the same audio-visual synchrony as above; slow gold dust drifts on
-the statement cards. Each is kept below the level where it reads as an effect rather than as life in the
+the camera "breathes" (v3.2: about 3% zoom and up to 10 px of drift on 8–13 s cycles), so the picture is never
+frozen; edges darken slightly when the camera is close in on a number (a spotlight); a single warm light
+sweep crosses each caption as it appears (v3.2: brighter and wider); a brief brightness bloom lands exactly on the four key sounds (the
+number, the reveal, the crash, the twist), the same audio-visual synchrony as above; slow, soft gold dust drifts on
+the statement cards (v3.2: about 130 fainter specks) and, sparser still, over the site. Each is kept below the level where it reads as an effect rather than as life in the
 picture. Sound effects sit under the music bed (v3.1: 8–10 dB quieter than v3), with the twist still the
 loudest single sound.
 

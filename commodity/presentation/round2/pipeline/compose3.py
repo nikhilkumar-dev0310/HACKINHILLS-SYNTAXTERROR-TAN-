@@ -73,7 +73,11 @@ pred = [(e["f"], e["predict"]) for e in OUT_EV if "predict" in e]
 # v3.1 attention layer: tied to meaning, low amplitude
 BLOOM = {e["f"]: (0.07 if e["sfx"] in ("impact", "impact_big") else 0.04) for e in OUT_EV if e.get("sfx") in ("impact", "impact_big", "reveal", "alert")}
 _g = np.random.default_rng(5)
-DUST = _g.uniform(0, 1, (46, 5))                                                                 # x, y, size, speed, phase
+DUST = _g.uniform(0, 1, (130, 5))                                                                # x, y, size, speed, phase (cards)
+PDUST = _g.uniform(0, 1, (45, 5))                                                                # a sparser, fainter layer over the site
+def _sprite(r):
+    k = np.arange(-2 * r, 2 * r + 1, dtype=np.float32); g_ = np.exp(-(k[None, :] ** 2 + k[:, None] ** 2) / (2 * (r * 0.75) ** 2)); return g_[:, :, None]
+SPR = {r: _sprite(r) for r in (1, 2, 3)}
 
 # ------------------------------------------------------------------ drawing
 def blend(dst, src, x, y, a=1.0):
@@ -102,10 +106,10 @@ def page(g):
     f = KEEP[min(g, N - 1)]
     im = cv2.imread(os.path.join(HERE, "frames3", f"{f:05d}.jpg"))
     x0, y0, W = cam_src[f]
-    # breathing camera: never perfectly still (about 1.5% zoom, a few pixels of drift, slow periods)
-    z = 1 + 0.015 * (0.5 - 0.5 * math.cos(2 * math.pi * g / (FPS * 9.0)))
-    W2 = W / z; x0 = x0 + (W - W2) / 2 + 4 * math.sin(2 * math.pi * g / (FPS * 13.0)); W = W2
-    y0 = y0 + (W * z - W) * VH / VW / 2 + 3 * math.sin(2 * math.pi * g / (FPS * 11.0) + 1)
+    # breathing camera: never perfectly still (v3.2: about 3% zoom and 10 px of drift, on slow 8-13 s periods)
+    z = 1 + 0.03 * (0.5 - 0.5 * math.cos(2 * math.pi * g / (FPS * 8.0)))
+    W2 = W / z; x0 = x0 + (W - W2) / 2 + 10 * math.sin(2 * math.pi * g / (FPS * 13.0)); W = W2
+    y0 = y0 + (W * z - W) * VH / VW / 2 + 6 * math.sin(2 * math.pi * g / (FPS * 11.0) + 1)
     x0 = min(max(x0, 0), VW - W); H = W * VH / VW; y0 = min(max(y0, 0), VH - H)
     sx, sy, sw, sh = x0 * DSF, y0 * DSF, W * DSF, H * DSF
     if sw > OW * 1.02:
@@ -117,31 +121,31 @@ def page(g):
     spot = 1 - 0.10 * min(1.0, max(0.0, (zoom - 1.35) / 0.6)) * np.clip((_r - 0.35) / 0.8, 0, 1) ** 1.4   # spotlight when close in
     return (out.astype(np.float32) * VIG * spot[:, :, None]).astype(np.uint8)
 
-def dust(img, g):
-    """Slow gold dust on the dark statement cards."""
-    for x, y, sz, sp, ph in DUST:
-        px = int((x * OW + 18 * math.sin(g / 40 + ph * 6)) % OW)
-        py = int((y * OH - g * (0.4 + sp * 0.9)) % OH)
-        a = 0.18 + 0.32 * (0.5 + 0.5 * math.sin(g / 23 + ph * 9))
-        r_ = int(1 + sz * 2.6)
-        y0, y1, x0, x1 = max(0, py - r_), min(OH, py + r_ + 1), max(0, px - r_), min(OW, px + r_ + 1)
-        if y1 > y0 and x1 > x0:
-            patch = img[y0:y1, x0:x1].astype(np.float32)
-            gold = np.array([61, 184, 245], np.float32)
-            img[y0:y1, x0:x1] = (patch * (1 - a) + gold * a).astype(np.uint8)
+GOLD = np.array([61, 184, 245], np.float32)
+def dust(img, g, pts=None, amax=0.30):
+    """Slow, soft gold dust: many faint specks on the statement cards, a sparser layer over the site."""
+    for x, y, sz, sp, ph in (DUST if pts is None else pts):
+        px = int((x * OW + 22 * math.sin(g / 45 + ph * 6)) % OW)
+        py = int((y * OH - g * (0.3 + sp * 0.8)) % OH)
+        a = amax * (0.25 + 0.75 * (0.5 + 0.5 * math.sin(g / 27 + ph * 9))) * (0.55 + 0.45 * sz)
+        r_ = 1 + int(sz * 2.99); m = SPR[r_] * a; R = 2 * r_
+        y0, y1, x0, x1 = py - R, py + R + 1, px - R, px + R + 1
+        if y0 < 0 or x0 < 0 or y1 > OH or x1 > OW: continue
+        patch = img[y0:y1, x0:x1].astype(np.float32)
+        img[y0:y1, x0:x1] = (patch * (1 - m) + GOLD * m).astype(np.uint8)
 
 def sheen(img, k, s, g, x, y):
     """A soft light sweep across a caption once, as it appears."""
-    p = (g - s - 4) / 16.0
-    if not 0 <= p <= 1: return
+    p = ezo((g - s - 4) / 20.0) if 0 <= (g - s - 4) / 20.0 <= 1 else -1
+    if p < 0: return
     c = img_cap(k); h, w = c.shape[:2]
     cx = int(-120 + (w + 240) * p)
     xs = np.arange(w)[None, :]
-    band = np.exp(-((xs - cx - (np.arange(h)[:, None] - h / 2) * 0.35) ** 2) / (2 * 38.0 ** 2)) * (c[:, :, 3] / 255.0) * 0.22
+    band = np.exp(-((xs - cx - (np.arange(h)[:, None] - h / 2) * 0.35) ** 2) / (2 * 52.0 ** 2)) * (c[:, :, 3] / 255.0) * 0.55
     y0, x0 = max(0, y), max(0, x)
     reg = img[y0:y0 + h, x0:x0 + w].astype(np.float32)
     band = band[:reg.shape[0], :reg.shape[1], None]
-    img[y0:y0 + h, x0:x0 + w] = np.clip(reg + band * 255, 0, 255).astype(np.uint8)
+    img[y0:y0 + h, x0:x0 + w] = np.clip(reg + band * np.array([200, 235, 255], np.float32), 0, 255).astype(np.uint8)   # warm white
 
 def img_cap(k): return img(os.path.join(OV, "caps", k + ".png"))
 
@@ -159,6 +163,7 @@ def frame(g):
         if a < 1: out = cv2.addWeighted(out, a, page(g), 1 - a, 0)
     else:
         out = page(g)
+        dust(out, g, PDUST, 0.12)
         if b:                                                                 # quick dip through dark
             name, i, d = b
             a = min(1.0, (i + 1) / 3, (d - i) / 4)

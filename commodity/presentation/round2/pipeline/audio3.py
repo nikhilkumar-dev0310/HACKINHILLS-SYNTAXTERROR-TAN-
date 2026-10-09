@@ -50,22 +50,21 @@ while t < music_end:
     add(L["bass"], t, (np.sin(2 * np.pi * midi(root - 12) * x) * env(N, 0.04, 1.2)).astype(np.float32) / 5)
     pat = [0, 2, 1, 3, 2, 1, 3, 2]
     for b8 in range(16):
-        m = voice[pat[b8 % 8]] + 24; N2 = int(0.9 * SR); x2 = tt(N2)
-        pl = ((np.sin(2 * np.pi * midi(m) * x2) + 0.3 * np.sin(4 * np.pi * midi(m) * x2)) * np.exp(-x2 * 6)).astype(np.float32); pl[:60] *= np.linspace(0, 1, 60)
-        add(L["arp"], t + b8 * beat / 2, pl, 0.3 if b8 % 2 else -0.3, 0.05)
+        m = voice[pat[b8 % 8]] + 12; N2 = int(1.1 * SR); x2 = tt(N2)       # v3.2: an octave lower, pure tone, soft attack
+        pl = (np.sin(2 * np.pi * midi(m) * x2) * np.exp(-x2 * 4)).astype(np.float32); A2 = int(0.018 * SR); pl[:A2] *= np.linspace(0, 1, A2)
+        add(L["arp"], t + b8 * beat / 2, pl, 0.25 if b8 % 2 else -0.25, 0.045)
     for bt in range(8):
         if bt % 2 == 0:
             Nk = int(0.35 * SR); xk = tt(Nk); fk = 50 + 55 * np.exp(-xk * 30)
             add(L["drums"], t + bt * beat, (np.sin(2 * np.pi * np.cumsum(fk) / SR) * np.exp(-xk * 9)).astype(np.float32), 0, 0.2)
-        Ns = int(0.06 * SR); ns = highpass(rng.standard_normal(Ns).astype(np.float32), 6000)
-        add(L["drums"], t + bt * beat + beat / 2, ns * np.exp(-tt(Ns) * 70).astype(np.float32), 0.15, 0.03)
-        if bt % 4 == 2:                                            # lift layer: a soft clap and a high octave line
-            Nc = int(0.18 * SR); cp = highpass(rng.standard_normal(Nc).astype(np.float32), 1200) * np.exp(-tt(Nc) * 22).astype(np.float32)
-            add(L["lift"], t + bt * beat, cp, -0.1, 0.07)
-    hi = (np.sin(2 * np.pi * midi(voice[3] + 24) * x) * env(N, 0.5, 1.2)).astype(np.float32) / 22
+        # v3.2: no hi-hats or claps (the noise bursts were the harsh part); a soft low shaker instead
+        Ns = int(0.09 * SR); ns = lowpass(highpass(rng.standard_normal(Ns).astype(np.float32), 900), 2400)
+        add(L["drums"], t + bt * beat + beat / 2, ns * env(Ns, 0.02, 0.06), 0.15, 0.012)
+    hi = (np.sin(2 * np.pi * midi(voice[3] + 12) * x) * env(N, 0.8, 1.5)).astype(np.float32) / 30
     add(L["lift"], t, hi, 0.25)
     t += d; k += 1
-for kk in L: L[kk][:, 0] = lowpass(L[kk][:, 0], 7000); L[kk][:, 1] = lowpass(L[kk][:, 1], 7000)
+for kk in L:                                                       # warm: roll off everything above about 3 kHz
+    for c in (0, 1): L[kk][:, c] = lowpass(lowpass(L[kk][:, c], 3200), 3200)
 
 # the resolve: a long C major chord with the root low, on the ending
 if end_ev:
@@ -105,25 +104,25 @@ def sub_hit(f0=55, d=0.9, punch=1.0):
     return ((s + th) / 1.6).astype(np.float32)
 def land():
     N = int(0.25 * SR); x = tt(N)
-    s = np.sin(2 * np.pi * 180 * x) * np.exp(-x * 26) + 0.4 * np.sin(2 * np.pi * 2400 * x) * np.exp(-x * 60)
+    s = np.sin(2 * np.pi * 180 * x) * np.exp(-x * 26) + 0.15 * np.sin(2 * np.pi * 720 * x) * np.exp(-x * 60)
     return (s * 0.7).astype(np.float32)
 def click():
     N = int(0.05 * SR); x = tt(N)
-    return ((0.6 * np.sin(2 * np.pi * 1900 * x) * np.exp(-x * 120) + 0.4 * rng.standard_normal(N) * np.exp(-x * 300)) * 0.5).astype(np.float32)
+    return (np.sin(2 * np.pi * 950 * x) * np.exp(-x * 110) * 0.5).astype(np.float32)
 def tick():
     N = int(0.02 * SR); x = tt(N)
-    return (np.sin(2 * np.pi * 3300 * x) * np.exp(-x * 320) * 0.5 + rng.standard_normal(N) * np.exp(-x * 600) * 0.15).astype(np.float32)
+    return (np.sin(2 * np.pi * 1300 * x) * np.exp(-x * 260) * 0.5).astype(np.float32)
 def whoosh(d=0.55, bright=0.35):
     N = int(d * SR); x = tt(N); w = rng.standard_normal(N).astype(np.float32); e = np.sin(np.pi * x / d) ** 2
-    s = (lowpass(w, 900) * (1 - x / d) + highpass(w, 2500) * (x / d) * bright) * e
+    s = (lowpass(w, 700) * (1 - x / d) + lowpass(highpass(w, 1200), 2600) * (x / d) * bright) * e
     return (s / (np.abs(s).max() + 1e-6) * 0.5).astype(np.float32)
 def bell(ms, d=2.2, decay=2.2):
     N = int(d * SR); x = tt(N)
-    s = sum(sum(a * np.sin(2 * np.pi * midi(m) * r * x) * np.exp(-x * decay * dk) for a, r, dk in ((1, 1, 1), (.4, 2.01, 1.5), (.2, 3.0, 2.3))) for m in ms)
+    s = sum(sum(a * np.sin(2 * np.pi * midi(m) * r * x) * np.exp(-x * decay * dk) for a, r, dk in ((1, 1, 1), (.25, 2.01, 2.0))) for m in ms)
     s[:240] *= np.linspace(0, 1, 240); return (s / len(ms) * 0.4).astype(np.float32)
 def alert():
     out = np.zeros(int(0.9 * SR), np.float32)
-    for i, m in enumerate((79, 83, 86)):
+    for i, m in enumerate((67, 71, 74)):
         b = bell([m], 0.5, 6); j = int(i * 0.11 * SR); out[j:j + len(b)] += b[:len(out) - j]
     return out
 def cost(d=1.6):
@@ -132,13 +131,13 @@ def cost(d=1.6):
     return lowpass(s.astype(np.float32), 1600) * 0.5
 def shimmer():
     N = int(1.1 * SR); x = tt(N)
-    s = sum(np.sin(2 * np.pi * f * x + p) * np.exp(-x * (3 + i)) for i, (f, p) in enumerate(zip(rng.uniform(4200, 8200, 6), rng.uniform(0, 6, 6))))
+    s = sum(np.sin(2 * np.pi * f * x + p) * np.exp(-x * (3 + i)) for i, (f, p) in enumerate(zip(rng.uniform(1500, 2800, 6), rng.uniform(0, 6, 6))))
     s[:400] *= np.linspace(0, 1, 400); return (s / 6 * 0.5).astype(np.float32)
 def riser(d):
     N = int(d * SR); x = tt(N); p = x / d
     nz = highpass(rng.standard_normal(N).astype(np.float32), 600) * (p ** 2.2)
     sw = np.sin(2 * np.pi * np.cumsum(180 + 900 * p ** 2) / SR) * p ** 2.5 * 0.35
-    s = (lowpass(nz, 9000) * 0.7 + sw).astype(np.float32); s[-60:] *= np.linspace(1, 0, 60)   # cut dead at the landing
+    s = (lowpass(lowpass(nz, 3000), 3000) * 0.7 + sw).astype(np.float32); s[-60:] *= np.linspace(1, 0, 60)   # cut dead at the landing
     return s * 0.6
 def room():
     N = n; w = lowpass(rng.standard_normal(N).astype(np.float32), 500); return w * db(-46)
@@ -168,7 +167,8 @@ for e in EV:
     if "rise" in e: d = e["rise"] / FPS; add(fx, t, riser(d), 0, db(-21))
     if "predict" in e:                                  # one soft tick as each "your guess" dot fills
         d = e["predict"] / FPS
-        for i in range(1, 4): add(fx, t + i * d / 3.2, bell([88], 0.4, 9), 0, db(-21))
+        for i in range(1, 4): add(fx, t + i * d / 3.2, bell([76], 0.4, 9), 0, db(-23))
+for c in (0, 1): fx[:, c] = lowpass(fx[:, c], 4500)                 # nothing sharp: effects rolled off above 4.5 kHz
 fx += room()[:, None] * np.array([1, 1], np.float32)
 
 # ------------------------------------------------------------------ optional voice-over, with the music ducked under it
@@ -185,6 +185,7 @@ if os.path.exists(vpath):
     print("voice-over mixed in, music ducked under it")
 
 mix = mix_music + fx + voice
+for c in (0, 1): mix[:, c] = mix[:, c] - 0.35 * highpass(mix[:, c], 5000)   # gentle top-end shelf on the whole mix
 mix = mix[: int(TOTAL * SR)]
 mix[-int(0.02 * SR):] *= np.linspace(1, 0, int(0.02 * SR))[:, None]       # hard cut, no click
 peak = np.abs(mix).max(); mix = mix / peak * 0.9
