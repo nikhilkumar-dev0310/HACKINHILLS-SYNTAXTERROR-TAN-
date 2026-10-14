@@ -111,11 +111,12 @@ def main():
     lastd = tr.date.max()
     q = []
     for s in SYMS:
-        g = tr[(tr.date == lastd) & (tr.symbol == s)]
+        ds = tr[tr.symbol == s].date.max()                 # a contract MCX has not returned yet shows its last known day
+        g = tr[(tr.date == ds) & (tr.symbol == s)]
         if g.empty:
             continue
         x = g.loc[g.grams.idxmax()]
-        q.append({"symbol": s, "date": str(lastd.date()), "expiry": str(x.expiry_date.date()), "close": r(x.close, 0),
+        q.append({"symbol": s, "date": str(ds.date()), "waiting": bool(ds < lastd), "expiry": str(x.expiry_date.date()), "close": r(x.close, 0),
                   "prev_close": r(x.prev_close, 0), "chg": r(x.close - x.prev_close, 0),
                   "chg_pct": r((x.close / x.prev_close - 1) * 100, 2) if x.prev_close else None,
                   "lots": int(x.volume_lots), "oi": int(x.open_interest_lots), "rs_per_g": r(x.rs_per_g, 1)})

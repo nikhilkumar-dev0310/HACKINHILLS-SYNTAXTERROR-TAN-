@@ -118,12 +118,12 @@ await browser.close();
 console.log("listed by MCX:", JSON.stringify(res.listed), " up to", CAP, " requested since", since + ":", res.log.length, " files:", Object.keys(res.files).length);
 for (const l of res.log) console.log("  ", l.join("  "));
 if (!Object.keys(res.files).length) { console.error("no files returned"); process.exit(4); }
-// Every contract type must come back, or the day would be published incomplete; say plainly which one is missing.
+// A contract type that did not come back is reported, not fatal: daily_update.py publishes the day with what MCX
+// returned (at least two types) and fetches the missing contracts again on every run until MCX returns them.
 const gotSym = new Set(Object.keys(res.files).map(n => n.split("_")[0]));
 const miss = SY.filter(s => !gotSym.has(s));
 if (miss.length) {
   const why = miss.map(s => `${s}: ${res.listed[s] ? `${res.listed[s]} listed, ` + res.log.filter(l => l[0] === s).map(l => l[6] || "no rows").join("/") : "not in MCX's contract list"}`).join("; ");
-  console.log(`::error title=Fetch incomplete::MCX returned no files for ${miss.join(", ")} (${why}). Nothing published; the next run retries.`);
-  process.exit(5);
+  console.log(`::warning title=Fetch incomplete::MCX returned no files for ${miss.join(", ")} (${why}). The other contracts are used; these are fetched again next run.`);
 }
 writeFileSync(out, gzipSync(JSON.stringify(res.files)));

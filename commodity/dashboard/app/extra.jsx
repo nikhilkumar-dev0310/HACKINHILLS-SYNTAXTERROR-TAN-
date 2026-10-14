@@ -30,6 +30,7 @@ export function Quotes() {
     {D.quotes.map(q => { const up = q.chg > 0, dn = q.chg < 0;
       return <Reveal key={q.symbol} className="quote" role="listitem">
         <div className="q-h"><span className="sw" style={{ background: SYM[q.symbol].c }} /><b>{q.symbol}</b><Src src={SRC.prices} note={`MCX close on ${fdate(q.date)} for the contract expiring ${fdate(q.expiry)}, the one with the most gold traded that day.`} /></div><div className="dim sm q-d">{SYM[q.symbol].d}</div>
+        {q.waiting && <div className="sm warn-t">Close of {fdate(q.date)}: MCX has not sent the later days yet; they are added when it does.</div>}
         <div className="q-p"><span className="num">{inr(q.close)}</span><small>{UNIT[q.symbol]}</small></div>
         <div className={"q-c " + (up ? "pos" : dn ? "neg" : "dim")}>{up ? "▲" : dn ? "▼" : "■"} {inr(Math.abs(q.chg))} ({sgn(q.chg_pct, 2, "%")})<div className="dim">previous <Term k="settlement">close</Term> {inr(q.prev_close)}</div></div>
         <Spark values={pr[q.symbol].slice(from)} color={SYM[q.symbol].c} />
@@ -123,14 +124,15 @@ export function Proof() {
 export function AutoUpdate() {
   const up = D.provenance.updates, auto = autoRuns();
   const steps = [["Fetch", <>Every trading day at 03:30 IST (retry 08:00), GitHub Actions starts the job on a team computer, which opens the official MCX <Term k="bhavcopy">Bhavcopy</Term> page and downloads every gold futures contract still trading. MCX refuses cloud servers, so the job cannot run in a data centre.</>],
-    ["Check", "The update is rejected if a published price changed, a contract type is missing, a close is outside its day's range off expiry day, or a price is out by a unit error."],
+    ["Check", "The update is rejected if a published price changed, fewer than two of the four contract types came back, a close is outside its day's range off expiry day, or a price is out by a unit error. If MCX leaves out one or two contracts, the day is published with the rest and the missing days are fetched again on every run until MCX supplies them."],
     ["Rebuild", <>Prices, premiums, the <Term k="curve">curve</Term>, <Term k="rolldown">roll-down</Term>, alerts and the contract calendar are recomputed. Strategy rules and <Term k="sealed">sealed test</Term> results stay frozen.</>],
     ["Publish", "The job commits the new files; Vercel redeploys the site from GitHub within minutes."]];
   return <Card id="auto" title="Updates itself every trading day"
     sub={<>{auto.length ? "No one feeds this site by hand." : `Live since ${fdate(LIVE_SINCE)} on a team computer; no one feeds this site by hand.`} The workflow is .github/workflows/daily-data.yml; the checks are in commodity/tools/daily_update.py.</>}>
     <ol className="steps4">{steps.map(([h, t], k) => <li key={k}><span className="tn">{k + 1}</span><b>{h}</b><p>{t}</p></li>)}</ol>
-    {up.length ? <div className="tw"><table><thead><tr><th>Run (IST)</th><th>Data through</th><th className="n">New days</th><th className="n">New rows</th><th className="n">Rows held</th><th>How</th></tr></thead>
-      <tbody>{up.slice(0, 8).map(u => <tr key={u.run_ist}><td className="mono">{u.run_ist}</td><td className="mono">{fdate(u.data_through)}</td><td className="n">{u.new_days}</td><td className="n">{u.new_rows}</td><td className="n">{u.rows_total.toLocaleString("en-IN")}</td><td className="dim">{isAuto(u) ? "Scheduled job" : "By hand, from the MCX page, same checks"}</td></tr>)}</tbody></table></div>
+    {up.length ? <div className="tw"><table><thead><tr><th>Run (IST)</th><th>Data through</th><th className="n">New days</th><th className="n">New rows</th><th className="n">Rows held</th><th>How</th><th>Gaps</th></tr></thead>
+      <tbody>{up.slice(0, 8).map(u => <tr key={u.run_ist}><td className="mono">{u.run_ist}</td><td className="mono">{fdate(u.data_through)}</td><td className="n">{u.new_days}</td><td className="n">{u.new_rows}</td><td className="n">{u.rows_total.toLocaleString("en-IN")}</td><td className="dim">{isAuto(u) ? "Scheduled job" : "By hand, from the MCX page, same checks"}</td>
+        <td className="dim">{[u.backfilled_rows > 0 && `${u.backfilled_rows} late rows filled in`, u.pending && `waiting for MCX: ${String(u.pending).replace(/GOLD/g, "")}`].filter(Boolean).join("; ") || "none"}</td></tr>)}</tbody></table></div>
       : <p className="note">The first automatic run will be listed here once it has published new data.</p>}
     {up.length > 0 && !auto.length && <p className="note">The scheduled job went live on {fdate(LIVE_SINCE)}; its first run checked MCX and found no new trading day yet. Its first update is listed here after the next MCX session. Earlier updates were run by hand through the same checks.</p>}
   </Card>;

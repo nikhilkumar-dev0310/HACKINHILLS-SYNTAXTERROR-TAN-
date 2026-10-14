@@ -73,7 +73,7 @@ Three standard checks, run on training years only so the sealed results stay unt
 
 [![Tests](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml/badge.svg)](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml)
 
-About 10,000 automated tests (259 distinct checks, run per contract, per raw file and per trade log so a failure
+About 10,000 automated tests (263 distinct checks, run per contract, per raw file and per trade log so a failure
 names exactly what broke). They run on GitHub on every push, and on the team computer before the daily job may
 publish; the latest run is shown on the site's Data quality page. Standard-library `unittest`, no extra packages.
 

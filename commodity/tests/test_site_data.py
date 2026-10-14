@@ -55,7 +55,9 @@ class EachQuote(unittest.TestCase):
         last = d[(d.symbol == sym) & (d.date == pd.Timestamp(q["date"])) & (d.expiry_date == pd.Timestamp(q["expiry"]))]
         self.assertEqual(len(last), 1)
         self.assertAlmostEqual(q["close"], float(last.close.iloc[0]), places=2)
-        self.assertEqual(pd.Timestamp(q["date"]), d.date.max())
+        mine = d[(d.symbol == sym) & (d.volume_lots > 0) & ~d.no_trade].date.max()
+        self.assertEqual(pd.Timestamp(q["date"]), mine)              # its own last traded day
+        self.assertEqual(q["waiting"], mine < d.date.max())          # flagged if MCX has not sent the later days yet
 
     def check_price_series_ends_today(self, sym):
         """The overview price line ends on the last market day"""

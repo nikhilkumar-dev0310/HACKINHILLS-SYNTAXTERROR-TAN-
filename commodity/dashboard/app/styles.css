@@ -912,3 +912,5 @@ kbd{border-radius:6px}
 .proof small{font-size:12px;color:var(--ink-3)}
 @media (max-width:760px){.proof{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{.proof{display:none}}
+
+.warn-t{color:var(--warn,#b7791f);margin:2px 0 4px}

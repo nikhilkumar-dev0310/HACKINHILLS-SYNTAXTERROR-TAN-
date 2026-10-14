@@ -20,6 +20,8 @@ os.chdir(ROOT)
 
 def base():
     old = clean("dev").copy()
+    full = old.groupby("date").symbol.nunique()
+    old = old[old.date <= full[full == len(SYMS)].index.max()]     # start from a day with all four types
     last = old.date.max()
     day = last + pd.offsets.BDay(1)
     rows = old[old.date == last].copy()
@@ -50,14 +52,55 @@ class Gate(unittest.TestCase):
             du.check_update(old, new, last)
         self.assertIn("changed their close", str(e.exception))
 
-    def test_rejects_a_day_missing_a_contract_type(self):
-        for s in SYMS:
-            with self.subTest(missing=s):
+    def test_publishes_a_day_missing_one_or_two_contract_types(self):
+        for miss in [[s] for s in SYMS] + [["GOLDGUINEA", "GOLDPETAL"], ["GOLDM", "GOLDTEN"]]:
+            with self.subTest(missing=miss):
                 old, new, last, day = base()
-                new = new[~((new.date == day) & (new.symbol == s))]
+                new = new[~((new.date == day) & new.symbol.isin(miss))]
+                fresh, _, note = du.check_update(old, new, last)
+                self.assertEqual(set(fresh.symbol), set(SYMS) - set(miss))
+                for s in miss:
+                    self.assertIn(s, note)
+
+    def test_rejects_a_day_with_fewer_than_two_contract_types(self):
+        for keep in SYMS:
+            with self.subTest(only=keep):
+                old, new, last, day = base()
+                new = new[~((new.date == day) & (new.symbol != keep))]
                 with self.assertRaises(SystemExit) as e:
                     du.check_update(old, new, last)
-                self.assertIn(s, str(e.exception))
+                self.assertIn("has no rows for", str(e.exception))
+
+    def test_late_rows_for_an_earlier_day_are_backfilled_and_checked(self):
+        """A day published without GOLDGUINEA: when MCX returns it later, those rows count as new and are checked"""
+        old, new, last, day = base()
+        gap = (old.date == last) & (old.symbol == "GOLDGUINEA")
+        held = old[~gap]
+        fresh, both, note = du.check_update(held, new, last)
+        self.assertEqual(len(fresh[fresh.date == last]), int(gap.sum()))
+        self.assertIn("backfill", note)
+        i = new.index[(new.date == last) & (new.symbol == "GOLDGUINEA") & (new.volume_lots > 0)][0]
+        for c in ("close", "high", "low", "rs_per_g"):
+            new.loc[i, c] *= 10
+        with self.assertRaises(SystemExit):
+            du.check_update(held, new, last)
+
+    def test_gaps_are_found_and_chased(self):
+        old, new, last, day = base()
+        self.assertEqual(len(du.lagging(new)), 0)
+        part = new[~((new.date == day) & (new.symbol == "GOLDPETAL"))]
+        lag = du.lagging(part)
+        self.assertEqual(set(lag.symbol), {"GOLDPETAL"})
+        self.assertTrue((lag.held_to == last).all())
+        self.assertEqual(len(lag), new[(new.date == day) & (new.symbol == "GOLDPETAL")].shape[0])
+
+    def test_an_expired_contract_is_not_a_gap(self):
+        old = clean("dev")
+        lag = du.lagging(old)
+        self.assertFalse((lag.expiry_date < lag.held_to).any())
+        done = old.groupby(["symbol", "expiry_date"]).date.max().reset_index()
+        done = done[done.expiry_date < old.date.max() - pd.Timedelta(days=10)]
+        self.assertFalse(lag.merge(done, on=["symbol", "expiry_date"]).shape[0])
 
     def test_rejects_a_missing_or_zero_close(self):
         for bad in (0.0, -5.0, float("nan")):

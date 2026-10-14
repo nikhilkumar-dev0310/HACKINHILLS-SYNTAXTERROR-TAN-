@@ -1,12 +1,12 @@
 {
-  "run_at": "2026-10-14 08:02 IST",
-  "commit": "f6b3cb5",
-  "tests": 10353,
-  "passed": 10329,
+  "run_at": "2026-10-14 09:26 IST",
+  "commit": "7c90ad4",
+  "tests": 10357,
+  "passed": 10357,
   "failed": 0,
-  "skipped": 24,
-  "seconds": 13.7,
-  "checks": 259,
+  "skipped": 0,
+  "seconds": 54.4,
+  "checks": 263,
   "files": [
     {
       "name": "test_analysis",
@@ -42,9 +42,9 @@
       "name": "test_daily_update",
       "file": "tests/test_daily_update.py",
       "about": "The daily job's publish gate: good updates pass, every kind of bad update is rejected.",
-      "checks": 15,
-      "tests": 15,
-      "passed": 15,
+      "checks": 19,
+      "tests": 19,
+      "passed": 19,
       "failed": 0,
       "skipped": 0
     },
@@ -84,9 +84,9 @@
       "about": "No look-ahead, anywhere a signal is computed: rewriting the future must not change the past.",
       "checks": 11,
       "tests": 209,
-      "passed": 185,
+      "passed": 209,
       "failed": 0,
-      "skipped": 24
+      "skipped": 0
     },
     {
       "name": "test_protocol",
@@ -199,5 +199,5 @@
       "skipped": 0
     }
   ],
-  "where": "Daily MCX data update"
+  "where": "local"
 }
