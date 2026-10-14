@@ -3,6 +3,7 @@
 Feeds tools/daily_update.check_update() a copy of the real data plus a synthetic new trading day,
 then breaks that day in each way the gate is meant to catch.
 """
+import inspect
 import os
 import sys
 import unittest
@@ -43,7 +44,8 @@ class Gate(unittest.TestCase):
 
     def test_rejects_a_changed_published_price(self):
         old, new, last, _ = base()
-        new.loc[new.date == last - pd.offsets.BDay(3), "close"] += 10
+        held_day = sorted(old.date.unique())[-3]           # a real trading day (3 business days back can be a holiday)
+        new.loc[new.date == held_day, "close"] += 10
         with self.assertRaises(SystemExit) as e:
             du.check_update(old, new, last)
         self.assertIn("changed their close", str(e.exception))
@@ -105,7 +107,11 @@ class Gate(unittest.TestCase):
             self.assertNotIn(frozen, du.CHAIN)
 
     def test_the_chain_rebuilds_the_site_last(self):
-        self.assertEqual(du.CHAIN[-2:], ["dashboard/export.py", "dashboard/build.py"])
+        """Market views first, robustness on the exported daily series, then one more export and build"""
+        self.assertLess(du.CHAIN.index("dashboard/export.py"), du.CHAIN.index("robustness.py"))
+        src = inspect.getsource(du.main)
+        self.assertLess(src.index("for s in CHAIN"), src.rindex('"dashboard/export.py"'))
+        self.assertLess(src.rindex('"dashboard/export.py"'), src.rindex('"dashboard/build.py"'))
 
 
 class Workflow(unittest.TestCase):

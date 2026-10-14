@@ -30,7 +30,8 @@ os.chdir(HERE)
 CLEAN = "clean/gold_futures.csv"
 LOG = "results/update_log.csv"
 SYMS = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]
-CHAIN = ["testbed.py", "accuracy.py", "curve.py", "rolldown.py", "alerts.py", "lifecycle.py", "dashboard/export.py", "dashboard/build.py"]
+CHAIN = ["testbed.py", "accuracy.py", "curve.py", "rolldown.py", "alerts.py", "lifecycle.py", "dashboard/export.py",
+         "robustness.py"]          # gap half-lives and regimes use the exported daily series; the export below picks them up
 
 
 def run(cmd, env=None):
@@ -42,6 +43,12 @@ def run(cmd, env=None):
         print(f"::error title=Daily update failed::{' '.join(cmd[-2:])} (exit {p.returncode}): {tail}", flush=True)
         sys.exit(f"step failed: {' '.join(cmd)} (exit {p.returncode})")
     return p.stdout
+
+
+def reject(msg):
+    """Stop the publish with the reason in the GitHub annotation itself, so it can be read without the log."""
+    print(f"::error title=Rejected::{msg}", flush=True)
+    sys.exit(f"REJECTED: {msg}")
 
 
 def load():
@@ -56,15 +63,15 @@ def check_update(old, new, last):
     revised = both[both.close_o != both.close_n]
     if len(revised):
         print(revised[k + ["close_o", "close_n"]].head(20).to_string())
-        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(revised)} rows already published changed their close. A person must check.")
+        reject(f"{len(revised)} rows already published changed their close. A person must check.")
     fresh = new[new.date > last]
     for d, g in fresh.groupby("date"):
         miss = sorted(set(SYMS) - set(g.symbol))
         if miss:
-            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {d.date()} has no rows for {miss}")
+            reject(f"{d.date()} has no rows for {miss}")
     tr = fresh[(fresh.volume_lots > 0) & ~fresh.no_trade]
     if tr.close.isna().any() or (tr.close <= 0).any():
-        sys.exit("REJECTED: missing or non-positive close on a traded row")
+        reject("missing or non-positive close on a traded row")
     note = None
     off = tr[(tr.close < tr.low - 0.5) | (tr.close > tr.high + 0.5)]
     if len(off):
@@ -73,11 +80,11 @@ def check_update(old, new, last):
                 "at the Due Date Rate, so this is expected on expiry days)")
         bad = off[off.date != off.expiry_date]
         if len(bad):
-            print("::error title=Rejected::see log"); sys.exit(f"REJECTED: {len(bad)} closes outside the day's range on non-expiry days")
+            reject(f"{len(bad)} closes outside the day's range on non-expiry days")
     prev = new[(new.date <= last) & (new.volume_lots > 0)]
     ref = prev[prev.date == prev.date.max()].rs_per_g.median()
     if ((tr.rs_per_g < ref / 2) | (tr.rs_per_g > ref * 2)).any():
-        print("::error title=Rejected::see log"); sys.exit(f"REJECTED: price per pure gram far from the previous day's median {ref:.0f}: unit or column error")
+        reject(f"price per pure gram far from the previous day's median {ref:.0f}: unit or column error")
     return fresh, both, note
 
 

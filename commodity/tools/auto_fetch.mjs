@@ -26,6 +26,15 @@ const LEAN = ["--disable-blink-features=AutomationControlled", "--no-first-run",
   "--mute-audio", "--renderer-process-limit=2", "--js-flags=--max-old-space-size=256"];
 const CHROME = process.env.PARITY_CHROME;
 const MODES = CHROME ? ["hidden", "offscreen"] : ["bundled"];
+const SY = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];
+
+// Never ask for a day that is still trading: a Bhavcopy row is final only after the evening session (23:30 IST).
+// Before 23:55 IST the last day requested is yesterday, so a job that runs late (a computer that slept through
+// 03:30) cannot pick up a partial day that would later "change its close" and block every following update.
+const ist = new Date(Date.now() + 5.5 * 3600e3);
+const istMin = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+const capD = new Date(Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth(), ist.getUTCDate() - (istMin < 23 * 60 + 55 ? 1 : 0)));
+const CAP = capD.toISOString().slice(0, 10);
 
 async function openMcx(mode) {
   const args = [...LEAN];
@@ -65,12 +74,11 @@ for (const m of MODES) { got = await openMcx(m); if (got) break; }
 if (!got) { console.error("MCX page did not load"); process.exit(3); }
 const { browser, page } = got;
 
-const res = await page.evaluate(async (since) => {
-  const SY = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"];
+const res = await page.evaluate(async ([since, cap, SY]) => {
   const MON = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
   const pexp = e => new Date(+e.slice(5, 9), MON[e.slice(2, 5)], +e.slice(0, 2));
   const dmy = d => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-  const cut = new Date(since + "T00:00:00");
+  const cut = new Date(since + "T00:00:00"), last = new Date(cap + "T00:00:00");
   const list = JSON.parse(document.getElementById("symbol-data").innerText)
     .filter(x => /FUTCOM/i.test(x.InstrumentName || "") && SY.includes((x.SymbolValue || "").trim()));
   const seen = new Set(), jobs = [];
@@ -78,22 +86,44 @@ const res = await page.evaluate(async (since) => {
     const s = x.SymbolValue.trim(), e = x.ExpiryDate.trim(), ed = pexp(e);
     if (ed >= cut && !seen.has(s + e)) { seen.add(s + e); jobs.push({ s, e, ed }); }
   }
-  const today = new Date(), files = {}, log = []; let captured = null;
+  const files = {}, log = [], listed = {}; let captured = null;
+  for (const x of list) listed[x.SymbolValue.trim()] = (listed[x.SymbolValue.trim()] || 0) + 1;
+  const wait = ms => new Promise(z => setTimeout(z, ms));
+  // MCX sometimes drops a run of requests ("Failed to fetch"): each contract is retried up to 4 times, backing off.
+  async function get(q) {
+    let err = "";
+    for (let a = 1; a <= 4; a++) {
+      try {
+        const r = await fetch("/market-data/bhavcopy/GetCommoditywiseBhavCopy?" + q);
+        if (r.ok) { const D = (await r.json()).Data || []; if (D.length || a >= 2) return [D, a, ""]; err = "empty"; }
+        else err = "HTTP " + r.status;
+      } catch (e) { err = e.message; }
+      await wait(1500 * a);
+    }
+    return [[], 4, err];
+  }
   const orig = ExportManager.downloadFile; ExportManager.downloadFile = c => { captured = c; };
   for (const j of jobs) {
-    const from = new Date(j.ed.getFullYear() - 2, 0, 1), to = j.ed < today ? j.ed : today;
+    const from = new Date(j.ed.getFullYear() - 2, 0, 1), to = j.ed < last ? j.ed : last;
     const q = new URLSearchParams({ InstrumentName: "FUTCOM", Symbol: j.s, Expiry: j.e, fromDate: dmy(from), toDate: dmy(to) });
-    let D = [];
-    try { D = (await fetch("/market-data/bhavcopy/GetCommoditywiseBhavCopy?" + q).then(r => r.json())).Data || []; } catch (e) { log.push([j.s, j.e, "error " + e.message]); }
+    const [D, tries, err] = await get(q);
     if (D.length) { captured = null; ExportManager.exportData(D, j.s + "_" + j.e, "xls", dmy(from)); if (captured) files[j.s + "_" + j.e + ".xls"] = captured; }
-    log.push([j.s, j.e, dmy(from), dmy(to), D.length]);
-    await new Promise(z => setTimeout(z, 400));
+    log.push([j.s, j.e, dmy(from), dmy(to), D.length, tries > 1 ? `tries ${tries}` : "", err]);
+    await wait(700);
   }
   ExportManager.downloadFile = orig;
-  return { files, log, listed: list.length };
-}, since);
+  return { files, log, listed };
+}, [since, CAP, SY]);
 await browser.close();
-console.log("contracts listed by MCX:", res.listed, " requested since", since + ":", res.log.length, " files:", Object.keys(res.files).length);
+console.log("listed by MCX:", JSON.stringify(res.listed), " up to", CAP, " requested since", since + ":", res.log.length, " files:", Object.keys(res.files).length);
 for (const l of res.log) console.log("  ", l.join("  "));
 if (!Object.keys(res.files).length) { console.error("no files returned"); process.exit(4); }
+// Every contract type must come back, or the day would be published incomplete; say plainly which one is missing.
+const gotSym = new Set(Object.keys(res.files).map(n => n.split("_")[0]));
+const miss = SY.filter(s => !gotSym.has(s));
+if (miss.length) {
+  const why = miss.map(s => `${s}: ${res.listed[s] ? `${res.listed[s]} listed, ` + res.log.filter(l => l[0] === s).map(l => l[6] || "no rows").join("/") : "not in MCX's contract list"}`).join("; ");
+  console.log(`::error title=Fetch incomplete::MCX returned no files for ${miss.join(", ")} (${why}). Nothing published; the next run retries.`);
+  process.exit(5);
+}
 writeFileSync(out, gzipSync(JSON.stringify(res.files)));

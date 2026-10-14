@@ -50,7 +50,7 @@ Three standard checks, run on training years only so the sealed results stay unt
 - **How much can go wrong:** every result that made money before slippage breaks even at between 4.3 and 11.9 bp of
   slippage per leg; we test at 5. Strategy C's deflated Sharpe ratio is 4%: its sealed result is what picking the best
   of 72 settings gives by chance ([`commodity/robustness.py`](commodity/robustness.py)).
-- **Do the gaps come back?** GOLDTEN and GOLDGUINEA gaps halve in 7.2 and 7.8 market days and pass a stationarity
+- **Do the gaps come back?** GOLDTEN and GOLDGUINEA gaps halve in about 7 and 8 market days and pass a stationarity
   test. GOLDPETAL's level jumped abruptly in November 2024 (about −150 bp to about +90 bp over GOLDM); we found no
   exchange notice that explains it, and say so.
 

@@ -145,8 +145,12 @@ class Robustness(unittest.TestCase):
         self.assertIn(f"deflated Sharpe ratio is {round(100 * self.R['sharpe']['deflated_c']['dsr'])}%", FLAT)
 
     def test_half_lives(self):
+        """Half-lives move a little as each trading day is added, so the README rounds them: within a day of today's"""
         st = {r["symbol"]: r for r in self.R["stationarity"]["rows"]}
-        self.assertIn(f"GOLDTEN and GOLDGUINEA gaps halve in {st['GOLDTEN']['half_life_days']:.1f} and {st['GOLDGUINEA']['half_life_days']:.1f} market days", FLAT)
+        m = re.search(r"GOLDTEN and GOLDGUINEA gaps halve in about (\d+) and (\d+) market days", FLAT)
+        self.assertTrue(m)
+        self.assertLessEqual(abs(int(m.group(1)) - st["GOLDTEN"]["half_life_days"]), 1)
+        self.assertLessEqual(abs(int(m.group(2)) - st["GOLDGUINEA"]["half_life_days"]), 1)
 
 
 class Licence(unittest.TestCase):
