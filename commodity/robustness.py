@@ -100,7 +100,8 @@ def half_life(y):
     y = np.asarray(y, float)
     X = np.column_stack([np.ones(len(y) - 1), y[:-1]])
     (a, phi), *_ = np.linalg.lstsq(X, y[1:], rcond=None)
-    return (math.log(2) / -math.log(phi)) if 0 < phi < 1 else None, float(phi)
+    # phi a rounding error below 1 (a random walk or a trend) has no half-life, not one of 10^15 days
+    return (math.log(2) / -math.log(phi)) if 0 < phi < 1 - 1e-9 else None, float(phi)
 
 
 # ---------------------------------------------------------------- 5. regimes
