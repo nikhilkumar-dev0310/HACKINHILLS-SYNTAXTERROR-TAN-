@@ -191,7 +191,7 @@ def pari(out, g):
     if pose == "point_r" and tgt is not None:
         hx, hy_ = PARI_HAND[0], PARI_HAND[1] + hy + bob
         tx, ty = tgt; L = math.hypot(tx - hx, ty - hy_)
-        if L > 80 and tx > hx + 100:                       # only toward something to Pari's right
+        if False:                                              # v3.6: pointer removed                       # only toward something to Pari's right
             n = int(L / 22); lay = out.copy()
             for i in range(1, n):
                 u = i / n; ph = (u * 6 - g * 0.35) % 1.0
@@ -250,22 +250,14 @@ def page(g):
         M = np.float32([[OW / sw, 0, -sx * OW / sw], [0, OH / sh, -sy * OH / sh]])
         out = cv2.warpAffine(im, M, (OW, OH), flags=cv2.INTER_CUBIC)
     out = (out.astype(np.float32) * VIG).astype(np.uint8)
-    sp = MSPOT[f]
-    if sp is not None:
-        (rx, ry, rw, rh), start, fade = sp
-        k = OW / W                                      # page px -> output px
-        box = ((rx - x0) * k, (ry - y0) * k, rw * k, rh * k)
-        age = g - to_out(start)
-        if 0 <= age and box[2] * box[3] < 0.45 * OW * OH and box[2] > 20 and box[3] > 12:
-            spotlight(out, box, min(1.0, age / 10.0) * fade, age)
-            if g <= TOTAL: POINT_AT[g] = (box[0], box[1] + box[3] / 2)
+    # v3.6: no outlines, brackets or pointer. Only the area around what the camera frames goes gently dark.
     ss = spot_src[f]
-    if ss is not None and ss[0] is not None:                # v3.4: gold focus brackets lock onto where the camera went
+    if ss is not None and ss[0] is not None:
         rx, ry, rw, rh = ss[0]; k = OW / W
         age = g - to_out(ss[1])
-        if -8 <= age < 90:
-            brackets(out, ((rx - x0) * k, (ry - y0) * k, rw * k, rh * k), age)
-            if g <= TOTAL and POINT_AT[g] is None and age >= 0: POINT_AT[g] = ((rx - x0) * k, (ry - y0 + rh / 2) * k)
+        box = ((rx - x0) * k, (ry - y0) * k, rw * k, rh * k)
+        if age >= 0 and 30 < box[2] < OW * 0.92 and box[3] > 16:
+            spotlight(out, box, min(1.0, age / 18.0), 999)
     return out
 
 def glow(out, lay, a):
@@ -300,7 +292,7 @@ def spotlight(out, box, a, age):
     x0, y0, x1, y1 = x - pad, y - pad, x + w + pad, y + h + pad
     dx = np.maximum(np.maximum(x0 - _sx, _sx - x1), 0); dy = np.maximum(np.maximum(y0 - _sy, _sy - y1), 0)
     d = np.sqrt(dx * dx + dy * dy)
-    m = 1 - 0.55 * a * np.clip(d / 90.0, 0, 1) ** 0.8
+    m = 1 - 0.45 * a * np.clip(d / 140.0, 0, 1) ** 0.8
     m = cv2.resize(m, (OW, OH), interpolation=cv2.INTER_LINEAR)[:, :, None]
     out[:] = (out.astype(np.float32) * m).astype(np.uint8)
     if age < 34:                                        # the outline draws itself, then fades
