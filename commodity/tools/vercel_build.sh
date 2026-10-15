@@ -10,5 +10,6 @@ cp commodity/dashboard/404.html site/404.html                                   
 cp commodity/dashboard/og.png site/og.png                                       # link-preview image (spare copy)
 cp commodity/presentation/round2/Parity_demo.mp4 site/demo.mp4                  # demo video, linked from /demo
 cp commodity/presentation/demo.html site/demo.html                              # player page with captions
+mkdir -p site/demo && cp commodity/presentation/demo.html site/demo/index.html # so /demo works without .html
 { echo "WEBVTT"; echo; sed 's/\([0-9][0-9]:[0-9][0-9]:[0-9][0-9]\),\([0-9][0-9][0-9]\)/\1.\2/g' commodity/presentation/round2/Parity_demo.srt; } > site/demo.vtt
 ls -la site
