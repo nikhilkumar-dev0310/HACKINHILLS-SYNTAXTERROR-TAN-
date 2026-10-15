@@ -142,21 +142,21 @@
     "rows": [
       {
         "symbol": "GOLDTEN",
-        "days": 395,
+        "days": 396,
         "first": "2025-04-01",
-        "last": "2026-10-13",
+        "last": "2026-10-14",
         "adf": -2.91,
         "lags": 10,
         "stationary_at": "5%",
-        "half_life_days": 7.2,
+        "half_life_days": 7.3,
         "phi": 0.909
       },
       {
         "symbol": "GOLDGUINEA",
-        "days": 772,
+        "days": 773,
         "first": "2023-10-10",
-        "last": "2026-10-13",
-        "adf": -3.31,
+        "last": "2026-10-14",
+        "adf": -3.32,
         "lags": 10,
         "stationary_at": "5%",
         "half_life_days": 7.8,
@@ -164,10 +164,10 @@
       },
       {
         "symbol": "GOLDPETAL",
-        "days": 772,
+        "days": 773,
         "first": "2023-10-10",
-        "last": "2026-10-13",
-        "adf": -2.07,
+        "last": "2026-10-14",
+        "adf": -2.08,
         "lags": 10,
         "stationary_at": null,
         "half_life_days": 22.1,
@@ -226,7 +226,7 @@
           {
             "from": "2025-04",
             "to": "2026-10",
-            "mean_bp": 18.6
+            "mean_bp": 18.5
           }
         ],
         "breaks": []
@@ -238,7 +238,7 @@
           {
             "from": "2023-10",
             "to": "2026-10",
-            "mean_bp": 81.9
+            "mean_bp": 82.0
           }
         ],
         "breaks": []
