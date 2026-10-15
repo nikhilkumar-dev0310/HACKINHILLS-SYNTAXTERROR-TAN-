@@ -115,12 +115,15 @@ def _put(s0, d, pose, hop=False):
     for g in range(max(0, s0), min(TOTAL + 1, s0 + d)):
         PZ[g] = pose(g - s0) if callable(pose) else pose
     if hop: HOP.append(s0)
-for k_, s0, e0 in cap_segs:
-    _put(s0, 34, lambda i: "talk" if (i // 4) % 2 == 0 else "idle")
+# (v3.5: no mouth flapping on captions: with no voice it read as smiling and unsmiling. Pari changes face only to react.)
 _last = -99
 for f0, f1, b_ in _runs:
     if f1 - f0 >= 8 and to_out(f0) - _last > 45:            # point at a new spotlight (not more than every 1.5 s)
         _last = to_out(f0); _put(_last, 30, "point_r", hop=True)
+for e in OUT_EV:                                           # v3.5: and at every place the camera goes to
+    if "cam" in e and e["cam"] is not None:
+        _a = e["f"] + max(1, e.get("dur", 1))
+        if all(abs(_a - h) > 25 for h in HOP): _put(_a, 40, "point_r", hop=True)
 for e in OUT_EV:
     if "beat" in e and e["beat"] == "toogood": _put(e["f"], e["dur"], "think")
     if "beat" in e and e["beat"] == "tomorrow": _put(e["f"], e["dur"], "point_r", hop=True)
@@ -160,7 +163,7 @@ for e in OUT_EV:
 for s0, d, ds in pred: _say(s0, d, "Your guess?")
 BUB = {}
 POINT_AT = [None] * (TOTAL + 1)          # filled by page(): where the spotlight is, so Pari's pointer can reach it
-PARI_HAND = (34 + 0.8 * 264 * 0.86, OH - 46 - 0.8 * 232 * 0.62)
+PARI_HAND = (30 + 264 * 0.86, OH - 46 - 232 * 0.62)
 PARI_IN = next(g for g in range(TOTAL) if not (beat[g] and beat[g][0] == "black"))   # pops in after the black open
 
 def pari(out, g):
@@ -168,7 +171,7 @@ def pari(out, g):
     pose = PZ[g] or ("blink" if g % 97 in (0, 1, 2, 3) else "idle")
     im = PARI[pose]
     t_in = (g - PARI_IN) / 10.0
-    sc = 0.8 * (1 if t_in >= 1 else max(0.05, 1 + 2.7 * (t_in - 1) ** 3 + 1.7 * (t_in - 1) ** 2))   # ease-out-back pop
+    sc = 1.0 * (1 if t_in >= 1 else max(0.05, 1 + 2.7 * (t_in - 1) ** 3 + 1.7 * (t_in - 1) ** 2))   # ease-out-back pop
     hy, sq = 0.0, 1.0
     for h0 in HOP:
         u = (g - h0) / 11.0
@@ -178,14 +181,17 @@ def pari(out, g):
     w, h = int(im.shape[1] * sc / sq ** 0.5), int(im.shape[0] * sc * sq)
     if w < 4 or h < 4: return
     spr = cv2.resize(im, (w, h), interpolation=cv2.INTER_AREA)
+    if pose == "point_r":                                   # lean toward what it points at
+        R = cv2.getRotationMatrix2D((w / 2, h * 0.9), -7.0, 1.0)
+        spr = cv2.warpAffine(spr, R, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
     base = OH - 46                                                     # feet on this line
-    px_, py_ = 34 + (int(im.shape[1] * 0.8) - w) // 2, int(base - h + hy + bob)
+    px_, py_ = 30 + (int(im.shape[1] * 1.0) - w) // 2, int(base - h + hy + bob)
     # a dotted gold "laser" from Pari's hand to whatever the spotlight is on, while Pari points
     tgt = POINT_AT[g]
     if pose == "point_r" and tgt is not None:
         hx, hy_ = PARI_HAND[0], PARI_HAND[1] + hy + bob
         tx, ty = tgt; L = math.hypot(tx - hx, ty - hy_)
-        if L > 80:
+        if L > 80 and tx > hx + 100:                       # only toward something to Pari's right
             n = int(L / 22); lay = out.copy()
             for i in range(1, n):
                 u = i / n; ph = (u * 6 - g * 0.35) % 1.0
@@ -257,26 +263,35 @@ def page(g):
     if ss is not None and ss[0] is not None:                # v3.4: gold focus brackets lock onto where the camera went
         rx, ry, rw, rh = ss[0]; k = OW / W
         age = g - to_out(ss[1])
-        if -6 <= age < 60:
+        if -8 <= age < 90:
             brackets(out, ((rx - x0) * k, (ry - y0) * k, rw * k, rh * k), age)
             if g <= TOTAL and POINT_AT[g] is None and age >= 0: POINT_AT[g] = ((rx - x0) * k, (ry - y0 + rh / 2) * k)
     return out
 
+def glow(out, lay, a):
+    """Lines drawn on `lay` (a copy of out) are added with a soft gold halo, then drawn crisp on top."""
+    diff = cv2.absdiff(lay, out)
+    if not diff.any(): return
+    halo = cv2.GaussianBlur(diff, (0, 0), 10)
+    out[:] = np.clip(out.astype(np.float32) + halo.astype(np.float32) * 1.6 * a, 0, 255).astype(np.uint8)
+    cv2.addWeighted(lay, a, out, 1 - a, 0, out)
+
 def brackets(out, box, age):
-    """Four gold corner brackets that close in on the target, pulse twice, then fade."""
+    """Four thick gold corner brackets that close in on the target with a glow, breathe while held, then fade."""
     x, y, w, h = box
     if w < 30 or h < 16 or w > OW * 0.95: return
-    t = ezo((age + 6) / 12.0); pad = 14 + 60 * (1 - t)
-    a = min(1.0, (age + 6) / 6.0) * (1.0 if age < 44 else max(0.0, (60 - age) / 16.0))
+    t = ezo((age + 8) / 14.0); pad = 16 + 70 * (1 - t) + 3 * math.sin(age / 4.0) * (age > 6)
+    a = min(1.0, (age + 8) / 8.0) * (1.0 if age < 70 else max(0.0, (90 - age) / 20.0))
+    if a <= 0: return
     x0, y0, x1, y1 = int(x - pad), int(y - pad), int(x + w + pad), int(y + h + pad)
-    L = int(min(46, 0.3 * min(x1 - x0, y1 - y0))); th = 5 if age % 30 < 15 else 4
-    lay = out.copy(); c = (61, 184, 245)
+    L = int(min(64, 0.32 * min(x1 - x0, y1 - y0)))
+    lay = out.copy(); c = (70, 196, 255)
     for (cx, cy, dx, dy) in ((x0, y0, 1, 1), (x1, y0, -1, 1), (x0, y1, 1, -1), (x1, y1, -1, -1)):
-        cv2.line(lay, (cx, cy), (cx + dx * L, cy), c, th, cv2.LINE_AA); cv2.line(lay, (cx, cy), (cx, cy + dy * L), c, th, cv2.LINE_AA)
-    if 0 <= age < 24:                                    # one soft glow ring expanding from the target
-        r = int(0.5 * math.hypot(w, h) + age * 5)
-        cv2.ellipse(lay, (int(x + w / 2), int(y + h / 2)), (r, int(r * min(1.0, h / max(w, 1)) + age * 2)), 0, 0, 360, c, 2, cv2.LINE_AA)
-    cv2.addWeighted(lay, 0.9 * a, out, 1 - 0.9 * a, 0, out)
+        cv2.line(lay, (cx, cy), (cx + dx * L, cy), c, 7, cv2.LINE_AA); cv2.line(lay, (cx, cy), (cx, cy + dy * L), c, 7, cv2.LINE_AA)
+    if 0 <= age < 22:                                    # one glow ring expanding from the target
+        r = int(0.5 * math.hypot(w, h) + age * 6)
+        cv2.ellipse(lay, (int(x + w / 2), int(y + h / 2)), (r, int(r * min(1.0, h / max(w, 1)) + age * 2)), 0, 0, 360, c, 3, cv2.LINE_AA)
+    glow(out, lay, a)
 
 _sy, _sx = np.mgrid[0:OH // 4, 0:OW // 4].astype(np.float32) * 4
 def spotlight(out, box, a, age):
@@ -285,7 +300,7 @@ def spotlight(out, box, a, age):
     x0, y0, x1, y1 = x - pad, y - pad, x + w + pad, y + h + pad
     dx = np.maximum(np.maximum(x0 - _sx, _sx - x1), 0); dy = np.maximum(np.maximum(y0 - _sy, _sy - y1), 0)
     d = np.sqrt(dx * dx + dy * dy)
-    m = 1 - 0.42 * a * np.clip(d / 90.0, 0, 1) ** 0.8
+    m = 1 - 0.55 * a * np.clip(d / 90.0, 0, 1) ** 0.8
     m = cv2.resize(m, (OW, OH), interpolation=cv2.INTER_LINEAR)[:, :, None]
     out[:] = (out.astype(np.float32) * m).astype(np.uint8)
     if age < 34:                                        # the outline draws itself, then fades
@@ -297,9 +312,9 @@ def spotlight(out, box, a, age):
             seg = abs(bx - ax) + abs(by - ay)
             if run >= L: break
             u = min(1.0, (L - run) / seg)
-            cv2.line(lay, (int(ax), int(ay)), (int(ax + (bx - ax) * u), int(ay + (by - ay) * u)), (61, 184, 245), 4, cv2.LINE_AA)
+            cv2.line(lay, (int(ax), int(ay)), (int(ax + (bx - ax) * u), int(ay + (by - ay) * u)), (61, 184, 245), 5, cv2.LINE_AA)
             run += seg
-        cv2.addWeighted(lay, 0.85 * fade, out, 1 - 0.85 * fade, 0, out)
+        glow(out, lay, 0.9 * fade)
 
 GOLD = np.array([61, 184, 245], np.float32)
 def dust(img, g, pts=None, amax=0.30):

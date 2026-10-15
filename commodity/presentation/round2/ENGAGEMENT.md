@@ -54,3 +54,8 @@ A guide character who looks and points at the content directs attention there (g
 learning: van Gog 2014; Fiorella & Mayer 2016), and the words are reactions only, never new claims. Each place the
 camera moves to gets gold focus brackets that close in, pulse and fade, on top of the dimmed surround and the
 traced outline. The cut is 87 seconds: shorter pauses between steps, every step kept.
+
+**v3.5.** Pari no longer moves its mouth on every caption (with no voice, the flapping read as smiling and
+unsmiling); its face changes only to react. Pari is larger, leans toward what it points at, and hops and points at
+every place the camera goes. Highlights are thicker gold brackets and outlines with a soft glow, held longer, with
+the surround dimmed more.
