@@ -1,95 +1,95 @@
 1
-00:00:00,600 --> 00:00:04,367
+00:00:00,500 --> 00:00:03,500
 ₹1,53,382 profit, on a year our rules never saw.
 
 2
-00:00:04,400 --> 00:00:06,967
+00:00:03,533 --> 00:00:05,567
 So why aren't we trading it?
 
 3
-00:00:09,400 --> 00:00:13,767
+00:00:07,533 --> 00:00:11,033
 Per gram of pure gold, they should cost exactly the same.
 
 4
-00:00:13,800 --> 00:00:19,467
+00:00:11,067 --> 00:00:15,567
 Parity measures every gap, every trading day, after every cost.
 
 5
-00:00:19,500 --> 00:00:22,933
+00:00:15,600 --> 00:00:18,367
 Your guess: is any gap worth trading today?
 
 6
-00:00:22,967 --> 00:00:26,933
+00:00:18,400 --> 00:00:21,567
 No. The biggest gap is 40.5 bp. A trade needs 47.6.
 
 7
-00:00:26,967 --> 00:00:30,000
+00:00:21,600 --> 00:00:24,000
 Most days, the honest answer is wait.
 
 8
-00:00:30,333 --> 00:00:32,500
+00:00:24,267 --> 00:00:26,000
 Rewind to January 2026…
 
 9
-00:00:32,533 --> 00:00:36,700
+00:00:26,033 --> 00:00:29,367
 …the gold crash. Every gap blew through the cost line.
 
 10
-00:00:37,033 --> 00:00:40,600
+00:00:29,633 --> 00:00:32,500
 23 years of official MCX data. 711 contracts.
 
 11
-00:00:40,933 --> 00:00:45,100
+00:00:32,767 --> 00:00:36,100
 Every fee. Every tax. And slippage you control.
 
 12
-00:00:45,133 --> 00:00:50,167
+00:00:36,133 --> 00:00:40,133
 Past 12 bp of slippage, no result survives.
 
 13
-00:00:51,433 --> 00:00:54,567
+00:00:41,167 --> 00:00:43,667
 Most teams would report this…
 
 14
-00:00:54,600 --> 00:00:58,767
+00:00:43,700 --> 00:00:47,033
 …we report this. Up to 89% of the headline disappears.
 
 15
-00:00:59,100 --> 00:01:04,667
+00:00:47,300 --> 00:00:51,733
 Every trade placed inside its contract's calendar. None held into delivery.
 
 16
-00:01:05,000 --> 00:01:09,767
+00:00:52,000 --> 00:00:55,833
 Rules frozen in Git. Eight years kept sealed, then opened once.
 
 17
-00:01:12,800 --> 00:01:15,633
+00:00:58,267 --> 00:01:00,500
 January 2026 alone made ₹2,39,815.
 
 18
-00:01:15,667 --> 00:01:18,500
+00:01:00,533 --> 00:01:02,800
 The other 111 trades lost ₹86,433.
 
 19
-00:01:18,533 --> 00:01:21,767
+00:01:02,833 --> 00:01:05,433
 Outside the crash, the rule loses money.
 
 20
-00:01:22,100 --> 00:01:25,800
+00:01:05,700 --> 00:01:08,633
 Best of 72 settings? A 65% chance that's noise.
 
 21
-00:01:25,833 --> 00:01:28,800
+00:01:08,667 --> 00:01:11,033
 A small edge. Not proven. We say so.
 
 22
-00:01:29,133 --> 00:01:33,367
+00:01:11,333 --> 00:01:14,700
 Checked by 10,344 automated tests, before every update.
 
 23
-00:01:33,700 --> 00:01:37,000
+00:01:14,967 --> 00:01:17,600
 And it updates itself, every trading day.
 
 24
-00:01:37,333 --> 00:01:39,500
+00:01:17,867 --> 00:01:19,600
 That was 6 October.

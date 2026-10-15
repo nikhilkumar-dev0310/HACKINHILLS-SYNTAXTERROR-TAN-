@@ -15,7 +15,7 @@ evidence is. Pop-psychology claims are left out or flagged.
 | **Two-sided messages persuade experts, if the objection is answered.** | Moderate (meta-analytic). Raising a doubt without answering it does worse. | The video raises "too good to be true?" and answers it with the crash split, the overfitting check and "we say so". |
 | **Invite, don't command.** Forceful calls to action cause reactance. | Moderate: Ma, Ebesu & Dillard (meta-analysis of 35 studies). | "See today's answer:" plus the address and a QR code. No countdowns, no "you must". |
 | **Leave a felt gap at the end.** The urge to resume something unfinished. | The Ovsiankina effect is supported; the Zeigarnik memory effect is not (Ghibellini & Meier 2025 meta-analysis), so we do not rely on it. | "Tomorrow's answer isn't in this video. This video stops at 6 Oct 2026. The site doesn't." True, because the site updates every trading day. |
-| **Short beats long.** | Moderate: duration neglect (above); hackathon videos are typically 2–3 min. | About 1:45. |
+| **Short beats long.** | Moderate: duration neglect (above); hackathon videos are typically 2–3 min. | 1:27 (v3.4). |
 
 **Sound levels** (mixing practice, not research): music bed well under the captions' moments, effects
 14–25 dB below the loudest moment, one loudest effect (the twist), near-silence while the viewer guesses,
@@ -46,3 +46,11 @@ Adesope & Nesbit 2012, *Journal of Educational Psychology*; Van der Burg et al. 
 Kahneman et al. 1993, *Psychological Science*; Alaybek et al. 2022, *OBHDP*; Ma, Ebesu & Dillard (reactance
 meta-analysis); Ghibellini & Meier 2025, *Humanities and Social Sciences Communications*; Guo, Kim & Rubin
 2014 (edX video engagement).
+
+**v3.4, a guide and highlights.** Pari, the gold-bar mascot, reacts to the story: short speech bubbles on the key
+moments ("Whoa!" on the number, "Nope." on the answer, "Ouch!" on the crash, "Hmm... too good?" before the twist,
+"Your guess?" while the viewer predicts), and a dotted gold pointer from Pari's hand to whatever is highlighted.
+A guide character who looks and points at the content directs attention there (gaze and pointing cues in multimedia
+learning: van Gog 2014; Fiorella & Mayer 2016), and the words are reactions only, never new claims. Each place the
+camera moves to gets gold focus brackets that close in, pulse and fade, on top of the dimmed surround and the
+traced outline. The cut is 87 seconds: shorter pauses between steps, every step kept.

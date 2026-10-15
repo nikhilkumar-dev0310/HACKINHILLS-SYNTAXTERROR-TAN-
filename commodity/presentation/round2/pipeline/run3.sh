@@ -2,7 +2,7 @@
 # v3 demo: overlays -> compose -> sound -> loudness-normalised mux -> subtitles. Capture first: python3 capture3.py
 set -e
 cd "$(dirname "$0")"
-python3 render3.py
+[ -d ov3/caps ] || python3 render3.py
 python3 compose3.py
 python3 audio3.py
 # two-pass loudness normalisation to -16 LUFS integrated; true peak capped at -1.5 dBTP so it stays under -1 after AAC encoding
