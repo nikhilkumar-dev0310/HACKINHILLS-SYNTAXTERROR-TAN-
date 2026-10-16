@@ -167,10 +167,46 @@ export function Takeaway({ children, points }) {
   </Reveal>;
 }
 
-/* Detail on demand: a native disclosure, closed by default, so a page shows its answer first. */
+/* Detail on demand: a native disclosure, closed by default, so a page shows its answer first.
+   Opening is an iOS-style disclosure: the panel grows on a spring while its contents rise into place one
+   after another; closing folds it back. A click mid-animation reverses from wherever it is. Height is the only
+   layout property animated (once per frame); the contents move with transform and opacity on the compositor.
+   Native behaviour (keyboard, find-in-page, print) is untouched; with Reduce Motion it simply opens. */
+const OPEN_MS = 520, CLOSE_MS = 340, SPRING = "cubic-bezier(.32,.72,0,1)", OUT = "cubic-bezier(.16,1,.3,1)";
 export function More({ title, hint, children, open = false }) {
-  return <details className="more" open={open}>
-    <summary><span className="mt-t">{title}</span>{hint && <span className="mt-h">{hint}</span>}<span className="chev" aria-hidden="true" /></summary>
+  const ref = useRef(null), run = useRef(null);
+  const toggle = e => {
+    const d = ref.current;
+    if (!d || !d.animate || reducedMotion()) return;                       // native snap
+    e.preventDefault();
+    const body = d.querySelector(":scope > .more-b"), sum = d.querySelector(":scope > summary");
+    const closing = d.open && !d.classList.contains("shut");               // which way the user wants it to go
+    const from = d.offsetHeight;                                           // includes any running animation
+    if (run.current) run.current.forEach(a => a.cancel());
+    const shut = sum.offsetHeight + (d.offsetHeight - d.clientHeight);     // summary + borders
+    d.classList.add("anim");
+    if (closing) {
+      d.classList.add("shut");
+      const h = d.animate({ height: [from + "px", shut + "px"] }, { duration: CLOSE_MS, easing: SPRING });
+      const b = body.animate({ opacity: [1, 0], transform: ["none", "translateY(-6px) scale(.985)"] }, { duration: CLOSE_MS * 0.6, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" });
+      run.current = [h, b];
+      h.onfinish = () => { d.open = false; d.classList.remove("anim", "shut"); b.cancel(); run.current = null; };
+    } else {
+      d.classList.remove("shut");
+      d.open = true;
+      const to = d.offsetHeight;
+      const h = d.animate({ height: [from + "px", to + "px"] }, { duration: OPEN_MS, easing: SPRING });
+      const b = body.animate({ opacity: [0, 1] }, { duration: OPEN_MS * 0.7, easing: OUT });
+      const rows = body.children.length === 1 ? body.querySelectorAll("tbody > tr") : [];     // a lone table: its rows cascade
+      const kids = [...(rows.length ? rows : body.children)].slice(0, 8).map((c, i) => c.animate(
+        { transform: ["translateY(14px) scale(.985)", "none"], opacity: [0, 1] },
+        { duration: OPEN_MS + 80, delay: 40 + i * 45, easing: OUT, fill: "backwards" }));
+      run.current = [h, b, ...kids];
+      h.onfinish = () => { d.classList.remove("anim"); run.current = null; };
+    }
+  };
+  return <details className="more" open={open} ref={ref}>
+    <summary onClick={toggle}><span className="mt-t">{title}</span>{hint && <span className="mt-h">{hint}</span>}<span className="chev" aria-hidden="true" /></summary>
     <div className="more-b">{children}</div>
   </details>;
 }

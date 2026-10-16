@@ -215,7 +215,7 @@ const DOCK_TILE = ".quote,.kpi,.dir,.dl-i,.jump a,.find,.hg-s,.status,.proof a,.
 function useDock() {
   useEffect(() => {
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches || reducedMotion()) return;
-    let group = null, tiles = [], rects = [], gr = null, raf = 0, px = 0, py = 0, clearT = 0;
+    let group = null, tiles = [], rects = [], gr = null, raf = 0, px = 0, py = 0, clearT = 0, quiet = 0;
     const SPRING = "transform .28s cubic-bezier(.32,.72,0,1), box-shadow .28s cubic-bezier(.32,.72,0,1)";
     const measure = () => { rects = tiles.map(t => t.getBoundingClientRect()); gr = group.getBoundingClientRect(); };
     const release = () => {
@@ -248,6 +248,7 @@ function useDock() {
     };
     const onMove = e => {
       px = e.clientX; py = e.clientY;
+      if (e.timeStamp < quiet) return;                                   // a panel is still unfolding: rows below are moving
       const tile = e.target.closest && e.target.closest(DOCK_TILE);
       const g = tile && tile.parentElement;
       if (g && g !== group) {
@@ -259,7 +260,7 @@ function useDock() {
       if (group && !raf) raf = requestAnimationFrame(apply);
     };
     const onScroll = () => { if (group) release(); };
-    const onClick = () => { if (group) { release(); } };                // a panel opened or a page changed: re-measure on the next move
+    const onClick = e => { quiet = e.timeStamp + 560; if (group) { release(); } };                // a panel opened or a page changed: re-measure on the next move
     document.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerleave", release, { passive: true });
     addEventListener("scroll", onScroll, { passive: true });

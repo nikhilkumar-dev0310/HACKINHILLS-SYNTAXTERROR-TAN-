@@ -458,7 +458,7 @@ th.sort[data-dir="asc"]::after{content:" ↑"}
 .mt-h{font-size:13px;color:var(--ink-3)}
 .chev{position:absolute;right:20px;top:50%;width:9px;height:9px;border-right:1.6px solid var(--ink-3);border-bottom:1.6px solid var(--ink-3);transform:translateY(-70%) rotate(45deg);transition:transform var(--dur-2) var(--ease)}
 .more[open] .chev{transform:translateY(-30%) rotate(225deg)}
-.more-b{padding:4px 20px 22px;animation:fade var(--dur-2) var(--ease)}
+.more-b{padding:4px 20px 22px;transform-origin:50% 0}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 14px}
 .prose{color:var(--ink-2);font-size:15px;line-height:1.65;max-width:78ch}
 .prose.sm{font-size:15px;margin-bottom:10px}
@@ -998,3 +998,17 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 24%,trans
 .range.ios:focus-visible{outline:none}
 .range.ios:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 45%,transparent),0 3px 8px rgba(0,0,0,.18)}
 @media (prefers-reduced-motion: reduce){.h-bar i{transition:none}}
+
+/* ---- disclosure panels (17 Oct 2026): spring open, chevron turns on the same spring; the closed state reads
+   from .shut so the chevron answers the click at once, not when the fold finishes. */
+.more.anim{overflow:hidden;contain:paint}
+.more .chev{transition:transform .52s cubic-bezier(.32,.72,0,1),border-color .25s ease}
+.more.shut .chev{transform:translateY(-70%) rotate(45deg)}
+.more.shut summary:hover .chev{transform:translateY(-50%) rotate(45deg)}
+.more[open]:not(.shut) summary .mt-t{color:var(--ink)}
+
+/* ---- high refresh rate: everything that moves is composited (transform, opacity), so the browser runs it at the
+   display's own rate (120 Hz on ProMotion and 120/144 Hz monitors). Large sections reveal without a blur filter,
+   which had to be re-rasterised every frame; the hero keeps its blur because it is small. */
+.rv{filter:none;transition:opacity .8s var(--out-expo),transform .9s var(--out-expo)}
+.rv.in{filter:none}
