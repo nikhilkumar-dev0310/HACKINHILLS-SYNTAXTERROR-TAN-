@@ -59,3 +59,53 @@ traced outline. The cut is 87 seconds: shorter pauses between steps, every step 
 unsmiling); its face changes only to react. Pari is larger, leans toward what it points at, and hops and points at
 every place the camera goes. Highlights are thicker gold brackets and outlines with a soft glow, held longer, with
 the surround dimmed more.
+
+## v4 (88 s): rebuilt from a research review
+
+Built after a review of the evidence on sound levels, harsh sounds, attention cues and on-screen characters
+(summary below; evidence strength in brackets). Earlier lessons kept: no outlines or pointers on the page, no mouth
+movement on captions, no footage sped up (v3.3–3.6 dropped every 5th frame to fit; v4 plays at real speed and
+fits by a tighter storyboard and by trimming only still frames at the end of long reading holds).
+
+**Sound.** Master −16 LUFS integrated, −1.5 dBTP true peak, small loudness range (AES TD1008 recommends
+−16 to −18 LUFS for mixed streaming content; YouTube only turns louder content down) [standard]. Effects are one
+family of soft mallet tones in the music's key, attacks 6–30 ms, base pitches 300–1,500 Hz, shelved −6 dB above 4 kHz
+and rolled off above 9 kHz: the 2–5 kHz band is where hearing is most sensitive and where unpleasant sounds
+concentrate (ISO 226; Kumar et al. 2012) [experiment]. Each effect is placed relative to the music at that moment
+(+3 to +5 dB; +6/+7 for the two reveals; cuts and clicks just under the music), never two within 150 ms, and each
+lands on one visual event with a brightness pulse of 2-frame onset and 0.4 s decay — sound helps attention only when
+synchronised with an abrupt visual change ("pip and pop", Van der Burg et al. 2008) [experiments]. Decorative sounds
+that carry no information cost comprehension (seductive details; Rey 2012, Sundararajan & Adesope 2020) [meta-analyses].
+Music is instrumental, 96 bpm, warm (energy in 250–1,000 Hz, which phone speakers reproduce), no hi-hats or noise:
+lyrics and fast, loud music hurt reading (Souza & Barbosa 2023; Thompson, Schellenberg & Letnic 2012) [experiments].
+Progress is audible: the four "what we do differently" steps rise C–D–E–G; the brief checklist climbs a scale.
+Each reveal is preceded by a riser that stops 0.45 s early, with the music ducked 12 dB in the gap (anticipation and
+resolution, Huron 2006) [theory].
+
+**Pictures.** The cue is framing plus a darkened surround (about 55% brightness, 0.4 s ease), no added shapes;
+signalling improves retention (Schneider et al. 2018, g = 0.53) [meta-analysis]. Camera moves inside a scene take at
+least 0.8 s, eased, then hold (Material motion durations scaled up for full-frame moves) [guideline].
+
+**Pari.** On-screen agents give small benefits (Schroeder, Adesope & Gilbert 2013, g ≈ 0.19; text-speaking agents did
+better than narrated ones) [meta-analysis]; pointing at the exact element and gaze cues help most (Kuang et al. 2023)
+[meta-analysis]; emotion helps likability at true moments (Lawson et al. 2021) [experiment]. So Pari asks the
+questions and says the asides in short bubbles (at most about 6 words; 1.5 s + 0.3 s a word; never at the same time
+as a caption), points when the camera lands on the evidence, reacts only at real moments, blinks every 3–5 s, and
+cross-fades between poses. It never interrupts a number landing (the lesson of Clippy: Swartz 2003).
+
+**Story.** Hook with a true number and Pari's question (curiosity gap, Loewenstein 1994); a prediction before the
+reveal; "What we do differently, 1 of 4" with a counter that fills (goal gradient, Kivetz et al. 2006); the honest
+twist answered with evidence (refutational two-sided message, O'Keefe 1999); "How close are we?" ticks off the brief
+line by line and names the one open gap (order-book depth); the ending is the open question only the live site
+answers (peak-end, Kahneman et al. 1993).
+
+**v4.1.** Smoother sound and a chattier guide, after a second review of how successful video makers hold attention
+(editor and creator practice: Vox, Sound On Sound, Devpost's demo guidance; seductive-details meta-analyses for
+restraint). Music changes snap to the beat (96 bpm, the grid placed so the twist lands on a downbeat); a layer
+coming in rises over one bar while its filter opens, a layer going out falls over two beats (raised-cosine curves);
+the "drop" keeps a soft pad, so the music never goes silent; risers run into the landing and end in a reverb tail;
+the music dips only 3 dB before a reveal; each cut's sound starts 0.3 s before the picture (a J-cut). Pari says
+twelve short lines, about one every 8 s, each reacting to what was just shown (never repeating a caption) and never
+within 4 s of another. A title chip says what Parity is in the first second (Devpost: say what it does in the first
+few seconds). The footage sits in a rounded frame with a soft shadow; focus is framing plus a softened, darkened
+surround; camera moves carry motion blur (four samples over half a frame); cards settle in from 96%.

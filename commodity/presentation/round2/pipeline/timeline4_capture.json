@@ -1,0 +1,720 @@
+{
+"fps": 30,
+"frames": 2812,
+"vw": 1600,
+"vh": 900,
+"dsf": 1.5,
+"events": [
+{
+"mus": 0,
+"f": 0
+},
+{
+"beat": "black",
+"dur": 18,
+"f": 0
+},
+{
+"cap": null,
+"f": 0
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 4
+},
+{
+"cam": [
+218,
+249.96875,
+439,
+309.578125
+],
+"dur": 2,
+"zmax": 1.9,
+"f": 13
+},
+{
+"sfx": "impact",
+"f": 18
+},
+{
+"mus": 1,
+"f": 18
+},
+{
+"pari": "wow",
+"dur": 36,
+"f": 18
+},
+{
+"cam": [
+248,
+279.96875,
+379,
+249.578125
+],
+"dur": 180,
+"zmax": 2.3,
+"f": 18
+},
+{
+"cap": "**\u20b91,53,382** profit, on a year our rules never saw.",
+"f": 18
+},
+{
+"cap": null,
+"f": 132
+},
+{
+"pari": "think",
+"bubble": "So why aren't we trading it?",
+"dur": 99,
+"f": 132
+},
+{
+"sfx": "whoosh",
+"f": 132
+},
+{
+"beat": "same",
+"dur": 78,
+"f": 239
+},
+{
+"cap": null,
+"f": 239
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 243
+},
+{
+"cam": [
+258,
+233.3939208984375,
+1316,
+324.75
+],
+"dur": 2,
+"zmax": 1.5,
+"f": 258
+},
+{
+"mus": 2,
+"f": 317
+},
+{
+"cap": "Per gram of pure gold, they should cost **exactly the same**.",
+"f": 317
+},
+{
+"cam": [
+228,
+94.75,
+1376,
+494.75
+],
+"dur": 27,
+"zmax": 1.3,
+"f": 317
+},
+{
+"cap": "Parity measures every gap, **every trading day**, after every cost.",
+"f": 449
+},
+{
+"cam": [
+252,
+93.5,
+1328,
+144
+],
+"dur": 24,
+"zmax": 1.7,
+"f": 620
+},
+{
+"mus": 0.4,
+"f": 620
+},
+{
+"cap": "Is any gap worth trading **today**?",
+"f": 620
+},
+{
+"pari": "think",
+"dur": 90,
+"f": 620
+},
+{
+"predict": 72,
+"f": 620
+},
+{
+"rise": 78,
+"f": 620
+},
+{
+"sfx": "reveal",
+"f": 700
+},
+{
+"mus": 1,
+"f": 700
+},
+{
+"cam": [
+272,
+247.453125,
+552,
+240
+],
+"dur": 24,
+"zmax": 1.6,
+"f": 700
+},
+{
+"pari": "no",
+"dur": 60,
+"f": 700
+},
+{
+"cap": "**No.** The biggest gap, 57.0 bp, clears costs but is normal for GOLDPETAL.",
+"f": 700
+},
+{
+"cap": null,
+"f": 820
+},
+{
+"pari": "idle",
+"bubble": "Most days, the honest answer: wait.",
+"dur": 99,
+"f": 820
+},
+{
+"sfx": "whoosh",
+"f": 820
+},
+{
+"beat": "cut",
+"dur": 9,
+"f": 927
+},
+{
+"cap": null,
+"f": 927
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 931
+},
+{
+"cam": [
+264,
+28.70880126953125,
+1304,
+515.4999389648438
+],
+"dur": 2,
+"zmax": 1.25,
+"f": 946
+},
+{
+"skip": 11,
+"f": 936
+},
+{
+"mus": 2,
+"f": 947
+},
+{
+"cap": "Rewind to **January 2026**\u2026",
+"f": 947
+},
+{
+"sfx": "click",
+"f": 968
+},
+{
+"sfx": "alert",
+"f": 1013
+},
+{
+"pari": "wow",
+"dur": 42,
+"f": 1013
+},
+{
+"cap": "\u2026the gold crash. Every gap blew through the **cost line**.",
+"f": 1013
+},
+{
+"sfx": "whoosh",
+"f": 1019
+},
+{
+"beat": "cut",
+"dur": 9,
+"f": 1139
+},
+{
+"cap": null,
+"f": 1139
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 1143
+},
+{
+"cam": [
+258,
+252.088623046875,
+1294.0,
+422.2554931640625
+],
+"dur": 2,
+"zmax": 1.7,
+"f": 1162
+},
+{
+"skip": 15,
+"f": 1148
+},
+{
+"cap": null,
+"f": 1163
+},
+{
+"pari": "point_r",
+"bubble": "Here's what we do differently.",
+"dur": 90,
+"f": 1163
+},
+{
+"chip": 1,
+"f": 1163
+},
+{
+"sfx": "step",
+"step": 1,
+"f": 1163
+},
+{
+"cap": "Every fee. Every tax. And slippage **you control**.",
+"f": 1261
+},
+{
+"tick": 48,
+"f": 1267
+},
+{
+"sfx": "cost",
+"d": 1.6,
+"f": 1267
+},
+{
+"sfx": "click",
+"f": 1288
+},
+{
+"cap": "Past **12 bp** of slippage, no result survives.",
+"f": 1373
+},
+{
+"sfx": "click",
+"f": 1498
+},
+{
+"sfx": "whoosh",
+"f": 1525
+},
+{
+"beat": "cut",
+"dur": 9,
+"f": 1525
+},
+{
+"cap": null,
+"f": 1525
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 1529
+},
+{
+"cam": [
+264,
+45.9375,
+1304,
+598.4375
+],
+"dur": 2,
+"zmax": 1.45,
+"f": 1544
+},
+{
+"skip": 11,
+"f": 1534
+},
+{
+"chip": 2,
+"f": 1545
+},
+{
+"sfx": "step",
+"step": 2,
+"f": 1545
+},
+{
+"cap": "Rules frozen in Git. **Eight years kept sealed**, then opened once.",
+"f": 1545
+},
+{
+"cam": [
+284,
+262.921875,
+1264,
+122.1875
+],
+"dur": 24,
+"zmax": 1.9,
+"f": 1557
+},
+{
+"pari": "point_r",
+"dur": 48,
+"f": 1557
+},
+{
+"sfx": "whoosh",
+"f": 1689
+},
+{
+"beat": "cut",
+"dur": 9,
+"f": 1689
+},
+{
+"cap": null,
+"f": 1689
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 1693
+},
+{
+"cam": [
+264,
+35.546875,
+1304,
+685.390625
+],
+"dur": 2,
+"zmax": 1.3,
+"f": 1696
+},
+{
+"chip": 3,
+"f": 1698
+},
+{
+"sfx": "step",
+"step": 3,
+"f": 1698
+},
+{
+"sfx": "click",
+"f": 1722
+},
+{
+"sfx": "land",
+"f": 1726
+},
+{
+"cap": "Most teams would report **this**\u2026",
+"f": 1726
+},
+{
+"sfx": "click",
+"f": 1817
+},
+{
+"sfx": "cost",
+"f": 1821
+},
+{
+"cap": "\u2026we report **this**. Up to **89%** of the headline disappears.",
+"f": 1821
+},
+{
+"chip": 0,
+"f": 1827
+},
+{
+"rise": 78,
+"f": 1827
+},
+{
+"mus": "drop",
+"f": 1827
+},
+{
+"beat": "toogood",
+"dur": 90,
+"f": 1947
+},
+{
+"cap": null,
+"f": 1947
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 1951
+},
+{
+"cam": [
+252,
+124.375,
+1328,
+240
+],
+"dur": 2,
+"zmax": 1.45,
+"f": 1966
+},
+{
+"sfx": "impact_big",
+"f": 2037
+},
+{
+"mus": 3,
+"f": 2037
+},
+{
+"cap": "January 2026 alone made **\u20b92,39,815**.",
+"f": 2037
+},
+{
+"sfx": "cost",
+"f": 2037
+},
+{
+"pari": "sad",
+"dur": 78,
+"f": 2037
+},
+{
+"cap": "The other 111 trades lost **\u20b986,433**.",
+"f": 2123
+},
+{
+"sfx": "whoosh",
+"f": 2123
+},
+{
+"beat": "cut",
+"dur": 9,
+"f": 2209
+},
+{
+"cap": null,
+"f": 2209
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 2213
+},
+{
+"cam": [
+264,
+56.375,
+1304,
+479.5625
+],
+"dur": 2,
+"zmax": 1.45,
+"f": 2216
+},
+{
+"chip": 4,
+"f": 2218
+},
+{
+"sfx": "step",
+"step": 4,
+"f": 2218
+},
+{
+"mus": 2,
+"f": 2218
+},
+{
+"cap": "Best of 72 settings? A **65%** chance that's noise.",
+"f": 2218
+},
+{
+"cam": [
+282,
+170.375,
+449.328125,
+250.375
+],
+"dur": 24,
+"zmax": 2.0,
+"f": 2227
+},
+{
+"cap": null,
+"f": 2330
+},
+{
+"pari": "proud",
+"bubble": "Not proven. We say so.",
+"dur": 90,
+"f": 2330
+},
+{
+"chip": 0,
+"f": 2330
+},
+{
+"mus": 1,
+"f": 2428
+},
+{
+"sfx": "tick_up",
+"step": 0,
+"f": 2456
+},
+{
+"sfx": "tick_up",
+"step": 1,
+"f": 2467
+},
+{
+"sfx": "tick_up",
+"step": 2,
+"f": 2478
+},
+{
+"sfx": "tick_up",
+"step": 3,
+"f": 2488
+},
+{
+"sfx": "tick_up",
+"step": 4,
+"f": 2498
+},
+{
+"sfx": "tick_up",
+"step": 5,
+"f": 2522
+},
+{
+"sfx": "tick_up",
+"step": 6,
+"f": 2540
+},
+{
+"sfx": "tick_up",
+"step": 7,
+"f": 2562
+},
+{
+"beat": "brief",
+"dur": 168,
+"f": 2428
+},
+{
+"cap": null,
+"f": 2428
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 2432
+},
+{
+"pari": "cheer",
+"dur": 42,
+"f": 2554
+},
+{
+"mus": "resolve",
+"f": 2596
+},
+{
+"beat": "tomorrow",
+"dur": 90,
+"f": 2596
+},
+{
+"cap": null,
+"f": 2596
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 2600
+},
+{
+"sfx": "end_chime",
+"f": 2686
+},
+{
+"pari": "wave",
+"bubble": "See you there!",
+"dur": 72,
+"f": 2686
+},
+{
+"beat": "end",
+"dur": 126,
+"f": 2686
+},
+{
+"cap": null,
+"f": 2686
+},
+{
+"cam": null,
+"dur": 1,
+"zmax": 1,
+"f": 2690
+},
+{
+"end": 1,
+"f": 2812
+}
+],
+"brief_t": [
+0.95,
+1.3,
+1.65,
+2.0,
+2.35,
+3.15,
+3.75,
+4.45
+]
+}

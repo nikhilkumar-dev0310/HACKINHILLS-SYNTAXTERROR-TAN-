@@ -1,0 +1,154 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"SG";src:url(fonts/sg.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"IN";src:url(fonts/in.woff) format("woff");font-weight:300 800}
+@font-face{font-family:"JB";src:url(fonts/jb.woff) format("woff");font-weight:300 800}
+:root{--gold:#f5b83d;--gold2:#ffdc8e;--ink:#f4efe4;--ink2:#b9b1a2;--ink3:#7d766a;--good:#3cc995;--m:#c79316;--ten:#5b98ea;--gui:#e0603f;--pet:#22a892}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:transparent;font-family:IN,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.stage{position:absolute;inset:0;overflow:hidden}
+.dark{background:radial-gradient(ellipse at 50% 42%,#1b1710 0%,#0a0b0d 64%)}
+.abs{position:absolute}
+.k{font:600 24px/1 JB,monospace;letter-spacing:.18em;color:var(--gold);text-transform:uppercase}
+.gold{color:var(--gold)}
+/* caption: one line or two, big enough for a phone */
+#cap{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:inline-block;max-width:1560px;
+  background:rgba(14,12,9,.9);border:1.5px solid rgba(245,184,61,.32);border-radius:22px;padding:22px 44px 24px;
+  box-shadow:0 18px 50px rgba(0,0,0,.35);color:#fff;text-align:center}
+#cap .txt{font:500 42px/1.28 IN;letter-spacing:-.012em;text-wrap:balance}
+#cap .txt b{color:#ffc552;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:14px;padding:14px 26px;border-radius:999px;background:rgba(14,12,9,.88);border:1.5px solid rgba(245,184,61,.45);
+  font:600 30px SG;color:var(--ink);letter-spacing:-.01em;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.pdot{width:18px;height:18px;border-radius:50%;background:#4a3f2a}
+.pdot.on{background:var(--gold);box-shadow:0 0 0 7px rgba(245,184,61,.2)}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd27a"/><stop offset=".55" stop-color="#f5b83d"/><stop offset="1" stop-color="#c98d0c"/></linearGradient></defs></svg>
+<div id="root" class="stage"></div>
+<script>
+const R = document.getElementById('root');
+const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ez = p => 1 - Math.pow(1 - cl(p), 3);
+const back = p => { p = cl(p); const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+const seg = (t, a, b) => cl((t - a) / (b - a));
+const words = (txt, t, t0, step, cls = '') => txt.split(' ').map((w, i) => { const p = ez(seg(t, t0 + i * step, t0 + i * step + .35));
+  return `<span class="${cls}" style="display:inline-block;opacity:${p};transform:translateY(${(1 - p) * 34}px);margin:0 .13em">${w}</span>`; }).join('');
+function mark(size = 120) {
+  return `<svg width="${size}" height="${size * 26 / 30}" viewBox="9 11 30 26"><path d="M14 13h20l3.2 8.6H10.8z" fill="url(#gb)" stroke="#f5b83d" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 26.4h20l3.2 8.6H10.8z" fill="url(#gb)" stroke="#f5b83d" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+let V = {};                                  // values from dashboard/data.json, set by the renderer
+
+window.caption = html => {
+  R.className = 'stage'; document.body.style.background = 'transparent';
+  R.innerHTML = `<div id="cap"><div class="txt">${html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</div></div>`;
+  const r = document.getElementById('cap').getBoundingClientRect(); return [r.left, r.top, r.width, r.height];
+};
+
+/* "Your guess?": three dots fill while the viewer thinks */
+window.predict = (t, dur) => {
+  R.className = 'stage'; document.body.style.background = 'transparent';
+  const a = ez(seg(t, 0, .25)) * (1 - seg(t, dur - .2, dur));
+  const n = Math.min(3, Math.floor(t / (dur / 3.2)));
+  R.innerHTML = `<div class="abs" style="left:0;right:0;top:${70 - 20 * (1 - a)}px;text-align:center;opacity:${a}">
+    <span class="chip"><span style="color:var(--gold)">Your guess?</span>${[0, 1, 2].map(i => `<span class="pdot ${i < n ? 'on' : ''}"></span>`).join('')}</span></div>`;
+};
+
+/* "What we do differently · n of 4": a small counter, top left, that fills as the run goes on */
+window.chipv = n => {
+  R.className = 'stage'; document.body.style.background = 'transparent';
+  R.innerHTML = `<div id="chp" class="chip" style="position:absolute;left:40px;top:36px;font-size:26px;padding:12px 22px">
+    <span style="color:var(--gold)">What we do differently</span>${[1, 2, 3, 4].map(i => `<span class="pdot ${i <= n ? 'on' : ''}" style="width:14px;height:14px"></span>`).join('')}
+    <span style="font:600 22px JB;color:var(--ink2)">${n}/4</span></div>`;
+  const r = document.getElementById('chp').getBoundingClientRect(); return [r.left, r.top, r.width, r.height];
+};
+/* opening title chip: says what Parity is in the first seconds */
+window.titlev = txt => {
+  R.className = 'stage'; document.body.style.background = 'transparent';
+  R.innerHTML = `<div id="ttl" class="chip" style="position:absolute;left:40px;top:36px;font-size:28px;padding:12px 24px 12px 18px">
+    ${mark(40)}<span style="font:700 30px SG;color:var(--ink);letter-spacing:-.02em">Parity</span><span style="color:var(--ink3)">·</span><span style="color:var(--gold2);font-weight:500">${txt}</span></div>`;
+  const r = document.getElementById('ttl').getBoundingClientRect(); return [r.left, r.top, r.width, r.height];
+};
+/* Pari's speech bubble: cream card, gold rim, tail at bottom left (towards Pari) */
+window.bubble = txt => {
+  R.className = 'stage'; document.body.style.background = 'transparent';
+  R.innerHTML = `<div id="bub" style="position:absolute;left:60px;top:60px;width:max-content;white-space:nowrap;padding:18px 26px 20px;border-radius:24px;background:#fff7e6;border:3px solid #c98d0c;
+    box-shadow:0 10px 24px rgba(0,0,0,.22);font:600 36px/1.2 SG;letter-spacing:-.015em;color:#1b1300">${txt}
+    <svg width="40" height="30" viewBox="0 0 40 30" style="position:absolute;left:30px;bottom:-27px"><path d="M2 0 L10 28 L32 0" fill="#fff7e6" stroke="#c98d0c" stroke-width="3" stroke-linejoin="round"/><path d="M4 0 H30" stroke="#fff7e6" stroke-width="5"/></svg></div>`;
+  const r = document.getElementById('bub').getBoundingClientRect(); return [r.left, r.top, r.width, r.height + 30];
+};
+
+const BEAT = {
+  black: t => '',
+  same: t => {
+    let h = `<div class="abs" style="left:0;right:0;top:300px;text-align:center;font:600 98px/1.05 SG;letter-spacing:-.045em;color:var(--ink)">${words('Same gold.', t, .05, .12)}</div>`;
+    h += `<div class="abs" style="left:0;right:0;top:420px;text-align:center;font:600 98px/1.05 SG;letter-spacing:-.045em;color:var(--gold)">${words('Four contracts. Four prices.', t, .45, .12)}</div>`;
+    const C = [['GOLDM', '100 g · 995', '--m'], ['GOLDTEN', '10 g · 999', '--ten'], ['GOLDGUINEA', '8 g coin · 999', '--gui'], ['GOLDPETAL', '1 g · 999', '--pet']];
+    h += `<div class="abs" style="left:0;right:0;top:640px;display:flex;justify-content:center;gap:26px">` + C.map(([n, d, c], i) => { const p = back(seg(t, 1.05 + i * .12, 1.5 + i * .12));
+      return `<div style="opacity:${cl(p)};transform:translateY(${(1 - p) * 40}px);padding:20px 28px;border-radius:20px;background:#16130d;border:1.5px solid #3a3222;min-width:300px;text-align:left">
+        <div style="display:flex;align-items:center;gap:12px"><i style="width:14px;height:14px;border-radius:50%;background:var(${c});display:block"></i><span style="font:600 32px SG;color:var(--ink)">${n}</span></div>
+        <div style="font:500 22px JB;color:var(--ink2);margin-top:8px">${d}</div></div>`; }).join('') + '</div>';
+    const dl = ez(seg(t, 1.7, 2.1));
+    h += `<div class="abs" style="left:0;right:0;top:840px;text-align:center;opacity:${dl};font:500 30px IN;color:var(--ink2)">${V.years} years of official MCX data · ${V.contracts} contracts · every one in ₹ per gram of pure gold</div>`;
+    return h;
+  },
+  brief: t => {
+    // "How close are we?" from the site's brief page: the five directions, the final challenge, the one open gap
+    const T = V.brief_t, a = ez(seg(t, .05, .45));
+    const dirs = ['Relative value', 'Term structure & carry', 'Walk-forward backtest', 'Trader alerts', 'Contract lifecycle'];
+    let h = `<div class="abs" style="left:0;right:0;top:${120 - 16 * (1 - a)}px;text-align:center;opacity:${a}"><span class="k">How close are we? · Problem 03, line by line</span></div>`;
+    const done = dirs.filter((_, i) => t >= T[i]).length;
+    h += `<div class="abs" style="left:300px;right:300px;top:205px;height:14px;border-radius:9px;background:#2a2418;overflow:hidden;opacity:${a}">
+      <div style="height:100%;width:${(ez(seg(t, T[0] - .1, T[4] + .2)) * 100).toFixed(1)}%;background:linear-gradient(90deg,#c98d0c,#f5b83d,#ffdc8e)"></div></div>`;
+    h += `<div class="abs" style="left:300px;top:244px;font:600 30px SG;color:var(--ink2);opacity:${a}">The brief's five directions: <span style="color:var(--gold)">${done} of 5 done</span></div>`;
+    h += `<div class="abs" style="left:300px;right:300px;top:310px;display:grid;grid-template-columns:1fr 1fr;gap:18px 40px">` + dirs.map((d, i) => {
+      const p = back(seg(t, T[i], T[i] + .35));
+      return `<div style="display:flex;align-items:center;gap:18px;opacity:${cl(.25 + .75 * cl(p * 1.4))}">
+        <span style="width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:${t >= T[i] ? 'rgba(60,201,149,.16)' : '#1c1810'};border:2px solid ${t >= T[i] ? '#3cc995' : '#3a3222'};transform:scale(${t >= T[i] ? .8 + .2 * cl(p) : .8})">
+          <svg width="24" height="24" viewBox="0 0 24 24" style="opacity:${cl(p)}"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="#4fe0a2" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="24" stroke-dashoffset="${24 * (1 - cl(p))}"/></svg></span>
+        <span style="font:600 40px SG;letter-spacing:-.02em;color:var(--ink)">${d}</span></div>`; }).join('') + `</div>`;
+    const f = back(seg(t, T[5], T[5] + .4)), o = ez(seg(t, T[6], T[6] + .4)), q = ez(seg(t, T[7], T[7] + .4));
+    h += `<div class="abs" style="left:300px;right:300px;top:640px;display:flex;gap:24px">
+      <div style="flex:1;padding:22px 28px;border-radius:20px;background:#16130d;border:1.5px solid ${t >= T[5] ? 'rgba(60,201,149,.5)' : '#3a3222'};opacity:${cl(f)};transform:translateY(${(1 - cl(f)) * 30}px)">
+        <div class="k" style="font-size:18px;color:#4fe0a2">Final challenge</div><div style="font:600 34px SG;color:var(--ink);margin-top:10px">5 of 5 lines answered</div>
+        <div style="font:400 24px IN;color:var(--ink2);margin-top:6px">including “no edge after costs” as a valid result</div></div>
+      <div style="flex:1;padding:22px 28px;border-radius:20px;background:#16130d;border:1.5px solid rgba(245,184,61,.45);opacity:${o};transform:translateY(${(1 - o) * 30}px)">
+        <div class="k" style="font-size:18px">Still open</div><div style="font:600 34px SG;color:var(--ink);margin-top:10px">Order-book depth</div>
+        <div style="font:400 24px IN;color:var(--ink2);margin-top:6px">MCX's daily files don't include it. We keep trades small.</div></div></div>`;
+    h += `<div class="abs" style="left:0;right:0;top:880px;text-align:center;opacity:${q};font:500 32px IN;color:var(--ink2)">Checked by <b style="color:var(--gold)">${V.tests}</b> automated tests · updates itself every trading day</div>`;
+    return h;
+  },
+  toogood: t => {
+    const a = ez(seg(t, .05, .5));
+    let h = `<div class="abs" style="left:0;right:0;top:${330 - 20 * (1 - a)}px;text-align:center;opacity:${a}"><span class="k">${V.net} · on data the rules never saw</span></div>`;
+    const q = ez(seg(t, 1.0, 1.45)), mark = back(seg(t, 2.45, 2.85));
+    h += `<div class="abs" style="left:0;right:0;top:430px;text-align:center;font:700 150px/1 SG;letter-spacing:-.055em;color:var(--ink);opacity:${q};transform:scale(${.94 + .06 * q})">
+      Too good to be true<span style="display:inline-block;color:var(--gold);opacity:${cl(mark)};transform:scale(${.4 + .6 * mark}) rotate(${(1 - mark) * -20}deg)">?</span></div>`;
+    return h;
+  },
+  tomorrow: t => {
+    let h = `<div class="abs" style="left:0;right:0;top:340px;text-align:center;font:600 112px/1.05 SG;letter-spacing:-.045em;color:var(--ink)">${words("Tomorrow's answer", t, .1, .14)}</div>`;
+    h += `<div class="abs" style="left:0;right:0;top:480px;text-align:center;font:600 112px/1.05 SG;letter-spacing:-.045em;color:var(--gold)">${words("isn't in this video.", t, .55, .14)}</div>`;
+    const s = ez(seg(t, 1.6, 2.1));
+    h += `<div class="abs" style="left:0;right:0;top:680px;text-align:center;opacity:${s}"><span style="font:500 30px IN;color:var(--ink2)">This video stops at ${V.last}. The site doesn't.</span></div>`;
+    return h;
+  },
+  end: t => {
+    const a = ez(seg(t, .05, .6)), b = ez(seg(t, .45, 1.0)), c = ez(seg(t, .9, 1.4));
+    const pulse = .55 + .45 * Math.sin(t * 5);
+    let h = `<div class="abs" style="left:200px;top:${230 + 30 * (1 - a)}px;opacity:${a};display:flex;align-items:center;gap:26px">${mark(96)}<span style="font:700 112px/1 SG;letter-spacing:-.055em;color:var(--ink)">Parity</span></div>`;
+    h += `<div class="abs" style="left:200px;top:${420 + 20 * (1 - b)}px;opacity:${b}">
+      <div style="display:flex;align-items:center;gap:18px"><span style="display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:99px;background:rgba(46,204,138,.14);color:#4fe0a2;font:700 24px SG;letter-spacing:.08em">
+        <i style="width:12px;height:12px;border-radius:50%;background:#4fe0a2;display:block;opacity:${pulse}"></i>LIVE</span>
+        <span style="font:500 30px IN;color:var(--ink2)">See today's answer:</span></div>
+      <div style="font:700 72px SG;letter-spacing:-.03em;color:var(--gold);margin-top:18px">parity-gold-site.vercel.app</div></div>`;
+    h += `<div class="abs" style="left:200px;top:${700 + 20 * (1 - c)}px;opacity:${c}">
+      <div style="font:600 30px SG;color:var(--ink)">SYNTAX TERROR (TAN) · Nikhil Kumar · Sai Ganesh · Ishaan Chhabra</div>
+      <div style="font:400 24px IN;color:var(--ink3);margin-top:12px">Hack in Hills ’26 · Problem 03 · Official MCX data, ${V.tests} automated tests</div></div>`;
+    h += `<div class="abs" style="left:1420px;top:${300 + 20 * (1 - b)}px;opacity:${b};text-align:center"><div style="background:#fff;padding:18px;border-radius:22px"><img src="${V.qr}" width="300" height="300" style="display:block;image-rendering:pixelated"></div>
+      <div style="font:400 22px IN;color:var(--ink2);margin-top:16px">Scan to open it</div></div>`;
+    return h;
+  }
+};
+window.beat = (name, t) => { R.className = 'stage dark'; document.body.style.background = '#0a0b0d'; R.innerHTML = BEAT[name](t); };
+</script></body></html>

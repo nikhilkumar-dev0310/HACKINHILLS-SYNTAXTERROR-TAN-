@@ -50,9 +50,21 @@ class Subtitles(unittest.TestCase):
         self.assertGreaterEqual(int(m.group(1)), be - 0.5)
 
     def test_cost_line_today(self):
+        """Today's answer in the video uses the site's rule: a gap must clear the cost line AND be unusual (beyond the
+        threshold in sigma). The video says either "short of the cost line" or "clears costs but is normal"."""
+        H = D["hurdle"]; i = len(H["dates"]) - 1; k = D["signals"]["threshold"]
+        line = 2 * next(x for x in D["alerts"]["baseline"] if str(x["alert_day"]).lower() == "true")["round_trip_cost_bp_at_5bp"]
+        small = ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]
         m = re.search(r"The biggest gap is (\d+(?:\.\d+)?) bp\. A trade needs (\d+(?:\.\d+)?)", FLAT)
-        self.assertTrue(m)
-        self.assertLess(float(m.group(1)), float(m.group(2)))
+        n = re.search(r"The biggest gap, (\d+(?:\.\d+)?) bp, clears costs but is normal for (GOLD\w+)", FLAT)
+        self.assertTrue(m or n)
+        if m:
+            self.assertLess(float(m.group(1)), float(m.group(2)))
+        else:
+            g, s = float(n.group(1)), n.group(2)
+            j = next(j for j in range(i, -1, -1) if H[s]["gap"][j] is not None and abs(H[s]["gap"][j] - g) < 0.06)
+            self.assertGreaterEqual(H[s]["gap"][j], line - 0.05)
+            self.assertLess(abs(H[s]["z"][j]), k)
 
     def test_counts_never_overstate(self):
         tests = int(re.search(r"Checked by ([\d,]+) automated tests", FLAT).group(1).replace(",", ""))
