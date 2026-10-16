@@ -115,3 +115,9 @@ the A minor chord that moves from eighth to sixteenth notes in the last beat, a 
 beat, and the chord swelling from dark to bright, all counted back from the landing so they converge on its downbeat.
 While a slider moves (the slippage slider; the replay slider rewinding to the crash) soft notes fall on the music's
 own sixteenth-note grid and step down the scale as the slider moves, so the movement is heard in time with the music.
+
+**v4.3.** Light and dark mode, shown without adding time: in the still overview shot a cursor clicks the site's moon
+button, the dark theme spreads from it in a circle (0.6 s), Pari says "Light or dark. Your call.", and the sun brings
+light back the same way before the camera moves on. The dark frames are a replay of the same storyboard on the same
+paused clock (`pipeline/dark_shot4.py`), so they match the light frames pixel for pixel; a low open chord marks the
+switch to dark and the same chord, brighter, the switch back.

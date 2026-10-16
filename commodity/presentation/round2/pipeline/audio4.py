@@ -230,6 +230,8 @@ def make(ev):
     if s in ("whoosh", "whoosh_soft"): return swell(0.6), -4.0, 0
     if s == "step":        return mallet(STEP[ev.get("step", 1)], 0.6, 0.01, 5.0), 4.0, 0
     if s == "tick_up":     i = ev.get("step", 0); return mallet(TICK[i], 0.7 if i == 5 else 0.45, 0.01, 4.0 if i == 5 else 6.0), (4.5 if i == 5 else 2.0 if i == 6 else 3.0), 0
+    if s == "theme_dark":  return mallet([57, 64, 69], 0.9, 0.012, 3.5), 2.0, 0.2     # the site turns dark: a low, open chord
+    if s == "theme_light": return mallet([64, 69, 76], 0.8, 0.012, 4.0), 1.5, 0.2     # and back to light: the same, brighter
     if s == "end_chime":   return bloom([60, 64, 67, 72], 2.4), 4.0, 0
     return None
 

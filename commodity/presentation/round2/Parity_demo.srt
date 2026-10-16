@@ -15,129 +15,125 @@ Same gold. Four contracts. Four prices. 23 years of official MCX data.
 711 contracts.
 
 5
-00:00:10,567 --> 00:00:13,167
+00:00:10,567 --> 00:00:14,700
 Per gram of pure gold, they should cost exactly the same.
 
 6
-00:00:13,200 --> 00:00:14,700
-Pari: In theory, anyway.
-
-7
-00:00:14,733 --> 00:00:17,567
+00:00:14,733 --> 00:00:16,200
 Parity measures every gap, every trading day, after every cost.
 
-8
-00:00:17,600 --> 00:00:19,933
-Pari: One screen. No twelve tabs.
+7
+00:00:16,233 --> 00:00:18,700
+Pari: Light or dark. Your call.
 
-9
+8
 00:00:19,967 --> 00:00:22,600
 Is any gap worth trading today?
 
-10
+9
 00:00:22,633 --> 00:00:26,600
 No. The biggest gap, 57.0 bp, clears costs but is normal for GOLDPETAL.
 
-11
+10
 00:00:26,633 --> 00:00:29,000
 Pari: Most days: wait.
 
-12
+11
 00:00:29,867 --> 00:00:32,033
 Rewind to January 2026…
 
-13
+12
 00:00:32,067 --> 00:00:36,000
 …the gold crash. Every gap blew through the cost line.
 
-14
+13
 00:00:36,333 --> 00:00:39,300
 Pari: Here's what we do differently.
 
-15
+14
 00:00:39,600 --> 00:00:43,300
 Every fee. Every tax. And slippage you control.
 
-16
+15
 00:00:43,333 --> 00:00:45,367
 Past 12 bp of slippage, no result survives.
 
-17
+16
 00:00:45,400 --> 00:00:47,467
 Pari: Costs are the real boss.
 
-18
+17
 00:00:47,500 --> 00:00:51,300
 Rules frozen in Git. Eight years kept sealed, then opened once.
 
-19
+18
 00:00:51,333 --> 00:00:53,200
 Pari: No peeking. Promise.
 
-20
+19
 00:00:53,233 --> 00:00:55,700
 Most teams would report this…
 
-21
+20
 00:00:55,733 --> 00:00:59,667
 …we report this. Up to 89% of the headline disappears.
 
-22
+21
 00:00:59,700 --> 00:00:59,900
 Too good to be true?
 
-23
+22
 00:00:59,933 --> 00:01:01,800
 Pari: Ouch. But honest.
 
-24
+23
 00:01:02,700 --> 00:01:05,533
 January 2026 alone made ₹2,39,815.
 
-25
+24
 00:01:05,567 --> 00:01:07,267
 The other 111 trades lost ₹86,433.
 
-26
+25
 00:01:07,300 --> 00:01:08,700
 Pari: One lucky month. That's it.
 
-27
+26
 00:01:08,733 --> 00:01:12,433
 Best of 72 settings? A 65% chance that's noise.
 
-28
+27
 00:01:12,467 --> 00:01:15,433
 Pari: Not proven. We say so.
 
-29
+28
 00:01:15,733 --> 00:01:17,567
 How close are we? The brief's five directions: 5 of 5 done.
 
-30
+29
 00:01:17,600 --> 00:01:19,433
 Final challenge: 5 of 5 lines answered. Still open: order-book depth.
 
-31
+30
 00:01:19,467 --> 00:01:21,300
 Checked by 10,357 automated tests.
 
-32
+31
 00:01:21,333 --> 00:01:22,200
 Tomorrow's answer isn't in this video. This video stops at 14 Oct 2026.
 
-33
+32
 00:01:22,233 --> 00:01:22,600
 Pari: Same time tomorrow?
 
-34
+33
 00:01:22,633 --> 00:01:23,900
 The site doesn't.
 
-35
+34
 00:01:23,933 --> 00:01:24,700
 Parity. See today's answer: parity-gold-site.vercel.app.
 
-36
+35
 00:01:24,733 --> 00:01:27,400
 Pari: Okay judges, that's us. Bye!

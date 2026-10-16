@@ -121,13 +121,15 @@ CAPTXT = {key(e["cap"]): e["cap"].replace("**", "") for e in OUT_EV if e.get("ca
 starts = sorted(e["f"] for e in OUT_EV if e.get("bubble"))
 BANTER_EV = []
 def _free(a, b): return all(g > TOTAL or BUB[g] is None for g in range(a, b))
-for pre, text, pose in BANTER["after_caption"]:
+for ent in BANTER["after_caption"]:
+    pre, text, pose = ent[:3]
     seg = next(((k, s0, e0) for k, s0, e0 in cap_segs if CAPTXT[k].startswith(pre)), None)
     if not seg: continue
     k, s0, e0 = seg; read = round((len(CAPTXT[k]) / 15 + 0.6) * FPS)
     dur = round(max(1.8, 1.0 + 0.3 * len(text.split())) * FPS)
     nxt = min([c[1] for c in cap_segs if c[1] > s0] + [TOTAL])
     st = max(s0 + round(0.6 * read), min(s0 + read, nxt - dur))
+    if len(ent) > 3: st = s0 + round(ent[3] * FPS)                    # a line tied to a moment (the theme switch)
     dur = min(dur, nxt + 9 - st)
     if dur < round(1.4 * FPS) or any(abs(st - x) < 4 * FPS for x in starts) or not _free(st, st + dur):
         print("banter skipped:", text); continue
@@ -142,6 +144,10 @@ for e in BANTER_EV:
         POSE[g] = e["pari"]; BUB[g] = (key(e["bubble"]), e["f"], e["f"] + e["dur"])
     if e["pari"] in ("wow", "cheer", "point_r", "proud", "wave"): HOPS.append(e["f"])
 OUT_EV += BANTER_EV
+_TH = BANTER.get("theme")
+if _TH:
+    OUT_EV += [{"f": to_out(_TH["click1"]), "sfx": "click"}, {"f": to_out(_TH["click1"]) + 2, "sfx": "theme_dark"},
+               {"f": to_out(_TH["click2"]), "sfx": "click"}, {"f": to_out(_TH["click2"]) + 2, "sfx": "theme_light"}]
 print("Pari lines:", len([e for e in OUT_EV if e.get("bubble")]))
 _r = np.random.default_rng(9); BLINKS = set(); _g = PARI_IN + 40
 while _g < TOTAL: BLINKS.update(range(_g, _g + 4)); _g += int(_r.integers(90, 150))   # every 3-5 s
@@ -187,9 +193,54 @@ def surround(out, box, a):
     o = out.astype(np.float32)
     out[:] = ((o * (1 - 0.85 * wm) + blur * 0.85 * wm) * (1 - 0.42 * wm)).astype(np.uint8)
 
+# v4.3: light and dark mode. Inside a still shot the cursor clicks the moon, the site turns dark in a circle that
+# spreads from the button, then the sun brings light back. Dark frames come from dark_shot4.py (same clock, same frame).
+THEME = BANTER.get("theme")
+TB = json.load(open(os.path.join(HERE, "theme_buttons4.json")))["buttons"] if THEME else {}
+def _ctr(lab): x, y, w, h = TB[lab]; return (x + w / 2, y + h / 2)
+def theme_state(f):
+    """(dark share: 0..1 as a radius fraction, centre in page px, light-to-dark?) and cursor (x, y, click age) for source frame f."""
+    if not THEME: return None, None
+    a, c1, wp, c2 = THEME["cursor_in"], THEME["click1"], THEME["wipe"], THEME["click2"]
+    if not a <= f <= c2 + wp + 6: return None, None
+    dk, lt = _ctr("Dark theme"), _ctr("Light theme")
+    start = (VW * 0.70, VH * 0.42)
+    cur = None
+    if f <= c1: u = ease((f - a) / (c1 - a)); cur = (start[0] + (dk[0] - start[0]) * u, start[1] + (dk[1] - start[1]) * u, None)
+    elif f < c2 - 12: cur = (dk[0], dk[1], f - c1)
+    elif f <= c2: u = ease((f - (c2 - 12)) / 12); cur = (dk[0] + (lt[0] - dk[0]) * u, dk[1], None)
+    else: cur = (lt[0], lt[1], f - c2) if f <= c2 + wp + 6 else None
+    if f < c1: wipe = None
+    elif f < c2: wipe = (ezo((f - c1) / wp), dk, True)
+    else: wipe = (ezo((f - c2) / wp), lt, False)
+    return wipe, cur
+_RMAX = math.hypot(VW, VH)
+def theme_mix(im, f):
+    wipe, _ = theme_state(f)
+    if wipe is None: return im
+    dpath = os.path.join(HERE, "framesdark4", f"{f:05d}.jpg")
+    if not os.path.exists(dpath): return im
+    dk = cv2.imread(dpath); p, (cx, cy), to_dark = wipe
+    if p >= 1: return dk if to_dark else im
+    hh, ww = im.shape[:2]; s_ = ww / VW
+    ys, xs = np.ogrid[0:hh, 0:ww]
+    r = p * _RMAX * s_
+    m = np.clip((r - np.sqrt((xs - cx * s_) ** 2 + (ys - cy * s_) ** 2)) / (14 * s_), 0, 1).astype(np.float32)[:, :, None]
+    a_, b_ = (dk, im) if to_dark else (im, dk)
+    return (a_.astype(np.float32) * m + b_.astype(np.float32) * (1 - m)).astype(np.uint8)
+CURSOR = np.array([[0, 0], [0, 30], [8, 23], [13, 34], [18, 32], [13, 21], [23, 21]], np.int32)
+def draw_cursor(out, x, y, click):
+    if click is not None and click < 12:                             # a soft press: the cursor dips, a faint ring spreads
+        r = int(10 + click * 2.4); a = 0.35 * (1 - click / 12)
+        lay = out.copy(); cv2.circle(lay, (int(x), int(y)), r, (245, 245, 245), 2, cv2.LINE_AA); cv2.addWeighted(lay, a, out, 1 - a, 0, out)
+    sc = 1.0 if click is None or click > 6 else 0.9
+    pts = (CURSOR * sc + [int(x), int(y)]).astype(np.int32)
+    sh = out.copy(); cv2.fillPoly(sh, [pts + [2, 3]], (0, 0, 0), cv2.LINE_AA); cv2.addWeighted(sh, 0.25, out, 0.75, 0, out)
+    cv2.fillPoly(out, [pts], (255, 255, 255), cv2.LINE_AA); cv2.polylines(out, [pts], True, (20, 20, 20), 2, cv2.LINE_AA)
+
 def page(g):
     f = KEEP[min(g, N - 1)]
-    im = cv2.imread(os.path.join(HERE, "frames4", f"{f:05d}.jpg"))
+    im = theme_mix(cv2.imread(os.path.join(HERE, "frames4", f"{f:05d}.jpg")), f)
     def cam_at(ff, gg):
         x0, y0, W = cam_src[ff]
         z = 1 + 0.02 * (0.5 - 0.5 * math.cos(2 * math.pi * gg / (FPS * 9.0)))      # breathing: ~2% over 9 s
@@ -213,6 +264,9 @@ def page(g):
     else:
         out = view(x0, y0, W)
     out = (out.astype(np.float32) * VIG).astype(np.uint8)
+    _, cur_ = theme_state(f)
+    if cur_ is not None:
+        draw_cursor(out, (cur_[0] - x0) * OW / W, (cur_[1] - y0) * OW / W, cur_[2])
     tg = tgt_src[f]
     if tg is not None:
         (rx, ry, rw, rh), fs, fe = tg

@@ -1,13 +1,57 @@
-{"note": "Pari's extra lines (v4.1). Each reacts to a caption or card; placed by compose4.py once the caption has been read, never within 4 s of another bubble.",
+{
+ "note": "Pari's extra lines (v4.1). Each reacts to a caption or card; placed by compose4.py once the caption has been read, never within 4 s of another bubble.",
  "after_caption": [
-  ["Per gram of pure gold", "In theory, anyway.", "think"],
-  ["Parity measures every gap", "One screen. No twelve tabs.", "proud"],
-  ["…the gold crash", "Red day. I'm fine. Totally fine.", "sad"],
-  ["Past ", "Costs are the real boss.", "no"],
-  ["Rules frozen in Git", "No peeking. Promise.", "proud"],
-  ["…we report", "Ouch. But honest.", "no"],
-  ["The other ", "One lucky month. That's it.", "think"]],
+  [
+   "Parity measures every gap",
+   "Light or dark. Your call.",
+   "proud",
+   1.5
+  ],
+  [
+   "…the gold crash",
+   "Red day. I'm fine. Totally fine.",
+   "sad"
+  ],
+  [
+   "Past ",
+   "Costs are the real boss.",
+   "no"
+  ],
+  [
+   "Rules frozen in Git",
+   "No peeking. Promise.",
+   "proud"
+  ],
+  [
+   "…we report",
+   "Ouch. But honest.",
+   "no"
+  ],
+  [
+   "The other ",
+   "One lucky month. That's it.",
+   "think"
+  ]
+ ],
  "on_card": [
-  ["tomorrow", 0.9, "Same time tomorrow?", "point_r"],
-  ["end", 0.8, "Okay judges, that's us. Bye!", "wave"]],
- "title": "MCX gold futures, compared per gram of pure gold"}
+  [
+   "tomorrow",
+   0.9,
+   "Same time tomorrow?",
+   "point_r"
+  ],
+  [
+   "end",
+   0.8,
+   "Okay judges, that's us. Bye!",
+   "wave"
+  ]
+ ],
+ "title": "MCX gold futures, compared per gram of pure gold",
+ "theme": {
+  "cursor_in": 462,
+  "click1": 474,
+  "wipe": 18,
+  "click2": 553
+ }
+}
