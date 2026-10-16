@@ -959,11 +959,13 @@ kbd,code,pre{font-family:var(--f-code)}
 /* sheets, menus and drawers open on the iOS spring */
 .palette,.drawer,.sheet,.gloss,.tip,.news{animation-duration:.5s!important;animation-timing-function:var(--spring)!important}
 
-/* touch: small tiles lift under the pointer, every control presses in */
+/* Dock magnification for tiles is driven by main.jsx (useDock). Large cards get a gentle, smooth enlarge on hover;
+   the shadow deepens with it. Touch: every control presses in. */
 @media (hover:hover) and (pointer:fine){
-  .quote,.dir,.dl-i,.jump a,.find{transition:transform .5s var(--spring),box-shadow .5s var(--spring),background-color .3s ease}
-  .quote:hover,.dir:hover,.dl-i:hover,.find:hover{transform:translateY(-3px)}
-  .jump a:hover{transform:translateY(-1px)}
+  .card,.more,.take,.dlbar{transition:transform .55s var(--spring),box-shadow .55s var(--spring),background-color .3s ease}
+  .card:hover,.more:hover,.take:hover,.dlbar:hover{transform:scale(1.012);z-index:1;
+    box-shadow:var(--g-hi),var(--g-edge),0 2px 4px rgba(0,0,0,.12),0 30px 60px -24px rgba(0,0,0,.5)}
+  .card:has(.card:hover){transform:none}
 }
 .btn,.iconbtn,.seg button,.theme button,.jump a,.rail nav a,.strip a,.tabbar a,.tabbar button,.dl-i,.pager button,.linkbtn{transition:transform .18s var(--spring),background-color .25s ease,color .25s ease,box-shadow .25s ease}
 .btn:active,.iconbtn:active,.seg button:active,.theme button:active,.jump a:active,.rail nav a:active,.strip a:active,.tabbar a:active,.tabbar button:active,.dl-i:active,.pager button:active,.linkbtn:active{transform:scale(.96)}
@@ -982,7 +984,7 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 24%,trans
 @media (prefers-reduced-motion: reduce){
   .rv{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
   .hero>*,.hl{animation:none!important}
-  .quote:hover,.dir:hover,.dl-i:hover,.find:hover,.jump a:hover{transform:none}
+  .card:hover,.more:hover,.take:hover,.dlbar:hover{transform:none}
   ::view-transition-old(root),::view-transition-new(root){animation:none}
 }
 @media print{.hl{color:#000;-webkit-text-fill-color:#000;background:none}}

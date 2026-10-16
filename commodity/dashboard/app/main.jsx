@@ -208,7 +208,57 @@ function NotFound({ hash, go, openSearch }) {
 }
 
 /* ---------- app */
+/* ---------- Dock magnification (macOS): the tile under the pointer grows most, its neighbours a little less,
+   falling off with distance. One passive listener, at most one update per frame, rects measured once per row,
+   transform only (composited). Mouse and trackpad only; off with Reduce Motion. */
+const DOCK_TILE = ".quote,.kpi,.dir,.dl-i,.jump a,.find,.hg-s,.status,.proof a,.qa-r,.uq li,.unique li";
+function useDock() {
+  useEffect(() => {
+    if (!matchMedia("(hover: hover) and (pointer: fine)").matches || reducedMotion()) return;
+    let group = null, tiles = [], rects = [], gr = null, raf = 0, px = 0, py = 0, clearT = 0;
+    const SPRING = "transform .28s cubic-bezier(.32,.72,0,1), box-shadow .28s cubic-bezier(.32,.72,0,1)";
+    const measure = () => { rects = tiles.map(t => t.getBoundingClientRect()); gr = group.getBoundingClientRect(); };
+    const release = () => {
+      if (!group) return;
+      const old = tiles; old.forEach(t => { t.style.transform = ""; t.style.zIndex = ""; });
+      clearTimeout(clearT); clearT = setTimeout(() => old.forEach(t => { if (!t.style.transform) { t.style.transition = ""; t.style.willChange = ""; } }), 420);
+      group = null; tiles = []; rects = [];
+    };
+    const apply = () => {
+      raf = 0; if (!group) return;
+      const w = rects.reduce((a, r) => a + r.width, 0) / Math.max(1, rects.length);
+      const small = w < 520, amp = small ? 0.08 : 0.02, sig = Math.max(90, w * 0.6);   // steep falloff, like the Dock
+      tiles.forEach((t, i) => {
+        const r = rects[i], cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = Math.max(0, Math.abs(px - cx) - r.width * 0.2), dy = Math.max(0, Math.abs(py - cy) - r.height * 0.2);
+        const k = Math.exp(-(dx * dx + dy * dy) / (2 * sig * sig));
+        const s = 1 + amp * k;
+        t.style.transform = `translateY(${(-6 * k * (small ? 1 : 0.4)).toFixed(2)}px) scale(${s.toFixed(4)})`;
+        t.style.zIndex = k > 0.6 ? "3" : k > 0.2 ? "2" : "";
+      });
+    };
+    const onMove = e => {
+      px = e.clientX; py = e.clientY;
+      const tile = e.target.closest && e.target.closest(DOCK_TILE);
+      const g = tile && tile.parentElement;
+      if (g && g !== group) {
+        release(); group = g;
+        tiles = [...g.children].filter(c => c.matches(DOCK_TILE));
+        tiles.forEach(t => { t.style.transition = SPRING; t.style.willChange = "transform"; });
+        measure();
+      } else if (!g && group && !(px >= gr.left - 12 && px <= gr.right + 12 && py >= gr.top - 12 && py <= gr.bottom + 12)) { release(); return; }
+      if (group && !raf) raf = requestAnimationFrame(apply);
+    };
+    const onScroll = () => { if (group) release(); };
+    document.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("pointerleave", release, { passive: true });
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerleave", release); removeEventListener("scroll", onScroll); release(); };
+  }, []);
+}
+
 function App() {
+  useDock();
   const bad = h => h && h !== "main" && !PAGES[h];
   const init = () => { const h = location.hash.slice(1); return PAGES[h] ? h : bad(h) ? "404" : store.get("gsl-view", "overview"); };
   const [view, setView] = useState(init), [theme, setTheme] = useTheme(), [phase, setPhase] = useState("in"), [navN, setNavN] = useState(0);
