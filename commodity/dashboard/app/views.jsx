@@ -464,7 +464,7 @@ export function Backtest() {
         <div className="ctl"><div className="lab">Strategy and period</div><Seg label="Strategy and period" value={key} onChange={pickKey} options={Object.entries(BT).map(([k, v]) => [k, v.name])} /></div>
         <label className="toggle"><input type="checkbox" checked={tonly} onChange={e => { setTonly(e.target.checked); setPage(0); }} /><span>Only trades a broker would allow<br /><small>exit at least 5 business days before expiry (<Term k="tender">tender</Term>)</small></span></label>
         <div className="slider"><div className="row"><label htmlFor="slip">Slippage per leg, each side</label><b><span>{s.toFixed(1)}</span> bp</b></div>
-          <input id="slip" className="range" type="range" min="0" max="10" step="0.5" value={s} onChange={e => setS(+e.target.value)} />
+          <input id="slip" className="range ios" type="range" min="0" max="10" step="0.5" value={s} onChange={e => setS(+e.target.value)} style={{ "--p": (s * 10).toFixed(1) + "%" }} />
           <div className="row ticks"><span>0 · perfect fills</span><span>5 · realistic</span><span>10 · poor</span></div></div>
       </div>
       <p className="note">{BT[key].desc}</p>

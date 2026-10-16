@@ -1012,3 +1012,70 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 24%,trans
    which had to be re-rasterised every frame; the hero keeps its blur because it is small. */
 .rv{filter:none;transition:opacity .8s var(--out-expo),transform .9s var(--out-expo)}
 .rv.in{filter:none}
+
+/* ======================= TOUCH + MOBILE (17 Oct 2026) ======================= */
+/* Elements the Dock/press spring drives: their transform is set every frame by JS, so no CSS transition on it
+   (a transition re-targeted each frame smooths twice and shimmers). Colours and shadows still ease. */
+.dk{transition-property:background-color,border-color,box-shadow,color,opacity!important}
+.rail nav a .rl{display:inline-block}
+
+/* Touch: no grey flash, no double-tap zoom delay, no stuck :hover after a tap */
+html{-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.bgfx{contain:strict;transform:translateZ(0)}
+@media (hover:none){
+  .card:hover,.quote:hover{background:var(--g-fill)}
+  .more:hover:not([open]){background:var(--g-fill)}
+  .more summary:hover{background:transparent}
+  .more summary:hover .chev{transform:translateY(-70%) rotate(45deg);border-color:var(--ink-3)}
+  .more[open] summary:hover .chev{transform:translateY(-30%) rotate(225deg)}
+  .more.shut summary:hover .chev{transform:translateY(-70%) rotate(45deg)}
+  .bars:hover .bar{opacity:1}
+  tbody tr:hover{background:transparent}
+  .go:hover svg{transform:none}
+  .ticker:hover .tk{animation-play-state:running}
+  .brand:hover .mark .lo{transform:none}
+  .jump a:hover,.dl-i:hover,.nf-l a:hover,.proof a:hover{background:var(--g-fill);color:inherit}
+  /* press states: the iOS list-cell feel */
+  .more>summary{transition:background-color .2s ease,transform .32s var(--spring)}
+  .more>summary:active{background:color-mix(in srgb,var(--gold) 9%,transparent);transform:scale(.985)}
+  tbody tr:active{background:var(--hi)}
+  .term:active{background-color:var(--gold-soft)}
+  /* bigger hit areas without changing the look */
+  .src{position:relative}.src::after{content:"";position:absolute;inset:-12px}
+  .seg button{padding:10px 14px;min-height:40px}
+  .seg.sm button{padding:9px 12px;min-height:38px}
+  .toggle input{width:22px;height:22px;margin-top:0}
+  .linkbtn{padding:8px 0}
+}
+
+/* Phones */
+@media (max-width:760px){
+  input,select,textarea{font-size:16px!important}          /* iOS zooms into anything smaller on focus */
+  .top{transition:transform .46s var(--spring);will-change:transform}
+  html.sd .top{transform:translate3d(0,-100%,0)}            /* hides while reading down, back on the first flick up */
+  .brand{position:relative}
+  .wm{transition:opacity .28s ease,transform .42s var(--spring)}
+  .top-t{position:absolute;left:41px;top:50%;font:600 17px/1 var(--f-disp);letter-spacing:-.02em;white-space:nowrap;color:var(--ink);
+    opacity:0;transform:translate3d(0,-20%,0);transition:opacity .28s ease,transform .42s var(--spring);pointer-events:none;max-width:42vw;overflow:hidden;text-overflow:ellipsis}
+  html.ph .wm{opacity:0;transform:translate3d(0,-70%,0)}
+  html.ph .top-t{opacity:1;transform:translate3d(0,-50%,0)}
+  .tabbar{transition:transform .5s var(--spring),opacity .3s ease;transform-origin:50% 100%;will-change:transform;
+    background:color-mix(in srgb,var(--bg) 70%,transparent)}
+  html.sd .tabbar{transform:translate3d(0,6px,0) scale(.9)}  /* minimises while scrolling, like iOS */
+  .tabbar span{transition:opacity .25s ease}
+  .theme button{width:30px}
+  .hg-t th:not(:first-child):not(.on),.hg-t td:not(:first-child):not(.on){display:none}   /* the toggle picks the column */
+  .tw{-webkit-mask:linear-gradient(90deg,#000 calc(100% - 22px),transparent);mask:linear-gradient(90deg,#000 calc(100% - 22px),transparent);padding-right:22px}
+  .hero{padding-top:6px}
+  .more summary{min-height:56px}
+  .sheet{touch-action:none;will-change:transform}
+  .sheet.drag{transition:none!important;animation:none!important}
+  .sheet a,.sheet button{min-height:52px}
+  .controls .slider{padding-top:4px}
+}
+@media (max-width:760px) and (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tabbar{background:color-mix(in srgb,var(--bg) 76%,transparent)}}
+@media (max-width:760px){:root[data-theme="light"] .tabbar{background:color-mix(in srgb,var(--bg) 76%,transparent)}}
+@media (min-width:761px){.top-t{display:none}}
+@media (prefers-reduced-motion:reduce){html.sd .top,html.sd .tabbar{transform:none}}
+@media (max-width:760px){.top{background:color-mix(in srgb,var(--bg) 74%,transparent)}}
+@media (max-width:900px){.take{grid-template-columns:1fr;gap:10px}}

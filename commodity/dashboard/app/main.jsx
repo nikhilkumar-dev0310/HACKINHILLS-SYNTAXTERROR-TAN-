@@ -208,65 +208,171 @@ function NotFound({ hash, go, openSearch }) {
 }
 
 /* ---------- app */
-/* ---------- Dock magnification (macOS): the tile under the pointer grows most, its neighbours a little less,
-   falling off with distance. One passive listener, at most one update per frame, rects measured once per row,
-   transform only (composited). Mouse and trackpad only; off with Reduce Motion. */
+/* ---------- Dock magnification (macOS) and press ripple (iOS)
+   Pointer: the tile under the pointer grows most, its neighbours a little less, falling off with distance.
+   Touch: pressing a tile sinks it and its neighbours ripple a little, then spring back.
+   One rAF loop drives every tile with its own critically damped spring, so there are no CSS transitions to
+   re-target on each frame (the cause of the old shimmer). Rects are layout boxes, measured without the
+   transforms we apply, and re-measured on scroll instead of resetting. Only transform changes (composited),
+   so it runs at the display's refresh rate. In the sidebar only the label grows, so the highlight stays inside. */
 const DOCK_TILE = ".quote,.kpi,.dir,.dl-i,.jump a,.find,.hg-s,.status,.proof a,.qa-r,.uq li,.unique li,.rail nav a,.strip a,.more:not([open])";
+const PRESS_TILE = ".quote,.kpi,.dir,.dl-i,.jump a,.find,.hg-s,.proof a,.qa-r,.strip a,.sheet a,.sheet button,.nf-l a";
 function useDock() {
   useEffect(() => {
-    if (!matchMedia("(hover: hover) and (pointer: fine)").matches || reducedMotion()) return;
-    let group = null, tiles = [], rects = [], gr = null, raf = 0, px = 0, py = 0, clearT = 0, quiet = 0;
-    const SPRING = "transform .28s cubic-bezier(.32,.72,0,1), box-shadow .28s cubic-bezier(.32,.72,0,1)";
-    const measure = () => { rects = tiles.map(t => t.getBoundingClientRect()); gr = group.getBoundingClientRect(); };
-    const release = () => {
-      if (!group) return;
-      const old = tiles; old.forEach(t => { t.style.transform = ""; t.style.zIndex = ""; });
-      setTimeout(() => old.forEach(t => { if (!t.style.transform) t.style.transformOrigin = ""; }), 420);
-      clearTimeout(clearT); clearT = setTimeout(() => old.forEach(t => { if (!t.style.transform) { t.style.transition = ""; t.style.willChange = ""; } }), 420);
-      group = null; tiles = []; rects = [];
+    if (reducedMotion()) return;
+    const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const live = new Map();                 // element -> {tgt, s, y, x, ts, ty, tx, side}
+    let group = null, tiles = [], rects = [], raf = 0, last = 0, px = 0, py = 0, quiet = 0, dirty = false, mode = "hover", pressed = null;
+    const TAU = 0.075;                      // seconds; spring time constant (snappy like the Dock, never overshoots)
+    const st = (tile) => {
+      let o = live.get(tile);
+      if (!o) {
+        const side = !!tile.closest(".rail");
+        const tgt = side ? tile.querySelector(".rl") : tile;
+        o = { tgt, side, s: 1, y: 0, ts: 1, ty: 0 };
+        tgt.style.willChange = "transform"; tgt.classList.add("dk");
+        if (side) tgt.style.transformOrigin = "left center";
+        live.set(tile, o);
+      }
+      return o;
     };
-    const apply = () => {
-      raf = 0; if (!group || !rects.length) return;
-      const w = rects.reduce((a, r) => a + r.width, 0) / rects.length, h = rects.reduce((a, r) => a + r.height, 0) / rects.length;
-      // which way the list runs: a column (sidebar, stacked panels) ripples along y, a row along x
-      const vertical = rects.length > 1 ? Math.abs(rects[1].top - rects[0].top) > Math.abs(rects[1].left - rects[0].left) : w >= 520;
-      const side = group.closest(".rail") != null;                       // the sidebar: a side Dock, items grow to the right
-      const wide = w >= 520;                                             // wide rows (closed panels) grow by pixels, not percent
-      if (wide && !vertical) return;                                     // large cards side by side stay still
-      const amp = wide ? Math.min(0.03, 22 / w) : side ? 0.09 : 0.08;
-      const sig = vertical ? Math.max(28, h * 0.9) : Math.max(90, w * 0.6);   // steep falloff, like the Dock
+    const measure = () => {                 // layout boxes: transforms on tiles are undone, side tiles are never transformed
+      rects = tiles.map(t => { const r = t.getBoundingClientRect(), o = live.get(t); const w = t.offsetWidth || r.width, h = t.offsetHeight || r.height;
+        if (o && !o.side) { const cx = r.left + r.width / 2, cy = r.top + r.height / 2 - o.y; return { cx, cy, w, h }; }
+        return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, w, h }; });
+      dirty = false;
+    };
+    const targets = () => {
+      if (!group || !rects.length) return;
+      if (dirty) measure();
+      const n = rects.length, w = rects.reduce((a, r) => a + r.w, 0) / n, h = rects.reduce((a, r) => a + r.h, 0) / n;
+      const vertical = n > 1 ? Math.abs(rects[1].cy - rects[0].cy) > Math.abs(rects[1].cx - rects[0].cx) : w >= 520;
+      const side = tiles[0].closest(".rail") != null, wide = w >= 520;
+      if (mode === "press") {               // iOS: the pressed tile sinks, neighbours answer a little
+        const pi = tiles.indexOf(pressed), pr = rects[pi]; if (!pr) return;
+        tiles.forEach((t, i) => { const r = rects[i], d = Math.hypot(r.cx - pr.cx, r.cy - pr.cy), k = i === pi ? 1 : Math.exp(-(d * d) / (2 * 140 * 140)) * 0.35;
+          const o = st(t); o.ts = 1 - (wide ? 0.015 : 0.04) * k; o.ty = 0; });
+        return;
+      }
+      if (wide && !vertical) return;
+      const amp = wide ? Math.min(0.03, 22 / w) : side ? 0.07 : 0.08;
+      const sig = vertical ? Math.max(28, h * 0.9) : Math.max(90, w * 0.6);
       tiles.forEach((t, i) => {
-        const r = rects[i], cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const d = vertical ? Math.max(0, Math.abs(py - cy) - r.height * 0.2)
-                           : Math.hypot(Math.max(0, Math.abs(px - cx) - r.width * 0.2), Math.max(0, Math.abs(py - cy) - r.height * 0.2));
-        const k = Math.exp(-(d * d) / (2 * sig * sig)), s = 1 + amp * k;
-        const shift = side ? `translateX(${(6 * k).toFixed(2)}px)` : vertical ? "" : `translateY(${(-6 * k).toFixed(2)}px)`;
-        if (side) t.style.transformOrigin = "left center";
-        t.style.transform = `${shift} scale(${s.toFixed(4)})`;
+        const r = rects[i];
+        const d = vertical ? Math.max(0, Math.abs(py - r.cy) - r.h * 0.2)
+                           : Math.hypot(Math.max(0, Math.abs(px - r.cx) - r.w * 0.2), Math.max(0, Math.abs(py - r.cy) - r.h * 0.2));
+        const k = Math.exp(-(d * d) / (2 * sig * sig)), o = st(t);
+        o.ts = 1 + amp * k; o.ty = side || vertical ? 0 : -6 * k;
         t.style.zIndex = k > 0.6 ? "3" : k > 0.2 ? "2" : "";
       });
     };
+    const frame = now => {
+      raf = 0;
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60; last = now;
+      targets();
+      const a = 1 - Math.exp(-dt / TAU);
+      let moving = false;
+      live.forEach((o, t) => {
+        o.s += (o.ts - o.s) * a; o.y += (o.ty - o.y) * a;
+        const done = Math.abs(o.ts - o.s) < 5e-4 && Math.abs(o.ty - o.y) < 0.05;
+        if (done) { o.s = o.ts; o.y = o.ty; }
+        if (done && o.ts === 1 && o.ty === 0 && !tiles.includes(t)) {   // back at rest and no longer in play: clean up
+          o.tgt.style.transform = ""; o.tgt.style.willChange = ""; o.tgt.style.transformOrigin = ""; o.tgt.classList.remove("dk"); t.style.zIndex = ""; live.delete(t); return;
+        }
+        o.tgt.style.transform = (o.y ? `translate3d(0,${o.y.toFixed(2)}px,0) ` : "") + `scale(${o.s.toFixed(4)})`;
+        if (!done) moving = true;
+      });
+      if (moving || group) raf = requestAnimationFrame(frame); else last = 0;
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+    const release = () => {
+      live.forEach(o => { o.ts = 1; o.ty = 0; });
+      tiles.forEach(t => { t.style.zIndex = ""; });
+      group = null; tiles = []; rects = []; pressed = null; kick();
+    };
+    const enter = (g, sel) => { release(); group = g; tiles = [...g.children].filter(c => c.matches(sel)); measure(); };
     const onMove = e => {
+      if (e.pointerType !== "mouse" || !fine) return;
       px = e.clientX; py = e.clientY;
       if (e.timeStamp < quiet) return;                                   // a panel is still unfolding: rows below are moving
-      const tile = e.target.closest && e.target.closest(DOCK_TILE);
-      const g = tile && tile.parentElement;
-      if (g && g !== group) {
-        release(); group = g;
-        tiles = [...g.children].filter(c => c.matches(DOCK_TILE));
-        tiles.forEach(t => { t.style.transition = SPRING; t.style.willChange = "transform"; });
-        measure();
-      } else if (!g && group && !(px >= gr.left - 12 && px <= gr.right + 12 && py >= gr.top - 12 && py <= gr.bottom + 12)) { release(); return; }
-      if (group && !raf) raf = requestAnimationFrame(apply);
+      const tile = e.target.closest && e.target.closest(DOCK_TILE), g = tile && tile.parentElement;
+      if (g && g !== group) { mode = "hover"; enter(g, DOCK_TILE); }
+      else if (!g && group) {
+        const r0 = group.getBoundingClientRect();
+        if (!(px >= r0.left - 12 && px <= r0.right + 12 && py >= r0.top - 12 && py <= r0.bottom + 12)) { release(); return; }
+      }
+      if (group) kick();
     };
-    const onScroll = () => { if (group) release(); };
-    const onClick = e => { quiet = e.timeStamp + 560; if (group) { release(); } };                // a panel opened or a page changed: re-measure on the next move
-    document.addEventListener("pointermove", onMove, { passive: true });
-    document.addEventListener("pointerleave", release, { passive: true });
-    addEventListener("scroll", onScroll, { passive: true });
+    const onDown = e => {
+      if (e.pointerType === "mouse") return;
+      const tile = e.target.closest && e.target.closest(PRESS_TILE); if (!tile || !tile.parentElement) return;
+      mode = "press"; enter(tile.parentElement, PRESS_TILE); pressed = tile; kick();
+    };
+    const onUp = () => { if (mode === "press" && group) release(); };
+    const onScroll = () => { if (mode === "press") { if (group) release(); return; } if (group) { dirty = true; kick(); } };
+    const onClick = e => { quiet = e.timeStamp + 560; if (group && mode === "hover") release(); };
+    const onLeave = () => { if (group) release(); };
+    const opt = { passive: true };
+    document.addEventListener("pointermove", onMove, opt);
+    document.addEventListener("pointerdown", onDown, opt);
+    document.addEventListener("pointerup", onUp, opt);
+    document.addEventListener("pointercancel", onUp, opt);
+    document.documentElement.addEventListener("mouseleave", onLeave, opt);
+    addEventListener("scroll", onScroll, opt);
     document.addEventListener("click", onClick, { passive: true, capture: true });
-    return () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerleave", release); removeEventListener("scroll", onScroll); document.removeEventListener("click", onClick, { capture: true }); release(); };
+    return () => {
+      document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("pointerup", onUp); document.removeEventListener("pointercancel", onUp);
+      document.documentElement.removeEventListener("mouseleave", onLeave); removeEventListener("scroll", onScroll);
+      document.removeEventListener("click", onClick, { capture: true }); cancelAnimationFrame(raf);
+      live.forEach((o, t) => { o.tgt.style.transform = ""; o.tgt.style.willChange = ""; t.style.zIndex = ""; });
+    };
   }, []);
+}
+
+/* ---------- phone chrome (iOS): reading down hides the header and minimises the tab bar; the first flick up
+   brings both back. Once the page title scrolls away, the header shows it in place of the wordmark. */
+function usePhoneChrome(view) {
+  useEffect(() => {
+    const mq = matchMedia("(max-width: 760px)"), root = document.documentElement;
+    let y0 = scrollY, acc = 0, raf = 0, io = null;
+    const set = (c, on) => root.classList.toggle(c, on);
+    const tick = () => { raf = 0; const y = scrollY, dy = y - y0; y0 = y;
+      if (!mq.matches || y < 72) { acc = 0; set("sd", false); return; }
+      acc = Math.sign(dy) === Math.sign(acc) ? acc + dy : dy;          // direction must hold for a few px: no flicker
+      if (acc > 14) set("sd", true); else if (acc < -10) set("sd", false); };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    addEventListener("scroll", onScroll, { passive: true });
+    const watch = () => { if (io) io.disconnect(); const h = document.querySelector("main h1"); set("ph", false);
+      if (h && "IntersectionObserver" in window) { io = new IntersectionObserver(([e]) => set("ph", !e.isIntersecting && e.boundingClientRect.top < 0), { rootMargin: "-60px 0px 0px 0px" }); io.observe(h); } };
+    const t = setTimeout(watch, 80);
+    set("sd", false);
+    return () => { removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); clearTimeout(t); if (io) io.disconnect(); };
+  }, [view]);
+}
+
+/* ---------- the More sheet follows the finger and is flicked away, like an iOS sheet */
+function useSheetDrag(ref, open, close) {
+  useEffect(() => {
+    const el = ref.current; if (!open || !el) return;
+    let y0 = 0, t0 = 0, dy = 0, on = false, id = null;
+    const down = e => { if (e.pointerType === "mouse") return; on = true; id = e.pointerId; y0 = e.clientY; t0 = e.timeStamp; dy = 0; };
+    const move = e => { if (!on || e.pointerId !== id) return; dy = Math.max(0, e.clientY - y0) ;
+      const d = e.clientY - y0 < 0 ? -Math.sqrt(-(e.clientY - y0)) * 1.5 : dy;      // rubber-band upwards
+      if (Math.abs(e.clientY - y0) > 4) { el.classList.add("drag"); el.style.transform = `translate3d(0,${d.toFixed(1)}px,0)`; } };
+    const up = e => { if (!on) return; on = false; const v = dy / Math.max(1, e.timeStamp - t0);
+      el.classList.remove("drag");
+      if (dy > 90 || (dy > 24 && v > 0.45)) {
+        const a = el.animate([{ transform: el.style.transform || "none" }, { transform: "translate3d(0,100%,0)" }], { duration: 260, easing: "cubic-bezier(.32,.72,0,1)", fill: "forwards" });
+        a.onfinish = () => close();
+      } else if (el.style.transform) {
+        el.animate([{ transform: el.style.transform }, { transform: "none" }], { duration: 420, easing: "cubic-bezier(.32,.72,0,1)" });
+        el.style.transform = "";
+      } };
+    el.addEventListener("pointerdown", down, { passive: true }); el.addEventListener("pointermove", move, { passive: true });
+    el.addEventListener("pointerup", up, { passive: true }); el.addEventListener("pointercancel", up, { passive: true });
+    return () => { el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); };
+  }, [open]);
 }
 
 function App() {
@@ -277,6 +383,8 @@ function App() {
   const viewRef = useRef(view); viewRef.current = view;
   const pend = useRef(null), tmr = useRef(0), lost = useRef(location.hash.slice(1));
   const [pal, setPal] = useState(false), [news, setNews] = useState(false), [more, setMore] = useState(false), [keysSheet, setKeysSheet] = useState(false);
+  usePhoneChrome(view);
+  const sheetRef = useRef(null); useSheetDrag(sheetRef, more, () => setMore(false));
   const [keysOn, setKeysOnS] = useState(() => store.get("gsl-keys", "on") !== "off");
   const [rvPair, setRvPair] = useState("M-GUINEA"), [calF, setCalF] = useState("All");
   const userNav = useRef(false);
@@ -330,7 +438,7 @@ function App() {
     <a className="skip" href="#main" onClick={e => { e.preventDefault(); focusHead(); }}>Skip to content</a>
     <div className="bgfx" aria-hidden="true"><i /><i /></div>
     <header className="top">
-      <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><Mark /><span className="wm">{NAME}<small>MCX gold futures</small></span></a>
+      <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><Mark /><span className="wm">{NAME}<small>MCX gold futures</small></span><span className="top-t" aria-hidden="true">{view === "404" ? "Not found" : label(view)}</span></a>
       <div className="crumb" aria-hidden="true"><span key={view} className="roll"><span className="num">{idx < 0 ? "—" : String(idx + 1).padStart(2, "0")} / 08</span>{view === "404" ? "Not found" : label(view)}</span></div>
       <div className="top-r">
         <button type="button" className="search" onClick={() => setPal(true)} aria-label="Search (Ctrl+K)"><Icon name="search" size={16} /><span className="sl">Search</span><kbd>{isMac ? "⌘" : "Ctrl"} K</kbd></button>
@@ -366,7 +474,7 @@ function App() {
       <button type="button" aria-expanded={more} aria-current={!TABS.includes(view) ? "page" : undefined} onClick={() => setMore(m => !m)}><Icon name="more" size={20} /><span>More</span></button>
     </nav>
     {more && <div className="overlay sheet-o" onMouseDown={e => e.target === e.currentTarget && setMore(false)} onKeyDown={e => e.key === "Escape" && setMore(false)}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label="More sections">
+      <div className="sheet" ref={sheetRef} role="dialog" aria-modal="true" aria-label="More sections">
         <div className="grab" aria-hidden="true" />
         {VIEWS.filter(v => !TABS.includes(v[0])).map(([id, l]) => <a key={id} href={"#" + id} onClick={() => setMore(false)} aria-current={id === view ? "page" : undefined}><Icon name={id} size={20} />{l}</a>)}
         <button type="button" onClick={() => { setMore(false); setPal(true); }}><Icon name="search" size={20} />Search</button>
