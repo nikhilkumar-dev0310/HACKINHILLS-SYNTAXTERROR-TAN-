@@ -1,5 +1,6 @@
 import { Component, useEffect, useLayoutEffect, useMemo, useRef, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
+import { flushSync } from "react-dom";
 import { D, NAME, VIEWS, SYMS, SYM, EVENTS, GLOSSARY, fdate, pname, reducedMotion } from "./lib.js";
 import { AppCtx, Icon } from "./ui.jsx";
 
@@ -23,8 +24,13 @@ const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 /* ---------- theme */
 function useTheme() {
   const [t, setT] = useState(() => store.get("parity-theme", store.get("gsl-theme", "system")));
-  useEffect(() => { const r = document.documentElement; t === "system" ? r.removeAttribute("data-theme") : r.setAttribute("data-theme", t); store.set("parity-theme", t); }, [t]);
-  return [t, setT];
+  useLayoutEffect(() => { const r = document.documentElement; t === "system" ? r.removeAttribute("data-theme") : r.setAttribute("data-theme", t); store.set("parity-theme", t); }, [t]);
+  // like the macOS appearance change: the whole page cross-fades to the new theme (where the browser supports it)
+  const setSmooth = v => {
+    const go = () => flushSync(() => setT(v));
+    if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) document.startViewTransition(go); else go();
+  };
+  return [t, setSmooth];
 }
 function ThemeSwitch({ theme, setTheme }) {
   return <div className="theme" role="group" aria-label="Colour theme">

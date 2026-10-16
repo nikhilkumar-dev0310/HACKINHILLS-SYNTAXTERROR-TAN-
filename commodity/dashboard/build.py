@@ -27,7 +27,7 @@ META = "\n".join([
     '<meta name="twitter:card" content="summary_large_image">', '<meta name="twitter:title" content="Parity · MCX gold futures, priced fairly">',
     f'<meta name="twitter:description" content="{DESC}">', f'<meta name="twitter:image" content="{OG_IMG}">',
     '<meta name="theme-color" content="#050506" media="(prefers-color-scheme: dark)">',
-    '<meta name="theme-color" content="#ebe5da" media="(prefers-color-scheme: light)">'])
+    '<meta name="theme-color" content="#f5f4f1" media="(prefers-color-scheme: light)">'])
 
 
 def build_stamp():
