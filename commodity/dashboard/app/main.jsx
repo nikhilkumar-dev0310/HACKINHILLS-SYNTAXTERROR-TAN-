@@ -227,7 +227,8 @@ function useDock() {
     const apply = () => {
       raf = 0; if (!group) return;
       const w = rects.reduce((a, r) => a + r.width, 0) / Math.max(1, rects.length);
-      const small = w < 520, amp = small ? 0.08 : 0.02, sig = Math.max(90, w * 0.6);   // steep falloff, like the Dock
+      if (w >= 520) return;                                              // large cards stay still: the Dock is for tiles
+      const amp = 0.08, sig = Math.max(90, w * 0.6), small = true;      // steep falloff, like the Dock
       tiles.forEach((t, i) => {
         const r = rects[i], cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         const dx = Math.max(0, Math.abs(px - cx) - r.width * 0.2), dy = Math.max(0, Math.abs(py - cy) - r.height * 0.2);

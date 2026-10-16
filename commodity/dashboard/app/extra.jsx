@@ -1,7 +1,7 @@
 /* Round 4 additions: price cards, the cost line (today and replayed), what makes Parity different,
    the automatic update log, the per-file download log, and what the data cannot tell you.
    Every number is read from data.json; nothing here is typed in. */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { D, SYM, SYMS, SRC, inr, sgn, fdate, fmon, T } from "./lib.js";
 import { Card, Pill, Term, Icon, Reveal, Pager, CsvButton, downloadCSV, Seg, More, Src } from "./ui.jsx";
 
@@ -41,15 +41,16 @@ export function Quotes() {
 }
 
 /* ---------------------------------------------------------------- the cost line */
-function Bars({ i, compact }) {
-  const H = D.hurdle, line = costLine(), max = Math.max(line * 1.6, ...SMALL.map(s => H[s].gap[i] || 0)) * 1.05;
+function Bars({ i, compact, fixedMax }) {
+  // fixedMax (the replay): one scale for every day, so the cost line stays put and only the bars move
+  const H = D.hurdle, line = costLine(), max = fixedMax || Math.max(line * 1.6, ...SMALL.map(s => H[s].gap[i] || 0)) * 1.05;
   return <ul className={"hurdle" + (compact ? " compact" : "")}>{SMALL.map(s => { const g = H[s].gap[i], z = H[s].z[i];
     if (g == null) return <li key={s}><div className="h-n"><span className="sw" style={{ background: SYM[s].c }} /><b>{s}</b></div><div className="dim sm">not trading that day</div></li>;
     const over = g >= line, look = both(g, z), k = D.signals.threshold;
     return <li key={s} className={look ? "over" : ""}>
       <div className="h-n"><span className="sw" style={{ background: SYM[s].c }} /><b>{s}</b>{!compact && <span className="dim sm">{SYM[s].d}</span>}</div>
       <div className="h-bar" role="img" aria-label={`${s}: gap from usual ${g.toFixed(1)} bp, cost line ${line.toFixed(1)} bp`}>
-        <i style={{ width: (100 * g / max).toFixed(1) + "%" }} /><span className="h-line" style={{ left: (100 * line / max).toFixed(1) + "%" }} /></div>
+        <i style={{ clipPath: `inset(0 ${(100 - Math.min(100, 100 * g / max)).toFixed(2)}% 0 0 round 99px)` }} className={g > max ? "cap" : ""} /><span className="h-line" style={{ left: (100 * line / max).toFixed(1) + "%" }} /></div>
       <div className="h-v"><b className="num">{g.toFixed(1)}</b><small> bp</small></div>
       <div className="h-s">{look ? <Pill tone="warn">Worth a look</Pill> : over ? <Pill>Clears cost, usual for it</Pill> : <Pill tone="good">Short by {(line - g).toFixed(1)} bp</Pill>}
         {!compact && z != null && <div className="dim sm">{sgn(z, 2, "σ")} from usual{over && !look ? `, needs ±${k}σ` : ""}</div>}</div>
@@ -78,13 +79,20 @@ export function CostLineReplay() {
       if (have) days++; if (hit) any++; if (c) cost++; }
     return { any, days, per, cost }; }, []);
   const year = H.dates[i].slice(0, 4);
+  const fixedMax = useMemo(() => {                                      // 90% of days fit; the rare extreme days cap at full width
+    const all = []; for (let k = 0; k < n; k++) SMALL.forEach(s => { const g = H[s].gap[k]; if (g != null) all.push(g); });
+    all.sort((a, b) => a - b); return Math.max(line * 1.6, all[Math.floor(all.length * 0.90)] || 0) * 1.05; }, []);
+  const raf = useRef(0), want = useRef(i);                              // at most one redraw per screen refresh while dragging
+  const onSlide = e => { want.current = +e.target.value; if (!raf.current) raf.current = requestAnimationFrame(() => { raf.current = 0; setI(want.current); }); };
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+  const note = useMemo(() => (<p className="note">Over {stats.days.toLocaleString("en-IN")} market days, some contract sat above the cost line on {stats.cost} ({(100 * stats.cost / stats.days).toFixed(0)}%), mostly GOLDPETAL, whose <Term k="premium">premium</Term> swings widely day to day.
+      That is why the cost line alone is not enough. Both checks passed on <b>{stats.any}</b> days ({(100 * stats.any / stats.days).toFixed(0)}%): {SMALL.map(s => `${s} ${stats.per[s]}`).join(", ")}.</p>), []);                  // static text: built once, not on every slider step
   return <Card title="Replay every day since October 2023" sub={<>Drag to any market day and see where each gap stood against the {line.toFixed(1)} bp <Term k="costline">cost line</Term> and the ±{D.signals.threshold}<Term k="sigma">σ</Term> alert rule. Usual levels use only days before the one shown.</>}>
     <div className="slider"><div className="row"><label htmlFor="replay">Market day</label><b className="num">{fdate(H.dates[i])}</b></div>
-      <input id="replay" className="range" type="range" min="0" max={n - 1} step="1" value={i} onChange={e => setI(+e.target.value)} />
+      <input id="replay" className="range ios" type="range" min="0" max={n - 1} step="1" value={i} onChange={onSlide} style={{ "--p": (100 * i / (n - 1)).toFixed(2) + "%" }} />
       <div className="row ticks"><span>{fmon(H.dates[0])}</span><span>{year}</span><span>{fmon(H.dates[n - 1])}</span></div></div>
-    <Bars i={i} />
-    <p className="note">Over {stats.days.toLocaleString("en-IN")} market days, some contract sat above the cost line on {stats.cost} ({(100 * stats.cost / stats.days).toFixed(0)}%), mostly GOLDPETAL, whose <Term k="premium">premium</Term> swings widely day to day.
-      That is why the cost line alone is not enough. Both checks passed on <b>{stats.any}</b> days ({(100 * stats.any / stats.days).toFixed(0)}%): {SMALL.map(s => `${s} ${stats.per[s]}`).join(", ")}.</p>
+    <Bars i={i} fixedMax={fixedMax} />
+    {note}
   </Card>;
 }
 

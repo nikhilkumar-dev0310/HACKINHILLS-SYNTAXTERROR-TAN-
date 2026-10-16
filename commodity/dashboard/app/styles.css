@@ -959,14 +959,7 @@ kbd,code,pre{font-family:var(--f-code)}
 /* sheets, menus and drawers open on the iOS spring */
 .palette,.drawer,.sheet,.gloss,.tip,.news{animation-duration:.5s!important;animation-timing-function:var(--spring)!important}
 
-/* Dock magnification for tiles is driven by main.jsx (useDock). Large cards get a gentle, smooth enlarge on hover;
-   the shadow deepens with it. Touch: every control presses in. */
-@media (hover:hover) and (pointer:fine){
-  .card,.more,.take,.dlbar{transition:transform .55s var(--spring),box-shadow .55s var(--spring),background-color .3s ease}
-  .card:hover,.more:hover,.take:hover,.dlbar:hover{transform:scale(1.012);z-index:1;
-    box-shadow:var(--g-hi),var(--g-edge),0 2px 4px rgba(0,0,0,.12),0 30px 60px -24px rgba(0,0,0,.5)}
-  .card:has(.card:hover){transform:none}
-}
+/* Dock magnification for small tiles is driven by main.jsx (useDock); large cards stay still. Touch: controls press in. */
 .btn,.iconbtn,.seg button,.theme button,.jump a,.rail nav a,.strip a,.tabbar a,.tabbar button,.dl-i,.pager button,.linkbtn{transition:transform .18s var(--spring),background-color .25s ease,color .25s ease,box-shadow .25s ease}
 .btn:active,.iconbtn:active,.seg button:active,.theme button:active,.jump a:active,.rail nav a:active,.strip a:active,.tabbar a:active,.tabbar button:active,.dl-i:active,.pager button:active,.linkbtn:active{transform:scale(.96)}
 
@@ -984,7 +977,24 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 24%,trans
 @media (prefers-reduced-motion: reduce){
   .rv{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
   .hero>*,.hl{animation:none!important}
-  .card:hover,.more:hover,.take:hover,.dlbar:hover{transform:none}
   ::view-transition-old(root),::view-transition-new(root){animation:none}
 }
 @media print{.hl{color:#000;-webkit-text-fill-color:#000;background:none}}
+
+/* the replay: bars glide (clip-path on the iOS spring, no layout), the cost line stays put, the date label keeps its width */
+.h-bar i{width:100%!important;transition:clip-path .24s var(--spring)}
+.h-bar i.cap{box-shadow:inset -6px 0 8px -4px rgba(255,255,255,.55)}
+.slider .row b{min-width:9.5ch;text-align:right;font-variant-numeric:tabular-nums}
+/* iOS-style slider: gold fill up to the thumb, a white round thumb with a soft shadow that grows while held */
+.range.ios{-webkit-appearance:none;appearance:none;height:28px;background:transparent;cursor:pointer;touch-action:pan-y}
+.range.ios::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:linear-gradient(90deg,var(--gold) 0 var(--p),color-mix(in srgb,var(--ink) 14%,transparent) var(--p) 100%)}
+.range.ios::-moz-range-track{height:6px;border-radius:99px;background:color-mix(in srgb,var(--ink) 14%,transparent)}
+.range.ios::-moz-range-progress{height:6px;border-radius:99px;background:var(--gold)}
+.range.ios::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-10px;border-radius:50%;background:#fff;border:0;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 3px 8px rgba(0,0,0,.18),0 1px 1px rgba(0,0,0,.16);transition:transform .2s var(--spring)}
+.range.ios::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 3px 8px rgba(0,0,0,.18);transition:transform .2s var(--spring)}
+.range.ios:active::-webkit-slider-thumb{transform:scale(1.12)}
+.range.ios:active::-moz-range-thumb{transform:scale(1.12)}
+.range.ios:focus-visible{outline:none}
+.range.ios:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 45%,transparent),0 3px 8px rgba(0,0,0,.18)}
+@media (prefers-reduced-motion: reduce){.h-bar i{transition:none}}
