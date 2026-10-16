@@ -211,7 +211,7 @@ function NotFound({ hash, go, openSearch }) {
 /* ---------- Dock magnification (macOS): the tile under the pointer grows most, its neighbours a little less,
    falling off with distance. One passive listener, at most one update per frame, rects measured once per row,
    transform only (composited). Mouse and trackpad only; off with Reduce Motion. */
-const DOCK_TILE = ".quote,.kpi,.dir,.dl-i,.jump a,.find,.hg-s,.status,.proof a,.qa-r,.uq li,.unique li";
+const DOCK_TILE = ".quote,.kpi,.dir,.dl-i,.jump a,.find,.hg-s,.status,.proof a,.qa-r,.uq li,.unique li,.rail nav a,.strip a,.more:not([open])";
 function useDock() {
   useEffect(() => {
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches || reducedMotion()) return;
@@ -221,20 +221,28 @@ function useDock() {
     const release = () => {
       if (!group) return;
       const old = tiles; old.forEach(t => { t.style.transform = ""; t.style.zIndex = ""; });
+      setTimeout(() => old.forEach(t => { if (!t.style.transform) t.style.transformOrigin = ""; }), 420);
       clearTimeout(clearT); clearT = setTimeout(() => old.forEach(t => { if (!t.style.transform) { t.style.transition = ""; t.style.willChange = ""; } }), 420);
       group = null; tiles = []; rects = [];
     };
     const apply = () => {
-      raf = 0; if (!group) return;
-      const w = rects.reduce((a, r) => a + r.width, 0) / Math.max(1, rects.length);
-      if (w >= 520) return;                                              // large cards stay still: the Dock is for tiles
-      const amp = 0.08, sig = Math.max(90, w * 0.6), small = true;      // steep falloff, like the Dock
+      raf = 0; if (!group || !rects.length) return;
+      const w = rects.reduce((a, r) => a + r.width, 0) / rects.length, h = rects.reduce((a, r) => a + r.height, 0) / rects.length;
+      // which way the list runs: a column (sidebar, stacked panels) ripples along y, a row along x
+      const vertical = rects.length > 1 ? Math.abs(rects[1].top - rects[0].top) > Math.abs(rects[1].left - rects[0].left) : w >= 520;
+      const side = group.closest(".rail") != null;                       // the sidebar: a side Dock, items grow to the right
+      const wide = w >= 520;                                             // wide rows (closed panels) grow by pixels, not percent
+      if (wide && !vertical) return;                                     // large cards side by side stay still
+      const amp = wide ? Math.min(0.03, 22 / w) : side ? 0.09 : 0.08;
+      const sig = vertical ? Math.max(28, h * 0.9) : Math.max(90, w * 0.6);   // steep falloff, like the Dock
       tiles.forEach((t, i) => {
         const r = rects[i], cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dx = Math.max(0, Math.abs(px - cx) - r.width * 0.2), dy = Math.max(0, Math.abs(py - cy) - r.height * 0.2);
-        const k = Math.exp(-(dx * dx + dy * dy) / (2 * sig * sig));
-        const s = 1 + amp * k;
-        t.style.transform = `translateY(${(-6 * k * (small ? 1 : 0.4)).toFixed(2)}px) scale(${s.toFixed(4)})`;
+        const d = vertical ? Math.max(0, Math.abs(py - cy) - r.height * 0.2)
+                           : Math.hypot(Math.max(0, Math.abs(px - cx) - r.width * 0.2), Math.max(0, Math.abs(py - cy) - r.height * 0.2));
+        const k = Math.exp(-(d * d) / (2 * sig * sig)), s = 1 + amp * k;
+        const shift = side ? `translateX(${(6 * k).toFixed(2)}px)` : vertical ? "" : `translateY(${(-6 * k).toFixed(2)}px)`;
+        if (side) t.style.transformOrigin = "left center";
+        t.style.transform = `${shift} scale(${s.toFixed(4)})`;
         t.style.zIndex = k > 0.6 ? "3" : k > 0.2 ? "2" : "";
       });
     };
@@ -251,10 +259,12 @@ function useDock() {
       if (group && !raf) raf = requestAnimationFrame(apply);
     };
     const onScroll = () => { if (group) release(); };
+    const onClick = () => { if (group) { release(); } };                // a panel opened or a page changed: re-measure on the next move
     document.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerleave", release, { passive: true });
     addEventListener("scroll", onScroll, { passive: true });
-    return () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerleave", release); removeEventListener("scroll", onScroll); release(); };
+    document.addEventListener("click", onClick, { passive: true, capture: true });
+    return () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerleave", release); removeEventListener("scroll", onScroll); document.removeEventListener("click", onClick, { capture: true }); release(); };
   }, []);
 }
 
