@@ -121,3 +121,9 @@ button, the dark theme spreads from it in a circle (0.6 s), Pari says "Light or 
 light back the same way before the camera moves on. The dark frames are a replay of the same storyboard on the same
 paused clock (`pipeline/dark_shot4.py`), so they match the light frames pixel for pixel; a low open chord marks the
 switch to dark and the same chord, brighter, the switch back.
+
+**v4.4, calmer music.** So viewers settle and watch: 72 bpm (near a resting heart rate, down from 96); soft
+major-seventh and ninth chords (Cmaj9, Am9, Fmaj9, G6sus) changing every two bars; no drums anywhere, including the
+build-ups; a slow quarter-note melody with a soft echo; pads that swell in over two seconds; a long, soft reverb;
+and a narrow range between the quietest and fullest parts, so the music never surges. Slow tempo, consonant
+harmony, soft timbre and steady dynamics are the features most consistently linked with music heard as relaxing.

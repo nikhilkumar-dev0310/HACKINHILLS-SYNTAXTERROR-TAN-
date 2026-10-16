@@ -48,8 +48,8 @@ def add(buf, t, sig, pan=0.0, gain=1.0):
     buf[i:j, 0] += sig[:j - i] * l * gain; buf[i:j, 1] += sig[:j - i] * r * gain
 
 # ------------------------------------------------------------------ music: same chords as before, warmer and steadier
-BPM = 96; beat = 60 / BPM; bar = 4 * beat
-CH = [(57, [57, 60, 64, 67]), (53, [53, 57, 60, 64]), (48, [55, 60, 64, 67]), (55, [55, 59, 62, 67])]   # Am F C G
+BPM = 72; beat = 60 / BPM; bar = 4 * beat                           # v4.4: calm, near a resting heartbeat
+CH = [(48, [60, 64, 67, 71, 74]), (45, [57, 60, 64, 67, 71]), (41, [57, 60, 64, 65, 67]), (43, [55, 60, 62, 64, 67])]   # Cmaj9 Am9 Fmaj9 G6sus
 L = {k: np.zeros((n, 2), np.float32) for k in ("pad", "bass", "pluck", "kick", "lift")}
 end_ev = [e for e in EV if e.get("mus") == "resolve"]
 music_end = end_ev[0]["f"] / FPS if end_ev else TOTAL
@@ -65,36 +65,33 @@ GRID0 = ((_pk[0] % bar) - bar) if _pk else 0.0
 snap = lambda t: GRID0 + round((t - GRID0) / beat) * beat
 t, k = GRID0, 0
 while t < music_end:
-    root, voice = CH[k % 4]; d = 2 * bar; N = int((d + 1.5) * SR); x = tt(N)
-    pad = sum(np.sin(2 * np.pi * midi(m) * (1 + det / 1000) * x) for m in voice for det in (-0.6, 0.6)).astype(np.float32)
-    add(L["pad"], t, pad * env(N, 1.2, 1.6) / 12)
-    add(L["bass"], t, (np.sin(2 * np.pi * midi(root - 12) * x) + 0.45 * np.sin(4 * np.pi * midi(root - 12) * x) + 0.15 * np.sin(6 * np.pi * midi(root - 12) * x)).astype(np.float32) * env(N, 0.05, 1.2) / 9)
-    pat = [0, 2, 1, 3, 2, 1, 3, 2]
-    for b8 in range(16):
-        add(L["pluck"], t + b8 * beat / 2, pluck(voice[pat[b8 % 8]] + 12, 1.1, 0.015, 4.5), 0.22 if b8 % 2 else -0.22, 0.075)
-    for bt in range(8):
-        if bt % 2 == 0:
-            Nk = int(0.3 * SR); xk = tt(Nk); fk = 52 + 40 * np.exp(-xk * 28)
-            kk = np.sin(2 * np.pi * np.cumsum(fk) / SR) * np.exp(-xk * 10) + 0.3 * np.sin(2 * np.pi * 120 * xk) * np.exp(-xk * 25)
-            kk[:120] *= np.linspace(0, 1, 120)
-            add(L["kick"], t + bt * beat, kk.astype(np.float32), 0, 0.11)
-    for b8 in range(0, 16, 2):                                         # lift: the line an octave up, on the off-beats
-        add(L["lift"], t + b8 * beat / 2 + beat / 2, pluck(voice[pat[(b8 + 3) % 8]] + 24, 0.7, 0.02, 6.0), 0.35, 0.022)
+    # v4.4 calm bed: long soft pads (2 s swell), a low root, a slow quarter-note melody with a soft echo, no drums
+    root, voice = CH[k % 4]; d = 2 * bar; N = int((d + 2.5) * SR); x = tt(N)
+    pad = sum(np.sin(2 * np.pi * midi(m) * (1 + det / 1000) * x) for m in voice for det in (-0.4, 0.4)).astype(np.float32)
+    add(L["pad"], t, pad * env(N, 2.0, 2.5) / 15)
+    add(L["bass"], t, (np.sin(2 * np.pi * midi(root) * x) + 0.4 * np.sin(4 * np.pi * midi(root) * x) + 0.12 * np.sin(6 * np.pi * midi(root) * x)).astype(np.float32) * env(N, 0.6, 2.0) / 9)
+    pat = [0, 2, 3, 1, 4, 2, 3, 1]
+    for q in range(8):
+        nt = pluck(voice[pat[q] % len(voice)] + 12, 2.2, 0.02, 2.4); pan = 0.2 if q % 2 else -0.2
+        add(L["pluck"], t + q * beat, nt, pan, 0.06)
+        add(L["pluck"], t + q * beat + 0.75 * beat, nt, -pan, 0.06 * 0.35)          # the echo, on the other side
+    hi = sum(np.sin(2 * np.pi * midi(m + 12) * x) for m in voice[1:3]).astype(np.float32)
+    add(L["lift"], t, hi * env(N, 2.5, 2.5) / 26)                                # lift: a soft high pad, not more notes
     t += d; k += 1
 for kk in L:
     for c in (0, 1): L[kk][:, c] = lp2(shelf(L[kk][:, c], 3500, -6), 7000)
 
 if end_ev:                                                            # the resolve: C major, root low, long and soft
     N = int(9 * SR); x = tt(N)
-    chord = sum(np.sin(2 * np.pi * midi(m) * x) * (0.6 if m < 50 else 1) for m in (36, 48, 55, 60, 64, 67, 72)).astype(np.float32)
+    chord = sum(np.sin(2 * np.pi * midi(m) * x) * (0.6 if m < 50 else 1) for m in (36, 48, 55, 60, 64, 71, 74)).astype(np.float32)   # Cmaj9
     add(L["pad"], music_end, chord * env(N, 0.12, 6.5) / 13)
 
-LEVELS = {0: dict(pad=0, bass=0, pluck=0, kick=0, lift=0), 0.4: dict(pad=.55, bass=.3, pluck=0, kick=0, lift=0),
-          1: dict(pad=.9, bass=.8, pluck=.6, kick=0, lift=0), 2: dict(pad=.9, bass=.9, pluck=1, kick=.8, lift=0),
-          3: dict(pad=1, bass=1, pluck=1, kick=1, lift=1)}
+LEVELS = {0: dict(pad=0, bass=0, pluck=0, kick=0, lift=0), 0.4: dict(pad=.6, bass=.35, pluck=0, kick=0, lift=0),   # a narrow range:
+          1: dict(pad=.85, bass=.6, pluck=.55, kick=0, lift=0), 2: dict(pad=.95, bass=.75, pluck=.8, kick=0, lift=0),  # it never surges
+          3: dict(pad=1, bass=.85, pluck=.9, kick=0, lift=.6)}
 # Layer changes (v4.1): a layer coming in rises over one bar while its low-pass opens (dark -> bright); a layer going out
 # falls over two beats; raised-cosine curves, never a jump. The "drop" keeps a soft pad, so the music never goes silent.
-LEVELS["drop"] = dict(pad=.55, bass=.35, pluck=.2, kick=0, lift=0)
+LEVELS["drop"] = dict(pad=.7, bass=.4, pluck=.25, kick=0, lift=0)
 LEVELS["resolve"] = dict(pad=1, bass=0, pluck=0, kick=0, lift=0)
 cuts = sorted([(max(0.0, snap(e["f"] / FPS)), e["mus"]) for e in EV if "mus" in e], key=lambda x: x[0])
 gain = {}
@@ -113,6 +110,11 @@ for kk in L:
     o = np.clip(gain[kk] / TOP[kk], 0, 1) ** 0.6                    # openness follows the layer's level
     dark = np.stack([lp2(L[kk][:, 0], 700), lp2(L[kk][:, 1], 700)], 1)
     mus += (L[kk] * o[:, None] + dark * (1 - o[:, None])) * gain[kk][:, None]
+
+from scipy.signal import fftconvolve as _fc
+_rt = tt(int(3.5 * SR)); _IRM = lp2(np.random.default_rng(21).standard_normal(len(_rt)).astype(np.float32), 2500) * np.exp(-_rt / 0.9).astype(np.float32)
+_IRM /= np.sqrt((_IRM ** 2).sum())
+mus = mus + 0.35 * np.stack([_fc(mus[:, c], _IRM)[:n] for c in (0, 1)], 1).astype(np.float32)   # long, soft reverb on the music
 
 # before each landing the music dips 3 dB over one beat and comes back over one bar (no hole, no jump)
 duck = np.ones(n, np.float32)
@@ -177,7 +179,7 @@ def buildup(d):
         dist = d - k; step = beat / 2 if dist < beat else beat
         k -= step
         if k < 0.05: break
-        p = k / d; kk = thump(60, 0.25) * (0.15 + 0.45 * p ** 1.5)
+        p = k / d; kk = thump(60, 0.25) * 0.0                               # v4.4: no kick in the calm mix
         i = int(k * SR); out[i:i + len(kk)] += kk[:N - i]
     x = tt(N); p = x / d
     chord = sum(np.sin(2 * np.pi * midi(m) * x) + 0.3 * np.sin(4 * np.pi * midi(m) * x) for m in (57, 60, 64, 69)) / 4
