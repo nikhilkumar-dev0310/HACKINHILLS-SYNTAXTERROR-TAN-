@@ -109,3 +109,9 @@ twelve short lines, about one every 8 s, each reacting to what was just shown (n
 within 4 s of another. A title chip says what Parity is in the first second (Devpost: say what it does in the first
 few seconds). The footage sits in a rounded frame with a soft shadow; focus is framing plus a softened, darkened
 surround; camera moves carry motion blur (four samples over half a frame); cards settle in from 96%.
+
+**v4.2.** Build-ups are musical: instead of a sliding tone (which read as a siren), each one is a rising arpeggio of
+the A minor chord that moves from eighth to sixteenth notes in the last beat, a soft kick that doubles in the last
+beat, and the chord swelling from dark to bright, all counted back from the landing so they converge on its downbeat.
+While a slider moves (the slippage slider; the replay slider rewinding to the crash) soft notes fall on the music's
+own sixteenth-note grid and step down the scale as the slider moves, so the movement is heard in time with the music.

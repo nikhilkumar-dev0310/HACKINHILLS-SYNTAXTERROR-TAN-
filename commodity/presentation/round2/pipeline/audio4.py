@@ -156,6 +156,47 @@ def riser(d):
     ph = 2 * np.pi * np.cumsum(f) / SR
     s = (np.sin(ph) + 0.3 * np.sin(2 * ph + 0.3) + 0.15 * np.sin(3 * ph)) * p ** 2.2
     s[-int(0.15 * SR):] *= np.cos(np.linspace(0, np.pi / 2, int(0.15 * SR))); return s.astype(np.float32)
+def buildup(d):
+    """A musical build into a landing (v4.2), counted back from the downbeat so everything converges on it:
+    a rising arpeggio of the A minor chord (eighth notes, then sixteenths in the last beat), a soft kick on the
+    beats (eighths in the last beat), and the chord swelling while its tone opens from dark to bright."""
+    d = max(1.0, d); N = int(d * SR); out = np.zeros(N, np.float32)
+    seq = [57, 60, 64, 69, 72, 76, 81]                                   # A3 C4 E4 A4 C5 E5 A5
+    t = d; ts = []
+    while True:
+        dist = d - t; step = beat / 4 if dist < beat else beat / 2
+        t -= step
+        if t < 0.05: break
+        ts.append(t)
+    for t in ts:
+        p = t / d; m = seq[min(len(seq) - 1, int(p * len(seq)))]
+        note = mallet([m], 0.35, 0.004, 10.0, 0.15) * (0.18 + 0.6 * p ** 1.3)
+        i = int(t * SR); out[i:i + len(note)] += note[:N - i]
+    k = d
+    while k > 0.05:                                                     # kick: beats, then eighths in the last beat
+        dist = d - k; step = beat / 2 if dist < beat else beat
+        k -= step
+        if k < 0.05: break
+        p = k / d; kk = thump(60, 0.25) * (0.15 + 0.45 * p ** 1.5)
+        i = int(k * SR); out[i:i + len(kk)] += kk[:N - i]
+    x = tt(N); p = x / d
+    chord = sum(np.sin(2 * np.pi * midi(m) * x) + 0.3 * np.sin(4 * np.pi * midi(m) * x) for m in (57, 60, 64, 69)) / 4
+    bright, dark = chord.astype(np.float32), lp2(chord.astype(np.float32), 500)
+    o = p ** 1.5; out += (bright * o + dark * (1 - o)) * (p ** 1.8) * 0.55
+    out[-int(0.12 * SR):] *= np.cos(np.linspace(0, np.pi / 2, int(0.12 * SR)))
+    return out.astype(np.float32)
+
+SCALE_DOWN = [76, 74, 72, 69, 67, 64, 62, 60, 57]                       # E5 down to A3, A minor pentatonic
+def slider_notes(t0, d, level=-5.0):
+    """Soft notes on the music's own sixteenth-note grid while a slider moves; the pitch follows the slider
+    (stepping down as slippage rises and profit melts, or as the replay rewinds to the crash)."""
+    g16 = beat / 4; t = GRID0 + np.ceil((t0 - GRID0) / g16) * g16; last = None; lt = -9
+    while t < t0 + d:
+        u = 0.5 - 0.5 * np.cos(np.pi * min(1.0, (t - t0) / d)); idx = int(round(u * (len(SCALE_DOWN) - 1)))
+        if idx != last or t - lt >= beat / 2 - 1e-6:
+            put(t, mallet([SCALE_DOWN[idx]], 0.3, 0.005, 9.0, 0.15), level, 0.15 * np.sin(idx), True); last, lt = idx, t
+        t += g16
+
 def pop():
     """Pari's bubble appears: a small soft 'boop'."""
     N = int(0.11 * SR); x = tt(N); f = 520 * (1 + 0.35 * (1 - np.exp(-x * 40)))
@@ -180,7 +221,10 @@ def make(ev):
         for i, m in enumerate((67, 64, 60)):
             b_ = mallet([m - 12, m], 0.6, 0.01, 5.0); j = int(i * 0.16 * SR); out[j:j + len(b_)] += b_[:len(out) - j]
         return lowpass(out, 2200), 3.5, 0.1
-    if s == "cost":        return glide(57, 53, min(1.2, ev.get("d", 0.8)), 0.04), 1.5, -0.05
+    if s == "cost":        # profit melting: two clean falling notes (the slider's own notes carry it while it moves)
+        if "d" in ev: return None
+        a_, b2 = mallet([69], 0.5, 0.008, 6.0), mallet([65], 0.7, 0.008, 5.0); j = int(0.16 * SR)
+        o_ = np.zeros(j + len(b2), np.float32); o_[:len(a_)] += a_; o_[j:] += b2; return o_, 1.5, -0.05
     if s == "land":        return mallet([76], 0.45, 0.01, 7.0), 3.0, 0.05
     if s == "click":       return mallet([69], 0.12, 0.004, 30.0, 0.0), -3.0, 0.1
     if s in ("whoosh", "whoosh_soft"): return swell(0.6), -4.0, 0
@@ -203,6 +247,8 @@ def place(t, sig, above, pan=0.0):
     add(fx, t, sig, pan, g); placed.append((round(t, 3), above))
 
 SECONDARY = ("whoosh", "whoosh_soft", "click")
+_sf = sorted([(e["f"] / FPS, e.get("sfx")) for e in EV if e.get("sfx")])
+SCRUBS = [(t0, t1 - t0) for (t0, a_), (t1, b_) in zip(_sf, _sf[1:]) if a_ == "click" and b_ == "alert" and 0.5 < t1 - t0 < 3.0]
 for e in EV:
     t = e["f"] / FPS
     m = make(e)
@@ -211,14 +257,14 @@ for e in EV:
         bl = mallet([76], 0.25, 0.006, 14.0); b2 = mallet([79], 0.3, 0.006, 12.0); j = int(0.07 * SR)
         blip = np.zeros(j + len(b2), np.float32); blip[:len(bl)] += bl; blip[j:] += b2
         put(t, blip, -4.0, -0.3, True)
-    if "tick" in e:                                                   # counter ticks while a number rolls: few and quiet
-        d = e["tick"] / FPS; k = 0
-        while k * 0.17 < d:
-            put(t + k * 0.17, mallet([84], 0.08, 0.004, 40.0, 0.0), -8.0, 0.2 * np.sin(k)); k += 1
-    if "rise" in e: put(t, riser(e["rise"] / FPS), 2.0, 0)
+    if "tick" in e: slider_notes(t, e["tick"] / FPS)                 # the slippage slider: notes on the beat grid
+    if "rise" in e:
+        land = t + e["rise"] / FPS; d_ = e["rise"] / FPS
+        put(land - d_, buildup(d_), 1.0, 0)
     if "predict" in e:                                                # one soft note as each "your guess" dot fills
         d = e["predict"] / FPS
         for i in range(1, 4): put(t + i * d / 3.2, mallet([67], 0.35, 0.01, 9.0), 0.0, 0, True)
+for t0, d_ in SCRUBS: slider_notes(t0 + 0.1, d_ - 0.15)                # the replay slider rewinding to the crash
 # never two sounds within 150 ms: a background sound that collides with a meaningful one is dropped; two meaningful
 # ones are spaced 150 ms apart; the riser is long and starts quietly, so it is exempt
 QUEUE.sort(key=lambda q: (q[0], not q[4]))
