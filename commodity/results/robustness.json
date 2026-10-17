@@ -142,20 +142,20 @@
     "rows": [
       {
         "symbol": "GOLDTEN",
-        "days": 396,
+        "days": 398,
         "first": "2025-04-01",
-        "last": "2026-10-14",
-        "adf": -2.91,
+        "last": "2026-10-16",
+        "adf": -2.92,
         "lags": 10,
         "stationary_at": "5%",
-        "half_life_days": 7.3,
+        "half_life_days": 7.2,
         "phi": 0.909
       },
       {
         "symbol": "GOLDGUINEA",
-        "days": 773,
+        "days": 775,
         "first": "2023-10-10",
-        "last": "2026-10-14",
+        "last": "2026-10-16",
         "adf": -3.32,
         "lags": 10,
         "stationary_at": "5%",
@@ -164,9 +164,9 @@
       },
       {
         "symbol": "GOLDPETAL",
-        "days": 773,
+        "days": 775,
         "first": "2023-10-10",
-        "last": "2026-10-14",
+        "last": "2026-10-16",
         "adf": -2.08,
         "lags": 10,
         "stationary_at": null,
