@@ -86,3 +86,17 @@ Motion (open-source, MIT, pinned on jsDelivr):
   - Adaptive resolution, both down and up. When nothing moves, frames render at half rate.
   - Measured on a Mac at 1280×800, scrolling the whole intro in 600 frames: worst frame 18 ms, none over 33 ms.
     The previous build had 3 frames over 33 ms, the worst at 1016 ms.
+
+## Polish (19 Oct 2026, later)
+- The coin turns its face to the camera every frame, so it always reads as a circle, and it still tilts with the balance beam.
+- The balance and the vault are steel and graphite, so the gold they hold contrasts with them.
+- The vault river has 900 bars (380 on phones), packed tighter and flowing faster.
+- Recast cubes are 6×6×6, so 864 grains forge a finer Parity mark at the finale.
+- Opening: the camera sweeps down from overhead (about 3 s on arrival) into a low hero angle at table height.
+  Phones step back slightly so all four pieces fit.
+- Finale, once the scroll ends:
+  - the camera parallax deepens;
+  - the mark tilts toward the cursor;
+  - grains near the cursor scatter and spring back;
+  - the ring of pieces swings with the cursor.
+  On touch screens this starts only once the finale is reached.

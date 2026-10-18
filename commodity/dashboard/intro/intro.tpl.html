@@ -486,6 +486,9 @@ if (renderer) {
   const glass = () => new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, metalness: 0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06,
     envMapIntensity: 1.6, transparent: true, opacity: LIGHT ? 0.45 : 0.16, depthWrite: false });
   const glow = new THREE.MeshBasicMaterial({ color: GLOWC, toneMapped: false, transparent: true, opacity: 0.95 });
+  // the instruments are steel and graphite, so the gold they hold always stands out
+  const steel = new THREE.MeshPhysicalMaterial({ color: 0xc4c8ce, metalness: 1, roughness: 0.3, clearcoat: 0.3, clearcoatRoughness: 0.25, envMapIntensity: 1.25 });
+  const graphite = new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0x3a3d42 : 0x2c2e33, metalness: 0.85, roughness: 0.42, envMapIntensity: 1.0 });
   const BLEND = LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending;
   const dotTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 32; const x = c.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16);
     const dc = LIGHT ? "150,112,40" : "255,225,150"; gr.addColorStop(0, `rgba(${dc},1)`); gr.addColorStop(1, `rgba(${dc},0)`); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(c); })();
@@ -524,6 +527,7 @@ if (renderer) {
     ingot(0.24, 0.075, 0.4, g999, [["1 g", .3, 700], ["999", .14, 600]]),
   ];
   const half = P.map(p => -p.children[0].geometry.boundingBox.min.y);   // how far each piece's base sits below its centre
+  half[2] = 0.41;   // the coin stands on its rim, face to the camera (see the pieces loop)
   const world = new THREE.Group(); scene.add(world);
   P.forEach(p => world.add(p));
 
@@ -541,15 +545,15 @@ if (renderer) {
   const bandCap = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); bandCap.rotation.x = Math.PI / 2; world.add(bandCap);
 
   /* ---------- per gram: a beam balance. The four pieces ride the beam; it swings, then settles almost level */
-  const BAL_Y = -0.42, balMat = goldMat(0xcfae6a, 0.3);
+  const BAL_Y = -0.42, balMat = steel;
   const balance = new THREE.Group(); balance.position.y = BAL_Y; world.add(balance);
   const beam = new THREE.Group(); balance.add(beam);
   beam.add(new THREE.Mesh(new RoundedBoxGeometry(3.3, 0.05, 0.24, 3, 0.02), balMat));
   [-1.65, 1.65].forEach(xx => { const c = new THREE.Mesh(new THREE.SphereGeometry(0.045, 20, 14), balMat); c.position.x = xx; beam.add(c); });
   const needle = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.34, 0.012), glow); needle.position.set(0, 0.2, 0.13); beam.add(needle);
   const knife = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.14, 24), balMat); knife.position.y = -0.095; balance.add(knife);
-  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.06, 0.5, 24), balMat); post.position.y = -0.41; balance.add(post);
-  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.05, 48), balMat); foot.position.y = -0.68; balance.add(foot);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.06, 0.5, 24), graphite); post.position.y = -0.41; balance.add(post);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.05, 48), graphite); foot.position.y = -0.68; balance.add(foot);
   const scaleBack = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.31, 64, 1, Math.PI * 0.35, Math.PI * 0.3), glow); scaleBack.position.set(0, 0.06, 0.125); balance.add(scaleBack);
   let balAngle = 0;
   const PG_S = [0.62, 0.95, 0.9, 1.7];
@@ -574,20 +578,20 @@ if (renderer) {
   /* ---------- how we know: a vault wheel turns, the door swings open, and the rows pour out as a river of small gold bars */
   const VC = V(0.45, 0.6, -2.0);
   const vault = new THREE.Group(); vault.position.copy(VC); world.add(vault);
-  const darkGold = goldMat(0x9c7a3c, 0.38);
+  const darkGold = graphite;   // a steel vault, so the gold pouring out of it reads at once
   vault.add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.08, 20, 96), darkGold));
   const hole = new THREE.Mesh(new THREE.CircleGeometry(0.72, 64), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x3a2c14 : 0x020202 })); hole.position.z = -0.06; vault.add(hole);
   const hinge = new THREE.Group(); hinge.position.x = -0.72; vault.add(hinge);   // the door turns about its left edge
   const door = new THREE.Group(); door.position.x = 0.72; hinge.add(door);
-  const slabDoor = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), goldMat(0xd8b46a, 0.28)); slabDoor.rotation.x = Math.PI / 2; door.add(slabDoor);
+  const slabDoor = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), steel); slabDoor.rotation.x = Math.PI / 2; door.add(slabDoor);
   const wheel = new THREE.Group(); wheel.position.z = 0.09; door.add(wheel);
-  wheel.add(new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.022, 12, 48), darkGold));
+  wheel.add(new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.022, 12, 48), steel));
   for (let k = 0; k < 3; k++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.03, 0.03), darkGold); sp.rotation.z = k * Math.PI / 3; wheel.add(sp); }
   wheel.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.06, 24).rotateX(Math.PI / 2), darkGold));
   for (let k = 0; k < 12; k++) { const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.04, 12).rotateX(Math.PI / 2), darkGold); const a = k / 12 * Math.PI * 2; bolt.position.set(Math.cos(a) * 0.58, Math.sin(a) * 0.58, 0.07); door.add(bolt); }
-  const NR = mobile ? 160 : 300;
+  const NR = mobile ? 380 : 900;
   const river = new THREE.InstancedMesh(new RoundedBoxGeometry(0.1, 0.03, 0.05, 1, 0.01), g999, NR); river.frustumCulled = false; world.add(river);
-  const rSeed = Array.from({ length: NR }, () => [Math.random(), Math.random() * 6.283, 0.35 + Math.random() * 0.6, Math.random() - 0.5]);
+  const rSeed = Array.from({ length: NR }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() - 0.5]);
   const RDIR = V(-0.3, -0.22, 1).normalize();   // the river spills down and to the left, clear of the plaques
   /* the three counts on glass plaques that slide out of the vault */
   const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
@@ -608,19 +612,20 @@ if (renderer) {
   /* ---------- poses */
   const ring = (i, n, r, cx, cy, cz, a0) => V(cx + Math.cos(a0 + i * 6.283 / n) * r, cy + Math.sin(a0 + i * 6.283 / n) * r * 0.35, cz + Math.sin(a0 + i * 6.283 / n) * r * 0.4);
   const px = [-1.3, -0.42, 0.42, 1.18], line = [-1.2, -0.4, 0.4, 1.2], LOGO = V(0, 0.3, -10.6);
+  let ringSpin = 0;   // the finale's ring of pieces swings with the cursor
   const pieceAt = (i, b) => {
     if (b === S.problem) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i], rz: 0 };
     if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.3, 0.3, 0.6, 0.3][i], rz: 0 };   // melted into grains
     if (b === S.pergram) return { p: onBeam(i, PG_S[i]), s: PG_S[i], ry: 0, rx: 0, rz: balAngle };                // riding the balance
     if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i], rz: 0 };
-    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55), s: [0.5, 0.7, 0.66, 1.25][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i], rz: 0 };   // a wide ring framing the mark
+    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55 + ringSpin), s: [0.5, 0.7, 0.66, 1.25][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i], rz: 0 };   // a wide ring framing the mark
     return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3, rz: 0 };                                     // off stage
   };
 
   /* ---------- grains: in the recast beat every piece melts into grains that pour into four identical one-gram cubes;
      at the finale the same grains condense out of the air and forge the Parity mark */
-  const GN = 4, NG = GN * GN * GN, GS = 0.072, NGT = NG * 4;
-  const grains = new THREE.InstancedMesh(new RoundedBoxGeometry(0.058, 0.058, 0.058, 2, 0.012), g999, NGT);
+  const GN = 6, NG = GN * GN * GN, GS = 0.048, NGT = NG * 4;   // 216 grains a cube, 864 in all
+  const grains = new THREE.InstancedMesh(new RoundedBoxGeometry(0.04, 0.04, 0.04, 2, 0.008), g999, NGT);
   grains.frustumCulled = false; world.add(grains);
   const gSrc = [], gDst = [], gDel = [], gSpin = [];
   P.forEach((p, k) => {
@@ -628,8 +633,8 @@ if (renderer) {
     for (let g = 0; g < NG; g++) {
       gSrc.push(V(bb.min.x + Math.random() * (bb.max.x - bb.min.x), bb.min.y + Math.random() * (bb.max.y - bb.min.y), bb.min.z + Math.random() * (bb.max.z - bb.min.z)));
       const ix = g % GN, iy = Math.floor(g / GN) % GN, iz = Math.floor(g / GN / GN);
-      gDst.push(V(line[k] * 0.82 + (ix - 1.5) * GS, -0.05 + (iy - 1.5) * GS, (iz - 1.5) * GS));
-      gDel.push((3 - iy) / 3 * 0.6 + Math.random() * 0.4);              // the cube fills from the bottom up
+      const c0 = (GN - 1) / 2; gDst.push(V(line[k] * 0.82 + (ix - c0) * GS, -0.05 + (iy - c0) * GS, (iz - c0) * GS));
+      gDel.push((GN - 1 - iy) / (GN - 1) * 0.6 + Math.random() * 0.4);              // the cube fills from the bottom up
       gSpin.push(V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(6));
     }
   });
@@ -638,7 +643,7 @@ if (renderer) {
     for (const y0 of [13, 26.4]) for (let sy = y0 + st / 2; sy < y0 + 8.6; sy += st) { const t = (sy - y0) / 8.6, xl = 14 - 3.2 * t, xr = 34 + 3.2 * t;
       for (let sx = xl + st / 2; sx < xr; sx += st) out.push(V(LOGO.x + (sx - 24) * sc, LOGO.y + (24 - sy) * sc, LOGO.z)); }
     return out; };
-  let logoSp = 0.05; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
+  let logoSp = 0.03; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
   const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(2.2 + Math.random() * 1.2).add(LOGO));
   const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the mark forges left to right
   const poseMat = (k, b) => { const a = pieceAt(k, b), m = new THREE.Matrix4();
@@ -693,7 +698,7 @@ if (renderer) {
 
   /* ---------- camera: one key per beat, joined by a smooth curve so it never stops moving */
   const cam = [
-    { p: V(0, 0.3, 6.6), t: V(0, -0.05, 0), fov: 34 },          // the problem
+    { p: V(0.95, 0.1, 6.7), t: V(0.12, 0.04, 0), fov: 30 },     // the problem: low at table height, a slight yaw from the right
     { p: V(0, 1.45, 5.2), t: V(0, -0.1, 0), fov: 34 },          // recast
     { p: V(0, 1.5, 6.1), t: V(0, -0.38, 0), fov: 34 },          // per gram: the balance
     { p: V(-0.5, 1.6, 6.3), t: V(0.45, 0.2, -1.45), fov: 36 },  // every day
@@ -718,7 +723,7 @@ if (renderer) {
   scene.add(trail); let trailO = 0;
 
   /* ---------- opening: the four pieces drop in and land with a bounce and a puff of dust (once, on arrival) */
-  const dropOn = !reduce && scrollY < 40, DROP0 = 0.3, DROP_T = 1.15, landAt = k => DROP0 + k * 0.17 + DROP_T / 2.75;
+  const dropOn = !reduce && scrollY < 40, OPEN_P = V(0.5, 4.8, 3.2), OPEN_T = V(0, -0.25, 0), OPEN_DUR = 2.9, DROP0 = 0.3, DROP_T = 1.15, landAt = k => DROP0 + k * 0.17 + DROP_T / 2.75;
   const PUFF = 24, puffA = new Float32Array(4 * PUFF * 3), puffDir = [];
   for (let k = 0; k < 4 * PUFF; k++) { const a = Math.random() * 6.283; puffDir.push(V(Math.cos(a), 0.15 + Math.random() * 0.35, Math.sin(a)).multiplyScalar(0.3 + Math.random() * 0.45)); }
   const puffG = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(puffA, 3));
@@ -760,20 +765,29 @@ if (renderer) {
   addEventListener("resize", resize); resize();
 
   /* pointer parallax (desktop) */
-  let mx = 0, my = 0, tmx = 0, tmy = 0;
-  addEventListener("pointermove", e => { if (e.pointerType === "mouse") { tmx = e.clientX / innerWidth - 0.5; tmy = e.clientY / innerHeight - 0.5; } }, { passive: true });
+  let mx = 0, my = 0, tmx = 0, tmy = 0, ptrX = 0, ptrY = 0, ptrOn = false;
+  const onPtr = e => { if (e.pointerType !== "mouse" && cur < S.team - 0.05) return;
+    tmx = e.clientX / innerWidth - 0.5; tmy = e.clientY / innerHeight - 0.5; ptrX = e.clientX; ptrY = e.clientY; ptrOn = true; };
+  addEventListener("pointermove", onPtr, { passive: true }); addEventListener("pointerdown", onPtr, { passive: true });
+  document.addEventListener("pointerleave", () => { ptrOn = false; });
+  addEventListener("pointerup", e => { if (e.pointerType !== "mouse") ptrOn = false; });
 
   /* focus pulls (laptops only): the 3D stage softens between beats and comes back into focus as each scene arrives */
   const gl = $("#gl"), dofOK = !reduce && matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1101px)").matches;
   let blurNow = 0;
 
+  const faceM = new THREE.Matrix4(), qFace = new THREE.Quaternion(), Z_AXIS = V(0, 0, 1), Q_UP2Z = new THREE.Quaternion().setFromAxisAngle(V(1, 0, 0), Math.PI / 2);
+  /* finale: grains scatter away from the cursor and spring back; the mark tilts towards it; the ring swings with it */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), logoPlane = new THREE.Plane(V(0, 0, 1), -LOGO.z), hit = new THREE.Vector3();
+  const off = new Float32Array(NGT * 3), lq = new THREE.Quaternion(), le = new THREE.Euler();
+  let fin = 0, springy = false;
   const camP = new THREE.Vector3(), camT = new THREE.Vector3();
   let ftimes = [], lastAdj = 0, drops = 0, frameNo = 0, lastB = -1;
   frame = (b, time, dt) => {
     frameNo++;
-    const dropping = dropOn && time < landAt(3) + 1.2;
+    const dropping = dropOn && time < Math.max(landAt(3) + 1.2, OPEN_DUR + 0.3);
     trailO += ((reduce ? 0 : clamp((Math.abs(vel) - 2) / 28)) - trailO) * (1 - Math.exp(-dt / 0.25));
-    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01;
+    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01 || springy;
     lastB = b;
     if (!moving && (frameNo & 1)) return;   // nothing scrolled: the slow ambient motion runs at half rate
 
@@ -782,9 +796,14 @@ if (renderer) {
     // quiet: the camera trucks along the rail with the scanner
     const qv = bump(b, S.quiet, S.quiet, 0.7), sx = QX0 + (QX1 - QX0) * clamp((b - (S.quiet - 0.5)) / 0.95);
     camP.x += sx * 0.06 * qv; camT.x += sx * 0.08 * qv;
-    if (camera.aspect < 1.1) camP.sub(camT).multiplyScalar(Math.min(2.0, 1.02 / camera.aspect)).add(camT);   // tall screens: step back so all four fit
+    if (dropOn) { const w0 = (1 - sm(clamp((time - 0.15) / OPEN_DUR))) * (1 - clamp(b / 0.25)); camP.lerp(OPEN_P, w0); camT.lerp(OPEN_T, w0); }   // the opening sweep
+    if (camera.aspect < 1.1) {   // tall screens: step back so all four fit (a little further, and re-centred, for the opening's angled view)
+      const o = 1 - clamp(b / 0.8); camT.x -= 0.14 * o;
+      camP.sub(camT).multiplyScalar(Math.min(2.0, 1.02 / camera.aspect) * (1 + 0.14 * o)).add(camT);
+    }
     mx += (tmx - mx) * (1 - Math.exp(-dt / 0.25)); my += (tmy - my) * (1 - Math.exp(-dt / 0.25));
-    if (!reduce) { camP.x += mx * 0.35; camP.y -= my * 0.22; }
+    fin = reduce ? 0 : clamp((b - (S.team - 0.15)) / 0.15);   // the finale: the scroll has ended, the cursor takes over
+    if (!reduce) { camP.x += mx * (0.35 + 0.9 * fin); camP.y -= my * (0.22 + 0.55 * fin); }
     camera.position.copy(camP); camera.lookAt(camT);
     const fov = cam[i].fov + (cam[j].fov - cam[i].fov) * sm(f); if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
 
@@ -793,6 +812,7 @@ if (renderer) {
     balAngle = reduce ? 0 : 0.17 * Math.exp(-4 * balU) * Math.cos(11 * balU) + D.spreadBp * 0.0003 * sm(balU);
     balance.visible = balV > 0.01; balance.scale.setScalar(Math.max(sm(balV), 0.0001)); beam.rotation.z = balAngle;
 
+    ringSpin = -mx * 1.1 * fin;
     // the pieces: ease between poses; a slow, small float only at the opening and the finale
     const idle = b < 0.6 ? 1 - clamp(b / 0.6) : b > S.team - 0.4 ? clamp((b - (S.team - 0.4)) / 0.4) : 0;
     P.forEach((p, k) => {
@@ -801,7 +821,11 @@ if (renderer) {
       p.position.y += reduce ? 0 : Math.sin(time * 0.6 + k * 1.7) * 0.012 * idle;
       if (dropOn) p.position.y += (1 - bounceOut(clamp((time - DROP0 - k * 0.17) / DROP_T))) * 3.2;
       const s = a.s + (c.s - a.s) * fe; p.scale.setScalar(Math.max(s, 0.001)); p.visible = s > 0.01;
-      p.rotation.set(a.rx + (c.rx - a.rx) * fe, a.ry + (c.ry - a.ry) * fe + (reduce ? 0 : Math.sin(time * 0.35 + k) * 0.05 * idle), a.rz + (c.rz - a.rz) * fe);
+      p.rotation.set(a.rx + (c.rx - a.rx) * fe, a.ry + (c.ry - a.ry) * fe + (reduce ? 0 : Math.sin(time * 0.35 + k) * 0.05 * idle) + mx * 0.8 * fin, a.rz + (c.rz - a.rz) * fe);
+      if (k === 2) {   // the coin turns its face to the camera, so it always reads as a circle, and still tilts with the beam
+        faceM.lookAt(camera.position, p.position, camera.up); qFace.setFromRotationMatrix(faceM).multiply(Q_UP2Z);
+        p.quaternion.setFromAxisAngle(Z_AXIS, p.rotation.z).multiply(qFace);
+      }
     });
     if (dropOn) {   // a ring of dust kicks up where each piece lands
       let po = 0;
@@ -830,11 +854,22 @@ if (renderer) {
       }
       grains.instanceMatrix.needsUpdate = true;
     } else if (lgo > 0.001) {
+      const react = fin > 0.001 && ptrOn;
+      if (react) { ndc.set(ptrX / innerWidth * 2 - 1, -(ptrY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); if (!ray.ray.intersectPlane(logoPlane, hit)) hit.set(1e3, 1e3, 0); }
+      le.set(-my * 0.55 * fin, mx * 0.75 * fin, 0); lq.setFromEuler(le);
+      const k2 = 1 - Math.exp(-dt / 0.14); springy = false;
       for (let n = 0; n < NGT; n++) {
         if (n >= logoDst.length) { gs.setScalar(0.0001); gm.compose(LOGO, gq.identity(), gs); grains.setMatrixAt(n, gm); continue; }
         const e = sm(clamp(lgo * 1.5 - logoDel[n] * 0.5)), ang = (1 - e) * 2.6;
         gw.copy(logoSrc[n]).sub(LOGO).applyAxisAngle(THREE.Object3D.DEFAULT_UP, ang).add(LOGO);   // spiral in
         gv.copy(gw).lerp(logoDst[n], e);
+        if (fin > 0.001) gv.sub(LOGO).applyQuaternion(lq).add(LOGO);   // the mark tilts towards the cursor
+        let tx = 0, ty = 0, tz = 0;
+        if (react) { const dx = gv.x - hit.x, dy = gv.y - hit.y, d2 = dx * dx + dy * dy, f2 = 0.26 * Math.exp(-d2 / 0.035) * fin, dl = Math.sqrt(d2) || 1;
+          tx = dx / dl * f2; ty = dy / dl * f2; tz = f2 * 0.8; }
+        const o = n * 3; off[o] += (tx - off[o]) * k2; off[o + 1] += (ty - off[o + 1]) * k2; off[o + 2] += (tz - off[o + 2]) * k2;
+        if (Math.abs(off[o]) + Math.abs(off[o + 1]) + Math.abs(off[o + 2]) > 1e-3) springy = true;
+        gv.x += off[o]; gv.y += off[o + 1]; gv.z += off[o + 2];
         const tumble = 1 - e; ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
         gs.setScalar(Math.max(clamp(e * 4) * (logoSp / GS) * 1.05, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
       }
@@ -867,12 +902,12 @@ if (renderer) {
     const ro = open * (1 - clamp((b - (S.know + 0.55)) / 0.4));
     river.visible = ro > 0.01;
     if (river.visible) {
-      const flow = (b - S.know) * 1.6 + time * 0.04;
+      const flow = (b - S.know) * 2.4 + time * 0.05;
       for (let n = 0; n < NR; n++) {
         const [s0, a0, r0, t0] = rSeed[n], s = (s0 + flow) % 1, r = 0.08 + s * 0.85 * r0, ang = a0 + s * 2.2;
-        gv.copy(VC).addScaledVector(RDIR, s * 4.4); gv.x += Math.cos(ang) * r; gv.y += Math.sin(ang) * r * 0.7;
+        gv.copy(VC).addScaledVector(RDIR, s * 3.8); gv.x += Math.cos(ang) * r; gv.y += Math.sin(ang) * r * 0.7;
         ge.set(t0 * s * 3, ang, 0); gq.setFromEuler(ge);
-        gs.setScalar(Math.max(0.8 * ro * clamp(s / 0.06) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm);
+        gs.setScalar(Math.max(0.75 * ro * clamp(s / 0.06) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm);
       }
       river.instanceMatrix.needsUpdate = true;
     }
