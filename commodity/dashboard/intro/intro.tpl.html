@@ -16,7 +16,8 @@ try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-
   --ink:#f5f3ee; --ink-2:rgba(245,243,238,.74); --ink-3:rgba(245,243,238,.52);
   --gold:#e2b65a; --gold-2:#f3dfa8; --gold-3:#b08a3e; --good:#7fd6a4;
   --glass:rgba(255,250,240,.07); --glass-2:rgba(255,250,240,.03); --edge:rgba(255,240,210,.16); --hi:rgba(255,255,255,.22);
-  --rule:rgba(255,240,210,.09); --lbl-bg:rgba(14,13,11,.42); --card-shadow:0 40px 90px -40px rgba(0,0,0,.85); --lbl-shadow:0 1px 10px rgba(0,0,0,.6);
+  --rule:rgba(255,240,210,.09); --lbl-bg:rgba(16,15,13,.78);
+  --card-fill:linear-gradient(180deg,rgba(30,28,24,.82),rgba(16,15,13,.76)); --card-shadow:0 40px 90px -40px rgba(0,0,0,.85); --lbl-shadow:0 1px 10px rgba(0,0,0,.6);
   --atmo-a:rgba(201,162,84,.22); --atmo-b:rgba(140,112,62,.22);
   --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,"Segoe UI",sans-serif;
   --f-disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,"Segoe UI",sans-serif;
@@ -28,7 +29,8 @@ try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-
   --ink:#101215; --ink-2:rgba(16,18,21,.74); --ink-3:rgba(16,18,21,.56);
   --gold:#835a07; --gold-2:#9a6c12; --gold-3:#5f4105; --good:#1f8a55;
   --glass:rgba(255,255,255,.66); --glass-2:rgba(255,255,255,.42); --edge:rgba(90,66,24,.16); --hi:#fff;
-  --rule:rgba(90,66,24,.12); --lbl-bg:rgba(255,255,255,.66); --card-shadow:0 30px 70px -34px rgba(90,64,22,.38); --lbl-shadow:0 1px 8px rgba(255,255,255,.9);
+  --rule:rgba(90,66,24,.12); --lbl-bg:rgba(255,255,255,.86);
+  --card-fill:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.74)); --card-shadow:0 30px 70px -34px rgba(90,64,22,.38); --lbl-shadow:0 1px 8px rgba(255,255,255,.9);
   --atmo-a:rgba(212,178,104,.36); --atmo-b:rgba(184,160,116,.30);
 }
 html{background:var(--bg)}
@@ -38,15 +40,13 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
              radial-gradient(50vmax 40vmax at 12% 90%,var(--atmo-b),transparent 65%),
              radial-gradient(80vmax 60vmax at 50% 50%,var(--bg-2),var(--bg) 70%)}
 #gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block;touch-action:pan-y}
-.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 .lbls{position:fixed;inset:0;z-index:3;pointer-events:none}
 .lbl{position:absolute;left:0;top:0;white-space:nowrap;opacity:0;will-change:transform,opacity;
   font:500 12px/1.3 var(--f-ui);letter-spacing:.02em;color:var(--ink-2);text-align:center;
-  padding:6px 10px;border-radius:12px;background:var(--lbl-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge)}
+  padding:6px 10px;border-radius:12px;background:var(--lbl-bg);border:1px solid var(--edge)}
 .lbl b{display:block;font:600 13px/1.25 var(--f-disp);color:var(--ink);letter-spacing:.01em}
 .lbl .n{font-variant-numeric:tabular-nums;color:var(--gold-2)}
-.lbl.line{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--gold-2);font-weight:600;padding:0;text-shadow:var(--lbl-shadow)}
+.lbl.line{background:none;border:0;color:var(--gold-2);font-weight:600;padding:0;text-shadow:var(--lbl-shadow)}
 
 /* top bar */
 .bar{position:fixed;z-index:10;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -76,10 +76,10 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 
 /* the story */
 main{position:relative;z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.beat{height:160vh;height:160svh;position:relative}
-.beat:last-child{height:100vh;height:100svh}
+.beat{height:280vh;height:280svh;position:relative}   /* long beats: the scene plays across the whole stretch */
+.beat:last-child{height:160vh;height:160svh}
 .card{position:sticky;top:50%;transform:translateY(-50%);width:min(470px,40vw);margin-left:max(0px,calc(6vw - 16px));padding:30px 32px 28px;border-radius:30px;
-  background:linear-gradient(180deg,var(--glass),var(--glass-2));backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
+  background:var(--card-fill);   /* no live blur: blurring a canvas that redraws every frame is the costliest thing on the page */
   box-shadow:inset 0 1px 0 var(--hi),var(--card-shadow);will-change:opacity,transform}
 .card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
   background:linear-gradient(140deg,rgba(251,227,161,.55),rgba(255,236,200,.10) 30%,rgba(255,236,200,.06) 70%,rgba(232,180,74,.40));
@@ -149,7 +149,8 @@ html.lenis,html.lenis body{height:auto}
 .no-gl .lbls{display:none}
 
 @media (max-width:760px){
-  .beat{height:150vh;height:150svh}
+  .beat{height:230vh;height:230svh}
+  .beat:last-child{height:150vh;height:150svh}
   .card{position:sticky;top:43svh;transform:translateY(var(--ty)) rotateX(var(--rx)) scale(var(--sc));width:auto;margin-left:0;padding:20px 18px 18px;border-radius:24px;max-height:calc(57svh - 16px - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain}
   h1{font-size:clamp(32px,9.6vw,42px);margin-bottom:12px}
   h2{font-size:clamp(26px,7.6vw,32px);margin-bottom:10px}
@@ -173,7 +174,6 @@ html.lenis,html.lenis body{height:auto}
 
 <div class="atmo" aria-hidden="true"></div>
 <canvas id="gl" aria-hidden="true"></canvas>
-<div class="grain" aria-hidden="true"></div>
 <div class="lbls" id="lbls" aria-hidden="true"></div>
 <div class="progress" id="prog" aria-hidden="true"></div>
 
@@ -317,13 +317,16 @@ const dots = $("#dots");
 beats.forEach((b, i) => { const li = document.createElement("li"); li.innerHTML = `<button type="button"><span>${b.dataset.name}</span><i></i></button>`;
   li.firstChild.addEventListener("click", () => goTo(i)); dots.appendChild(li); });
 const dotBtns = [...dots.querySelectorAll("button")];
-const beatTop = i => beats[i].offsetTop;
+let tops = [], heights = [];   // cached: reading layout every frame forces the browser to lay out the page again
+const measure = () => { tops = beats.map(b => b.offsetTop); heights = beats.map(b => b.offsetHeight); };
+measure(); addEventListener("resize", measure); document.fonts && document.fonts.ready.then(measure);
+const beatY = i => i === 0 ? 0 : tops[i] + 0.25 * heights[i];
 
 /* smooth scroll. Phones keep native touch scrolling; a card that scrolls inside itself keeps its own wheel. */
 const lenis = Lenis ? new Lenis({ autoRaf: false, lerp: 0.085, wheelMultiplier: 0.9, anchors: false,
   prevent: n => { const c = n.closest && n.closest(".card"); return !!c && c.scrollHeight > c.clientHeight + 1; } }) : null;
-const goTo = i => lenis ? lenis.scrollTo(beatTop(i), { duration: 1.6, easing: t => 1 - Math.pow(1 - t, 4) })
-                        : scrollTo({ top: beatTop(i), behavior: reduce ? "auto" : "smooth" });
+const goTo = i => lenis ? lenis.scrollTo(beatY(i), { duration: 2.4, easing: t => 1 - Math.pow(1 - t, 3) })
+                        : scrollTo({ top: beatY(i), behavior: reduce ? "auto" : "smooth" });
 addEventListener("keydown", e => {   // arrow keys step through beats
   if (e.target.closest("input,textarea,[contenteditable]") || e.altKey || e.metaKey || e.ctrlKey) return;
   const k = Math.round(cur);
@@ -347,29 +350,28 @@ function rollChapter(k, dir) {
   });
 }
 
-/* scroll → beat value. Each beat holds still while its card is read, then glides to the next. */
+/* scroll → scene time. Continuous: every pixel of scroll moves the story, with no holds. A scene peaks when
+   its card sits mid-screen, about a quarter of the way into its section (LEAD). */
 const sm = x => x * x * x * (x * (x * 6 - 15) + 10);                     // smootherstep
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const S = { problem: 0, recast: 1, pergram: 2, daily: 3, cost: 4, unusual: 5, quiet: 6, know: 7, team: 8 };   // beat order in <main>
-function scrollRaw() {   // beat index plus the linear fraction through it, with no hold: for things the reader scrubs
+const LEAD = 0.25;
+function scrollRaw() {   // section index plus the fraction scrolled through it
   const y = scrollY; let i = 0;
-  while (i < N && y >= beatTop(i + 1)) i++;
-  if (i >= N) return N;
-  return i + clamp((y - beatTop(i)) / (beatTop(i + 1) - beatTop(i)));
+  while (i < N && y >= tops[i + 1]) i++;
+  return i + clamp((y - tops[i]) / heights[i]);
 }
-function scrollBeat() {
-  const y = scrollY; let i = 0;
-  while (i < N && y >= beatTop(i + 1)) i++;
-  if (i >= N) return N;
-  const span = beatTop(i + 1) - beatTop(i), f = clamp((y - beatTop(i)) / span);
-  return i + sm(clamp((f - 0.32) / 0.68));
+function sceneB() {      // the first stretch eases in at half speed, so even the first pixel of scroll moves something
+  const r = scrollRaw();
+  return clamp(r < 2 * LEAD ? r / 2 : r - LEAD, 0, N);
 }
 
 /* ---------- cards: glass panels fade, rise and tip back with distance from their resting place.
    Arriving from below they lean back slightly and grow to full size; leaving upward they shrink a touch. */
 function cardsFrame(vh) {
-  for (const c of cards) {
-    const r = c.getBoundingClientRect();
+  const rects = cards.map(c => c.getBoundingClientRect());   // every read first, then every write: one layout per frame
+  cards.forEach((c, n) => {
+    const r = rects[n];
     const ty = parseFloat(c.style.getPropertyValue("--ty")) || 0;   // measure the card without our own offset
     const mid = r.top - ty + r.height / 2;
     const rest = innerWidth <= 760 ? vh * 0.43 + r.height / 2 : vh * 0.5;
@@ -377,14 +379,14 @@ function cardsFrame(vh) {
     const o = 1 - sm(clamp((d - 0.35) / 0.65));
     c.style.opacity = o.toFixed(3);
     if (o > 0.55 && c._reveal) { const f = c._reveal; c._reveal = null; f(); }   // reveal once, as it settles
-    if (reduce) continue;
+    if (reduce) return;
     const e = sm(clamp((d - 0.2) / 0.8));
     c.style.setProperty("--ty", (Math.sign(s) * e * vh * 0.06).toFixed(1) + "px");
     c.style.setProperty("--sc", (1 - e * (s > 0 ? 0.05 : 0.03)).toFixed(4));
     c.style.setProperty("--rx", (s > 0 ? e * 9 : -e * 4).toFixed(2) + "deg");
     // gold headline sheen slides across as the card passes through
     c.style.setProperty("--sh", clamp(0.5 - s * 0.6).toFixed(3));
-  }
+  });
 }
 
 /* ---------- reveals: when a card arrives its headline rises word by word out of a mask, then the text
@@ -453,19 +455,23 @@ catch (e) { document.documentElement.classList.add("no-gl"); }
 const lblHost = $("#lbls");
 const label = (html, cls = "") => { const el = document.createElement("div"); el.className = "lbl " + cls; el.innerHTML = html; lblHost.appendChild(el); return el; };
 
-let frame = () => {};
+let frame = () => {}, vel = 0;
 if (renderer) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   const mobile = matchMedia("(max-width: 760px)").matches;
-  let dpr = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 1.75); renderer.setPixelRatio(dpr);
+  const dprMax = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 1.75);
+  let dpr = dprMax; renderer.setPixelRatio(dpr);
   const scene = new THREE.Scene();
-  { // the room behind the glass: the same warm dark gradient as the page, so transmission has light to bend
+  { // the room: the site's three lights on its background, with film grain baked in (a blend layer over a live canvas costs every frame)
     const c = document.createElement("canvas"); c.width = c.height = 1024; const x = c.getContext("2d");
     const [base, la, lb] = LIGHT ? ["#ebe5da", "212,178,104,.50", "184,160,116,.40"] : ["#060606", "201,162,84,.30", "140,112,62,.30"];
     x.fillStyle = base; x.fillRect(0, 0, 1024, 1024);
     const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, `rgba(${la})`); g1.addColorStop(1, `rgba(${la.replace(/[\d.]+$/, "0")})`); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
     const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, `rgba(${lb})`); g2.addColorStop(1, `rgba(${lb.replace(/[\d.]+$/, "0")})`); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
+    const img = x.getImageData(0, 0, 1024, 1024), px = img.data, amt = LIGHT ? 9 : 6;
+    for (let k = 0; k < px.length; k += 4) { const n = (Math.random() - 0.5) * amt; px[k] += n; px[k + 1] += n; px[k + 2] += n; }
+    x.putImageData(img, 0, 0);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
   }
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -474,12 +480,16 @@ if (renderer) {
   const key = new THREE.DirectionalLight(0xffe2b0, 1.4); key.position.set(3, 5, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(0xf0d49a, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
 
-  /* materials */
+  /* materials. The glass is faked (clearcoat reflections, see-through tint): real transmission renders the scene twice. */
   const goldMat = (c, r = 0.22) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.45, clearcoatRoughness: 0.18, envMapIntensity: 1.3 });
   const g995 = goldMat(0xe9c27c, 0.26), g999 = goldMat(0xf3c257);
-  const glass = () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.1, transmission: 1, thickness: 0.4, ior: 1.42,
-    attenuationColor: new THREE.Color(0xffd890), attenuationDistance: 2.5, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1, transparent: true, opacity: 1 });
+  const glass = () => new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, metalness: 0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06,
+    envMapIntensity: 1.6, transparent: true, opacity: LIGHT ? 0.45 : 0.16, depthWrite: false });
   const glow = new THREE.MeshBasicMaterial({ color: GLOWC, toneMapped: false, transparent: true, opacity: 0.95 });
+  const BLEND = LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending;
+  const dotTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 32; const x = c.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16);
+    const dc = LIGHT ? "150,112,40" : "255,225,150"; gr.addColorStop(0, `rgba(${dc},1)`); gr.addColorStop(1, `rgba(${dc},0)`); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(c); })();
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
   /* engraving: text on a decal that sits on a face */
   function decal(lines, w, h, ink = "rgba(110,70,8,.62)") {
@@ -487,21 +497,20 @@ if (renderer) {
     const x = c.getContext("2d"); x.fillStyle = ink; x.textAlign = "center"; x.textBaseline = "middle";
     lines.forEach(([t, size, wt], i) => { x.font = `${wt || 600} ${size * W}px -apple-system, Inter, sans-serif`; x.fillText(t, W / 2, H * (i + 1) / (lines.length + 1)); });
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, transparent: true, metalness: 0.7, roughness: 0.45, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
-    return m;
+    return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, transparent: true, metalness: 0.7, roughness: 0.45, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
   }
   function ingot(w, h, d, mat, lines) {
     const t = w * 0.8, s = new THREE.Shape();
     s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(t / 2, h); s.lineTo(-t / 2, h); s.closePath();
     const bs = h * 0.1, geo = new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: true, bevelThickness: h * 0.14, bevelSize: bs, bevelSegments: 5, curveSegments: 1 });
-    geo.center(); geo.computeVertexNormals();
+    geo.center(); geo.computeVertexNormals(); geo.computeBoundingBox();
     const g = new THREE.Group(), m = new THREE.Mesh(geo, mat); g.add(m);
     const dc = decal(lines, t * 0.86, d * 0.8); dc.rotation.x = -Math.PI / 2; dc.position.y = h / 2 + bs + 0.003; g.add(dc);
     return g;
   }
   function coin(r, th, mat, lines) {
     const pts = [[0, th / 2], [r * 0.84, th / 2], [r * 0.9, th * 0.62], [r, th * 0.55], [r, -th * 0.55], [r * 0.9, -th * 0.62], [r * 0.84, -th / 2], [0, -th / 2]].map(([x, y]) => new THREE.Vector2(x, y));
-    const geo = new THREE.LatheGeometry(pts, 96); geo.computeVertexNormals();
+    const geo = new THREE.LatheGeometry(pts, 96); geo.computeVertexNormals(); geo.computeBoundingBox();
     const g = new THREE.Group(), m = new THREE.Mesh(geo, mat); g.add(m);
     const dc = decal(lines, r * 1.5, r * 1.5); dc.rotation.x = -Math.PI / 2; dc.position.y = th / 2 + 0.003; g.add(dc);
     return g;
@@ -514,59 +523,108 @@ if (renderer) {
     coin(0.42, 0.09, g999, [["8 g", .26, 700], ["GOLDGUINEA", .1, 600]]),
     ingot(0.24, 0.075, 0.4, g999, [["1 g", .3, 700], ["999", .14, 600]]),
   ];
+  const half = P.map(p => -p.children[0].geometry.boundingBox.min.y);   // how far each piece's base sits below its centre
   const world = new THREE.Group(); scene.add(world);
   P.forEach(p => world.add(p));
 
   /* gaps vs GOLDM, the cost line and GOLDPETAL's own ±1.5σ band, all on one scale (bp → scene units) */
   const K = 1.7 / Math.max(...D.gaps.map(g => g.gap), D.costLine * 1.1), BASE = -0.55;
   const colGeo = new RoundedBoxGeometry(0.36, 1, 0.36, 4, 0.05); colGeo.translate(0, 0.5, 0);
-  const cols = D.gaps.map((g, i) => { const m = new THREE.Mesh(colGeo, goldMat(0xf3c257, 0.18)); m.material.emissive = new THREE.Color(0x7a4a00); m.material.emissiveIntensity = 0; world.add(m); return m; });
+  const cols = D.gaps.map(() => { const m = new THREE.Mesh(colGeo, goldMat(0xf3c257, 0.18)); m.material.emissive = new THREE.Color(0x7a4a00); m.material.emissiveIntensity = 0; world.add(m); return m; });
   const plane = new THREE.Mesh(new RoundedBoxGeometry(3.4, 0.035, 1.3, 3, 0.017), glass()); world.add(plane);
   const edge = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.012, 0.012), glow); world.add(edge);
   const bandH = D.petal.band * K;
   const bandGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 48, 1, true); bandGeo.translate(0, 0.5, 0);
-  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
-  const bandRails = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.35, toneMapped: false }));
-  band.add(bandRails);
+  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: BLEND, toneMapped: false }));
+  band.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.35, toneMapped: false })));
   world.add(band);
-  const bandCaps = [0].map(() => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); r.rotation.x = Math.PI / 2; world.add(r); return r; });
+  const bandCap = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); bandCap.rotation.x = Math.PI / 2; world.add(bandCap);
 
-  /* "how we know": three glass slabs the camera flies through */
+  /* ---------- per gram: a beam balance. The four pieces ride the beam; it swings, then settles almost level */
+  const BAL_Y = -0.42, balMat = goldMat(0xcfae6a, 0.3);
+  const balance = new THREE.Group(); balance.position.y = BAL_Y; world.add(balance);
+  const beam = new THREE.Group(); balance.add(beam);
+  beam.add(new THREE.Mesh(new RoundedBoxGeometry(3.3, 0.05, 0.24, 3, 0.02), balMat));
+  [-1.65, 1.65].forEach(xx => { const c = new THREE.Mesh(new THREE.SphereGeometry(0.045, 20, 14), balMat); c.position.x = xx; beam.add(c); });
+  const needle = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.34, 0.012), glow); needle.position.set(0, 0.2, 0.13); beam.add(needle);
+  const knife = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.14, 24), balMat); knife.position.y = -0.095; balance.add(knife);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.06, 0.5, 24), balMat); post.position.y = -0.41; balance.add(post);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.05, 48), balMat); foot.position.y = -0.68; balance.add(foot);
+  const scaleBack = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.31, 64, 1, Math.PI * 0.35, Math.PI * 0.3), glow); scaleBack.position.set(0, 0.06, 0.125); balance.add(scaleBack);
+  let balAngle = 0;
+  const PG_S = [0.62, 0.95, 0.9, 1.7];
+  const onBeam = (k, s) => { const xk = [-1.22, -0.42, 0.42, 1.22][k], yk = 0.025 + half[k] * s, c = Math.cos(balAngle), sn = Math.sin(balAngle);
+    return V(xk * c - yk * sn, BAL_Y + xk * sn + yk * c, 0); };
+
+  /* ---------- unusual?: GOLDPETAL's own bell curve. The tails past ±thr are the alert zones; today's gap drops onto it */
+  const BELL = { x: 2.4, y: 1.0, z: -0.3, w: 2.3, h: 0.95 }, ZMAX = 3;
+  const bell = new THREE.Group(); bell.position.set(BELL.x, BELL.y, BELL.z); world.add(bell);
+  const bx = z => z / ZMAX * BELL.w / 2, by = z => BELL.h * Math.exp(-z * z / 2);
+  const tailMat = new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: LIGHT ? 0.68 : 0.62, side: THREE.DoubleSide, depthWrite: false, toneMapped: false });
+  const midMat = new THREE.MeshBasicMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, transparent: true, opacity: LIGHT ? 0.6 : 0.07, side: THREE.DoubleSide, depthWrite: false, toneMapped: false });
+  const bellPart = (z0, z1, mat) => { const s = new THREE.Shape(); s.moveTo(bx(z0), 0); for (let k = 0; k <= 60; k++) { const z = z0 + (z1 - z0) * k / 60; s.lineTo(bx(z), by(z)); } s.lineTo(bx(z1), 0); s.closePath(); bell.add(new THREE.Mesh(new THREE.ShapeGeometry(s), mat)); };
+  bellPart(-ZMAX, -D.thr, tailMat); bellPart(-D.thr, D.thr, midMat); bellPart(D.thr, ZMAX, tailMat);
+  const bpts = []; for (let k = 0; k <= 160; k++) { const z = -ZMAX + 2 * ZMAX * k / 160; bpts.push(bx(z), by(z), 0.003); }
+  const bellLine = new THREE.Line(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(bpts, 3)), new THREE.LineBasicMaterial({ color: GLOWC, toneMapped: false })); bell.add(bellLine);
+  const axis = new THREE.Mesh(new THREE.BoxGeometry(BELL.w + 0.2, 0.008, 0.008), glow); bell.add(axis);
+  [-D.thr, D.thr].forEach(z => { const t = new THREE.Mesh(new THREE.BoxGeometry(0.008, by(z) + 0.14, 0.008), glow); t.position.set(bx(z), (by(z) + 0.14) / 2, 0.004); bell.add(t); });
+  const zDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 16), goldMat(0xf3c257, 0.15)); bell.add(zDot);
+  const bounceOut = x => { const n = 7.5625, d = 2.75; if (x < 1 / d) return n * x * x; if (x < 2 / d) return n * (x -= 1.5 / d) * x + 0.75; if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + 0.9375; return n * (x -= 2.625 / d) * x + 0.984375; };
+
+  /* ---------- how we know: a vault wheel turns, the door swings open, and the rows pour out as a river of small gold bars */
+  const VC = V(0.45, 0.6, -2.0);
+  const vault = new THREE.Group(); vault.position.copy(VC); world.add(vault);
+  const darkGold = goldMat(0x9c7a3c, 0.38);
+  vault.add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.08, 20, 96), darkGold));
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(0.72, 64), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x3a2c14 : 0x020202 })); hole.position.z = -0.06; vault.add(hole);
+  const hinge = new THREE.Group(); hinge.position.x = -0.72; vault.add(hinge);   // the door turns about its left edge
+  const door = new THREE.Group(); door.position.x = 0.72; hinge.add(door);
+  const slabDoor = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), goldMat(0xd8b46a, 0.28)); slabDoor.rotation.x = Math.PI / 2; door.add(slabDoor);
+  const wheel = new THREE.Group(); wheel.position.z = 0.09; door.add(wheel);
+  wheel.add(new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.022, 12, 48), darkGold));
+  for (let k = 0; k < 3; k++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.03, 0.03), darkGold); sp.rotation.z = k * Math.PI / 3; wheel.add(sp); }
+  wheel.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.06, 24).rotateX(Math.PI / 2), darkGold));
+  for (let k = 0; k < 12; k++) { const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.04, 12).rotateX(Math.PI / 2), darkGold); const a = k / 12 * Math.PI * 2; bolt.position.set(Math.cos(a) * 0.58, Math.sin(a) * 0.58, 0.07); door.add(bolt); }
+  const NR = mobile ? 160 : 300;
+  const river = new THREE.InstancedMesh(new RoundedBoxGeometry(0.1, 0.03, 0.05, 1, 0.01), g999, NR); river.frustumCulled = false; world.add(river);
+  const rSeed = Array.from({ length: NR }, () => [Math.random(), Math.random() * 6.283, 0.35 + Math.random() * 0.6, Math.random() - 0.5]);
+  const RDIR = V(-0.3, -0.22, 1).normalize();   // the river spills down and to the left, clear of the plaques
+  /* the three counts on glass plaques that slide out of the vault */
   const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
-  const slabs = slabTxt.map(([big, small], i) => {
-    const g = new THREE.Group(), s = new THREE.Mesh(new RoundedBoxGeometry(2.3, 1.45, 0.07, 4, 0.05), glass()); s.material.roughness = 0.22; s.material.thickness = 0.25; g.add(s);
+  const SLAB_AT = [V(1.62, 1.28, -1.2), V(1.78, 0.5, -0.95), V(1.62, -0.28, -0.7)], SLAB_RY = [-0.42, -0.42, -0.42];   // a column to the vault's right
+  const slabs = slabTxt.map(([big, small]) => {
+    const g = new THREE.Group(); g.add(new THREE.Mesh(new RoundedBoxGeometry(2.3, 1.45, 0.07, 4, 0.05), glass()));
     const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, LIGHT ? "rgba(95,65,5,.95)" : "rgba(243,223,168,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
-    t.position.z = 0.05; g.add(t); g.position.set(-0.75 + i * 1.2, [0.95, 0.35, -0.25][i] + 0.2, -0.4 - i * 0.9); g.rotation.y = -0.18; g.scale.setScalar(0.62); world.add(g); return g;
+    t.position.z = 0.05; g.add(t); world.add(g); return g;
   });
 
-  /* gold dust */
-  const NP = mobile ? 260 : 520, dust = new Float32Array(NP * 3), seed = new Float32Array(NP);
-  for (let i = 0; i < NP; i++) { dust[i * 3] = (Math.random() - 0.5) * 14; dust[i * 3 + 1] = (Math.random() - 0.5) * 8; dust[i * 3 + 2] = 3 - Math.random() * 16; seed[i] = Math.random() * 6.28; }
-  const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(dust, 3));
-  const dot = document.createElement("canvas"); dot.width = dot.height = 32; { const x = dot.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16); const dc = LIGHT ? "150,112,40" : "255,225,150"; gr.addColorStop(0, `rgba(${dc},1)`); gr.addColorStop(1, `rgba(${dc},0)`); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); }
-  const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
+  /* gold dust: ambient motes; the whole cloud turns slowly instead of moving each mote on the CPU */
+  const NP = mobile ? 260 : 520, dust = new Float32Array(NP * 3);
+  for (let i = 0; i < NP; i++) { dust[i * 3] = (Math.random() - 0.5) * 14; dust[i * 3 + 1] = (Math.random() - 0.5) * 8; dust[i * 3 + 2] = 3 - Math.random() * 16; }
+  const dustPts = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(dust, 3)),
+    new THREE.PointsMaterial({ size: 0.05, map: dotTex, transparent: true, opacity: 0.55, depthWrite: false, blending: BLEND, toneMapped: false }));
   scene.add(dustPts);
 
-  /* ---------- poses. Beats: */
-  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  /* ---------- poses */
   const ring = (i, n, r, cx, cy, cz, a0) => V(cx + Math.cos(a0 + i * 6.283 / n) * r, cy + Math.sin(a0 + i * 6.283 / n) * r * 0.35, cz + Math.sin(a0 + i * 6.283 / n) * r * 0.4);
-  const px = [-1.3, -0.42, 0.42, 1.18], line = [-1.2, -0.4, 0.4, 1.2];
+  const px = [-1.3, -0.42, 0.42, 1.18], line = [-1.2, -0.4, 0.4, 1.2], LOGO = V(0, 0.3, -10.6);
   const pieceAt = (i, b) => {
-    if (b === S.problem) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i] };
-    if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.65, 0.65, 1.35, 0.65][i] };   // melted into grains
-    if (b === S.pergram) return { p: V(line[i], -0.2, 0), s: [0.62, 0.95, 0.9, 1.7][i], ry: 0, rx: [0.65, 0.65, 1.35, 0.65][i] };
-    if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i] };
-    if (b === S.team) return { p: ring(i, 4, 1.15, 0, 0.2, -10.6, 0.4), s: [0.7, 1.0, 0.95, 1.7][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i] };
-    return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3 };                                          // off stage
+    if (b === S.problem) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i], rz: 0 };
+    if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.3, 0.3, 0.6, 0.3][i], rz: 0 };   // melted into grains
+    if (b === S.pergram) return { p: onBeam(i, PG_S[i]), s: PG_S[i], ry: 0, rx: 0, rz: balAngle };                // riding the balance
+    if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i], rz: 0 };
+    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55), s: [0.5, 0.7, 0.66, 1.25][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i], rz: 0 };   // a wide ring framing the mark
+    return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3, rz: 0 };                                     // off stage
   };
 
-  /* ---------- recast: every piece melts into grains that pour into four identical cubes, one gram of pure gold each */
-  const GN = 4, NG = GN * GN * GN, GS = 0.072;
-  const grains = new THREE.InstancedMesh(new RoundedBoxGeometry(0.058, 0.058, 0.058, 2, 0.012), g999, NG * 4);
+  /* ---------- grains: in the recast beat every piece melts into grains that pour into four identical one-gram cubes;
+     at the finale the same grains condense out of the air and forge the Parity mark */
+  const GN = 4, NG = GN * GN * GN, GS = 0.072, NGT = NG * 4;
+  const grains = new THREE.InstancedMesh(new RoundedBoxGeometry(0.058, 0.058, 0.058, 2, 0.012), g999, NGT);
   grains.frustumCulled = false; world.add(grains);
   const gSrc = [], gDst = [], gDel = [], gSpin = [];
   P.forEach((p, k) => {
-    const geo = p.children[0].geometry; geo.computeBoundingBox(); const bb = geo.boundingBox;
+    const bb = p.children[0].geometry.boundingBox;
     for (let g = 0; g < NG; g++) {
       gSrc.push(V(bb.min.x + Math.random() * (bb.max.x - bb.min.x), bb.min.y + Math.random() * (bb.max.y - bb.min.y), bb.min.z + Math.random() * (bb.max.z - bb.min.z)));
       const ix = g % GN, iy = Math.floor(g / GN) % GN, iz = Math.floor(g / GN / GN);
@@ -575,9 +633,17 @@ if (renderer) {
       gSpin.push(V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(6));
     }
   });
+  // the Parity mark: two stacked trapezoid bars (the site's own logo path, 64-unit box), filled with as many grains as fit
+  const logoAt = sp => { const out = [], sc = 0.05, st = sp / sc;
+    for (const y0 of [13, 26.4]) for (let sy = y0 + st / 2; sy < y0 + 8.6; sy += st) { const t = (sy - y0) / 8.6, xl = 14 - 3.2 * t, xr = 34 + 3.2 * t;
+      for (let sx = xl + st / 2; sx < xr; sx += st) out.push(V(LOGO.x + (sx - 24) * sc, LOGO.y + (24 - sy) * sc, LOGO.z)); }
+    return out; };
+  let logoSp = 0.05; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
+  const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(2.2 + Math.random() * 1.2).add(LOGO));
+  const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the mark forges left to right
   const poseMat = (k, b) => { const a = pieceAt(k, b), m = new THREE.Matrix4();
-    return m.compose(a.p, new THREE.Quaternion().setFromEuler(new THREE.Euler(a.rx, a.ry, 0)), new THREE.Vector3(a.s, a.s, a.s)); };
-  const gm = new THREE.Matrix4(), gq = new THREE.Quaternion(), ge = new THREE.Euler(), gv = new THREE.Vector3(), gs = new THREE.Vector3();
+    return m.compose(a.p, new THREE.Quaternion().setFromEuler(new THREE.Euler(a.rx, a.ry, a.rz)), new THREE.Vector3(a.s, a.s, a.s)); };
+  const gm = new THREE.Matrix4(), gq = new THREE.Quaternion(), ge = new THREE.Euler(), gv = new THREE.Vector3(), gs = new THREE.Vector3(), gw = new THREE.Vector3();
 
   /* ---------- every day: each small contract's distance from its usual premium, a ribbon per contract that draws with scroll */
   const SER = D.series, NS = SER.dates.length, RX0 = -1.4, RX1 = 2.2, RB = BASE;
@@ -595,14 +661,14 @@ if (renderer) {
     }
     for (let j = Math.max(first, 0); j < NS - 1; j++) { const a = 2 * j; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
-    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
+    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: BLEND, toneMapped: false }));
     const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(top, 3));
     const edgeL = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.95, toneMapped: false }));
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.035, 16, 12), glow);
     const floor = new THREE.Mesh(new THREE.BoxGeometry(RX1 - RX0, 0.006, 0.006), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.25, toneMapped: false }));
     floor.position.set(0, RB, z);
     ribbon.add(fill, edgeL, head, floor);
-    return { sym, z, first: Math.max(first, 0), fill, edgeL, head, top, nIdx: idx.length };
+    return { sym, z, first: Math.max(first, 0), fill, edgeL, head, top };
   });
 
   /* ---------- quiet: three years on a dark rail; a scanner sweeps across and each alert episode flares as it passes */
@@ -618,27 +684,46 @@ if (renderer) {
   const flares = new THREE.InstancedMesh(flareGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, toneMapped: false }), AL.length);
   flares.frustumCulled = false; quiet.add(flares);
   const fc = new THREE.Color(), GOLD = new THREE.Color(LIGHT ? 0xa57a22 : 0xe2b65a), HOT = new THREE.Color(LIGHT ? 0x5f4105 : 0xfff2c8);
+  AL.forEach((a, n) => flares.setColorAt(n, GOLD));   // per-flare colour from the start, so the shader never has to change mid-scroll
   const scanner = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.1), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x7d5a14 : 0xffe2a0, transparent: true, opacity: 0.85, toneMapped: false, side: THREE.DoubleSide }));
-  scanner.rotation.y = Math.PI / 2; scanner.scale.x = 1;
-  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.05, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }));
+  scanner.rotation.y = Math.PI / 2;
+  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.05, depthWrite: false, blending: BLEND, toneMapped: false, side: THREE.DoubleSide }));
   scanGlow.rotation.y = Math.PI / 2;
   const scanH = new THREE.Group(); scanH.add(scanner, scanGlow); scanner.position.y = scanGlow.position.y = 0.55; quiet.add(scanH);
 
-  /* ---------- choreography: one pose per beat, eased between */
+  /* ---------- camera: one key per beat, joined by a smooth curve so it never stops moving */
   const cam = [
     { p: V(0, 0.3, 6.6), t: V(0, -0.05, 0), fov: 34 },          // the problem
     { p: V(0, 1.45, 5.2), t: V(0, -0.1, 0), fov: 34 },          // recast
-    { p: V(0, 2.1, 5.6), t: V(0, -0.3, 0), fov: 34 },           // per gram
+    { p: V(0, 1.5, 6.1), t: V(0, -0.38, 0), fov: 34 },          // per gram: the balance
     { p: V(-0.5, 1.6, 6.3), t: V(0.45, 0.2, -1.45), fov: 36 },  // every day
     { p: V(-2.2, 1.3, 6.2), t: V(0.2, 0.45, 0), fov: 36 },      // cost line
-    { p: V(4.2, 1.9, 8.4), t: V(0.9, 2.55, 0), fov: 50 },       // unusual?
+    { p: V(3.3, 1.55, 6.6), t: V(1.95, 1.05, -0.2), fov: 42 },  // unusual?: the column and the bell
     { p: V(0.1, 2.0, 2.6), t: V(0.2, -0.05, -4.2), fov: 36 },   // quiet
-    { p: V(0.4, 0.7, 4.4), t: V(0.4, 0.55, -1.2), fov: 38 },    // how we know
-    { p: V(0, 0.9, -5.6), t: V(0, 0.3, -10.6), fov: 36 },       // team
+    { p: V(0.6, 0.8, 4.8), t: V(0.55, 0.55, -1.6), fov: 40 },   // how we know: the vault
+    { p: V(0, 0.75, -5.4), t: V(0, 0.3, -10.6), fov: 36 },      // team: through the vault to the forge
   ];
-  const camAt = k => cam[Math.min(k, cam.length - 1)];
+  const camCurve = new THREE.CatmullRomCurve3(cam.map(c => c.p), false, "centripetal");
+  const tgtCurve = new THREE.CatmullRomCurve3(cam.map(c => c.t), false, "centripetal");
   const colAt = (i, b) => (b === S.cost || b === S.unusual) ? D.gaps[i].gap * K : 0.0001;
   const fd = s => { const [y, m, d] = s.split("-"); return `${+d} ${"Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[m - 1]} ${y}`; };
+  const ease2 = f => 0.5 * f + 0.5 * f * f * (3 - 2 * f);   // half linear, half smooth: never comes to a full stop
+
+  /* ---------- dust trails: motes strung along the camera's path; they show, and thicken, with scroll speed */
+  const NT = mobile ? 420 : 900, trailA = new Float32Array(NT * 3);
+  for (let k = 0; k < NT; k++) { const pnt = camCurve.getPoint(Math.random()), r = 0.35 + Math.random() * 1.3, a = Math.random() * 6.283;
+    trailA[k * 3] = pnt.x + Math.cos(a) * r; trailA[k * 3 + 1] = pnt.y + Math.sin(a) * r * 0.7; trailA[k * 3 + 2] = pnt.z + (Math.random() - 0.5) * 0.8; }
+  const trail = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(trailA, 3)),
+    new THREE.PointsMaterial({ size: 0.03, map: dotTex, transparent: true, opacity: 0, depthWrite: false, blending: BLEND, toneMapped: false }));
+  scene.add(trail); let trailO = 0;
+
+  /* ---------- opening: the four pieces drop in and land with a bounce and a puff of dust (once, on arrival) */
+  const dropOn = !reduce && scrollY < 40, DROP0 = 0.3, DROP_T = 1.15, landAt = k => DROP0 + k * 0.17 + DROP_T / 2.75;
+  const PUFF = 24, puffA = new Float32Array(4 * PUFF * 3), puffDir = [];
+  for (let k = 0; k < 4 * PUFF; k++) { const a = Math.random() * 6.283; puffDir.push(V(Math.cos(a), 0.15 + Math.random() * 0.35, Math.sin(a)).multiplyScalar(0.3 + Math.random() * 0.45)); }
+  const puffG = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(puffA, 3));
+  const puff = new THREE.Points(puffG, new THREE.PointsMaterial({ size: 0.04, map: dotTex, transparent: true, opacity: 0, depthWrite: false, blending: BLEND, toneMapped: false }));
+  scene.add(puff);
 
   /* labels */
   const pl = D.pieces.map(p => label(`<b>${p.sym}</b><small>${p.kind} · ${p.purity}</small><div class="n">${p.per_g}/g</div>`));
@@ -646,6 +731,9 @@ if (renderer) {
   const cl = D.gaps.map(g => label(`<b class="n">${g.gap.toFixed(1)} bp</b><small>${g.sym}</small>`));
   const costL = label(`<b>Cost line</b><span class="n">${D.costLine.toFixed(1)} bp</span>`);
   const bandL = label(`<b>Alert needs ±${D.thr}σ</b><span class="n">${D.petal.band.toFixed(0)} bp for GOLDPETAL</span>`);
+  const balL = label(`<b class="n">Within ${D.spreadBp} bp</b><small>of each other, per gram</small>`);
+  const zL = label(`<b class="n">Today ${D.petal.z >= 0 ? "+" : ""}${D.petal.z.toFixed(2)}σ</b><small>GOLDPETAL, well inside</small>`);
+  const tailL = [label("Alert zone", "line"), label("Alert zone", "line")];
   const headL = label(""), scanL = label(""); let headJ = -1, scanN = -1, scanM = "";
   const laneL = lanes.map(l => label(l.sym, "line"));
 
@@ -660,13 +748,14 @@ if (renderer) {
   const bump = (b, a, c, w = 0.35) => clamp((b - (a - w)) / w) * clamp(((c + w) - b) / w);
   const backOut = x => { const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
 
+  /* compile every shader now, while everything is still visible, so no scene stutters the first time it appears */
+  try { renderer.compileAsync ? renderer.compileAsync(scene, camera) : renderer.compile(scene, camera); } catch (e) {}
+
   /* view offset: desktop shifts the gold right of the card, phones lift it above the card */
-  const view = { x: 0, y: 0, w: 1, h: 1 };
   function resize() {
     const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    view.w = w; view.h = h; view.x = w > 760 ? -w * 0.23 : 0; view.y = w > 760 ? 0 : h * 0.27;
-    camera.setViewOffset(w, h, view.x, view.y, w, h); camera.updateProjectionMatrix();
+    camera.setViewOffset(w, h, w > 760 ? -w * 0.23 : 0, w > 760 ? 0 : h * 0.27, w, h); camera.updateProjectionMatrix();
   }
   addEventListener("resize", resize); resize();
 
@@ -674,51 +763,86 @@ if (renderer) {
   let mx = 0, my = 0, tmx = 0, tmy = 0;
   addEventListener("pointermove", e => { if (e.pointerType === "mouse") { tmx = e.clientX / innerWidth - 0.5; tmy = e.clientY / innerHeight - 0.5; } }, { passive: true });
 
+  /* focus pulls (laptops only): the 3D stage softens between beats and comes back into focus as each scene arrives */
+  const gl = $("#gl"), dofOK = !reduce && matchMedia("(hover: hover) and (pointer: fine) and (min-width: 1101px)").matches;
+  let blurNow = 0;
+
   const camP = new THREE.Vector3(), camT = new THREE.Vector3();
-  let ftimes = [], lastAdj = 0;
-  frame = (b, raw, time, dt) => {
-    const i = Math.min(N - 1, Math.floor(b)), f = b - i, j = i + 1;
-    const A = camAt(i), B = camAt(j);
-    camP.copy(A.p).lerp(B.p, f); camT.copy(A.t).lerp(B.t, f);
+  let ftimes = [], lastAdj = 0, drops = 0, frameNo = 0, lastB = -1;
+  frame = (b, time, dt) => {
+    frameNo++;
+    const dropping = dropOn && time < landAt(3) + 1.2;
+    trailO += ((reduce ? 0 : clamp((Math.abs(vel) - 2) / 28)) - trailO) * (1 - Math.exp(-dt / 0.25));
+    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01;
+    lastB = b;
+    if (!moving && (frameNo & 1)) return;   // nothing scrolled: the slow ambient motion runs at half rate
+
+    const i = Math.min(N - 1, Math.floor(b)), f = b - i, j = i + 1, fe = ease2(f);
+    camCurve.getPoint(b / N, camP); tgtCurve.getPoint(b / N, camT);
     // quiet: the camera trucks along the rail with the scanner
-    const qv = bump(b, S.quiet, S.quiet, 0.7), sx = QX0 + (QX1 - QX0) * clamp((raw - (S.quiet - 0.35)) / 0.7);
+    const qv = bump(b, S.quiet, S.quiet, 0.7), sx = QX0 + (QX1 - QX0) * clamp((b - (S.quiet - 0.5)) / 0.95);
     camP.x += sx * 0.06 * qv; camT.x += sx * 0.08 * qv;
     if (camera.aspect < 1.1) camP.sub(camT).multiplyScalar(Math.min(2.0, 1.02 / camera.aspect)).add(camT);   // tall screens: step back so all four fit
     mx += (tmx - mx) * (1 - Math.exp(-dt / 0.25)); my += (tmy - my) * (1 - Math.exp(-dt / 0.25));
     if (!reduce) { camP.x += mx * 0.35; camP.y -= my * 0.22; }
     camera.position.copy(camP); camera.lookAt(camT);
-    const fov = A.fov + (B.fov - A.fov) * f; if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    const fov = cam[i].fov + (cam[j].fov - cam[i].fov) * sm(f); if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
 
-    // calm: a slow, small float at the opening and closing beats only; no free spinning
-    const idle = b < 0.8 ? 1 - clamp(b / 0.8) : b > S.team - 0.5 ? clamp((b - (S.team - 0.5)) / 0.5) : 0;
+    // the balance: swings in as the beat arrives, then settles almost level (its tilt is the spread, exaggerated 15×)
+    const balV = bump(b, S.pergram, S.pergram, 0.75), balU = clamp((b - (S.pergram - 0.75)) / 1.2);
+    balAngle = reduce ? 0 : 0.17 * Math.exp(-4 * balU) * Math.cos(11 * balU) + D.spreadBp * 0.0003 * sm(balU);
+    balance.visible = balV > 0.01; balance.scale.setScalar(Math.max(sm(balV), 0.0001)); beam.rotation.z = balAngle;
+
+    // the pieces: ease between poses; a slow, small float only at the opening and the finale
+    const idle = b < 0.6 ? 1 - clamp(b / 0.6) : b > S.team - 0.4 ? clamp((b - (S.team - 0.4)) / 0.4) : 0;
     P.forEach((p, k) => {
       const a = pieceAt(k, i), c = pieceAt(k, j);
-      p.position.copy(a.p).lerp(c.p, f);
+      p.position.copy(a.p).lerp(c.p, fe);
       p.position.y += reduce ? 0 : Math.sin(time * 0.6 + k * 1.7) * 0.012 * idle;
-      const s = a.s + (c.s - a.s) * f; p.scale.setScalar(Math.max(s, 0.001)); p.visible = s > 0.01;
-      p.rotation.x = a.rx + (c.rx - a.rx) * f;
-      p.rotation.y = a.ry + (c.ry - a.ry) * f + (reduce ? 0 : Math.sin(time * 0.35 + k) * 0.05 * idle);   // a slight sway, driven by scroll otherwise
+      if (dropOn) p.position.y += (1 - bounceOut(clamp((time - DROP0 - k * 0.17) / DROP_T))) * 3.2;
+      const s = a.s + (c.s - a.s) * fe; p.scale.setScalar(Math.max(s, 0.001)); p.visible = s > 0.01;
+      p.rotation.set(a.rx + (c.rx - a.rx) * fe, a.ry + (c.ry - a.ry) * fe + (reduce ? 0 : Math.sin(time * 0.35 + k) * 0.05 * idle), a.rz + (c.rz - a.rz) * fe);
     });
+    if (dropOn) {   // a ring of dust kicks up where each piece lands
+      let po = 0;
+      for (let k = 0; k < 4; k++) {
+        const pp = clamp((time - landAt(k)) / 0.9), e = 1 - Math.pow(1 - pp, 3), base = pieceAt(k, S.problem).p;
+        if (pp > 0 && pp < 1) po = Math.max(po, (1 - pp) * 0.8);
+        for (let q = 0; q < PUFF; q++) { const n = k * PUFF + q, d = puffDir[n];
+          puffA[n * 3] = base.x + d.x * e; puffA[n * 3 + 1] = base.y - 0.12 + d.y * e; puffA[n * 3 + 2] = base.z + d.z * e; }
+      }
+      puff.material.opacity = po; puff.visible = po > 0.01; puffG.attributes.position.needsUpdate = puff.visible;
+    }
 
-    // grains: x is 1 at the recast beat and 0 a beat either side; each grain leaves on its own delay, arcs, tumbles and lands
-    const x = 1 - Math.min(1, Math.abs(b - S.recast));
-    grains.visible = x > 0.001;
-    if (grains.visible) {
+    // grains: the recast (pieces → four gram cubes) or the finale (air → the Parity mark)
+    const x = 1 - Math.min(1, Math.abs(b - S.recast)), lgo = clamp((b - (S.team - 0.95)) / 0.85);
+    grains.visible = x > 0.001 || lgo > 0.001;
+    if (x > 0.001) {
       const side = b < S.recast ? S.problem : S.pergram;
       for (let k = 0, n = 0; k < 4; k++) {
         const M0 = poseMat(k, side);
         for (let g = 0; g < NG; g++, n++) {
           const e = sm(clamp(x * 1.6 - gDel[n] * 0.6));
           gv.copy(gSrc[n]).applyMatrix4(M0).lerp(gDst[n], e); gv.y += Math.sin(Math.PI * e) * (0.35 + gDel[n] * 0.25);
-          const tumble = (1 - e); ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
-          gs.setScalar(Math.max(clamp(e * 5) * 1, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
+          const tumble = 1 - e; ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
+          gs.setScalar(Math.max(clamp(e * 5), 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
         }
+      }
+      grains.instanceMatrix.needsUpdate = true;
+    } else if (lgo > 0.001) {
+      for (let n = 0; n < NGT; n++) {
+        if (n >= logoDst.length) { gs.setScalar(0.0001); gm.compose(LOGO, gq.identity(), gs); grains.setMatrixAt(n, gm); continue; }
+        const e = sm(clamp(lgo * 1.5 - logoDel[n] * 0.5)), ang = (1 - e) * 2.6;
+        gw.copy(logoSrc[n]).sub(LOGO).applyAxisAngle(THREE.Object3D.DEFAULT_UP, ang).add(LOGO);   // spiral in
+        gv.copy(gw).lerp(logoDst[n], e);
+        const tumble = 1 - e; ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
+        gs.setScalar(Math.max(clamp(e * 4) * (logoSp / GS) * 1.05, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
       }
       grains.instanceMatrix.needsUpdate = true;
     }
 
     cols.forEach((m, k) => {
-      const h = colAt(k, i) + (colAt(k, j) - colAt(k, i)) * f;
+      const h = colAt(k, i) + (colAt(k, j) - colAt(k, i)) * fe;
       m.position.set(line[k + 1], BASE, 0); m.scale.set(1, Math.max(h, 0.0001), 1); m.visible = h > 0.005;
       const lit = k === 2 ? bump(b, S.unusual, S.unusual, 0.6) : 0; m.material.emissiveIntensity = lit * (reduce ? 0.8 : 0.75 + 0.1 * Math.sin(time * 1.4));
     });
@@ -727,12 +851,37 @@ if (renderer) {
     edge.position.set(0, BASE + D.costLine * K, 0.65); edge.scale.set(Math.max(pv, 0.0001), 1, 1); edge.visible = pv > 0.01;
     const bv = bump(b, S.unusual, S.unusual, 0.75);
     band.position.set(line[3], BASE, 0); band.scale.set(1, Math.max(bandH * sm(bv), 0.0001), 1); band.visible = bv > 0.01;
-    bandCaps.forEach(r => { r.position.set(line[3], BASE + bandH * sm(bv), 0); r.visible = bv > 0.01; });
-    const sv = bump(b, S.know, S.know, 0.7);
-    slabs.forEach((g, k) => { const e = sm(clamp(sv * 1.3 - k * 0.15)); g.scale.setScalar(Math.max(0.62 * e, 0.0001)); g.visible = e > 0.01; g.rotation.y = -0.18 + (reduce ? 0 : (b - S.know) * 0.22 * (k - 1) + Math.sin(time * 0.3 + k) * 0.015); });   // fan open with scroll
+    bandCap.position.set(line[3], BASE + bandH * sm(bv), 0); bandCap.visible = bv > 0.01;
+
+    // the bell: rises, its outline draws across, then today's dot drops onto the curve and bounces to rest
+    const bellV = bump(b, S.unusual, S.unusual, 0.8), bellU = clamp((b - (S.unusual - 0.8)) / 1.3);
+    bell.visible = bellV > 0.01; bell.scale.set(1, Math.max(sm(bellV), 0.0001), 1);
+    bellLine.geometry.setDrawRange(0, Math.round(161 * sm(clamp(bellU / 0.45))));
+    const zt = D.petal.z, drop = reduce ? 1 : bounceOut(clamp((bellU - 0.4) / 0.4));
+    zDot.position.set(bx(zt), by(zt) + 0.055 + (1 - drop) * 1.1, 0.03); zDot.visible = bellU > 0.38;
+
+    // the vault: the wheel turns, the door swings, the river of bars pours out, the plaques slide free
+    const kv = clamp((b - (S.know - 0.8)) / 0.6), open = sm(clamp((b - (S.know - 0.35)) / 0.5));
+    vault.visible = kv > 0.01 && b < S.team + 0.5; vault.scale.setScalar(Math.max(sm(kv), 0.0001));
+    wheel.rotation.z = -sm(clamp((b - (S.know - 0.7)) / 0.4)) * Math.PI * 1.5; hinge.rotation.y = -open * 1.85;
+    const ro = open * (1 - clamp((b - (S.know + 0.55)) / 0.4));
+    river.visible = ro > 0.01;
+    if (river.visible) {
+      const flow = (b - S.know) * 1.6 + time * 0.04;
+      for (let n = 0; n < NR; n++) {
+        const [s0, a0, r0, t0] = rSeed[n], s = (s0 + flow) % 1, r = 0.08 + s * 0.85 * r0, ang = a0 + s * 2.2;
+        gv.copy(VC).addScaledVector(RDIR, s * 4.4); gv.x += Math.cos(ang) * r; gv.y += Math.sin(ang) * r * 0.7;
+        ge.set(t0 * s * 3, ang, 0); gq.setFromEuler(ge);
+        gs.setScalar(Math.max(0.8 * ro * clamp(s / 0.06) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm);
+      }
+      river.instanceMatrix.needsUpdate = true;
+    }
+    const slabFade = 1 - clamp((b - (S.know + 0.55)) / 0.35);
+    slabs.forEach((g, k) => { const e = sm(clamp((open - 0.25 - k * 0.12) / 0.5)) * slabFade;
+      g.visible = e > 0.01; g.position.lerpVectors(VC, SLAB_AT[k], e); g.scale.setScalar(Math.max(0.33 * e, 0.0001)); g.rotation.y = SLAB_RY[k] * e; });
 
     // ribbon: rises with the beat, then draws left to right with the reader's scroll; a bead and a date ride the leading edge
-    const rv = bump(b, S.daily, S.daily, 0.6), dp = clamp((raw - (S.daily - 0.4)) / 0.72);
+    const rv = bump(b, S.daily, S.daily, 0.65), dp = clamp((b - (S.daily - 0.5)) / 0.95);
     ribbon.visible = rv > 0.01; ribbon.scale.y = Math.max(sm(rv), 0.0001); ribbon.position.y = (1 - ribbon.scale.y) * RB;
     let hj = 0;
     lanes.forEach((l, k) => {
@@ -759,27 +908,44 @@ if (renderer) {
       if (seen !== scanN || mo !== scanM) { scanN = seen; scanM = mo; scanL.innerHTML = `<b class="n">${seen} alert${seen === 1 ? "" : "s"}</b><small>to ${mo}</small>`; }
     }
 
-    if (!reduce) { const a = dg.attributes.position.array; for (let k = 0; k < NP; k++) { a[k * 3 + 1] += Math.sin(time * 0.3 + seed[k]) * 0.0009; a[k * 3] += Math.cos(time * 0.2 + seed[k]) * 0.0006; } dg.attributes.position.needsUpdate = true; }
-    if (!reduce) { dustPts.position.y = -b * 0.12; dustPts.rotation.y = b * 0.03; }   // dust drifts with the story
+    // dust: the cloud drifts with the story; the trail along the path shows with scroll speed
+    if (!reduce) { dustPts.position.y = -b * 0.12; dustPts.rotation.y = b * 0.03 + time * 0.004; }
+    trail.visible = trailO > 0.01; trail.material.opacity = trailO * 0.85; trail.material.size = 0.022 + trailO * 0.03;
+
     renderer.render(scene, camera);
 
+    // focus pull: soft between beats, sharp as each scene peaks (skipped once the resolution has had to drop)
+    if (dofOK) {
+      const d = Math.abs(b - Math.round(b)), want = dpr < dprMax ? 0 : 1.6 * sm(clamp((d - 0.22) / 0.28));
+      if (Math.abs(want - blurNow) > 0.05 || (want === 0 && blurNow !== 0)) { blurNow = want < 0.05 ? 0 : want; gl.style.filter = blurNow ? `blur(${blurNow.toFixed(2)}px)` : ""; }
+    }
+
     // labels follow their objects
-    const w1 = innerWidth > 760 ? Math.max(bump(b, S.problem, S.problem, 0.45), bump(b, S.pergram, S.pergram, 0.45)) : bump(b, S.pergram, S.pergram, 0.45);
+    const w1 = innerWidth > 760 ? Math.max(bump(b, S.problem, S.problem, 0.45) * (dropOn ? clamp((time - landAt(3)) / 0.4) : 1), bump(b, S.pergram, S.pergram, 0.45)) : bump(b, S.pergram, S.pergram, 0.45);
     pl.forEach((el, k) => { tmpV.copy(P[k].position); tmpV.y += 0.42 * Math.max(P[k].scale.x, 0.6); place(el, tmpV, w1, -6); });
     const wr = sm(clamp((x - 0.75) / 0.25));
     rl.forEach((el, k) => place(el, V(line[k] * 0.82, 0.12 + 1.5 * GS, 0), wr, -6));
+    place(balL, V(0, BAL_Y - 0.78, 0.3), sm(clamp((balU - 0.55) / 0.2)) * balV, 40);
     const w2 = bump(b, S.cost, S.unusual, 0.45);
     cl.forEach((el, k) => { place(el, V(line[k + 1], BASE + cols[k].scale.y + 0.08, 0), w2, -4); });
     place(costL, V(-1.15, BASE + D.costLine * K + 0.06, 0.65), bump(b, S.cost, S.unusual, 0.4) * (innerWidth > 760 ? 1 : 0.9));
-    place(bandL, V(line[3], BASE + bandH * sm(bv) + 0.14, 0), bump(b, S.unusual, S.unusual, 0.35));
+    place(bandL, V(line[3], BASE + bandH * sm(bv) + 0.14, 0), bump(b, S.unusual, S.unusual, 0.35) * (1 - clamp((bellU - 0.3) / 0.2)));
+    gw.set(bx(zt), by(zt) * bell.scale.y + 0.16, 0).add(bell.position); place(zL, gw, zDot.visible ? clamp((bellU - 0.72) / 0.12) * bellV : 0, -2);
+    tailL.forEach((el, k) => { gw.set(bx(k ? 2.3 : -2.3), by(2.3) * bell.scale.y + 0.1, 0).add(bell.position); place(el, gw, clamp((bellU - 0.4) / 0.15) * bellV * (innerWidth > 760 ? 1 : 0), 0); });
     const wh = rv > 0.6 && dp > 0.02 ? sm(clamp((rv - 0.6) / 0.4)) * (1 - clamp((dp - 0.88) / 0.08)) : 0, h2 = lanes[2];
     place(headL, tmpV.set(h2.top[headJ * 3], h2.top[headJ * 3 + 1] * ribbon.scale.y + ribbon.position.y, h2.z).clone(), wh, -12);
     laneL.forEach((el, k) => { const l = lanes[k], e = (NS - 1) * 3; place(el, V(RX1 + 0.04, (l.top[e + 1] - RB) * ribbon.scale.y + RB + 0.02, l.z), sm(clamp((rv - 0.7) / 0.3)) * clamp((dp - 0.9) / 0.1) * (innerWidth > 760 ? 1 : 0), -2); });
     place(scanL, V(sx, QY + 1.2 * quiet.scale.y, -4.2), scanH.visible ? sm(clamp((qv - 0.5) / 0.5)) : 0, -4);
 
-    // keep it smooth on slower phones: drop resolution a step if frames run long
-    ftimes.push(dt); if (ftimes.length > 50) ftimes.shift();
-    if (time - lastAdj > 2 && ftimes.length === 50) { const avg = ftimes.reduce((a, c) => a + c, 0) / 50; if (avg > 0.024 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); lastAdj = time; ftimes = []; } }
+    // adaptive resolution: hold about 60 fps by stepping down when frames run long, and back up when there is room
+    ftimes.push(dt); if (ftimes.length > 45) ftimes.shift();
+    if (moving && time - lastAdj > 2.5 && ftimes.length === 45) {
+      const avg = ftimes.reduce((a, c) => a + c, 0) / 45;
+      if (avg > 0.0205 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); drops++; }
+      else if (avg < 0.0135 && dpr < dprMax && drops < 2) dpr = Math.min(dprMax, dpr + 0.25);
+      else return;
+      renderer.setPixelRatio(dpr); resize(); lastAdj = time; ftimes = [];
+    }
   };
 }
 
@@ -787,30 +953,32 @@ if (renderer) {
 const tape = $("#tape"), tapeIn = tape.firstElementChild;
 const tapeItem = p => `<span><b>${p.sym}</b> ${p.close} <i class="${p.chg >= 0 ? "up" : "dn"}">${p.chg >= 0 ? "▲" : "▼"} ${Math.abs(p.chg).toFixed(2)}%</i> <em>${p.per_g}/g pure</em></span>`;
 tapeIn.innerHTML = (D.pieces.map(tapeItem).join("") + `<span><b>Data</b> ${D.quoteDay} · MCX Bhavcopy</span>`).repeat(2);
-let tapeX = 0, tapeV = 0, lastY = scrollY;
+let tapeX = 0, tapeV = 0, tapeW = 0, tapeOn = false;
+const measureTape = () => { tapeOn = !!tape.offsetParent; tapeW = tapeIn.scrollWidth / 2; };
+measureTape(); addEventListener("resize", measureTape); document.fonts && document.fonts.ready.then(measureTape);
 
 /* ---------- loop */
-let cur = scrollBeat(), curRaw = scrollRaw(), last = performance.now(), t0 = last, shown = -1;
+let cur = sceneB(), last = performance.now(), t0 = last, shown = -1, lastY = scrollY;
 const prog = $("#prog"), hint = $("#hint");
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (lenis) lenis.raf(now);
-  const target = scrollBeat(), traw = scrollRaw(), ease = 1 - Math.exp(-dt / (lenis ? 0.07 : 0.14));   // Lenis already eases the wheel
-  cur = reduce ? target : cur + (target - cur) * ease; curRaw = reduce ? traw : curRaw + (traw - curRaw) * ease;
+  const target = sceneB();
+  cur = reduce ? target : cur + (target - cur) * (1 - Math.exp(-dt / (lenis ? 0.09 : 0.16)));   // Lenis already eases the wheel
   if (Math.abs(target - cur) < 1e-4) cur = target;
+  vel = lenis ? lenis.velocity : (scrollY - lastY) / Math.max(dt, 1e-3) / 60; lastY = scrollY;
   const vh = innerHeight;
   cardsFrame(vh);
-  prog.style.transform = `scaleX(${(scrollY / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4)})`;
+  prog.style.transform = `scaleX(${(scrollY / Math.max(1, tops[N] + heights[N] - vh)).toFixed(4)})`;
   if (hint) hint.style.opacity = String(1 - clamp(scrollY / (vh * 0.25)));
   const k = Math.round(cur); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
-  if (!reduce && tape.offsetParent) {
-    const vel = lenis ? lenis.velocity : (scrollY - lastY) / Math.max(dt, 1e-3) / 60; lastY = scrollY;
+  if (!reduce && tapeOn && tapeW) {
     tapeV += (vel - tapeV) * (1 - Math.exp(-dt / 0.2));
     tapeX -= (28 + Math.min(Math.abs(tapeV) * 9, 900)) * dt * (tapeV < -0.5 ? -1 : 1);
-    const wHalf = tapeIn.scrollWidth / 2; if (wHalf) tapeX = ((tapeX % wHalf) - wHalf) % wHalf;
+    tapeX = ((tapeX % tapeW) - tapeW) % tapeW;
     tapeIn.style.transform = `translate3d(${tapeX.toFixed(1)}px,0,0) skewX(${clamp(-tapeV * 0.35, -10, 10).toFixed(2)}deg)`;
   }
-  frame(cur, curRaw, (now - t0) / 1000, dt);
+  frame(cur, (now - t0) / 1000, dt);
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

@@ -60,3 +60,29 @@ Motion (open-source, MIT, pinned on jsDelivr):
 ## Also noticed
 - Fixed: on 17 Oct the second daily run committed with the message "Daily data: MCX Bhavcopy through  (+ rows)".
   When MCX has no new rows, `daily_update.py` now writes `updated=false`. The workflow then skips the tests and the commit.
+
+## Scroll model and performance (19 Oct 2026)
+- **Continuous scrub.** The old model held each beat still for its first third. Now scroll maps linearly to scene time
+  (`sceneB()`), so every pixel of scroll moves something.
+  - Beats are 280vh (230svh on phones), so the pace is slower.
+  - A scene peaks when its card sits mid-screen (`LEAD = 0.25`).
+  - The camera follows a centripetal Catmull–Rom curve through the beat keys and never stops.
+- **Centrepieces.**
+  - Per gram: a beam balance swings, then settles almost level. Its tilt is the spread, exaggerated.
+  - Unusual?: GOLDPETAL's bell curve, with the ±thr tails lit as alert zones. Today's z drops onto it.
+  - How we know: a vault wheel turns and the door swings open. The rows pour out as gold bars, and the three counts slide out on plaques.
+  - Team: the recast grains forge the Parity two-bar mark (the site's logo path).
+- **Touches.**
+  - The pieces drop in on arrival, with a dust puff on landing.
+  - Dust trails along the camera path appear with scroll speed.
+  - Focus pulls blur the 3D stage up to 1.6px between beats, on laptops only, and stop once resolution has dropped.
+- **Frame rate.**
+  - Fake glass instead of transmission, which rendered the scene twice.
+  - No live backdrop blur over the canvas on cards or labels.
+  - Film grain baked into the backdrop instead of a blend layer.
+  - The dust cloud rotates as a whole instead of updating every mote on the CPU.
+  - Layout reads are batched, and beat positions are cached.
+  - Shaders are precompiled at load. The old build froze for about 1 s the first time a scene appeared.
+  - Adaptive resolution, both down and up. When nothing moves, frames render at half rate.
+  - Measured on a Mac at 1280×800, scrolling the whole intro in 600 frames: worst frame 18 ms, none over 33 ms.
+    The previous build had 3 frames over 33 ms, the worst at 1016 ms.
