@@ -120,3 +120,20 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Phones** step back less as they head into the vault, so they end up inside.
 - **Light theme:** the top bar switches to light ink and a dark pill inside the vault (`html.in-vault`).
 - **Frame rate:** a full scroll still holds 60 fps on the Mac test machine (worst frame 18 ms).
+
+## Balance, vault and interior redesign (19 Oct 2026)
+- **Balance:** a precision balance.
+  - A stepped graphite plinth with a steel trim ring, and a fluted steel column between collars.
+  - A tapered steel beam with four graphite cradles and a jewel bearing at the hub.
+  - A graduated dial (5° ticks, centre tick lit) that the needle reads as the beam settles.
+- **Vault:** a bank-vault door set in a riveted graphite wall plate, with a stepped steel frame, two hinge barrels,
+  a door with stepped concentric rings, a five-spoke wheel with knobs, and a combination dial.
+  - Sequence: the dial spins, the wheel turns, ten radial locking bolts draw back, then the door swings open.
+- **Interior:**
+  - Panelled bronze-brown walls and dark stone tiles, both as canvas textures.
+  - Two warm lamps, plus a warm fill light that rises only inside (an intensity change).
+  - Lighter, thinner fog and subtler bokeh.
+  - The walls are kept deep so the gold contrasts.
+- `resize()` ignores a zero-size viewport. A page that loaded while hidden logged a NaN bounding-sphere error.
+- **Frame rate:** a full scroll holds 60 fps once the page has settled (worst frame 18 ms on two runs).
+  The first pass straight after load can show a few slow frames while shaders finish compiling.

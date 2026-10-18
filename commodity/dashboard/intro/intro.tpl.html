@@ -549,20 +549,38 @@ if (renderer) {
   world.add(band);
   const bandCap = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); bandCap.rotation.x = Math.PI / 2; world.add(bandCap);
 
-  /* ---------- per gram: a beam balance. The four pieces ride the beam; it swings, then settles almost level */
-  const BAL_Y = -0.42, balMat = steel;
+  /* ---------- per gram: a precision balance in steel and graphite. The four pieces sit in cradles on a tapered beam;
+     it swings, then settles almost level, and the needle reads the result off a graduated dial */
+  const BAL_Y = -0.42;
+  const fluted = steel.clone(); fluted.flatShading = true;
   const balance = new THREE.Group(); balance.position.y = BAL_Y; world.add(balance);
+  const addB = (geo, mat, x, y, z, rx = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.x = rx; balance.add(m); return m; };
+  addB(new THREE.CylinderGeometry(0.52, 0.58, 0.07, 64), graphite, 0, -0.71, 0);                       // stepped plinth
+  addB(new THREE.CylinderGeometry(0.36, 0.42, 0.06, 64), graphite, 0, -0.645, 0);
+  addB(new THREE.TorusGeometry(0.545, 0.009, 8, 96), steel, 0, -0.675, 0, Math.PI / 2);                 // steel trim
+  addB(new THREE.CylinderGeometry(0.042, 0.056, 0.46, 14), fluted, 0, -0.385, 0);                       // fluted column
+  addB(new THREE.TorusGeometry(0.06, 0.014, 10, 32), steel, 0, -0.6, 0, Math.PI / 2);                   // collars
+  addB(new THREE.TorusGeometry(0.05, 0.014, 10, 32), steel, 0, -0.16, 0, Math.PI / 2);
+  addB(new THREE.ConeGeometry(0.075, 0.12, 24), steel, 0, -0.085, 0);                                    // knife-edge support
+  // the dial: a graphite arc behind the needle, ticks every 5°, the centre tick lit
+  addB(new THREE.RingGeometry(0.2, 0.3, 64, 1, Math.PI / 2 - 0.72, 1.44), graphite, 0, 0, 0.09);
+  for (let d = -40; d <= 40; d += 5) { const t = d * Math.PI / 180, long = d % 10 === 0, len = long ? 0.045 : 0.026;
+    const tk = addB(new THREE.BoxGeometry(d === 0 ? 0.008 : 0.005, len, 0.004), d === 0 ? glow : steel, Math.sin(t) * (0.285 - len / 2), Math.cos(t) * (0.285 - len / 2), 0.095); tk.rotation.z = -t; }
   const beam = new THREE.Group(); balance.add(beam);
-  beam.add(new THREE.Mesh(new RoundedBoxGeometry(3.3, 0.05, 0.24, 3, 0.02), balMat));
-  [-1.65, 1.65].forEach(xx => { const c = new THREE.Mesh(new THREE.SphereGeometry(0.045, 20, 14), balMat); c.position.x = xx; beam.add(c); });
-  const needle = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.34, 0.012), glow); needle.position.set(0, 0.2, 0.13); beam.add(needle);
-  const knife = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.14, 24), balMat); knife.position.y = -0.095; balance.add(knife);
-  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.06, 0.5, 24), graphite); post.position.y = -0.41; balance.add(post);
-  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.05, 48), graphite); foot.position.y = -0.68; balance.add(foot);
-  const scaleBack = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.31, 64, 1, Math.PI * 0.35, Math.PI * 0.3), glow); scaleBack.position.set(0, 0.06, 0.125); balance.add(scaleBack);
+  const bs = new THREE.Shape(); bs.moveTo(-1.66, -0.012); bs.lineTo(0, -0.04); bs.lineTo(1.66, -0.012); bs.lineTo(1.66, 0.012); bs.lineTo(0, 0.026); bs.lineTo(-1.66, 0.012); bs.closePath();
+  const bg = new THREE.ExtrudeGeometry(bs, { depth: 0.1, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2 }); bg.translate(0, 0, -0.05);
+  beam.add(new THREE.Mesh(bg, steel));                                                                    // the tapered beam
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.15, 32).rotateX(Math.PI / 2), steel); beam.add(hub);
+  const jewel = new THREE.Mesh(new THREE.SphereGeometry(0.024, 16, 12), glow); jewel.position.z = 0.08; beam.add(jewel);   // the bearing
+  const BEAM_X = [-1.3, -0.62, 0.62, 1.3];   // the inner cradles sit clear of the dial
+  BEAM_X.forEach(x => { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.16, 0.026, 40), graphite); c.position.set(x, 0.03, 0); beam.add(c);   // cradles
+    const r = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.006, 8, 48), steel); r.rotation.x = Math.PI / 2; r.position.set(x, 0.043, 0); beam.add(r); });
+  [-1.7, 1.7].forEach(x => { const f = new THREE.Mesh(new THREE.SphereGeometry(0.04, 20, 14), steel); f.position.x = x; beam.add(f);                     // finials
+    const c = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.07, 16).rotateZ(x > 0 ? -Math.PI / 2 : Math.PI / 2), steel); c.position.x = x + Math.sign(x) * 0.06; beam.add(c); });
+  const needle = new THREE.Mesh(new THREE.ConeGeometry(0.011, 0.27, 12), glow); needle.position.set(0, 0.15, 0.1); beam.add(needle);
   let balAngle = 0;
   const PG_S = [0.62, 0.95, 0.9, 1.7];
-  const onBeam = (k, s) => { const xk = [-1.22, -0.42, 0.42, 1.22][k], yk = 0.025 + half[k] * s, c = Math.cos(balAngle), sn = Math.sin(balAngle);
+  const onBeam = (k, s) => { const xk = BEAM_X[k], yk = 0.044 + half[k] * s, c = Math.cos(balAngle), sn = Math.sin(balAngle);
     return V(xk * c - yk * sn, BAL_Y + xk * sn + yk * c, 0); };
 
   /* ---------- unusual?: GOLDPETAL's own bell curve. The tails past ±thr are the alert zones; today's gap drops onto it */
@@ -580,19 +598,39 @@ if (renderer) {
   const zDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 16), goldMat(0xf3c257, 0.15)); bell.add(zDot);
   const bounceOut = x => { const n = 7.5625, d = 2.75; if (x < 1 / d) return n * x * x; if (x < 2 / d) return n * (x -= 1.5 / d) * x + 0.75; if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + 0.9375; return n * (x -= 2.625 / d) * x + 0.984375; };
 
-  /* ---------- how we know: a vault wheel turns, the door swings open, and the rows pour out as a river of small gold bars */
+  /* ---------- how we know: a bank-vault door set in a riveted wall plate. The dial spins, the wheel turns, ten locking
+     bolts draw back, the door swings open, and the rows pour out as a river of small gold bars */
   const VC = V(0.45, 0.6, -2.0);
   const vault = new THREE.Group(); vault.position.copy(VC); world.add(vault);
-  const darkGold = graphite;   // a steel vault, so the gold pouring out of it reads at once
-  vault.add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.08, 20, 96), darkGold));
-  const hinge = new THREE.Group(); hinge.position.x = -0.72; vault.add(hinge);   // the door turns about its left edge
-  const door = new THREE.Group(); door.position.x = 0.72; hinge.add(door);
-  const slabDoor = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.12, 64), steel); slabDoor.rotation.x = Math.PI / 2; door.add(slabDoor);
-  const wheel = new THREE.Group(); wheel.position.z = 0.09; door.add(wheel);
-  wheel.add(new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.022, 12, 48), steel));
-  for (let k = 0; k < 3; k++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.03, 0.03), darkGold); sp.rotation.z = k * Math.PI / 3; wheel.add(sp); }
-  wheel.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.06, 24).rotateX(Math.PI / 2), darkGold));
-  for (let k = 0; k < 12; k++) { const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.04, 12).rotateX(Math.PI / 2), darkGold); const a = k / 12 * Math.PI * 2; bolt.position.set(Math.cos(a) * 0.58, Math.sin(a) * 0.58, 0.07); door.add(bolt); }
+  const lathe = (pts, mat, seg = 96) => new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, h]) => new THREE.Vector2(r, h)), seg).rotateX(Math.PI / 2), mat);
+  { const sh = new THREE.Shape(); sh.moveTo(-1.25, -1.25); sh.lineTo(1.25, -1.25); sh.lineTo(1.25, 1.25); sh.lineTo(-1.25, 1.25); sh.closePath();
+    const h = new THREE.Path(); h.absarc(0, 0, 0.8, 0, Math.PI * 2, true); sh.holes.push(h);
+    const plate = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2, curveSegments: 48 }), graphite);
+    plate.position.z = -0.16; vault.add(plate);
+    for (let k = 0; k < 28; k++) { const t = k / 28 * 4, side = Math.floor(t), u = t - side, e = 1.12;   // rivets around the plate
+      const [x, y] = [[-e + 2 * e * u, -e], [e, -e + 2 * e * u], [e - 2 * e * u, e], [-e, e - 2 * e * u]][side];
+      const rv = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 8), steel); rv.position.set(x, y, -0.06); vault.add(rv); } }
+  vault.add(lathe([[0.74, -0.14], [0.74, 0.05], [0.79, 0.09], [0.9, 0.09], [0.95, 0.04], [0.98, 0.04], [0.98, -0.14]], steel));   // stepped frame
+  [0.42, -0.42].forEach(y => { const hb = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.26, 24), graphite); hb.position.set(-0.86, y, 0.08); vault.add(hb);   // hinge barrels
+    [0.14, -0.14].forEach(d => { const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.062, 0.02, 24), steel); cap.position.set(-0.86, y + d, 0.08); vault.add(cap); }); });
+  const hinge = new THREE.Group(); hinge.position.set(-0.86, 0, 0.08); vault.add(hinge);   // the door turns about its hinges
+  const door = new THREE.Group(); door.position.set(0.86, 0, -0.08); hinge.add(door);
+  door.add(lathe([[0, 0.17], [0.28, 0.17], [0.3, 0.14], [0.5, 0.14], [0.52, 0.11], [0.66, 0.11], [0.7, 0.07], [0.7, -0.09], [0, -0.09]], steel));   // stepped face
+  const dRing = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.01, 8, 96), graphite); dRing.position.z = 0.115; door.add(dRing);
+  const bolts = [];   // ten locking bolts, pushed out into the frame while locked
+  for (let k = 0; k < 10; k++) { const a = (k + 0.5) / 10 * Math.PI * 2, bl = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.2, 16), steel);
+    bl.rotation.z = a - Math.PI / 2; bl.userData.dir = V(Math.cos(a), Math.sin(a), 0); door.add(bl); bolts.push(bl); }
+  const wheel = new THREE.Group(); wheel.position.z = 0.22; door.add(wheel);
+  wheel.add(new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.018, 12, 64), steel));
+  wheel.add(new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.07, 32).rotateX(Math.PI / 2), graphite));
+  for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2, sp = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.3, 10), steel);
+    sp.rotation.z = a - Math.PI / 2; sp.position.set(Math.cos(a) * 0.15, Math.sin(a) * 0.15, 0); wheel.add(sp);
+    const kn = new THREE.Mesh(new THREE.SphereGeometry(0.03, 14, 10), graphite); kn.position.set(Math.cos(a) * 0.31, Math.sin(a) * 0.31, 0); wheel.add(kn); }
+  const dial = new THREE.Group(); dial.position.set(0, 0.42, 0.18); door.add(dial);   // the combination dial above the wheel
+  dial.add(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.08, 0.04, 40).rotateX(Math.PI / 2), graphite));
+  for (let k = 0; k < 20; k++) { const a = k / 20 * Math.PI * 2, t = new THREE.Mesh(new THREE.BoxGeometry(0.004, k % 5 ? 0.012 : 0.022, 0.004), steel);
+    t.position.set(Math.sin(a) * 0.065, Math.cos(a) * 0.065, 0.022); t.rotation.z = -a; dial.add(t); }
+  const dialMark = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.02, 0.004), glow); dialMark.position.set(0, 0.105, 0.18); door.add(dialMark);
   const NR = mobile ? 380 : 900;
   const river = new THREE.InstancedMesh(new RoundedBoxGeometry(0.1, 0.03, 0.05, 1, 0.01), g999, NR); river.frustumCulled = false; world.add(river);
   const rSeed = Array.from({ length: NR }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() - 0.5]);
@@ -616,9 +654,22 @@ if (renderer) {
   portal.position.z = -0.05; portal.renderOrder = -1; vault.add(portal);
   const RZ0 = VC.z - 0.05, RZ1 = -14.2, FLOOR = -1.3, RW = 4.8, RH = 5.6;
   const room = new THREE.Group(); room.renderOrder = 2; world.add(room);
-  const walls = new THREE.Mesh(new THREE.BoxGeometry(RW * 2, RH, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ color: 0x1b140c, roughness: 0.92, metalness: 0.1, side: THREE.BackSide })));
+  const canvasTex = (w, h, draw, rx, ry) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; return t; };
+  const wallTex = canvasTex(512, 512, (x, w, h) => {   // warm sandstone panels between pilasters, a cornice band near the top
+    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#3d2f20"); g.addColorStop(1, "#261d13"); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    for (let k = 0; k < 4; k++) { const px0 = k * 128; x.fillStyle = "rgba(255,226,170,.07)"; x.fillRect(px0 + 4, 0, 18, h); x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 + 22, 0, 3, h);
+      x.strokeStyle = "rgba(0,0,0,.22)"; x.lineWidth = 3; x.strokeRect(px0 + 38, 70, 76, h - 120); x.strokeStyle = "rgba(255,226,170,.10)"; x.strokeRect(px0 + 42, 74, 68, h - 128); }
+    x.fillStyle = "rgba(255,226,170,.14)"; x.fillRect(0, 26, w, 10); x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(0, 36, w, 4);
+    const img = x.getImageData(0, 0, w, h), d = img.data; for (let k = 0; k < d.length; k += 4) { const n = (Math.random() - 0.5) * 14; d[k] += n; d[k + 1] += n; d[k + 2] += n; } x.putImageData(img, 0, 0);
+  }, 4, 1);
+  const floorTex = canvasTex(256, 256, (x, w, h) => {   // polished two-tone stone tiles
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { x.fillStyle = (i + j) % 2 ? "#2c2116" : "#221a11"; x.fillRect(i * 128, j * 128, 128, 128); }
+    x.strokeStyle = "rgba(255,220,160,.12)"; x.lineWidth = 2; for (let k = 0; k <= 256; k += 128) { x.beginPath(); x.moveTo(k, 0); x.lineTo(k, h); x.moveTo(0, k); x.lineTo(w, k); x.stroke(); }
+  }, 6, 8);
+  const walls = new THREE.Mesh(new THREE.BoxGeometry(RW * 2, RH, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.88, metalness: 0.05, side: THREE.BackSide })));
   walls.position.set(0, FLOOR + RH / 2, (RZ0 + RZ1) / 2); room.add(walls);
-  const floorM = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ color: 0x15100a, roughness: 0.38, metalness: 0.35 })));
+  const floorM = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.32, metalness: 0.25 })));
   floorM.rotation.x = -Math.PI / 2; floorM.position.set(0, FLOOR + 0.002, (RZ0 + RZ1) / 2); room.add(floorM);
   const tGold = roomMat(new THREE.MeshStandardMaterial({ color: 0xf0c25a, metalness: 1, roughness: 0.28, envMapIntensity: 1.5 }));
   const tGoldDeep = roomMat(new THREE.MeshStandardMaterial({ color: 0xd9a441, metalness: 1, roughness: 0.34, envMapIntensity: 1.4 }));
@@ -658,8 +709,9 @@ if (renderer) {
     nug.push([V(m[0] + Math.cos(a) * r, FLOOR + 0.03, m[1] + Math.sin(a) * r), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.5, 1.4)]); }
   fill(new THREE.IcosahedronGeometry(0.04, 0), tGoldDeep, nug);
   // light: a warm lamp over the hoard, one over the forge
-  const lamp = new THREE.PointLight(0xffc977, 28, 15, 1.5); lamp.position.set(0.2, 3.2, -7.5); room.add(lamp);
-  const lamp2 = new THREE.PointLight(0xffd99a, 14, 9, 1.6); lamp2.position.set(0, 2.2, -11.2); room.add(lamp2);
+  const lamp = new THREE.PointLight(0xffd08a, 42, 18, 1.5); lamp.position.set(0.2, 3.4, -7.0); room.add(lamp);
+  const lamp2 = new THREE.PointLight(0xffe0aa, 24, 12, 1.5); lamp2.position.set(0, 2.6, -11.6); room.add(lamp2);
+  const fillL = new THREE.AmbientLight(0xffe6c0, 0); scene.add(fillL);   // a warm fill, only inside the vault (an intensity change, no shader change)
   // blur: out-of-focus bokeh discs drifting in the air, and soft shafts of light falling from above
   const bokehTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 31);
     g.addColorStop(0, "rgba(255,214,140,.5)"); g.addColorStop(0.7, "rgba(255,214,140,.45)"); g.addColorStop(0.88, "rgba(255,224,160,.6)"); g.addColorStop(1, "rgba(255,224,160,0)");
@@ -667,7 +719,7 @@ if (renderer) {
   const bokeh = [0.16, 0.32].map((size, n) => { const cnt = (mobile ? 36 : 80) / (n + 2), a = new Float32Array(cnt * 3);
     for (let k = 0; k < cnt; k++) { a[k * 3] = rnd(-RW + 0.4, RW - 0.4); a[k * 3 + 1] = rnd(FLOOR + 0.6, FLOOR + RH - 0.8); a[k * 3 + 2] = rnd(RZ1 + 0.5, RZ0 - 1.2); }
     const pts = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(a, 3)),
-      roomMat(new THREE.PointsMaterial({ size, map: bokehTex, transparent: true, opacity: 0.26, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false })));
+      roomMat(new THREE.PointsMaterial({ size, map: bokehTex, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false })));
     room.add(pts); return pts; });
   const shaftTex = (() => { const c = document.createElement("canvas"); c.width = 64; c.height = 256; const x = c.getContext("2d");
     const v = x.createLinearGradient(0, 0, 0, 256); v.addColorStop(0, "rgba(255,220,150,.9)"); v.addColorStop(1, "rgba(255,220,150,0)"); x.fillStyle = v; x.fillRect(0, 0, 64, 256);
@@ -676,7 +728,7 @@ if (renderer) {
   const shafts = [[-2.6, -6.4], [2.7, -7.6], [-1.3, -10.2], [1.6, -12.2], [0, -8.6]].map(([x, z]) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(1.5, RH), roomMat(new THREE.MeshBasicMaterial({ map: shaftTex, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide, fog: false })));
     m.position.set(x, FLOOR + RH / 2, z); m.rotation.z = rnd(-0.12, 0.12); room.add(m); return m; });
-  scene.fog = new THREE.Fog(0x0d0906, 1e4, 2e4);   // set up now so no shader changes later; it only closes in inside the vault
+  scene.fog = new THREE.Fog(0x1e160e, 1e4, 2e4);   // set up now so no shader changes later; it only closes in inside the vault
 
   /* gold dust: ambient motes; the whole cloud turns slowly instead of moving each mote on the CPU */
   const NP = mobile ? 260 : 520, dust = new Float32Array(NP * 3);
@@ -835,7 +887,8 @@ if (renderer) {
 
   /* view offset: desktop shifts the gold right of the card, phones lift it above the card */
   function resize() {
-    const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false);
+    const w = innerWidth, h = innerHeight; if (!w || !h) return;   // a hidden or zero-size frame: keep the last size rather than divide by zero
+    renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.setViewOffset(w, h, w > 760 ? -w * 0.23 : 0, w > 760 ? 0 : h * 0.27, w, h); camera.updateProjectionMatrix();
   }
@@ -895,7 +948,7 @@ if (renderer) {
     const pf = b > S.know + 0.05 && !inside ? THREE.EqualStencilFunc : THREE.AlwaysStencilFunc;   // the finale's pieces and mark live inside too
     if (pieceMats[0].stencilFunc !== pf) pieceMats.forEach(m => { m.stencilFunc = pf; });
     grainMat.stencilFunc = b > S.team - 1 ? pf : THREE.AlwaysStencilFunc;
-    const fw = clamp((b - (S.know + 0.1)) / 0.4); scene.fog.near = fw > 0 ? 3.5 + (1 - fw) * 40 : 1e4; scene.fog.far = fw > 0 ? 15 + (1 - fw) * 80 : 2e4;
+    const fw = clamp((b - (S.know + 0.1)) / 0.4); scene.fog.near = fw > 0 ? 7 + (1 - fw) * 40 : 1e4; scene.fog.far = fw > 0 ? 30 + (1 - fw) * 80 : 2e4; fillL.intensity = 0.4 * fw;
     if (room.visible) { const t = time * 0.012; bokeh.forEach((p, n) => { p.position.y = Math.sin(t * 6 + n) * 0.15; p.rotation.y = (n ? -t : t) * 0.4; });
       shafts.forEach(m => { m.rotation.y = Math.atan2(camera.position.x - m.position.x, camera.position.z - m.position.z); }); }
 
@@ -988,9 +1041,13 @@ if (renderer) {
     zDot.position.set(bx(zt), by(zt) + 0.055 + (1 - drop) * 1.1, 0.03); zDot.visible = bellU > 0.38;
 
     // the vault: the wheel turns, the door swings, the river of bars pours out, the plaques slide free
-    const kv = clamp((b - (S.know - 0.8)) / 0.6), open = sm(clamp((b - (S.know - 0.35)) / 0.5));
+    const kv = clamp((b - (S.know - 1.0)) / 0.5), open = sm(clamp((b - (S.know - 0.3)) / 0.5));
     vault.visible = kv > 0.01 && b < S.team + 0.5; vault.scale.setScalar(Math.max(sm(kv), 0.0001));
-    wheel.rotation.z = -sm(clamp((b - (S.know - 0.7)) / 0.4)) * Math.PI * 1.5; hinge.rotation.y = -open * 1.85;
+    dial.rotation.z = sm(clamp((b - (S.know - 0.85)) / 0.25)) * Math.PI * 3;
+    wheel.rotation.z = -sm(clamp((b - (S.know - 0.65)) / 0.3)) * Math.PI * 1.5;
+    const unlock = sm(clamp((b - (S.know - 0.5)) / 0.18));
+    bolts.forEach(bl => bl.position.copy(bl.userData.dir).multiplyScalar(0.62 + 0.13 * (1 - unlock)));
+    hinge.rotation.y = -open * 1.85;
     const ro = open * (1 - clamp((b - (S.know + 0.55)) / 0.4));
     river.visible = ro > 0.01;
     if (river.visible) {
