@@ -295,6 +295,8 @@ html.lenis,html.lenis body{height:auto}
 <script type="module">
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 const D = {"pieces": [{"sym": "GOLDM", "kind": "100 g bar", "purity": "995", "rs_per_g": 14716.1, "per_g": "₹14,716", "close": "₹1,46,425", "per": "10 g", "pure": "9.95 g", "chg": 0.18}, {"sym": "GOLDTEN", "kind": "10 g bar", "purity": "999", "rs_per_g": 14696.6, "per_g": "₹14,697", "close": "₹1,46,819", "per": "10 g", "pure": "9.99 g", "chg": 0.2}, {"sym": "GOLDGUINEA", "kind": "8 g coin", "purity": "999", "rs_per_g": 14765.9, "per_g": "₹14,766", "close": "₹1,18,009", "per": "8 g", "pure": "7.992 g", "chg": 0.16}, {"sym": "GOLDPETAL", "kind": "1 g", "purity": "999", "rs_per_g": 14769.8, "per_g": "₹14,770", "close": "₹14,755", "per": "1 g", "pure": "0.999 g", "chg": 0.19}], "quoteDay": "16 Oct 2026", "spreadBp": 50, "gaps": [{"sym": "GOLDTEN", "gap": 13.1, "z": -0.2, "sd": 66.2}, {"sym": "GOLDGUINEA", "gap": 30.1, "z": -0.33, "sd": 90.8}, {"sym": "GOLDPETAL", "gap": 50.7, "z": 0.33, "sd": 151.8}], "costLine": 47.6, "roundTrip": 23.8, "thr": 1.5, "over": ["GOLDPETAL"], "signalToday": [], "rows": "55,697", "contracts": 711, "first": "20 Nov 2003", "years": 23, "tests": "10,357", "sealed": 3, "bootNet": "₹42,834", "bootLo": "−₹54,534", "bootHi": "₹1,42,962", "zeroInside": true, "series": {"dates": ["2023-10-12", "2023-10-17", "2023-10-20", "2023-10-25", "2023-10-30", "2023-11-02", "2023-11-07", "2023-11-10", "2023-11-14", "2023-11-17", "2023-11-22", "2023-11-27", "2023-11-30", "2023-12-05", "2023-12-08", "2023-12-13", "2023-12-18", "2023-12-21", "2023-12-27", "2024-01-01", "2024-01-04", "2024-01-09", "2024-01-12", "2024-01-17", "2024-01-22", "2024-01-25", "2024-01-31", "2024-02-05", "2024-02-08", "2024-02-13", "2024-02-16", "2024-02-21", "2024-02-26", "2024-02-29", "2024-03-05", "2024-03-08", "2024-03-13", "2024-03-18", "2024-03-21", "2024-03-26", "2024-04-01", "2024-04-04", "2024-04-09", "2024-04-12", "2024-04-17", "2024-04-22", "2024-04-25", "2024-04-30", "2024-05-03", "2024-05-08", "2024-05-13", "2024-05-16", "2024-05-21", "2024-05-24", "2024-05-29", "2024-06-03", "2024-06-06", "2024-06-11", "2024-06-14", "2024-06-19", "2024-06-24", "2024-06-27", "2024-07-02", "2024-07-05", "2024-07-10", "2024-07-15", "2024-07-18", "2024-07-23", "2024-07-26", "2024-07-31", "2024-08-05", "2024-08-08", "2024-08-13", "2024-08-19", "2024-08-22", "2024-08-27", "2024-08-30", "2024-09-04", "2024-09-09", "2024-09-12", "2024-09-17", "2024-09-20", "2024-09-25", "2024-09-30", "2024-10-04", "2024-10-09", "2024-10-14", "2024-10-17", "2024-10-22", "2024-10-25", "2024-10-30", "2024-11-04", "2024-11-07", "2024-11-12", "2024-11-15", "2024-11-20", "2024-11-25", "2024-11-28", "2024-12-03", "2024-12-06", "2024-12-11", "2024-12-16", "2024-12-19", "2024-12-24", "2025-01-03", "2025-01-08", "2025-01-13", "2025-01-16", "2025-01-21", "2025-01-24", "2025-01-29", "2025-02-01", "2025-02-05", "2025-02-10", "2025-02-13", "2025-02-18", "2025-02-21", "2025-02-26", "2025-03-03", "2025-03-06", "2025-03-11", "2025-03-14", "2025-03-19", "2025-03-24", "2025-03-27", "2025-04-01", "2025-04-04", "2025-04-09", "2025-04-14", "2025-04-17", "2025-04-23", "2025-04-28", "2025-05-01", "2025-05-06", "2025-05-09", "2025-05-14", "2025-05-19", "2025-05-22", "2025-05-27", "2025-05-30", "2025-06-04", "2025-06-09", "2025-06-12", "2025-06-17", "2025-06-20", "2025-06-25", "2025-06-30", "2025-07-03", "2025-07-08", "2025-07-11", "2025-07-16", "2025-07-21", "2025-07-24", "2025-07-29", "2025-08-01", "2025-08-06", "2025-08-11", "2025-08-14", "2025-08-20", "2025-08-25", "2025-08-28", "2025-09-02", "2025-09-05", "2025-09-10", "2025-09-15", "2025-09-18", "2025-09-23", "2025-09-26", "2025-10-01", "2025-10-07", "2025-10-10", "2025-10-15", "2025-10-20", "2025-10-23", "2025-10-28", "2025-10-31", "2025-11-05", "2025-11-10", "2025-11-13", "2025-11-18", "2025-11-21", "2025-11-26", "2025-12-01", "2025-12-04", "2025-12-09", "2025-12-12", "2025-12-17", "2025-12-22", "2025-12-26", "2025-12-31", "2026-01-05", "2026-01-08", "2026-01-13", "2026-01-16", "2026-01-21", "2026-01-27", "2026-01-30", "2026-02-03", "2026-02-06", "2026-02-11", "2026-02-16", "2026-02-19", "2026-02-24", "2026-02-27", "2026-03-04", "2026-03-09", "2026-03-12", "2026-03-17", "2026-03-20", "2026-03-25", "2026-03-30", "2026-04-02", "2026-04-08", "2026-04-13", "2026-04-16", "2026-04-21", "2026-04-24", "2026-04-29", "2026-05-04", "2026-05-07", "2026-05-12", "2026-05-15", "2026-05-20", "2026-05-25", "2026-05-28", "2026-06-02", "2026-06-05", "2026-06-10", "2026-06-15", "2026-06-18", "2026-06-23", "2026-06-26", "2026-07-01", "2026-07-06", "2026-07-09", "2026-07-14", "2026-07-17", "2026-07-22", "2026-07-27", "2026-07-30", "2026-08-04", "2026-08-07", "2026-08-12", "2026-08-17", "2026-08-20", "2026-08-25", "2026-08-28", "2026-09-02", "2026-09-07", "2026-09-10", "2026-09-15", "2026-09-18", "2026-09-23", "2026-09-28", "2026-10-01", "2026-10-07", "2026-10-12", "2026-10-15", "2026-10-16"], "GOLDTEN": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 12.5, 12.2, 8.9, 15.9, 5.1, 6.4, 12.9, 6.0, 7.4, 5.6, 6.0, 5.0, 2.2, 7.1, 8.9, 4.1, 4.9, 7.7, 5.3, 9.0, 9.1, 3.8, 5.6, 8.3, 6.6, 3.4, 2.8, 13.1, 17.2, 13.1, 11.5, 11.4, 2.0, 9.0, 8.3, 15.3, 19.9, 10.4, 19.1, 20.0, 17.5, 19.1, 11.0, 12.4, 11.7, 6.8, 7.5, 14.2, 9.7, 7.8, 9.8, 5.7, 8.9, 6.8, 16.9, 23.2, 24.4, 75.9, 70.6, 56.0, 44.6, 39.9, 270.6, 148.1, 598.4, 250.3, 315.3, 178.0, 170.2, 101.8, 29.7, 34.4, 40.1, 33.7, 21.1, 15.7, 24.1, 34.6, 26.7, 22.9, 31.1, 32.6, 37.6, 39.1, 45.1, 35.6, 26.5, 25.1, 28.0, 29.0, 39.4, 44.7, 42.7, 37.5, 35.8, 32.8, 35.2, 37.6, 32.9, 27.7, 19.0, 22.3, 24.4, 28.1, 30.6, 53.8, 46.3, 45.9, 39.5, 46.5, 45.6, 47.6, 46.4, 51.1, 40.6, 39.1, 37.1, 38.3, 37.6, 39.5, 30.0, 23.2, 17.3, 16.6, 20.5, 16.4, 13.1], "GOLDGUINEA": [null, null, null, null, null, null, 56.7, 89.9, 71.0, 44.9, 41.1, 22.5, 55.3, 37.3, 87.0, 97.9, 20.3, 12.6, 44.2, 11.0, 26.6, 30.8, 44.2, 78.6, 25.3, 46.8, 28.9, 55.7, 40.7, 47.2, 46.8, 38.5, 77.3, 55.4, 124.0, 266.3, 194.6, 117.7, 116.6, 60.0, 75.6, 54.9, 22.2, 67.0, 68.4, 53.2, 11.9, 56.0, 28.2, 25.8, 56.3, 36.6, 16.6, 76.4, 80.8, 106.0, 93.9, 160.0, 182.8, 74.0, 82.3, 96.5, 63.7, 17.3, 14.9, 8.5, 17.0, 181.2, 98.9, 67.6, 30.7, 41.3, 8.0, 26.0, 40.9, 24.5, 14.5, 22.4, 27.5, 6.4, 36.4, 47.2, 12.9, 24.1, 11.5, 33.5, 16.3, 29.2, 13.3, 22.1, 20.1, 26.4, 107.7, 94.3, 101.3, 41.5, 29.6, 31.8, 14.3, 15.6, 43.1, 31.6, 39.6, 39.4, 24.2, 17.8, 30.5, 37.9, 24.4, 38.1, 34.2, 31.0, 35.8, 27.3, 35.6, 71.5, 68.7, 58.6, 85.3, 62.5, 64.6, 15.1, 70.4, 39.2, 17.9, 67.3, 67.1, 52.0, 129.2, 65.3, 53.0, 46.0, 30.8, 62.0, 59.9, 28.8, 48.2, 70.9, 90.4, 68.1, 77.2, 51.6, 54.9, 63.5, 42.8, 19.6, 15.6, 47.2, 38.6, 58.0, 62.5, 69.0, 89.1, 39.2, 45.2, 68.9, 54.0, 28.6, 20.2, 57.2, 72.4, 64.8, 62.3, 66.6, 76.0, 51.2, 60.9, 19.7, 21.3, 9.1, 51.7, 34.2, 32.4, 33.6, 22.3, 19.1, 46.0, 30.8, 16.1, 61.8, 72.8, 24.4, 31.5, 17.8, 39.5, 47.1, 52.4, 55.7, 95.1, 286.8, 234.9, 167.5, 104.4, 100.1, 565.4, 418.3, 620.1, 353.7, 364.8, 271.0, 274.3, 265.8, 141.9, 68.4, 180.5, 164.2, 118.9, 124.8, 106.0, 105.1, 86.8, 58.2, 45.6, 50.4, 66.1, 50.9, 35.6, 45.7, 37.7, 39.7, 61.0, 43.0, 77.9, 57.8, 77.1, 66.6, 52.1, 37.8, 41.7, 55.2, 20.3, 67.6, 29.7, 37.4, 34.0, 27.8, 27.8, 71.3, 66.4, 78.3, 61.9, 95.1, 77.3, 71.6, 78.0, 80.2, 73.1, 65.8, 67.3, 74.2, 76.0, 88.1, 71.9, 57.9, 42.6, 42.1, 52.8, 28.7, 30.1], "GOLDPETAL": [null, null, null, null, null, null, 30.5, 37.2, 25.1, 62.9, 94.6, 104.2, 116.8, 125.1, 89.5, 7.9, 62.2, 93.6, 104.6, 76.3, 65.9, 41.2, 46.8, 58.4, 74.7, 113.2, 67.7, 85.5, 75.0, 54.2, 30.6, 24.7, 69.1, 75.7, 99.8, 100.3, 105.6, 78.9, 85.1, 76.4, 120.3, 125.4, 30.1, 55.3, 92.6, 73.9, 69.7, 59.9, 44.8, 24.5, 55.5, 55.3, 59.6, 55.4, 49.1, 68.0, 45.4, 85.2, 108.5, 65.6, 61.0, 76.5, 49.6, 23.5, 14.5, 44.8, 58.4, 107.4, 34.7, 26.2, 45.4, 40.5, 43.1, 84.3, 57.9, 145.1, 76.3, 47.7, 61.9, 81.1, 82.9, 91.1, 128.7, 41.7, 36.7, 10.9, 37.9, 64.5, 63.2, 26.8, 30.4, 38.9, 185.2, 294.2, 299.9, 258.8, 219.8, 204.2, 175.2, 172.7, 126.8, 173.8, 195.4, 182.3, 109.7, 86.6, 41.2, 43.4, 58.0, 61.7, 70.2, 38.0, 51.1, 43.1, 139.9, 229.0, 245.8, 276.8, 301.9, 282.9, 282.5, 269.1, 289.1, 294.8, 268.1, 195.2, 288.1, 284.6, 138.5, 182.8, 203.5, 187.9, 198.1, 189.0, 154.8, 204.5, 204.2, 124.1, 150.6, 154.3, 110.5, 153.1, 162.8, 138.5, 145.3, 175.7, 193.3, 166.8, 170.3, 167.2, 146.6, 140.2, 132.8, 149.8, 143.5, 89.4, 118.2, 130.2, 142.7, 122.9, 90.0, 84.7, 90.9, 87.7, 89.9, 102.3, 106.1, 109.5, 119.8, 111.5, 149.6, 141.1, 189.6, 157.0, 138.0, 143.3, 170.3, 158.8, 144.4, 186.6, 183.1, 148.2, 138.5, 149.6, 165.9, 178.1, 172.4, 178.5, 171.7, 320.2, 339.8, 261.9, 212.7, 233.0, 692.4, 536.9, 800.9, 428.8, 429.7, 375.3, 415.2, 356.3, 296.5, 254.6, 316.0, 311.3, 268.2, 262.0, 250.7, 265.3, 111.1, 68.7, 107.3, 88.9, 81.4, 112.1, 102.3, 98.8, 112.3, 105.9, 80.1, 85.4, 71.1, 53.6, 36.7, 62.1, 78.6, 82.4, 63.6, 56.7, 71.4, 78.0, 65.0, 53.5, 60.3, 64.5, 70.5, 63.8, 42.9, 17.7, 41.4, 16.5, 21.9, 24.5, 19.0, 15.1, 21.4, 20.6, 12.4, 17.3, 4.7, 9.7, 18.3, 39.1, 43.2, 43.9, 47.2, 57.0, 50.7]}, "seriesFrom": "10 Oct 2023", "petalPeak": 801, "petalMedian": 78, "alerts": [{"sym": "GOLDGUINEA", "start": "2023-11-07", "days": 2, "bp": 96.9}, {"sym": "GOLDGUINEA", "start": "2023-11-10", "days": 2, "bp": 129.5}, {"sym": "GOLDPETAL", "start": "2023-11-22", "days": 2, "bp": -186.5}, {"sym": "GOLDPETAL", "start": "2023-11-28", "days": 4, "bp": -216.2}, {"sym": "GOLDGUINEA", "start": "2023-12-08", "days": 3, "bp": 143.9}, {"sym": "GOLDPETAL", "start": "2023-12-21", "days": 1, "bp": -212.9}, {"sym": "GOLDPETAL", "start": "2023-12-27", "days": 1, "bp": -227.7}, {"sym": "GOLDGUINEA", "start": "2024-01-17", "days": 1, "bp": 145.1}, {"sym": "GOLDPETAL", "start": "2024-01-23", "days": 1, "bp": -246.6}, {"sym": "GOLDPETAL", "start": "2024-02-01", "days": 1, "bp": -222.2}, {"sym": "GOLDGUINEA", "start": "2024-02-23", "days": 2, "bp": -11.2}, {"sym": "GOLDPETAL", "start": "2024-03-01", "days": 1, "bp": -243.6}, {"sym": "GOLDGUINEA", "start": "2024-03-04", "days": 8, "bp": -49.4}, {"sym": "GOLDPETAL", "start": "2024-03-06", "days": 1, "bp": -228.7}, {"sym": "GOLDPETAL", "start": "2024-03-08", "days": 2, "bp": -248.1}, {"sym": "GOLDGUINEA", "start": "2024-03-18", "days": 3, "bp": -69.2}, {"sym": "GOLDPETAL", "start": "2024-03-19", "days": 1, "bp": -238.0}, {"sym": "GOLDPETAL", "start": "2024-03-28", "days": 4, "bp": -275.1}, {"sym": "GOLDPETAL", "start": "2024-04-17", "days": 1, "bp": -67.1}, {"sym": "GOLDGUINEA", "start": "2024-05-31", "days": 3, "bp": 155.4}, {"sym": "GOLDPETAL", "start": "2024-06-07", "days": 1, "bp": -69.7}, {"sym": "GOLDGUINEA", "start": "2024-06-07", "days": 6, "bp": 191.8}, {"sym": "GOLDPETAL", "start": "2024-06-13", "days": 1, "bp": -44.2}, {"sym": "GOLDGUINEA", "start": "2024-06-26", "days": 1, "bp": 155.6}, {"sym": "GOLDGUINEA", "start": "2024-07-23", "days": 2, "bp": 242.6}, {"sym": "GOLDPETAL", "start": "2024-07-23", "days": 1, "bp": -41.0}, {"sym": "GOLDPETAL", "start": "2024-08-16", "days": 1, "bp": -230.1}, {"sym": "GOLDPETAL", "start": "2024-08-23", "days": 1, "bp": -291.9}, {"sym": "GOLDPETAL", "start": "2024-09-13", "days": 1, "bp": -233.0}, {"sym": "GOLDPETAL", "start": "2024-09-20", "days": 3, "bp": -242.3}, {"sym": "GOLDPETAL", "start": "2024-11-06", "days": 12, "bp": 32.1}, {"sym": "GOLDGUINEA", "start": "2024-11-06", "days": 1, "bp": 174.1}, {"sym": "GOLDGUINEA", "start": "2024-11-11", "days": 5, "bp": 161.3}, {"sym": "GOLDPETAL", "start": "2024-11-25", "days": 11, "bp": 76.4}, {"sym": "GOLDPETAL", "start": "2024-12-13", "days": 7, "bp": 19.3}, {"sym": "GOLDPETAL", "start": "2025-02-13", "days": 40, "bp": 12.4}, {"sym": "GOLDGUINEA", "start": "2025-02-28", "days": 1, "bp": 154.1}, {"sym": "GOLDGUINEA", "start": "2025-04-10", "days": 1, "bp": -58.6}, {"sym": "GOLDPETAL", "start": "2025-04-17", "days": 1, "bp": 83.1}, {"sym": "GOLDPETAL", "start": "2025-04-22", "days": 2, "bp": 104.5}, {"sym": "GOLDPETAL", "start": "2025-04-25", "days": 1, "bp": 90.4}, {"sym": "GOLDPETAL", "start": "2025-04-29", "days": 4, "bp": 68.2}, {"sym": "GOLDPETAL", "start": "2025-05-12", "days": 6, "bp": 105.3}, {"sym": "GOLDGUINEA", "start": "2025-05-23", "days": 1, "bp": -23.1}, {"sym": "GOLDPETAL", "start": "2025-06-24", "days": 1, "bp": 93.1}, {"sym": "GOLDPETAL", "start": "2025-06-27", "days": 2, "bp": 111.9}, {"sym": "GOLDGUINEA", "start": "2025-07-22", "days": 1, "bp": -25.4}, {"sym": "GOLDPETAL", "start": "2025-10-17", "days": 1, "bp": 128.0}, {"sym": "GOLDPETAL", "start": "2025-11-14", "days": 3, "bp": 119.4}, {"sym": "GOLDPETAL", "start": "2025-11-20", "days": 1, "bp": 128.0}, {"sym": "GOLDPETAL", "start": "2025-12-10", "days": 1, "bp": 126.7}, {"sym": "GOLDTEN", "start": "2025-12-19", "days": 1, "bp": 15.7}, {"sym": "GOLDPETAL", "start": "2025-12-19", "days": 1, "bp": 129.0}, {"sym": "GOLDTEN", "start": "2025-12-26", "days": 10, "bp": 17.1}, {"sym": "GOLDGUINEA", "start": "2025-12-26", "days": 11, "bp": 157.4}, {"sym": "GOLDPETAL", "start": "2025-12-29", "days": 10, "bp": 195.6}, {"sym": "GOLDTEN", "start": "2026-01-12", "days": 24, "bp": 40.5}, {"sym": "GOLDPETAL", "start": "2026-01-13", "days": 29, "bp": 170.2}, {"sym": "GOLDGUINEA", "start": "2026-01-14", "days": 27, "bp": 166.8}, {"sym": "GOLDPETAL", "start": "2026-02-24", "days": 1, "bp": 220.0}, {"sym": "GOLDPETAL", "start": "2026-02-26", "days": 1, "bp": 234.8}, {"sym": "GOLDPETAL", "start": "2026-03-02", "days": 6, "bp": 251.7}, {"sym": "GOLDGUINEA", "start": "2026-03-03", "days": 3, "bp": 264.4}, {"sym": "GOLDPETAL", "start": "2026-03-11", "days": 4, "bp": 230.4}, {"sym": "GOLDPETAL", "start": "2026-03-18", "days": 1, "bp": 237.9}, {"sym": "GOLDPETAL", "start": "2026-03-23", "days": 1, "bp": 253.7}], "alertCount": 66, "alertDays": "295", "allDays": "1,858", "alertShare": 16, "closedAlert": 50, "closedNormal": 53, "alertsPerMonth": "1.8", "seriesYears": 3, "petal": {"gap": 50.7, "z": 0.33, "band": 227.7}};
 const $ = s => document.querySelector(s);
@@ -370,10 +372,10 @@ const LEAD = 0.25;
 function scrollRaw() {   // section index plus the fraction scrolled through it
   const y = scrollY; let i = 0;
   while (i < N && y >= tops[i + 1]) i++;
-  return i + clamp((y - tops[i]) / heights[i]);
+  return heights[i] > 0 ? i + clamp((y - tops[i]) / heights[i]) : i;   // a hidden, zero-size page measures 0: never divide by it
 }
 function sceneB() {      // the first stretch eases in at half speed, so even the first pixel of scroll moves something
-  const r = scrollRaw();
+  const r = scrollRaw(); if (!Number.isFinite(r)) return 0;
   return clamp(r < 2 * LEAD ? r / 2 : r - LEAD, 0, N);
 }
 
@@ -499,7 +501,7 @@ if (renderer) {
 
   /* materials. The glass is faked (clearcoat reflections, see-through tint): real transmission renders the scene twice. */
   const goldMat = (c, r = 0.16) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.7, clearcoatRoughness: 0.08, envMapIntensity: 1.25 });
-  const g995 = goldMat(0xe8bb6a, 0.24), g999 = goldMat(0xffcd5c, 0.14);   // 995 a shade paler than 999
+  const g995 = goldMat(0xd6a24c, 0.28), g999 = goldMat(0xffcd5c, 0.14);   // 995 a shade paler than 999
   const p995 = g995.clone(), p999 = g999.clone();   // the four pieces get their own copies: at the finale they sit inside the vault
   const glass = () => new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, metalness: 0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06,
     envMapIntensity: 1.6, transparent: true, opacity: LIGHT ? 0.45 : 0.16, depthWrite: false });
@@ -671,13 +673,13 @@ if (renderer) {
   for (let k = 0; k < 20; k++) { const a = k / 20 * Math.PI * 2, t = new THREE.Mesh(new THREE.BoxGeometry(0.004, k % 5 ? 0.012 : 0.022, 0.004), steel);
     t.position.set(Math.sin(a) * 0.065, Math.cos(a) * 0.065, 0.022); t.rotation.z = -a; dial.add(t); }
   const dialMark = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.02, 0.004), glow); dialMark.position.set(0, 0.105, 0.18); door.add(dialMark);
-  const NR = mobile ? 380 : 900;
+  const NR = mobile ? 180 : 380;
   const river = new THREE.InstancedMesh(new RoundedBoxGeometry(0.1, 0.03, 0.05, 1, 0.01), g999, NR); river.frustumCulled = false; world.add(river);
   const rSeed = Array.from({ length: NR }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() - 0.5]);
-  const NRC = mobile ? 220 : 520;   // coins tumbling in the river with the bars
+  const NRC = mobile ? 140 : 300;   // coins tumbling in the river with the bars
   const riverC = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.06, 0.013, 16), g999, NRC); riverC.frustumCulled = false; world.add(riverC);
   const rcSeed = Array.from({ length: NRC }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() * 6.283, 3 + Math.random() * 5]);
-  const RDIR = V(-0.3, -0.22, 1).normalize();   // the river spills forward, down and to the left
+  const RDIR = V(0.28, -0.2, 1).normalize();   // the river spills forward and to the right, away from the open door
 
   /* ---------- the treasure room behind the vault door. From outside it is seen only through the open doorway (a stencil
      portal); once the camera flies through, it surrounds you, and the finale's forge happens inside it. */
@@ -739,98 +741,52 @@ if (renderer) {
     const ry = rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry), y0 = FLOOR + dH(cx, cz) - 0.05;
     for (let L = 0; L < 5; L++) for (let i = 0; i < 7 - L; i++) for (let j = 0; j < 4 - Math.min(L, 3); j++) {
       const lx = (i - (6 - L) / 2) * 0.36, lz = (j - (3 - Math.min(L, 3)) / 2) * 0.18;
-      bars.push([V(cx + lx * c + lz * s, y0 + L * 0.1, cz - lx * s + lz * c), 0, ry + rnd(-0.04, 0.04), 0]);
+      bars.push([V(cx + lx * c + lz * s, y0 + L * 0.1, cz - lx * s + lz * c), 0, ry, 0]);
     }
   });
   // stray bars half-sunk in the slopes
   for (let k = 0; k < (mobile ? 40 : 110); k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2); if (dH(x, z) < 0.12 || (x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.5) continue; bars.push([onD(x, z, -0.02), rnd(-0.4, 0.4), rnd(0, 6.28), rnd(-0.4, 0.4)]); }
   fill(barGeo, tGold, bars);
-  // coins packed over the slopes (more where the gold is deeper), a scatter in the aisle, and standing towers
-  const coinGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), coins = [];
+  // coins packed over the slopes (more where the gold is deeper) and a scatter in the aisle
+  const coinGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), coins = [], taken = new Set();
   for (let tries = 0, NC = mobile ? 1600 : 4200; coins.length < NC && tries < NC * 8; tries++) {
     const x = rnd(-RW + 0.3, RW - 0.3), z = rnd(RZ1 + 0.3, RZ0 - 0.3), h = dH(x, z);
     if (h < 0.03 ? Math.random() > 0.04 : Math.random() > Math.min(1, h * 2.5 + 0.2)) continue;
     if ((x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.36) continue;   // Pari's footing stays clear
-    coins.push([V(x, FLOOR + h + 0.008, z), rnd(-0.55, 0.55), rnd(0, 6.28), rnd(-0.55, 0.55)]); }
+    const key = Math.round(x / 0.13) + "," + Math.round(z / 0.13); if (taken.has(key)) continue; taken.add(key);   // one coin per cell: no coin passes through another
+    coins.push([V(x, FLOOR + h + 0.009, z), rnd(-0.18, 0.18), rnd(0, 6.28), rnd(-0.18, 0.18)]); }
   fill(coinGeo, tGold, coins);
-  const towers = []; for (let k = 0; k < (mobile ? 30 : 80); k++) { const side = k % 2 ? 1 : -1, x = side * rnd(1.3, 3.2), z = rnd(-4.5, -13), n = 5 + Math.floor(Math.random() * 16), b0 = FLOOR + dH(x, z) - 0.02;
-    for (let q = 0; q < n; q++) towers.push([V(x + rnd(-0.006, 0.006), b0 + q * 0.017, z), 0, Math.random() * 6.28, 0]); }
-  fill(coinGeo, tGoldDeep, towers);
-  // chalices, urns, orbs, shields and nuggets on the piles
-  const chalice = new THREE.LatheGeometry([[0, 0], [0.11, 0], [0.11, 0.015], [0.03, 0.04], [0.025, 0.16], [0.05, 0.19], [0.11, 0.26], [0.13, 0.36], [0.12, 0.36], [0.1, 0.27], [0, 0.22]].map(([x, y]) => new THREE.Vector2(x, y)), 24);
-  const urn = new THREE.LatheGeometry([[0, 0], [0.09, 0], [0.1, 0.02], [0.07, 0.05], [0.16, 0.18], [0.17, 0.27], [0.11, 0.4], [0.07, 0.46], [0.1, 0.5], [0.09, 0.51], [0, 0.48]].map(([x, y]) => new THREE.Vector2(x, y)), 28);
-  const tops = MOUNDS.slice(1).map(([cx, cz]) => [cx, cz]);   // not on Pari's peak
-  fill(chalice, tGoldDeep, tops.flatMap(([cx, cz]) => [[onD(cx + rnd(-0.25, 0.25), cz + rnd(-0.25, 0.25), -0.03), rnd(-0.2, 0.2), rnd(0, 6), rnd(-0.2, 0.2), rnd(1.1, 1.6)]]));
-  fill(urn, tGold, tops.slice(0, mobile ? 6 : 12).map(([cx, cz]) => { const a = rnd(0, 6.28), r = rnd(0.5, 0.8); return [onD(cx + Math.cos(a) * r, cz + Math.sin(a) * r, -0.04), rnd(-0.15, 0.15), rnd(0, 6), rnd(-0.15, 0.15), rnd(0.9, 1.3)]; }));
-  fill(new THREE.SphereGeometry(0.11, 24, 16), tGold, tops.map(([cx, cz]) => [onD(cx + rnd(-0.45, 0.45), cz + rnd(-0.45, 0.45), 0.04), 0, 0, 0, rnd(0.8, 1.3)]));
-  const shieldG = new THREE.CylinderGeometry(0.3, 0.3, 0.03, 40); shieldG.rotateX(Math.PI / 2);
-  fill(shieldG, tGoldDeep, [[-3.9, -6.0], [3.9, -7.0], [-3.8, -11.0], [3.85, -12.2], [-2.0, -13.6], [2.4, -13.6], [-4.0, -8.3], [4.0, -9.6]].map(([x, z]) => [onD(x, z, 0.18), -0.35, x < 0 ? 1.2 : -1.2, rnd(-0.2, 0.2), rnd(0.8, 1.15)]));
-  const nug = []; for (let k = 0; k < (mobile ? 160 : 420); k++) { const x = rnd(-RW + 0.4, RW - 0.4), z = rnd(RZ1 + 0.4, -3); if (dH(x, z) < 0.05 || (x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.36) continue;
-    nug.push([onD(x, z, 0.01), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.5, 1.5)]); }
-  fill(new THREE.IcosahedronGeometry(0.04, 0), tGoldDeep, nug);
-  // jewels: rubies, emeralds, sapphires, amethysts and diamonds among the coins
-  const gems = []; for (let k = 0; k < (mobile ? 90 : 240); k++) { const x = rnd(-RW + 0.5, RW - 0.5), z = rnd(RZ1 + 0.5, -3.5); if (dH(x, z) < 0.08 || (x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.36) continue; gems.push([onD(x, z, 0.02), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.7, 1.4)]); }
-  const gemM = roomMat(new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.1, roughness: 0.08, envMapIntensity: 2.2 }));
-  const gemIM = fill(new THREE.OctahedronGeometry(0.035, 0), gemM, gems), GEMC = [0xd0213b, 0x1e9e5a, 0x2557d6, 0x8a3bd1, 0xe8f4ff].map(c => new THREE.Color(c));
-  gems.forEach((_, n) => gemIM.setColorAt(n, GEMC[n % GEMC.length]));
-  // crowns, set with jewels
-  const crownAt = mobile ? [[-2.6, -11.6], [2.7, -12.2], [-2.7, -6.5]] : [[-2.6, -11.6], [2.7, -12.2], [-2.7, -6.5], [2.8, -7.2], [0.3, -13.4], [-3.6, -8.9]];
-  const crownGold = roomMat(tGold.clone()); crownGold.side = THREE.DoubleSide;
-  const redGem = roomMat(new THREE.MeshStandardMaterial({ color: 0xc81e3a, metalness: 0.1, roughness: 0.1, envMapIntensity: 2 }));
-  crownAt.forEach(([x, z]) => { const cr = new THREE.Group(); cr.position.copy(onD(x + rnd(-0.2, 0.2), z + rnd(-0.2, 0.2), 0.02)); cr.rotation.set(rnd(-0.25, 0.25), rnd(0, 6), rnd(-0.25, 0.25)); room.add(cr);
-    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.14, 0.07, 32, 1, true), crownGold); band.position.y = 0.035; cr.add(band);
-    for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283, sp = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.09, 8), tGold); sp.position.set(Math.cos(a) * 0.145, 0.11, Math.sin(a) * 0.145); cr.add(sp);
-      const gm2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), k % 2 ? redGem : gemM); gm2.position.set(Math.cos(a + 0.39) * 0.152, 0.04, Math.sin(a + 0.39) * 0.152); cr.add(gm2); } });
-  // chandeliers: rings of candles hanging over the hoard
-  [[0.2, -6.8]].forEach(([x, z]) => { const ch = new THREE.Group(); ch.position.set(x, FLOOR + RH - 1.05, z); room.add(ch);
-    ch.add(new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.025, 10, 64).rotateX(Math.PI / 2), tGoldDeep));
-    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.05, 6), tGoldDeep); chain.position.y = 0.52; ch.add(chain);
-    for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283, cx2 = Math.cos(a) * 0.55, cz2 = Math.sin(a) * 0.55;
-      const cd = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.1, 8), roomMat(new THREE.MeshStandardMaterial({ color: 0xf3ead8, roughness: 0.7 }))); cd.position.set(cx2, 0.06, cz2); ch.add(cd);
-      const fl = new THREE.Mesh(new THREE.SphereGeometry(0.016, 8, 6), roomMat(new THREE.MeshBasicMaterial({ color: 0xffd27a, toneMapped: false }))); fl.scale.y = 1.8; fl.position.set(cx2, 0.135, cz2); ch.add(fl); } });
-  // architecture: stone pillars along both walls, steel shelving between them stacked with bars
-  const stoneM = roomMat(new THREE.MeshStandardMaterial({ map: wallTex.clone(), color: 0xcdb89a, roughness: 0.85 })); stoneM.map.repeat.set(1, 2);
-  const rSteel = roomMat(steel.clone()), rGraph = roomMat(graphite.clone());
-  const pil = [], pilCap = [];
-  [-1, 1].forEach(side => [-3.4, -6.4, -9.4, -12.4].forEach(z => { pil.push([V(side * (RW - 0.32), FLOOR + RH / 2, z), 0, 0, 0]); pilCap.push([V(side * (RW - 0.32), FLOOR + RH - 0.5, z), 0, 0, 0]); }));
-  fill(new THREE.CylinderGeometry(0.24, 0.26, RH, 24), stoneM, pil);
-  fill(new THREE.BoxGeometry(0.66, 0.24, 0.66), stoneM, pilCap);
-  const shelfF = [], shelfB = [], shelves = [];
-  [-1, 1].forEach(side => [-4.9, -7.9, -10.9].forEach(z => {
-    const x = side * (RW - 0.42);
-    [-1.15, 1.15].forEach(dz => shelfF.push([V(x, FLOOR + 1.35, z + dz), 0, 0, 0]));
-    for (let L = 0; L < 4; L++) { const y = FLOOR + 0.35 + L * 0.62; shelves.push([V(x, y - 0.02, z), 0, 0, 0]);
-      if (y < FLOOR + dH(x, z) + 0.05) continue;   // the lowest shelves are buried in gold
-      for (let q = 0; q < 11; q++) for (let st = 0; st < 2; st++) shelfB.push([V(x + side * 0.02, y + 0.03 + st * 0.1, z - 0.95 + q * 0.19), 0, Math.PI / 2, 0]); }
-  }));
-  fill(new THREE.BoxGeometry(0.5, 2.7, 0.06), rGraph, shelfF);
-  fill(new THREE.BoxGeometry(0.52, 0.03, 2.36), rSteel, shelves);
-  fill(barGeo, tGold, mobile ? shelfB.filter((_, k) => k % 2 === 0) : shelfB);
-  // treasure chests: planked wood, brass straps and corners, a lock plate, a domed lid thrown open, coins heaped inside and spilling out
-  const plankTex = mkTex(256, 256, (x, w, h) => { x.fillStyle = "#5c321a"; x.fillRect(0, 0, w, h);
-    for (let j = 0; j < 5; j++) { x.fillStyle = j % 2 ? "rgba(0,0,0,.08)" : "rgba(255,200,150,.05)"; x.fillRect(0, j * 51, w, 51); x.fillStyle = "rgba(0,0,0,.45)"; x.fillRect(0, j * 51, w, 3); }
-    for (let k = 0; k < 900; k++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? "30,14,5" : "120,70,35"},.25)`; x.fillRect(Math.random() * w, Math.random() * h, 10 + Math.random() * 40, 1); } });
-  const woodM = roomMat(new THREE.MeshStandardMaterial({ map: plankTex, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide }));
-  const brass = tGoldDeep, spill = [];
   const CHESTS = mobile ? [[-1.75, -4.4, 0.4], [1.95, -5.7, -0.5], [-2.0, -9.6, 0.25], [2.1, -10.6, -0.3]] : [[-1.75, -4.4, 0.4], [1.95, -5.7, -0.5], [-2.0, -9.6, 0.25], [2.1, -10.6, -0.3], [-0.95, -12.7, 0.15], [3.1, -6.6, -1.2], [-3.2, -12.4, 0.9]];
-  CHESTS.forEach(([cx, cz, ry]) => {
-    const g = new THREE.Group(); g.position.set(cx, FLOOR + dH(cx, cz) - 0.06, cz); g.rotation.y = ry; room.add(g);
-    const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); g.add(m); return m; };
-    add(new RoundedBoxGeometry(0.74, 0.4, 0.48, 2, 0.02), woodM, 0, 0.2, 0);
-    add(new THREE.BoxGeometry(0.77, 0.035, 0.51), brass, 0, 0.395, 0); add(new THREE.BoxGeometry(0.77, 0.035, 0.51), brass, 0, 0.02, 0);
-    [-0.2, 0.2].forEach(x => add(new THREE.BoxGeometry(0.05, 0.41, 0.5), brass, x, 0.2, 0));
-    [[-0.37, -0.24], [0.37, -0.24], [-0.37, 0.24], [0.37, 0.24]].forEach(([x, z]) => add(new THREE.BoxGeometry(0.045, 0.41, 0.045), brass, x, 0.2, z));
-    add(new THREE.BoxGeometry(0.1, 0.12, 0.02), brass, 0, 0.3, 0.25); add(new THREE.BoxGeometry(0.018, 0.04, 0.01), roomMat(new THREE.MeshBasicMaterial({ color: 0x1b1300 })), 0, 0.3, 0.262);
-    const heap = add(new THREE.SphereGeometry(0.34, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), hoardM, 0, 0.36, 0); heap.scale.set(1, 0.42, 0.66);   // the coins inside
-    const lid = new THREE.Group(); lid.position.set(0, 0.4, -0.24); lid.rotation.x = -1.95; g.add(lid);
-    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.74, 28, 1, true, 0, Math.PI).rotateZ(Math.PI / 2), woodM); shell.position.z = 0.24; lid.add(shell);
-    [-0.37, 0.37].forEach(x => { const cap = new THREE.Mesh(new THREE.CircleGeometry(0.24, 24, 0, Math.PI).rotateY(Math.PI / 2), woodM); cap.position.set(x, 0, 0.24); lid.add(cap); });
-    [-0.2, 0.2, -0.36, 0.36].forEach(x => { const st = new THREE.Mesh(new THREE.TorusGeometry(0.245, 0.012, 6, 24, Math.PI).rotateY(Math.PI / 2), brass); st.position.set(x, 0, 0.24); lid.add(st); });
-    const c = Math.cos(ry), sn = Math.sin(ry);
-    for (let k = 0; k < (mobile ? 30 : 70); k++) { const lx = rnd(-0.45, 0.45), lz = rnd(0.2, 0.75), wx = cx + lx * c + lz * sn, wz = cz - lx * sn + lz * c;   // spilling out over the front
-      spill.push([onD(wx, wz, 0.008 + Math.max(0, 0.32 - lz * 0.5) * clamp(1 - Math.abs(lx) / 0.4)), rnd(-0.6, 0.6), rnd(0, 6.28), rnd(-0.6, 0.6)]); }
-  });
+  // coins spilling out in front of each chest
+  const spill = []; CHESTS.forEach(([cx, cz, ry]) => { const c = Math.cos(ry), sn = Math.sin(ry);
+    for (let k = 0; k < (mobile ? 20 : 45); k++) { const lx = rnd(-0.45, 0.45), lz = rnd(0.42, 0.9); spill.push([onD(cx + lx * c + lz * sn, cz - lx * sn + lz * c, 0.008), rnd(-0.3, 0.3), rnd(0, 6.28), rnd(-0.3, 0.3)]); } });
   fill(coinGeo, tGold, spill);
+  // ---- props: CC0 models from Poly Haven (polyhaven.com), optimised to compact .glb files in intro/models/.
+  //      They load in the background; the room is built and playable before they arrive.
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), MODELS = "/intro/models/";
+  const fit = (src, h, axis = "y") => {   // scale a model to a height (or length), sit its base on y = 0, centre it
+    const box = new THREE.Box3().setFromObject(src), size = box.getSize(new THREE.Vector3()), k = h / size[axis];
+    const holder = new THREE.Group(); src.scale.multiplyScalar(k); src.updateMatrixWorld(true);
+    const b2 = new THREE.Box3().setFromObject(src), c = b2.getCenter(new THREE.Vector3()); src.position.sub(V(c.x, b2.min.y, c.z)); holder.add(src); return holder; };
+  const roomify = obj => obj.traverse(o => { if (!o.isMesh) return; o.material = o.material.clone(); portalTest(o.material);
+    o.material.stencilFunc = roomMats[0].stencilFunc; o.material.envMapIntensity = 1.1; roomMats.push(o.material); });
+  const put = (proto, x, z, ry = 0, s = 1, lift = 0, tilt = 0) => { const m = proto.clone(true); m.position.copy(onD(x, z, lift)); m.rotation.set(tilt, ry, 0); m.scale.multiplyScalar(s); room.add(m); return m; };
+  const get = n => loader.loadAsync(MODELS + n + ".glb").then(g => g.scene).catch(() => null);
+  Promise.all(["treasure_chest", "brass_goblets", "brass_vase_01", "brass_vase_03", "brass_pot_01", "Chandelier_03", "lion_head", "kite_shield", "ornate_medieval_dagger"].map(get))
+    .then(([chest, goblets, vase1, vase3, pot, chand, lion, shield, dagger]) => {
+      const T = (m, h, axis) => { if (!m) return null; const f = fit(m, h, axis); roomify(f); return f; };
+      chest = T(chest, 0.82, "x"); goblets = T(goblets, 0.34); vase1 = T(vase1, 0.62); vase3 = T(vase3, 0.5); pot = T(pot, 0.34);
+      chand = T(chand, 1.3); lion = T(lion, 0.95); shield = T(shield, 0.8); dagger = T(dagger, 0.62, "y");
+      if (chest) CHESTS.forEach(([x, z, ry]) => put(chest, x, z, ry, 1, -0.05));
+      const spots = MOUNDS.slice(1).map(([cx, cz]) => [cx, cz]), r = (a, b) => a + Math.random() * (b - a);
+      [[goblets, 0], [vase1, 1], [vase3, 2], [pot, 3]].forEach(([m, k]) => { if (!m) return;
+        spots.filter((_, i) => i % 4 === k).forEach(([cx, cz]) => { const a = r(0, 6.28), d = r(0.15, 0.45); put(m, cx + Math.cos(a) * d, cz + Math.sin(a) * d, r(0, 6.28), r(0.85, 1.15), -0.04); }); });
+      if (chand) { const c = chand.clone(true); c.position.set(0.2, FLOOR + RH - 1.45, -6.9); room.add(c); }
+      if (lion) [[-1, -6.0], [1, -6.0], [-1, -10.4], [1, -10.4]].forEach(([side, z]) => { const l = lion.clone(true); l.position.set(side * (RW - 0.06), FLOOR + 2.55, z); l.rotation.y = -side * Math.PI / 2; room.add(l); });
+      if (shield) [[-3.95, -5.4, 0.9], [3.95, -7.2, -0.9], [-3.9, -11.2, 0.8], [3.9, -12.4, -0.8]].forEach(([x, z, ry]) => put(shield, x, z, ry, 1, -0.06, -0.28));
+      if (dagger) [[-2.4, -7.6, 0.4], [2.2, -11.0, -0.8], [-1.2, -12.2, 1.6]].forEach(([x, z, ry]) => { const d = put(dagger, x, z, ry, 1, 0.03); d.rotation.set(0, ry, Math.PI / 2); });
+      try { renderer.compileAsync(scene, camera); scene.traverse(o => [].concat(o.material || []).forEach(m => m.map && renderer.initTexture(m.map))); } catch (e) {}
+    });
   // Pari, the Parity mascot, waits on the hoard for the finale
   const pari = new THREE.Group(), pariBody = new THREE.Group(); pari.add(pariBody); room.add(pari);
   const pGold = roomMat(new THREE.MeshPhysicalMaterial({ color: 0xffcd5c, metalness: 1, roughness: 0.14, clearcoat: 0.8, clearcoatRoughness: 0.06, envMapIntensity: 1.3 }));
@@ -891,9 +847,9 @@ if (renderer) {
     if (b === S.problem) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i], rz: 0 };
     if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.3, 0.3, 0.6, 0.3][i], rz: 0 };   // melted into grains
     if (b === S.pergram) return { p: onBeam(i, PG_S[i]), s: PG_S[i], ry: 0, rx: 0, rz: balAngle };                // riding the balance
-    if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i], rz: 0 };
+    if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0.62), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i], rz: 0 };
     if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55 + ringSpin), s: 0.001, ry: 0.6, rx: 0.5, rz: 0 };   // the mark stands alone   // a wide ring framing the mark
-    return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3, rz: 0 };                                     // off stage
+    return { p: V(line[i], -0.2, 1.1), s: 0.001, ry: 0, rx: 0.3, rz: 0 };                                     // off stage
   };
 
   /* ---------- grains: in the recast beat every piece melts into grains that pour into four identical one-gram cubes;
@@ -919,8 +875,12 @@ if (renderer) {
       for (let sx = xl + st / 2; sx < xr; sx += st) out.push(V(LOGO.x + (sx - 24) * sc, LOGO.y + (24 - sy) * sc, LOGO.z)); }
     return out; };
   let logoSp = 0.03; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
-  const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(2.2 + Math.random() * 1.2).add(LOGO));
+  const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, 0.15 + Math.random() * 0.6, 0.2 + Math.random() * 0.5).normalize().multiplyScalar(1.6 + Math.random() * 0.9).add(LOGO));
   const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the mark forges left to right
+  // a plain, soft-edged backdrop behind the mark, so the cursor's scatter reads clearly against it
+  const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 3.3), roomMat(new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false, opacity: 0,
+    map: mkTex(256, 256, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2); g.addColorStop(0, "rgba(20,14,9,1)"); g.addColorStop(0.6, "rgba(20,14,9,.97)"); g.addColorStop(1, "rgba(20,14,9,0)"); x.fillStyle = g; x.fillRect(0, 0, w, h); }) })));
+  backdrop.position.set(LOGO.x, LOGO.y, LOGO.z - 0.7); room.add(backdrop);
   const poseMat = (k, b) => { const a = pieceAt(k, b), m = new THREE.Matrix4();
     return m.compose(a.p, new THREE.Quaternion().setFromEuler(new THREE.Euler(a.rx, a.ry, a.rz)), new THREE.Vector3(a.s, a.s, a.s)); };
   const gm = new THREE.Matrix4(), gq = new THREE.Quaternion(), ge = new THREE.Euler(), gv = new THREE.Vector3(), gs = new THREE.Vector3(), gw = new THREE.Vector3();
@@ -1109,6 +1069,7 @@ if (renderer) {
 
     ringSpin = -mx * 1.1 * fin;
     // Pari: hops up out of the hoard as the finale arrives, then waves, blinks, bobs and turns to follow the cursor
+    backdrop.material.opacity = clamp((b - (S.team - 0.9)) / 0.5); backdrop.visible = backdrop.material.opacity > 0.01;
     const pariV = clamp((b - (S.team - 0.5)) / 0.35);
     pari.visible = pariShadow.visible = pariV > 0.001;
     if (pari.visible) {
@@ -1220,7 +1181,7 @@ if (renderer) {
         // each bar leaves from its own spot across the doorway, spills forward and falls, spreading as it goes
         const [s0, a0, r0, t0] = rSeed[n], s = (s0 + flow) % 1, sr = Math.sqrt(r0 / 0.75) * 0.6;
         gv.set(VC.x + Math.cos(a0) * sr, VC.y + Math.sin(a0) * sr * 0.9, VC.z + 0.12);
-        gv.addScaledVector(RDIR, s * 3.6); gv.x += Math.cos(a0) * sr * s * 1.6; gv.y += Math.sin(a0) * sr * s * 0.6 - s * s * 1.4;
+        gv.addScaledVector(RDIR, s * 3.6); gv.x += Math.cos(a0) * sr * s * 1.6; gv.y = Math.max(gv.y + Math.sin(a0) * sr * s * 0.6 - s * s * 1.4, VFLOOR + 0.03);
         ge.set(t0 * s * 4, a0 + s * 1.5, t0 * s * 2); gq.setFromEuler(ge);
         gs.setScalar(Math.max(0.75 * ro * clamp(s / 0.06) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm);
       }
@@ -1228,7 +1189,7 @@ if (renderer) {
       for (let n = 0; n < NRC; n++) {   // coins: the same spill, a little faster, spinning edge over edge
         const [s0, a0, r0, sp, spin] = rcSeed[n], s = (s0 + flow * 1.15) % 1, sr = Math.sqrt(r0 / 0.75) * 0.6;
         gv.set(VC.x + Math.cos(a0) * sr, VC.y + Math.sin(a0) * sr * 0.9, VC.z + 0.12);
-        gv.addScaledVector(RDIR, s * 3.9); gv.x += Math.cos(a0) * sr * s * 1.9; gv.y += Math.sin(a0) * sr * s * 0.7 - s * s * 1.6;
+        gv.addScaledVector(RDIR, s * 3.9); gv.x += Math.cos(a0) * sr * s * 1.9; gv.y = Math.max(gv.y + Math.sin(a0) * sr * s * 0.7 - s * s * 1.6, VFLOOR + 0.01);
         ge.set(sp + s * spin, a0, s * spin * 0.6); gq.setFromEuler(ge);
         gs.setScalar(Math.max(ro * clamp(s / 0.05) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); riverC.setMatrixAt(n, gm);
       }

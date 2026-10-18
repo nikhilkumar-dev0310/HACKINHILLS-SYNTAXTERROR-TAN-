@@ -4,7 +4,8 @@
 set -e
 mkdir -p site
 cp commodity/dashboard/index.html site/index.html                               # the dashboard
-mkdir -p site/intro && cp commodity/dashboard/intro/index.html site/intro/index.html  # 3D intro at /intro, shown once per session
+mkdir -p site/intro && cp commodity/dashboard/intro/index.html site/intro/index.html  # 3D intro at /intro
+cp -R commodity/dashboard/intro/models site/intro/                                 # its CC0 models (Poly Haven)
 cp commodity/presentation/parity-pitch.html site/pitch.html                     # interactive pitch
 cp commodity/report/Gold_Futures_Spread_Intelligence.pdf site/report.pdf        # 17-page report
 cp commodity/dashboard/404.html site/404.html                                   # page for addresses that do not exist

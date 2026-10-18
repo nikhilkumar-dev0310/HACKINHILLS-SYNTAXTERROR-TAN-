@@ -195,3 +195,22 @@ Motion (open-source, MIT, pinned on jsDelivr):
   - the balance's coin rides smaller, clear of the dial;
   - Pari stands on a broad, smooth rise below the mark, with clutter kept off it, and the greeting sits beside Pari.
 - **Numbers** count up as plain tabular text instead of rolling digit strips, so nothing shifts or overlaps mid-animation.
+
+## Real models, no phasing, a plain stage for the mark (19 Oct 2026)
+- **Props are real CC0 models from Poly Haven**, repacked to 2.2 MB in `intro/models/` (credits in `models/CREDITS.md`):
+  - treasure chest, brass goblets, two brass vases and a brass pot;
+  - a chandelier, lion heads on the walls, kite shields and an ornate dagger.
+  - They load in the background with `GLTFLoader` + `MeshoptDecoder` and are stencil-tested like the rest of the room.
+  - `tools/vercel_build.sh` publishes the folder to `/intro/models/`.
+- **Removed:** every hand-built prop (shelves, pillars, crowns, gems, urns, chalices, orbs, the procedural chests and
+  chandelier) and the coin towers. Bars, coins and the gold dune remain.
+- **Nothing passes through anything:**
+  - one coin per 13 cm cell, lying close to the surface;
+  - no stray bars, and no jitter in the stacks;
+  - the pieces stand in front of the bar columns, and leave the stage forward rather than down through the balance;
+  - the gold river spills away from the open door and never through the floor;
+  - the mark's grains gather from the air above and in front.
+- **The mark** sits on a plain, soft-edged dark backdrop, so the cursor's scatter reads clearly.
+- **Reflections:** a photographed HDRI was tried. Its pure-white softboxes washed the gold to silver, so the warm built
+  studio stays.
+- **Scroll mapping** guards against a zero-size viewport (a hidden tab measured 0 and crashed the camera curve).
