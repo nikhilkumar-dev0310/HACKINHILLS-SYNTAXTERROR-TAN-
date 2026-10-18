@@ -22,7 +22,13 @@ Check the phone layout on a real iPhone. The headless browser used for screensho
 ## 2. 3D scroll intro (wired in: served at /intro)
 - `intro/intro.tpl.html` (page) and `intro/gen.py`. `gen.py` fills every figure from `dashboard/data.json` and writes `intro.html`.
 - Uses three.js **0.170.0** via an importmap (jsDelivr), plus `RoomEnvironment` and `RoundedBoxGeometry`.
-- Six beats: problem → per gram → cost line → ±1.5σ check → evidence → team.
+- Nine beats: problem → recast → per gram → every day → cost line → ±1.5σ check → quiet → evidence → team.
+  - **Recast:** each piece melts into grains that pour into four identical cubes, one gram of pure gold each.
+    Labels show the pure grams per quote; `gen.py` checks that close ÷ pure grams matches `rs_per_g`.
+  - **Every day:** a 3D ribbon per contract shows its distance from its usual premium (`hurdle`, thinned 3:1 keeping peaks).
+    It draws left to right with scroll, with a dated bead on the leading edge.
+  - **Quiet:** every alert episode (`alerts.history`) sits on a dark three-lane rail. A scanner sweeps across with scroll,
+    and each flare rises as it passes. A counter tallies the alerts so far.
 - The camera holds still while each card is read, then glides to the next beat.
 - Phones step the camera back and put the gold above the card.
 - Reduced motion turns off smoothing and bobbing.
@@ -42,7 +48,9 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Motion 13.4.6** (motiondivision/motion):
   - Headlines rise word by word out of a mask.
   - Card text and rows follow in a stagger with a light blur.
-  - Numbers count up to the exact string from `data.json`.
+  - Numbers roll into place digit by digit, like an odometer, and finish on the exact string from `data.json`.
+  - Each card gets a gold-foil glint as it settles.
+  - On desktop, a ticker tape of the four quotes runs along the bottom. It speeds up and leans with scroll velocity.
   - The chapter counter (bottom left) rolls like an odometer.
 - Cards tip back and rise into place with scroll. The gold headline sheen tracks scroll. The "how we know" slabs fan open with scroll.
 - The gold no longer spins on its own. Only a small slow float and sway remain on the first and last beats.

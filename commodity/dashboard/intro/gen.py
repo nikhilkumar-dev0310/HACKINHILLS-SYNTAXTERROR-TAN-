@@ -48,6 +48,42 @@ DATA = {
     "bootNet": inr(boot["net"]), "bootLo": inr(boot["lo"]), "bootHi": inr(boot["hi"]), "zeroInside": boot["lo"] < 0 < boot["hi"],
 }
 assert DATA["zeroInside"], "copy says the range includes zero"
+
+# recast beat: what each quote stands for, and the pure gold inside it
+GRAMS = {"GOLDM": 10, "GOLDTEN": 10, "GOLDGUINEA": 8, "GOLDPETAL": 1}     # MCX quotes GOLDM and GOLDTEN per 10 g
+for p in pieces:
+    s = p["sym"]; pure = GRAMS[s] * int(p["purity"]) / 1000
+    p.update(close=inr(q[s]["close"]), per=f"{GRAMS[s]} g", pure=f"{pure:g} g", chg=q[s]["chg_pct"])
+    assert abs(q[s]["close"] / pure - q[s]["rs_per_g"]) < 0.2, (s, q[s]["close"] / pure, q[s]["rs_per_g"])
+
+# ribbon beat: each small contract's distance from its usual premium, every trading day (thinned, keeping peaks)
+H = d["hurdle"]; n = len(H["dates"]); STEP = 3
+series = {"dates": [H["dates"][min(i + STEP - 1, n - 1)] for i in range(0, n, STEP)]}
+for s in ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]:
+    v = H[s]["gap"]
+    series[s] = [max([x for x in v[i:i + STEP] if x is not None], default=None) for i in range(0, n, STEP)]
+peak = {s: max(x for x in H[s]["gap"] if x is not None) for s in ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]}
+DATA["series"] = series
+DATA["seriesFrom"] = fdate(H["dates"][0])
+DATA["petalPeak"] = round(peak["GOLDPETAL"])
+DATA["petalMedian"] = round(sorted(x for x in H["GOLDPETAL"]["gap"] if x is not None)[sum(1 for x in H["GOLDPETAL"]["gap"] if x is not None) // 2])
+
+# quiet beat: every alert episode, and how alert days compared with ordinary ones
+AH = d["alerts"]["history"]
+DATA["alerts"] = [{"sym": a["symbol"], "start": a["start"], "days": a["alert_days"], "bp": a["premium_bp"]} for a in AH]
+summ = {r["symbol"]: r for r in d["alerts"]["summary"]}
+assert summ["All"]["alerts"] == len(AH)
+base = {b["alert_day"]: b for b in d["alerts"]["baseline"]}
+DATA["alertCount"] = len(AH)
+DATA["alertDays"] = f"{base[True]['days']:,}"
+DATA["allDays"] = f"{base[True]['days'] + base[False]['days']:,}"
+DATA["alertShare"] = round(100 * base[True]["days"] / (base[True]["days"] + base[False]["days"]))
+DATA["closedAlert"] = round(base[True]["closed_half_10d"])
+DATA["closedNormal"] = round(base[False]["closed_half_10d"])
+months = (datetime.date.fromisoformat(H["dates"][-1]) - datetime.date.fromisoformat(H["dates"][0])).days / 30.44
+DATA["alertsPerMonth"] = f"{len(AH) / months:.1f}"
+DATA["seriesYears"] = round(months / 12)
+
 petal = [g for g in gaps if g["sym"] == "GOLDPETAL"][0]
 DATA["petal"] = {"gap": petal["gap"], "z": petal["z"], "band": round(thr * petal["sd"], 1)}
 

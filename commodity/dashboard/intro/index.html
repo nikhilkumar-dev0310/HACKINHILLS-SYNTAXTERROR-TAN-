@@ -103,7 +103,7 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .cta .go{color:#1b1206;background:linear-gradient(180deg,var(--gold-2),var(--gold) 55%,#c98f2c);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 12px 30px -10px rgba(232,180,74,.55)}
 .cta .go:hover{filter:brightness(1.06)}
 .cta .alt{color:var(--ink);background:var(--glass);border:1px solid var(--edge)}
-.hint{position:absolute;left:0;right:0;bottom:calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink-3);font:500 12px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;pointer-events:none;transition:opacity .4s ease}
+.hint{position:absolute;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink-3);font:500 12px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;pointer-events:none;transition:opacity .4s ease}
 .hint i{width:22px;height:34px;border-radius:12px;border:1.5px solid var(--ink-3);position:relative}
 .hint i::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:var(--gold);animation:wheel 1.8s var(--out) infinite}
 @keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(10px);opacity:0}100%{opacity:0}}
@@ -117,11 +117,25 @@ html.lenis,html.lenis body{height:auto}
 .w>i{display:inline-block;font-style:normal}
 .hl{background-size:220% 100%;background-position:calc(100% - var(--sh,0) * 100%) 0}
 .js-rv .rv{opacity:0}
-.chap{position:fixed;z-index:10;left:max(20px,env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));display:flex;align-items:baseline;gap:10px;
+.chap{position:fixed;z-index:10;left:max(20px,env(safe-area-inset-left,0px));bottom:calc(52px + env(safe-area-inset-bottom,0px));display:flex;align-items:baseline;gap:10px;
   font:500 12px/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);pointer-events:none}
 .chap .n{display:inline-block;height:1em;overflow:clip;font:600 13px/1 var(--f-disp);color:var(--gold-2);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .chap .n span,.chap .t span{display:block}
 .chap .t{display:inline-block;height:1em;overflow:clip}
+.tape{position:fixed;z-index:9;left:0;right:0;bottom:0;height:34px;overflow:hidden;pointer-events:none;border-top:1px solid rgba(255,236,200,.08);
+  background:linear-gradient(180deg,rgba(10,8,6,0),rgba(10,8,6,.7));-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.tape>div{display:inline-flex;white-space:nowrap;will-change:transform;font:500 12px/34px var(--f-ui);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tape span{padding:0 22px;border-right:1px solid rgba(255,236,200,.08)}
+.tape b{color:var(--ink-2);font-weight:600;letter-spacing:.04em;margin-right:4px}
+.tape i{font-style:normal;margin:0 6px}.tape .up{color:var(--good)}.tape .dn{color:#f08a7a}
+.tape em{font-style:normal;color:var(--gold-2)}
+.od{display:inline-block;height:1lh;overflow:clip;vertical-align:top}
+.od>span{display:flex;flex-direction:column}
+.od>span>span{height:1lh}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,236,190,.16) 47%,rgba(255,255,255,.22) 50%,rgba(255,236,190,.16) 53%,transparent 65%) no-repeat;background-size:260% 100%;background-position:130% 0}
+.card.glint::after{animation:glint 1.5s var(--out) .1s}
+@keyframes glint{0%{opacity:1;background-position:130% 0}100%{opacity:1;background-position:-30% 0}}
 .no-gl #gl{display:none}
 .no-gl .lbls{display:none}
 
@@ -142,8 +156,10 @@ html.lenis,html.lenis body{height:auto}
   .lbl small{display:none}
   .hint{display:none}
   .chap{display:none}
+  .tape{display:none}
 }
-@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card{will-change:auto;--ty:0px!important;--sc:1!important;--rx:0deg!important}}
+@media (max-width:420px){.lbl{font-size:10px;padding:4px 6px;border-radius:10px}.lbl b{font-size:11px;letter-spacing:0}}
+@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card.glint::after{animation:none}.card{will-change:auto;--ty:0px!important;--sc:1!important;--rx:0deg!important}}
 </style>
 </head>
 <body style="margin:0">
@@ -161,6 +177,7 @@ html.lenis,html.lenis body{height:auto}
 </header>
 
 <ol class="dots" id="dots" aria-label="Chapters"></ol>
+<div class="tape" id="tape" aria-hidden="true"><div></div></div>
 <div class="chap" id="chap" aria-hidden="true"><span class="n"><span>01</span></span><span id="chapOf"></span><span class="t"><span></span></span></div>
 
 <main id="story">
@@ -174,12 +191,30 @@ html.lenis,html.lenis body{height:auto}
     <div class="hint" id="hint"><i></i>Scroll</div>
   </section>
 
+  <section class="beat" data-name="Recast">
+    <div class="card">
+      <p class="eyebrow">Same unit · pure gold</p>
+      <h2>Strip away <span class="hl">size and purity.</span></h2>
+      <p>Each price stands for a different amount of gold. Divide it by the pure gold inside, and all four are in one unit: <b>rupees per gram of pure gold.</b></p>
+      <ul class="rows" id="recastRows"></ul>
+    </div>
+  </section>
+
   <section class="beat" data-name="Per gram">
     <div class="card">
       <p class="eyebrow">Per gram of pure gold · 16 Oct 2026</p>
       <h2>They <span class="hl">nearly match.</span></h2>
       <p>On 16 Oct 2026 the four closed within <b class="num">50 bp</b> of each other. Gaps like this open and close every day.</p>
       <ul class="rows" id="pgRows"></ul>
+    </div>
+  </section>
+
+  <section class="beat" data-name="Every day">
+    <div class="card">
+      <p class="eyebrow">Since 10 Oct 2023 · every trading day</p>
+      <h2>The gaps <span class="hl">never sit still.</span></h2>
+      <p>How far each small contract sits from its usual premium over GOLDM, day by day. GOLDPETAL’s typical distance is <b class="num">78 bp</b>; on its wildest day it reached <b class="num">801 bp</b>.</p>
+      <p>So a gap on its own means little. The question is whether it is big enough, and unusual enough, to act on.</p>
     </div>
   </section>
 
@@ -199,6 +234,15 @@ html.lenis,html.lenis body{height:auto}
       <p>GOLDPETAL’s premium swings widely from day to day. Its <b class="num">50.7 bp</b> gap is only <b class="num">+0.33σ</b> from its usual level. An alert needs <b class="num">±1.5σ</b>, which for GOLDPETAL means <b class="num">228 bp</b>.</p>
       <p>Both checks must pass.</p>
       <span class="state" id="sigState"><i></i><span id="sigText"></span></span>
+    </div>
+  </section>
+
+  <section class="beat" data-name="Quiet">
+    <div class="card">
+      <p class="eyebrow">Alerts since 10 Oct 2023</p>
+      <h2>Most days, <span class="hl">it stays quiet.</span></h2>
+      <p><b class="num">66</b> alert episodes in 3 years across three contracts, about <b class="num">1.8</b> a month. Each flare on the line is one.</p>
+      <p>After an alert day the gap halved within 10 days <b class="num">50%</b> of the time, against <b class="num">53%</b> on ordinary days. An alert says “look”, not “trade”.</p>
     </div>
   </section>
 
@@ -235,7 +279,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
-const D = {"pieces": [{"sym": "GOLDM", "kind": "100 g bar", "purity": "995", "rs_per_g": 14716.1, "per_g": "₹14,716"}, {"sym": "GOLDTEN", "kind": "10 g bar", "purity": "999", "rs_per_g": 14696.6, "per_g": "₹14,697"}, {"sym": "GOLDGUINEA", "kind": "8 g coin", "purity": "999", "rs_per_g": 14765.9, "per_g": "₹14,766"}, {"sym": "GOLDPETAL", "kind": "1 g", "purity": "999", "rs_per_g": 14769.8, "per_g": "₹14,770"}], "quoteDay": "16 Oct 2026", "spreadBp": 50, "gaps": [{"sym": "GOLDTEN", "gap": 13.1, "z": -0.2, "sd": 66.2}, {"sym": "GOLDGUINEA", "gap": 30.1, "z": -0.33, "sd": 90.8}, {"sym": "GOLDPETAL", "gap": 50.7, "z": 0.33, "sd": 151.8}], "costLine": 47.6, "roundTrip": 23.8, "thr": 1.5, "over": ["GOLDPETAL"], "signalToday": [], "rows": "55,697", "contracts": 711, "first": "20 Nov 2003", "years": 23, "tests": "10,357", "sealed": 3, "bootNet": "₹42,834", "bootLo": "−₹54,534", "bootHi": "₹1,42,962", "zeroInside": true, "petal": {"gap": 50.7, "z": 0.33, "band": 227.7}};
+const D = {"pieces": [{"sym": "GOLDM", "kind": "100 g bar", "purity": "995", "rs_per_g": 14716.1, "per_g": "₹14,716", "close": "₹1,46,425", "per": "10 g", "pure": "9.95 g", "chg": 0.18}, {"sym": "GOLDTEN", "kind": "10 g bar", "purity": "999", "rs_per_g": 14696.6, "per_g": "₹14,697", "close": "₹1,46,819", "per": "10 g", "pure": "9.99 g", "chg": 0.2}, {"sym": "GOLDGUINEA", "kind": "8 g coin", "purity": "999", "rs_per_g": 14765.9, "per_g": "₹14,766", "close": "₹1,18,009", "per": "8 g", "pure": "7.992 g", "chg": 0.16}, {"sym": "GOLDPETAL", "kind": "1 g", "purity": "999", "rs_per_g": 14769.8, "per_g": "₹14,770", "close": "₹14,755", "per": "1 g", "pure": "0.999 g", "chg": 0.19}], "quoteDay": "16 Oct 2026", "spreadBp": 50, "gaps": [{"sym": "GOLDTEN", "gap": 13.1, "z": -0.2, "sd": 66.2}, {"sym": "GOLDGUINEA", "gap": 30.1, "z": -0.33, "sd": 90.8}, {"sym": "GOLDPETAL", "gap": 50.7, "z": 0.33, "sd": 151.8}], "costLine": 47.6, "roundTrip": 23.8, "thr": 1.5, "over": ["GOLDPETAL"], "signalToday": [], "rows": "55,697", "contracts": 711, "first": "20 Nov 2003", "years": 23, "tests": "10,357", "sealed": 3, "bootNet": "₹42,834", "bootLo": "−₹54,534", "bootHi": "₹1,42,962", "zeroInside": true, "series": {"dates": ["2023-10-12", "2023-10-17", "2023-10-20", "2023-10-25", "2023-10-30", "2023-11-02", "2023-11-07", "2023-11-10", "2023-11-14", "2023-11-17", "2023-11-22", "2023-11-27", "2023-11-30", "2023-12-05", "2023-12-08", "2023-12-13", "2023-12-18", "2023-12-21", "2023-12-27", "2024-01-01", "2024-01-04", "2024-01-09", "2024-01-12", "2024-01-17", "2024-01-22", "2024-01-25", "2024-01-31", "2024-02-05", "2024-02-08", "2024-02-13", "2024-02-16", "2024-02-21", "2024-02-26", "2024-02-29", "2024-03-05", "2024-03-08", "2024-03-13", "2024-03-18", "2024-03-21", "2024-03-26", "2024-04-01", "2024-04-04", "2024-04-09", "2024-04-12", "2024-04-17", "2024-04-22", "2024-04-25", "2024-04-30", "2024-05-03", "2024-05-08", "2024-05-13", "2024-05-16", "2024-05-21", "2024-05-24", "2024-05-29", "2024-06-03", "2024-06-06", "2024-06-11", "2024-06-14", "2024-06-19", "2024-06-24", "2024-06-27", "2024-07-02", "2024-07-05", "2024-07-10", "2024-07-15", "2024-07-18", "2024-07-23", "2024-07-26", "2024-07-31", "2024-08-05", "2024-08-08", "2024-08-13", "2024-08-19", "2024-08-22", "2024-08-27", "2024-08-30", "2024-09-04", "2024-09-09", "2024-09-12", "2024-09-17", "2024-09-20", "2024-09-25", "2024-09-30", "2024-10-04", "2024-10-09", "2024-10-14", "2024-10-17", "2024-10-22", "2024-10-25", "2024-10-30", "2024-11-04", "2024-11-07", "2024-11-12", "2024-11-15", "2024-11-20", "2024-11-25", "2024-11-28", "2024-12-03", "2024-12-06", "2024-12-11", "2024-12-16", "2024-12-19", "2024-12-24", "2025-01-03", "2025-01-08", "2025-01-13", "2025-01-16", "2025-01-21", "2025-01-24", "2025-01-29", "2025-02-01", "2025-02-05", "2025-02-10", "2025-02-13", "2025-02-18", "2025-02-21", "2025-02-26", "2025-03-03", "2025-03-06", "2025-03-11", "2025-03-14", "2025-03-19", "2025-03-24", "2025-03-27", "2025-04-01", "2025-04-04", "2025-04-09", "2025-04-14", "2025-04-17", "2025-04-23", "2025-04-28", "2025-05-01", "2025-05-06", "2025-05-09", "2025-05-14", "2025-05-19", "2025-05-22", "2025-05-27", "2025-05-30", "2025-06-04", "2025-06-09", "2025-06-12", "2025-06-17", "2025-06-20", "2025-06-25", "2025-06-30", "2025-07-03", "2025-07-08", "2025-07-11", "2025-07-16", "2025-07-21", "2025-07-24", "2025-07-29", "2025-08-01", "2025-08-06", "2025-08-11", "2025-08-14", "2025-08-20", "2025-08-25", "2025-08-28", "2025-09-02", "2025-09-05", "2025-09-10", "2025-09-15", "2025-09-18", "2025-09-23", "2025-09-26", "2025-10-01", "2025-10-07", "2025-10-10", "2025-10-15", "2025-10-20", "2025-10-23", "2025-10-28", "2025-10-31", "2025-11-05", "2025-11-10", "2025-11-13", "2025-11-18", "2025-11-21", "2025-11-26", "2025-12-01", "2025-12-04", "2025-12-09", "2025-12-12", "2025-12-17", "2025-12-22", "2025-12-26", "2025-12-31", "2026-01-05", "2026-01-08", "2026-01-13", "2026-01-16", "2026-01-21", "2026-01-27", "2026-01-30", "2026-02-03", "2026-02-06", "2026-02-11", "2026-02-16", "2026-02-19", "2026-02-24", "2026-02-27", "2026-03-04", "2026-03-09", "2026-03-12", "2026-03-17", "2026-03-20", "2026-03-25", "2026-03-30", "2026-04-02", "2026-04-08", "2026-04-13", "2026-04-16", "2026-04-21", "2026-04-24", "2026-04-29", "2026-05-04", "2026-05-07", "2026-05-12", "2026-05-15", "2026-05-20", "2026-05-25", "2026-05-28", "2026-06-02", "2026-06-05", "2026-06-10", "2026-06-15", "2026-06-18", "2026-06-23", "2026-06-26", "2026-07-01", "2026-07-06", "2026-07-09", "2026-07-14", "2026-07-17", "2026-07-22", "2026-07-27", "2026-07-30", "2026-08-04", "2026-08-07", "2026-08-12", "2026-08-17", "2026-08-20", "2026-08-25", "2026-08-28", "2026-09-02", "2026-09-07", "2026-09-10", "2026-09-15", "2026-09-18", "2026-09-23", "2026-09-28", "2026-10-01", "2026-10-07", "2026-10-12", "2026-10-15", "2026-10-16"], "GOLDTEN": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 12.5, 12.2, 8.9, 15.9, 5.1, 6.4, 12.9, 6.0, 7.4, 5.6, 6.0, 5.0, 2.2, 7.1, 8.9, 4.1, 4.9, 7.7, 5.3, 9.0, 9.1, 3.8, 5.6, 8.3, 6.6, 3.4, 2.8, 13.1, 17.2, 13.1, 11.5, 11.4, 2.0, 9.0, 8.3, 15.3, 19.9, 10.4, 19.1, 20.0, 17.5, 19.1, 11.0, 12.4, 11.7, 6.8, 7.5, 14.2, 9.7, 7.8, 9.8, 5.7, 8.9, 6.8, 16.9, 23.2, 24.4, 75.9, 70.6, 56.0, 44.6, 39.9, 270.6, 148.1, 598.4, 250.3, 315.3, 178.0, 170.2, 101.8, 29.7, 34.4, 40.1, 33.7, 21.1, 15.7, 24.1, 34.6, 26.7, 22.9, 31.1, 32.6, 37.6, 39.1, 45.1, 35.6, 26.5, 25.1, 28.0, 29.0, 39.4, 44.7, 42.7, 37.5, 35.8, 32.8, 35.2, 37.6, 32.9, 27.7, 19.0, 22.3, 24.4, 28.1, 30.6, 53.8, 46.3, 45.9, 39.5, 46.5, 45.6, 47.6, 46.4, 51.1, 40.6, 39.1, 37.1, 38.3, 37.6, 39.5, 30.0, 23.2, 17.3, 16.6, 20.5, 16.4, 13.1], "GOLDGUINEA": [null, null, null, null, null, null, 56.7, 89.9, 71.0, 44.9, 41.1, 22.5, 55.3, 37.3, 87.0, 97.9, 20.3, 12.6, 44.2, 11.0, 26.6, 30.8, 44.2, 78.6, 25.3, 46.8, 28.9, 55.7, 40.7, 47.2, 46.8, 38.5, 77.3, 55.4, 124.0, 266.3, 194.6, 117.7, 116.6, 60.0, 75.6, 54.9, 22.2, 67.0, 68.4, 53.2, 11.9, 56.0, 28.2, 25.8, 56.3, 36.6, 16.6, 76.4, 80.8, 106.0, 93.9, 160.0, 182.8, 74.0, 82.3, 96.5, 63.7, 17.3, 14.9, 8.5, 17.0, 181.2, 98.9, 67.6, 30.7, 41.3, 8.0, 26.0, 40.9, 24.5, 14.5, 22.4, 27.5, 6.4, 36.4, 47.2, 12.9, 24.1, 11.5, 33.5, 16.3, 29.2, 13.3, 22.1, 20.1, 26.4, 107.7, 94.3, 101.3, 41.5, 29.6, 31.8, 14.3, 15.6, 43.1, 31.6, 39.6, 39.4, 24.2, 17.8, 30.5, 37.9, 24.4, 38.1, 34.2, 31.0, 35.8, 27.3, 35.6, 71.5, 68.7, 58.6, 85.3, 62.5, 64.6, 15.1, 70.4, 39.2, 17.9, 67.3, 67.1, 52.0, 129.2, 65.3, 53.0, 46.0, 30.8, 62.0, 59.9, 28.8, 48.2, 70.9, 90.4, 68.1, 77.2, 51.6, 54.9, 63.5, 42.8, 19.6, 15.6, 47.2, 38.6, 58.0, 62.5, 69.0, 89.1, 39.2, 45.2, 68.9, 54.0, 28.6, 20.2, 57.2, 72.4, 64.8, 62.3, 66.6, 76.0, 51.2, 60.9, 19.7, 21.3, 9.1, 51.7, 34.2, 32.4, 33.6, 22.3, 19.1, 46.0, 30.8, 16.1, 61.8, 72.8, 24.4, 31.5, 17.8, 39.5, 47.1, 52.4, 55.7, 95.1, 286.8, 234.9, 167.5, 104.4, 100.1, 565.4, 418.3, 620.1, 353.7, 364.8, 271.0, 274.3, 265.8, 141.9, 68.4, 180.5, 164.2, 118.9, 124.8, 106.0, 105.1, 86.8, 58.2, 45.6, 50.4, 66.1, 50.9, 35.6, 45.7, 37.7, 39.7, 61.0, 43.0, 77.9, 57.8, 77.1, 66.6, 52.1, 37.8, 41.7, 55.2, 20.3, 67.6, 29.7, 37.4, 34.0, 27.8, 27.8, 71.3, 66.4, 78.3, 61.9, 95.1, 77.3, 71.6, 78.0, 80.2, 73.1, 65.8, 67.3, 74.2, 76.0, 88.1, 71.9, 57.9, 42.6, 42.1, 52.8, 28.7, 30.1], "GOLDPETAL": [null, null, null, null, null, null, 30.5, 37.2, 25.1, 62.9, 94.6, 104.2, 116.8, 125.1, 89.5, 7.9, 62.2, 93.6, 104.6, 76.3, 65.9, 41.2, 46.8, 58.4, 74.7, 113.2, 67.7, 85.5, 75.0, 54.2, 30.6, 24.7, 69.1, 75.7, 99.8, 100.3, 105.6, 78.9, 85.1, 76.4, 120.3, 125.4, 30.1, 55.3, 92.6, 73.9, 69.7, 59.9, 44.8, 24.5, 55.5, 55.3, 59.6, 55.4, 49.1, 68.0, 45.4, 85.2, 108.5, 65.6, 61.0, 76.5, 49.6, 23.5, 14.5, 44.8, 58.4, 107.4, 34.7, 26.2, 45.4, 40.5, 43.1, 84.3, 57.9, 145.1, 76.3, 47.7, 61.9, 81.1, 82.9, 91.1, 128.7, 41.7, 36.7, 10.9, 37.9, 64.5, 63.2, 26.8, 30.4, 38.9, 185.2, 294.2, 299.9, 258.8, 219.8, 204.2, 175.2, 172.7, 126.8, 173.8, 195.4, 182.3, 109.7, 86.6, 41.2, 43.4, 58.0, 61.7, 70.2, 38.0, 51.1, 43.1, 139.9, 229.0, 245.8, 276.8, 301.9, 282.9, 282.5, 269.1, 289.1, 294.8, 268.1, 195.2, 288.1, 284.6, 138.5, 182.8, 203.5, 187.9, 198.1, 189.0, 154.8, 204.5, 204.2, 124.1, 150.6, 154.3, 110.5, 153.1, 162.8, 138.5, 145.3, 175.7, 193.3, 166.8, 170.3, 167.2, 146.6, 140.2, 132.8, 149.8, 143.5, 89.4, 118.2, 130.2, 142.7, 122.9, 90.0, 84.7, 90.9, 87.7, 89.9, 102.3, 106.1, 109.5, 119.8, 111.5, 149.6, 141.1, 189.6, 157.0, 138.0, 143.3, 170.3, 158.8, 144.4, 186.6, 183.1, 148.2, 138.5, 149.6, 165.9, 178.1, 172.4, 178.5, 171.7, 320.2, 339.8, 261.9, 212.7, 233.0, 692.4, 536.9, 800.9, 428.8, 429.7, 375.3, 415.2, 356.3, 296.5, 254.6, 316.0, 311.3, 268.2, 262.0, 250.7, 265.3, 111.1, 68.7, 107.3, 88.9, 81.4, 112.1, 102.3, 98.8, 112.3, 105.9, 80.1, 85.4, 71.1, 53.6, 36.7, 62.1, 78.6, 82.4, 63.6, 56.7, 71.4, 78.0, 65.0, 53.5, 60.3, 64.5, 70.5, 63.8, 42.9, 17.7, 41.4, 16.5, 21.9, 24.5, 19.0, 15.1, 21.4, 20.6, 12.4, 17.3, 4.7, 9.7, 18.3, 39.1, 43.2, 43.9, 47.2, 57.0, 50.7]}, "seriesFrom": "10 Oct 2023", "petalPeak": 801, "petalMedian": 78, "alerts": [{"sym": "GOLDGUINEA", "start": "2023-11-07", "days": 2, "bp": 96.9}, {"sym": "GOLDGUINEA", "start": "2023-11-10", "days": 2, "bp": 129.5}, {"sym": "GOLDPETAL", "start": "2023-11-22", "days": 2, "bp": -186.5}, {"sym": "GOLDPETAL", "start": "2023-11-28", "days": 4, "bp": -216.2}, {"sym": "GOLDGUINEA", "start": "2023-12-08", "days": 3, "bp": 143.9}, {"sym": "GOLDPETAL", "start": "2023-12-21", "days": 1, "bp": -212.9}, {"sym": "GOLDPETAL", "start": "2023-12-27", "days": 1, "bp": -227.7}, {"sym": "GOLDGUINEA", "start": "2024-01-17", "days": 1, "bp": 145.1}, {"sym": "GOLDPETAL", "start": "2024-01-23", "days": 1, "bp": -246.6}, {"sym": "GOLDPETAL", "start": "2024-02-01", "days": 1, "bp": -222.2}, {"sym": "GOLDGUINEA", "start": "2024-02-23", "days": 2, "bp": -11.2}, {"sym": "GOLDPETAL", "start": "2024-03-01", "days": 1, "bp": -243.6}, {"sym": "GOLDGUINEA", "start": "2024-03-04", "days": 8, "bp": -49.4}, {"sym": "GOLDPETAL", "start": "2024-03-06", "days": 1, "bp": -228.7}, {"sym": "GOLDPETAL", "start": "2024-03-08", "days": 2, "bp": -248.1}, {"sym": "GOLDGUINEA", "start": "2024-03-18", "days": 3, "bp": -69.2}, {"sym": "GOLDPETAL", "start": "2024-03-19", "days": 1, "bp": -238.0}, {"sym": "GOLDPETAL", "start": "2024-03-28", "days": 4, "bp": -275.1}, {"sym": "GOLDPETAL", "start": "2024-04-17", "days": 1, "bp": -67.1}, {"sym": "GOLDGUINEA", "start": "2024-05-31", "days": 3, "bp": 155.4}, {"sym": "GOLDPETAL", "start": "2024-06-07", "days": 1, "bp": -69.7}, {"sym": "GOLDGUINEA", "start": "2024-06-07", "days": 6, "bp": 191.8}, {"sym": "GOLDPETAL", "start": "2024-06-13", "days": 1, "bp": -44.2}, {"sym": "GOLDGUINEA", "start": "2024-06-26", "days": 1, "bp": 155.6}, {"sym": "GOLDGUINEA", "start": "2024-07-23", "days": 2, "bp": 242.6}, {"sym": "GOLDPETAL", "start": "2024-07-23", "days": 1, "bp": -41.0}, {"sym": "GOLDPETAL", "start": "2024-08-16", "days": 1, "bp": -230.1}, {"sym": "GOLDPETAL", "start": "2024-08-23", "days": 1, "bp": -291.9}, {"sym": "GOLDPETAL", "start": "2024-09-13", "days": 1, "bp": -233.0}, {"sym": "GOLDPETAL", "start": "2024-09-20", "days": 3, "bp": -242.3}, {"sym": "GOLDPETAL", "start": "2024-11-06", "days": 12, "bp": 32.1}, {"sym": "GOLDGUINEA", "start": "2024-11-06", "days": 1, "bp": 174.1}, {"sym": "GOLDGUINEA", "start": "2024-11-11", "days": 5, "bp": 161.3}, {"sym": "GOLDPETAL", "start": "2024-11-25", "days": 11, "bp": 76.4}, {"sym": "GOLDPETAL", "start": "2024-12-13", "days": 7, "bp": 19.3}, {"sym": "GOLDPETAL", "start": "2025-02-13", "days": 40, "bp": 12.4}, {"sym": "GOLDGUINEA", "start": "2025-02-28", "days": 1, "bp": 154.1}, {"sym": "GOLDGUINEA", "start": "2025-04-10", "days": 1, "bp": -58.6}, {"sym": "GOLDPETAL", "start": "2025-04-17", "days": 1, "bp": 83.1}, {"sym": "GOLDPETAL", "start": "2025-04-22", "days": 2, "bp": 104.5}, {"sym": "GOLDPETAL", "start": "2025-04-25", "days": 1, "bp": 90.4}, {"sym": "GOLDPETAL", "start": "2025-04-29", "days": 4, "bp": 68.2}, {"sym": "GOLDPETAL", "start": "2025-05-12", "days": 6, "bp": 105.3}, {"sym": "GOLDGUINEA", "start": "2025-05-23", "days": 1, "bp": -23.1}, {"sym": "GOLDPETAL", "start": "2025-06-24", "days": 1, "bp": 93.1}, {"sym": "GOLDPETAL", "start": "2025-06-27", "days": 2, "bp": 111.9}, {"sym": "GOLDGUINEA", "start": "2025-07-22", "days": 1, "bp": -25.4}, {"sym": "GOLDPETAL", "start": "2025-10-17", "days": 1, "bp": 128.0}, {"sym": "GOLDPETAL", "start": "2025-11-14", "days": 3, "bp": 119.4}, {"sym": "GOLDPETAL", "start": "2025-11-20", "days": 1, "bp": 128.0}, {"sym": "GOLDPETAL", "start": "2025-12-10", "days": 1, "bp": 126.7}, {"sym": "GOLDTEN", "start": "2025-12-19", "days": 1, "bp": 15.7}, {"sym": "GOLDPETAL", "start": "2025-12-19", "days": 1, "bp": 129.0}, {"sym": "GOLDTEN", "start": "2025-12-26", "days": 10, "bp": 17.1}, {"sym": "GOLDGUINEA", "start": "2025-12-26", "days": 11, "bp": 157.4}, {"sym": "GOLDPETAL", "start": "2025-12-29", "days": 10, "bp": 195.6}, {"sym": "GOLDTEN", "start": "2026-01-12", "days": 24, "bp": 40.5}, {"sym": "GOLDPETAL", "start": "2026-01-13", "days": 29, "bp": 170.2}, {"sym": "GOLDGUINEA", "start": "2026-01-14", "days": 27, "bp": 166.8}, {"sym": "GOLDPETAL", "start": "2026-02-24", "days": 1, "bp": 220.0}, {"sym": "GOLDPETAL", "start": "2026-02-26", "days": 1, "bp": 234.8}, {"sym": "GOLDPETAL", "start": "2026-03-02", "days": 6, "bp": 251.7}, {"sym": "GOLDGUINEA", "start": "2026-03-03", "days": 3, "bp": 264.4}, {"sym": "GOLDPETAL", "start": "2026-03-11", "days": 4, "bp": 230.4}, {"sym": "GOLDPETAL", "start": "2026-03-18", "days": 1, "bp": 237.9}, {"sym": "GOLDPETAL", "start": "2026-03-23", "days": 1, "bp": 253.7}], "alertCount": 66, "alertDays": "295", "allDays": "1,858", "alertShare": 16, "closedAlert": 50, "closedNormal": 53, "alertsPerMonth": "1.8", "seriesYears": 3, "petal": {"gap": 50.7, "z": 0.33, "band": 227.7}};
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -252,6 +296,7 @@ const [{ default: Lenis }, M] = await Promise.all([
 const and = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
 
 /* ---------- copy that depends on today's data */
+$("#recastRows").innerHTML = D.pieces.map(p => `<li><span>${p.sym} · ${p.close} per ${p.per} ÷ ${p.pure} pure</span><b>${p.per_g}/g</b></li>`).join("");
 $("#pgRows").innerHTML = D.pieces.map(p => `<li><span>${p.sym} · ${p.kind}</span><b>${p.per_g}/g</b></li>`).join("");
 $("#gapRows").innerHTML = D.gaps.map(g => `<li class="${g.gap >= D.costLine ? "over" : ""}"><span>${g.sym} vs GOLDM</span><b>${g.gap.toFixed(1)} bp</b></li>`).join("");
 $("#overText").textContent = D.over.length ? `Today ${and(D.over)} ${D.over.length === 1 ? "clears" : "clear"} it.` : "Today none clear it.";
@@ -296,6 +341,13 @@ function rollChapter(k, dir) {
 /* scroll → beat value. Each beat holds still while its card is read, then glides to the next. */
 const sm = x => x * x * x * (x * (x * 6 - 15) + 10);                     // smootherstep
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const S = { problem: 0, recast: 1, pergram: 2, daily: 3, cost: 4, unusual: 5, quiet: 6, know: 7, team: 8 };   // beat order in <main>
+function scrollRaw() {   // beat index plus the linear fraction through it, with no hold: for things the reader scrubs
+  const y = scrollY; let i = 0;
+  while (i < N && y >= beatTop(i + 1)) i++;
+  if (i >= N) return N;
+  return i + clamp((y - beatTop(i)) / (beatTop(i + 1) - beatTop(i)));
+}
 function scrollBeat() {
   const y = scrollY; let i = 0;
   while (i < N && y >= beatTop(i + 1)) i++;
@@ -346,15 +398,24 @@ function splitWords(el) {
   el.querySelectorAll(".hl").forEach(h => { if (!h.matches("i")) h.classList.replace("hl", "hl-src"); });
   return [...el.querySelectorAll(".w > i")];
 }
-const NUM = /^([^\d−-]*)([−-]?)([\d,]*\d(?:\.\d+)?)(.*)$/;
-function countUp(el, delay) {
-  const fin = el.textContent, m = fin.match(NUM); if (!m) return;
-  const [, pre, neg, digits, post] = m, v = parseFloat(digits.replace(/,/g, "")), dec = (digits.split(".")[1] || "").length;
-  const indian = /\d,\d\d,\d{3}/.test(digits), grp = digits.includes(",");
-  const fmt = x => { let s = x.toFixed(dec); if (grp) { const [a, b] = s.split("."); s = (indian ? Number(a).toLocaleString("en-IN") : Number(a).toLocaleString("en-US")) + (b ? "." + b : ""); } return pre + neg + s + post; };
-  const from = v >= 1000 ? v * 0.9 : 0;   // big rupee figures settle from just below; small ones count from zero
-  el.textContent = fmt(from);
-  M.animate(from, v, { duration: 1.2, delay, ease: [0.16, 1, 0.3, 1], onUpdate: x => { el.textContent = fmt(x); }, onComplete: () => { el.textContent = fin; } });
+const NUM = /\d/;
+/* odometer: each digit is a strip of 0-9 that rolls into place, right to left, like a ticker board; the
+   finished text is put back exactly as data.json wrote it */
+function odometer(el, delay) {
+  const fin = el.textContent; if (!NUM.test(fin)) return;
+  el.textContent = "";
+  const strips = [];
+  for (const ch of fin) {
+    if (!/\d/.test(ch)) { el.append(ch); continue; }
+    const od = document.createElement("span"), st = document.createElement("span"); od.className = "od";
+    for (let r = 0; r < 20; r++) { const d = document.createElement("span"); d.textContent = r % 10; st.append(d); }
+    od.append(st); el.append(od); strips.push([st, 10 + +ch]);
+  }
+  let left = strips.length;
+  strips.reverse().forEach(([st, n], k) => {
+    M.animate(st, { y: ["0%", `${-n * 5}%`] }, { duration: 1.1 + k * 0.05, delay: delay + k * 0.05, ease: [0.16, 1, 0.3, 1] })
+      .then(() => { if (--left === 0) el.textContent = fin; });
+  });
 }
 if (M && !reduce) {
   document.documentElement.classList.add("js-rv");
@@ -367,7 +428,8 @@ if (M && !reduce) {
     card._reveal = () => {
       M.animate(words, { y: ["110%", "0%"], rotate: [4, 0] }, { duration: 0.9, delay: M.stagger(0.045, { startDelay: 0.08 }), ease: [0.16, 1, 0.3, 1] });
       M.animate(rest, { opacity: [0, 1], y: [18, 0], filter: ["blur(6px)", "blur(0px)"] }, { duration: 0.8, delay: M.stagger(0.05, { startDelay: 0.25 }), ease: [0.16, 1, 0.3, 1] });
-      nums.forEach((b, k) => countUp(b, 0.35 + k * 0.06));
+      nums.forEach((b, k) => odometer(b, 0.3 + k * 0.08));
+      card.classList.add("glint");
     };
   });
   // if frames are held back (a background tab, power saving), never leave the opening card blank
@@ -475,33 +537,106 @@ if (renderer) {
   const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
   scene.add(dustPts);
 
-  /* ---------- choreography: values at each beat 0..5, eased between */
+  /* ---------- poses. Beats: */
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
-  const cam = [
-    { p: V(0, 0.3, 6.6), t: V(0, -0.05, 0), fov: 34 },
-    { p: V(0, 2.1, 5.6), t: V(0, -0.3, 0), fov: 34 },
-    { p: V(-2.2, 1.3, 6.2), t: V(0.2, 0.45, 0), fov: 36 },
-    { p: V(4.2, 1.9, 8.4), t: V(0.9, 2.55, 0), fov: 50 },
-    { p: V(0.4, 0.7, 4.4), t: V(0.4, 0.55, -1.2), fov: 38 },
-    { p: V(0, 0.9, -5.6), t: V(0, 0.3, -10.6), fov: 36 },
-  ];
   const ring = (i, n, r, cx, cy, cz, a0) => V(cx + Math.cos(a0 + i * 6.283 / n) * r, cy + Math.sin(a0 + i * 6.283 / n) * r * 0.35, cz + Math.sin(a0 + i * 6.283 / n) * r * 0.4);
-  // piece positions and scales per beat
   const px = [-1.3, -0.42, 0.42, 1.18], line = [-1.2, -0.4, 0.4, 1.2];
   const pieceAt = (i, b) => {
-    if (b === 0) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i] };
-    if (b === 1) return { p: V(line[i], -0.2, 0), s: [0.62, 0.95, 0.9, 1.7][i], ry: 0, rx: [0.65, 0.65, 1.35, 0.65][i] };
-    if (b === 2 || b === 3) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i] };
-    if (b === 4) return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3 };
-    return { p: ring(i, 4, 1.15, 0, 0.2, -10.6, 0.4), s: [0.7, 1.0, 0.95, 1.7][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i] };
+    if (b === S.problem) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i] };
+    if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.65, 0.65, 1.35, 0.65][i] };   // melted into grains
+    if (b === S.pergram) return { p: V(line[i], -0.2, 0), s: [0.62, 0.95, 0.9, 1.7][i], ry: 0, rx: [0.65, 0.65, 1.35, 0.65][i] };
+    if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i] };
+    if (b === S.team) return { p: ring(i, 4, 1.15, 0, 0.2, -10.6, 0.4), s: [0.7, 1.0, 0.95, 1.7][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i] };
+    return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3 };                                          // off stage
   };
-  const colAt = (i, b) => (b === 2 || b === 3) ? D.gaps[i].gap * K : 0.0001;
+
+  /* ---------- recast: every piece melts into grains that pour into four identical cubes, one gram of pure gold each */
+  const GN = 4, NG = GN * GN * GN, GS = 0.072;
+  const grains = new THREE.InstancedMesh(new RoundedBoxGeometry(0.058, 0.058, 0.058, 2, 0.012), g999, NG * 4);
+  grains.frustumCulled = false; world.add(grains);
+  const gSrc = [], gDst = [], gDel = [], gSpin = [];
+  P.forEach((p, k) => {
+    const geo = p.children[0].geometry; geo.computeBoundingBox(); const bb = geo.boundingBox;
+    for (let g = 0; g < NG; g++) {
+      gSrc.push(V(bb.min.x + Math.random() * (bb.max.x - bb.min.x), bb.min.y + Math.random() * (bb.max.y - bb.min.y), bb.min.z + Math.random() * (bb.max.z - bb.min.z)));
+      const ix = g % GN, iy = Math.floor(g / GN) % GN, iz = Math.floor(g / GN / GN);
+      gDst.push(V(line[k] * 0.82 + (ix - 1.5) * GS, -0.05 + (iy - 1.5) * GS, (iz - 1.5) * GS));
+      gDel.push((3 - iy) / 3 * 0.6 + Math.random() * 0.4);              // the cube fills from the bottom up
+      gSpin.push(V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(6));
+    }
+  });
+  const poseMat = (k, b) => { const a = pieceAt(k, b), m = new THREE.Matrix4();
+    return m.compose(a.p, new THREE.Quaternion().setFromEuler(new THREE.Euler(a.rx, a.ry, 0)), new THREE.Vector3(a.s, a.s, a.s)); };
+  const gm = new THREE.Matrix4(), gq = new THREE.Quaternion(), ge = new THREE.Euler(), gv = new THREE.Vector3(), gs = new THREE.Vector3();
+
+  /* ---------- every day: each small contract's distance from its usual premium, a ribbon per contract that draws with scroll */
+  const SER = D.series, NS = SER.dates.length, RX0 = -1.4, RX1 = 2.2, RB = BASE;
+  const LANES = [["GOLDTEN", -1.0, 0xf3c257], ["GOLDGUINEA", -1.45, 0xe9a93a], ["GOLDPETAL", -1.9, 0xfbe3a1]];
+  const KR = 1.55 / Math.max(...LANES.flatMap(([s]) => SER[s].filter(v => v != null)));
+  const ribbon = new THREE.Group(); world.add(ribbon);
+  const lanes = LANES.map(([sym, z, col]) => {
+    const v = SER[sym]; let first = v.findIndex(x => x != null), prev = 0;
+    const pos = [], top = [], idx = [];
+    for (let j = 0; j < NS; j++) {
+      const val = j < first ? null : (v[j] == null ? prev : v[j]); if (val != null) prev = val;
+      const x = RX0 + (RX1 - RX0) * j / (NS - 1), h = (val || 0) * KR;
+      pos.push(x, RB, z, x, RB + h, z); top.push(x, RB + h, z);
+    }
+    for (let j = Math.max(first, 0); j < NS - 1; j++) { const a = 2 * j; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
+    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(top, 3));
+    const edgeL = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.95, toneMapped: false }));
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.035, 16, 12), glow);
+    const floor = new THREE.Mesh(new THREE.BoxGeometry(RX1 - RX0, 0.006, 0.006), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.25, toneMapped: false }));
+    floor.position.set(0, RB, z);
+    ribbon.add(fill, edgeL, head, floor);
+    return { sym, z, first: Math.max(first, 0), fill, edgeL, head, top, nIdx: idx.length };
+  });
+
+  /* ---------- quiet: three years on a dark rail; a scanner sweeps across and each alert episode flares as it passes */
+  const QZ = { GOLDPETAL: -4.6, GOLDGUINEA: -4.2, GOLDTEN: -3.8 }, QX0 = -1.4, QX1 = 2.2, QY = -0.25;
+  const tOf = d => (Date.parse(d) - Date.parse(SER.dates[0])) / (Date.parse(SER.dates[NS - 1]) - Date.parse(SER.dates[0]));
+  const quiet = new THREE.Group(); quiet.position.y = QY; world.add(quiet);
+  Object.values(QZ).forEach(z => { const r = new THREE.Mesh(new THREE.BoxGeometry(QX1 - QX0, 0.008, 0.008), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.18, toneMapped: false })); r.position.z = z; quiet.add(r); });
+  const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.004, 0.03, 0.004), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.16, toneMapped: false }), NS * 3);
+  { let n = 0; Object.values(QZ).forEach(z => { for (let j = 0; j < NS; j++) { gm.makeTranslation(QX0 + (QX1 - QX0) * j / (NS - 1), 0.015, z); ticks.setMatrixAt(n++, gm); } }); }
+  quiet.add(ticks);
+  const AL = D.alerts.map(a => ({ ...a, x: QX0 + (QX1 - QX0) * tOf(a.start), z: QZ[a.sym], h: 0.12 + Math.min(a.bp, 450) / 450 * 0.75, w: 0.012 + Math.min(a.days, 8) * 0.003 }));
+  const flareGeo = new THREE.BoxGeometry(1, 1, 1); flareGeo.translate(0, 0.5, 0);
+  const flares = new THREE.InstancedMesh(flareGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, toneMapped: false }), AL.length);
+  flares.frustumCulled = false; quiet.add(flares);
+  const fc = new THREE.Color(), GOLD = new THREE.Color(0xffc75e), HOT = new THREE.Color(0xfff2c8);
+  const scanner = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.1), new THREE.MeshBasicMaterial({ color: 0xffe2a0, transparent: true, opacity: 0.85, toneMapped: false, side: THREE.DoubleSide }));
+  scanner.rotation.y = Math.PI / 2; scanner.scale.x = 1;
+  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }));
+  scanGlow.rotation.y = Math.PI / 2;
+  const scanH = new THREE.Group(); scanH.add(scanner, scanGlow); scanner.position.y = scanGlow.position.y = 0.55; quiet.add(scanH);
+
+  /* ---------- choreography: one pose per beat, eased between */
+  const cam = [
+    { p: V(0, 0.3, 6.6), t: V(0, -0.05, 0), fov: 34 },          // the problem
+    { p: V(0, 1.45, 5.2), t: V(0, -0.1, 0), fov: 34 },          // recast
+    { p: V(0, 2.1, 5.6), t: V(0, -0.3, 0), fov: 34 },           // per gram
+    { p: V(-0.5, 1.6, 6.3), t: V(0.45, 0.2, -1.45), fov: 36 },  // every day
+    { p: V(-2.2, 1.3, 6.2), t: V(0.2, 0.45, 0), fov: 36 },      // cost line
+    { p: V(4.2, 1.9, 8.4), t: V(0.9, 2.55, 0), fov: 50 },       // unusual?
+    { p: V(0.1, 2.0, 2.6), t: V(0.2, -0.05, -4.2), fov: 36 },   // quiet
+    { p: V(0.4, 0.7, 4.4), t: V(0.4, 0.55, -1.2), fov: 38 },    // how we know
+    { p: V(0, 0.9, -5.6), t: V(0, 0.3, -10.6), fov: 36 },       // team
+  ];
+  const camAt = k => cam[Math.min(k, cam.length - 1)];
+  const colAt = (i, b) => (b === S.cost || b === S.unusual) ? D.gaps[i].gap * K : 0.0001;
+  const fd = s => { const [y, m, d] = s.split("-"); return `${+d} ${"Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[m - 1]} ${y}`; };
 
   /* labels */
   const pl = D.pieces.map(p => label(`<b>${p.sym}</b><small>${p.kind} · ${p.purity}</small><div class="n">${p.per_g}/g</div>`));
+  const rl = D.pieces.map(p => label(`<b>${p.sym}</b><small>÷ ${p.pure} pure</small><div class="n">${p.per_g}/g</div>`));
   const cl = D.gaps.map(g => label(`<b class="n">${g.gap.toFixed(1)} bp</b><small>${g.sym}</small>`));
   const costL = label(`<b>Cost line</b><span class="n">${D.costLine.toFixed(1)} bp</span>`);
   const bandL = label(`<b>Alert needs ±${D.thr}σ</b><span class="n">${D.petal.band.toFixed(0)} bp for GOLDPETAL</span>`);
+  const headL = label(""), scanL = label(""); let headJ = -1, scanN = -1, scanM = "";
+  const laneL = lanes.map(l => label(l.sym, "line"));
 
   const tmpV = new THREE.Vector3();
   const place = (el, v, op, dy = 0) => {
@@ -512,6 +647,7 @@ if (renderer) {
     el.style.opacity = op.toFixed(3); el._o = op;
   };
   const bump = (b, a, c, w = 0.35) => clamp((b - (a - w)) / w) * clamp(((c + w) - b) / w);
+  const backOut = x => { const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
 
   /* view offset: desktop shifts the gold right of the card, phones lift it above the card */
   const view = { x: 0, y: 0, w: 1, h: 1 };
@@ -527,56 +663,108 @@ if (renderer) {
   let mx = 0, my = 0, tmx = 0, tmy = 0;
   addEventListener("pointermove", e => { if (e.pointerType === "mouse") { tmx = e.clientX / innerWidth - 0.5; tmy = e.clientY / innerHeight - 0.5; } }, { passive: true });
 
-  const lerpV = (a, b, f) => tmpA.copy(a).lerp(b, f);
-  const tmpA = new THREE.Vector3(), camP = new THREE.Vector3(), camT = new THREE.Vector3();
+  const camP = new THREE.Vector3(), camT = new THREE.Vector3();
   let ftimes = [], lastAdj = 0;
-  frame = (b, time, dt) => {
+  frame = (b, raw, time, dt) => {
     const i = Math.min(N - 1, Math.floor(b)), f = b - i, j = i + 1;
-    const A = cam[i], B = cam[j];
+    const A = camAt(i), B = camAt(j);
     camP.copy(A.p).lerp(B.p, f); camT.copy(A.t).lerp(B.t, f);
+    // quiet: the camera trucks along the rail with the scanner
+    const qv = bump(b, S.quiet, S.quiet, 0.7), sx = QX0 + (QX1 - QX0) * clamp((raw - (S.quiet - 0.35)) / 0.7);
+    camP.x += sx * 0.06 * qv; camT.x += sx * 0.08 * qv;
     if (camera.aspect < 1.1) camP.sub(camT).multiplyScalar(Math.min(2.0, 1.02 / camera.aspect)).add(camT);   // tall screens: step back so all four fit
     mx += (tmx - mx) * (1 - Math.exp(-dt / 0.25)); my += (tmy - my) * (1 - Math.exp(-dt / 0.25));
     if (!reduce) { camP.x += mx * 0.35; camP.y -= my * 0.22; }
     camera.position.copy(camP); camera.lookAt(camT);
     const fov = A.fov + (B.fov - A.fov) * f; if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
 
+    // calm: a slow, small float at the opening and closing beats only; no free spinning
+    const idle = b < 0.8 ? 1 - clamp(b / 0.8) : b > S.team - 0.5 ? clamp((b - (S.team - 0.5)) / 0.5) : 0;
     P.forEach((p, k) => {
       const a = pieceAt(k, i), c = pieceAt(k, j);
       p.position.copy(a.p).lerp(c.p, f);
-      // calm: a slow, small float at the opening and closing beats only; no free spinning
-      const idle = b < 1.3 ? 1 - clamp(b / 1.3) : b > 4.5 ? clamp((b - 4.5) / 0.5) : 0;
-      const bob = reduce ? 0 : Math.sin(time * 0.6 + k * 1.7) * 0.012 * idle;
-      p.position.y += bob;
+      p.position.y += reduce ? 0 : Math.sin(time * 0.6 + k * 1.7) * 0.012 * idle;
       const s = a.s + (c.s - a.s) * f; p.scale.setScalar(Math.max(s, 0.001)); p.visible = s > 0.01;
       p.rotation.x = a.rx + (c.rx - a.rx) * f;
       p.rotation.y = a.ry + (c.ry - a.ry) * f + (reduce ? 0 : Math.sin(time * 0.35 + k) * 0.05 * idle);   // a slight sway, driven by scroll otherwise
     });
+
+    // grains: x is 1 at the recast beat and 0 a beat either side; each grain leaves on its own delay, arcs, tumbles and lands
+    const x = 1 - Math.min(1, Math.abs(b - S.recast));
+    grains.visible = x > 0.001;
+    if (grains.visible) {
+      const side = b < S.recast ? S.problem : S.pergram;
+      for (let k = 0, n = 0; k < 4; k++) {
+        const M0 = poseMat(k, side);
+        for (let g = 0; g < NG; g++, n++) {
+          const e = sm(clamp(x * 1.6 - gDel[n] * 0.6));
+          gv.copy(gSrc[n]).applyMatrix4(M0).lerp(gDst[n], e); gv.y += Math.sin(Math.PI * e) * (0.35 + gDel[n] * 0.25);
+          const tumble = (1 - e); ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
+          gs.setScalar(Math.max(clamp(e * 5) * 1, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
+        }
+      }
+      grains.instanceMatrix.needsUpdate = true;
+    }
+
     cols.forEach((m, k) => {
       const h = colAt(k, i) + (colAt(k, j) - colAt(k, i)) * f;
       m.position.set(line[k + 1], BASE, 0); m.scale.set(1, Math.max(h, 0.0001), 1); m.visible = h > 0.005;
-      const lit = k === 2 ? bump(b, 3, 3, 0.6) : 0; m.material.emissiveIntensity = lit * (reduce ? 0.8 : 0.75 + 0.1 * Math.sin(time * 1.4));
+      const lit = k === 2 ? bump(b, S.unusual, S.unusual, 0.6) : 0; m.material.emissiveIntensity = lit * (reduce ? 0.8 : 0.75 + 0.1 * Math.sin(time * 1.4));
     });
-    const pv = bump(b, 2, 3, 0.7);
+    const pv = bump(b, S.cost, S.unusual, 0.7);
     plane.position.set(0, BASE + D.costLine * K, 0); plane.scale.setScalar(Math.max(pv, 0.0001)); plane.visible = pv > 0.01;
     edge.position.set(0, BASE + D.costLine * K, 0.65); edge.scale.set(Math.max(pv, 0.0001), 1, 1); edge.visible = pv > 0.01;
-    const bv = bump(b, 3, 3, 0.75);
+    const bv = bump(b, S.unusual, S.unusual, 0.75);
     band.position.set(line[3], BASE, 0); band.scale.set(1, Math.max(bandH * sm(bv), 0.0001), 1); band.visible = bv > 0.01;
     bandCaps.forEach(r => { r.position.set(line[3], BASE + bandH * sm(bv), 0); r.visible = bv > 0.01; });
-    const sv = bump(b, 4, 4, 0.7);
-    slabs.forEach((g, k) => { const e = sm(clamp(sv * 1.3 - k * 0.15)); g.scale.setScalar(Math.max(0.62 * e, 0.0001)); g.visible = e > 0.01; g.rotation.y = -0.18 + (reduce ? 0 : (b - 4) * 0.22 * (k - 1) + Math.sin(time * 0.3 + k) * 0.015); });   // fan open with scroll
+    const sv = bump(b, S.know, S.know, 0.7);
+    slabs.forEach((g, k) => { const e = sm(clamp(sv * 1.3 - k * 0.15)); g.scale.setScalar(Math.max(0.62 * e, 0.0001)); g.visible = e > 0.01; g.rotation.y = -0.18 + (reduce ? 0 : (b - S.know) * 0.22 * (k - 1) + Math.sin(time * 0.3 + k) * 0.015); });   // fan open with scroll
+
+    // ribbon: rises with the beat, then draws left to right with the reader's scroll; a bead and a date ride the leading edge
+    const rv = bump(b, S.daily, S.daily, 0.6), dp = clamp((raw - (S.daily - 0.4)) / 0.72);
+    ribbon.visible = rv > 0.01; ribbon.scale.y = Math.max(sm(rv), 0.0001); ribbon.position.y = (1 - ribbon.scale.y) * RB;
+    let hj = 0;
+    lanes.forEach((l, k) => {
+      const jj = Math.round(l.first + (NS - 1 - l.first) * dp), seg = Math.max(0, jj - l.first);
+      l.fill.geometry.setDrawRange(0, seg * 6); l.edgeL.geometry.setDrawRange(l.first, Math.max(0, jj - l.first + 1));
+      l.head.position.set(l.top[jj * 3], l.top[jj * 3 + 1], l.top[jj * 3 + 2]); l.head.visible = dp > 0.001 && dp < 0.999 && jj >= l.first;
+      if (k === 2) hj = jj;
+    });
+    if (hj !== headJ) { headJ = hj; const v = SER.GOLDPETAL[hj]; headL.innerHTML = `<b class="n">${fd(SER.dates[hj])}</b><small>GOLDPETAL ${v == null ? "–" : v.toFixed(0) + " bp"}</small>`; }
+
+    // quiet: flares grow with a small overshoot as the scanner reaches them, flash, then settle
+    quiet.visible = qv > 0.01; quiet.scale.set(1, Math.max(sm(qv), 0.0001), 1);
+    if (quiet.visible) {
+      let seen = 0;
+      AL.forEach((a, n) => {
+        const t = clamp((sx - a.x) / 0.18), hgt = reduce ? (t > 0 ? 1 : 0) : backOut(t);
+        if (t > 0) seen++;
+        gv.set(a.x, 0, a.z); gs.set(a.w, Math.max(a.h * hgt, 0.0001), a.w); gq.identity(); gm.compose(gv, gq, gs); flares.setMatrixAt(n, gm);
+        const flash = Math.exp(-Math.pow((sx - a.x) / 0.1, 2)); fc.copy(GOLD).multiplyScalar(0.55 + 0.45 * t).lerp(HOT, flash); flares.setColorAt(n, fc);
+      });
+      flares.instanceMatrix.needsUpdate = true; if (flares.instanceColor) flares.instanceColor.needsUpdate = true;
+      scanH.position.set(sx, 0, -4.2); scanH.visible = sx > QX0 + 0.01 && sx < QX1 - 0.01;
+      const mo = fd(SER.dates[Math.round(clamp((sx - QX0) / (QX1 - QX0)) * (NS - 1))]).replace(/^\d+ /, "");
+      if (seen !== scanN || mo !== scanM) { scanN = seen; scanM = mo; scanL.innerHTML = `<b class="n">${seen} alert${seen === 1 ? "" : "s"}</b><small>to ${mo}</small>`; }
+    }
 
     if (!reduce) { const a = dg.attributes.position.array; for (let k = 0; k < NP; k++) { a[k * 3 + 1] += Math.sin(time * 0.3 + seed[k]) * 0.0009; a[k * 3] += Math.cos(time * 0.2 + seed[k]) * 0.0006; } dg.attributes.position.needsUpdate = true; }
-
-    if (!reduce) { dustPts.position.y = -b * 0.18; dustPts.rotation.y = b * 0.04; }   // dust drifts with the story
+    if (!reduce) { dustPts.position.y = -b * 0.12; dustPts.rotation.y = b * 0.03; }   // dust drifts with the story
     renderer.render(scene, camera);
 
     // labels follow their objects
-    const w1 = bump(b, innerWidth > 760 ? 0 : 0.7, 1, 0.45);   // phones: names appear once the pieces line up
+    const w1 = innerWidth > 760 ? Math.max(bump(b, S.problem, S.problem, 0.45), bump(b, S.pergram, S.pergram, 0.45)) : bump(b, S.pergram, S.pergram, 0.45);
     pl.forEach((el, k) => { tmpV.copy(P[k].position); tmpV.y += 0.42 * Math.max(P[k].scale.x, 0.6); place(el, tmpV, w1, -6); });
-    const w2 = bump(b, 2, 3, 0.45);
+    const wr = sm(clamp((x - 0.75) / 0.25));
+    rl.forEach((el, k) => place(el, V(line[k] * 0.82, 0.12 + 1.5 * GS, 0), wr, -6));
+    const w2 = bump(b, S.cost, S.unusual, 0.45);
     cl.forEach((el, k) => { place(el, V(line[k + 1], BASE + cols[k].scale.y + 0.08, 0), w2, -4); });
-    place(costL, V(-1.15, BASE + D.costLine * K + 0.06, 0.65), bump(b, 2, 3, 0.4) * (innerWidth > 760 ? 1 : 0.9));
-    place(bandL, V(line[3], BASE + bandH * sm(bv) + 0.14, 0), bump(b, 3, 3, 0.35));
+    place(costL, V(-1.15, BASE + D.costLine * K + 0.06, 0.65), bump(b, S.cost, S.unusual, 0.4) * (innerWidth > 760 ? 1 : 0.9));
+    place(bandL, V(line[3], BASE + bandH * sm(bv) + 0.14, 0), bump(b, S.unusual, S.unusual, 0.35));
+    const wh = rv > 0.6 && dp > 0.02 ? sm(clamp((rv - 0.6) / 0.4)) * (1 - clamp((dp - 0.88) / 0.08)) : 0, h2 = lanes[2];
+    place(headL, tmpV.set(h2.top[headJ * 3], h2.top[headJ * 3 + 1] * ribbon.scale.y + ribbon.position.y, h2.z).clone(), wh, -12);
+    laneL.forEach((el, k) => { const l = lanes[k], e = (NS - 1) * 3; place(el, V(RX1 + 0.04, (l.top[e + 1] - RB) * ribbon.scale.y + RB + 0.02, l.z), sm(clamp((rv - 0.7) / 0.3)) * clamp((dp - 0.9) / 0.1) * (innerWidth > 760 ? 1 : 0), -2); });
+    place(scanL, V(sx, QY + 1.2 * quiet.scale.y, -4.2), scanH.visible ? sm(clamp((qv - 0.5) / 0.5)) : 0, -4);
 
     // keep it smooth on slower phones: drop resolution a step if frames run long
     ftimes.push(dt); if (ftimes.length > 50) ftimes.shift();
@@ -584,21 +772,34 @@ if (renderer) {
   };
 }
 
+/* ---------- ticker tape (desktop): the four contracts roll past along the bottom; faster, and leaning, as the reader scrolls */
+const tape = $("#tape"), tapeIn = tape.firstElementChild;
+const tapeItem = p => `<span><b>${p.sym}</b> ${p.close} <i class="${p.chg >= 0 ? "up" : "dn"}">${p.chg >= 0 ? "▲" : "▼"} ${Math.abs(p.chg).toFixed(2)}%</i> <em>${p.per_g}/g pure</em></span>`;
+tapeIn.innerHTML = (D.pieces.map(tapeItem).join("") + `<span><b>Data</b> ${D.quoteDay} · MCX Bhavcopy</span>`).repeat(2);
+let tapeX = 0, tapeV = 0, lastY = scrollY;
+
 /* ---------- loop */
-let cur = scrollBeat(), last = performance.now(), t0 = last, shown = -1;
+let cur = scrollBeat(), curRaw = scrollRaw(), last = performance.now(), t0 = last, shown = -1;
 const prog = $("#prog"), hint = $("#hint");
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (lenis) lenis.raf(now);
-  const target = scrollBeat();
-  cur = reduce ? target : cur + (target - cur) * (1 - Math.exp(-dt / (lenis ? 0.07 : 0.14)));   // Lenis already eases the wheel
+  const target = scrollBeat(), traw = scrollRaw(), ease = 1 - Math.exp(-dt / (lenis ? 0.07 : 0.14));   // Lenis already eases the wheel
+  cur = reduce ? target : cur + (target - cur) * ease; curRaw = reduce ? traw : curRaw + (traw - curRaw) * ease;
   if (Math.abs(target - cur) < 1e-4) cur = target;
   const vh = innerHeight;
   cardsFrame(vh);
   prog.style.transform = `scaleX(${(scrollY / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4)})`;
   if (hint) hint.style.opacity = String(1 - clamp(scrollY / (vh * 0.25)));
   const k = Math.round(cur); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
-  frame(cur, (now - t0) / 1000, dt);
+  if (!reduce && tape.offsetParent) {
+    const vel = lenis ? lenis.velocity : (scrollY - lastY) / Math.max(dt, 1e-3) / 60; lastY = scrollY;
+    tapeV += (vel - tapeV) * (1 - Math.exp(-dt / 0.2));
+    tapeX -= (28 + Math.min(Math.abs(tapeV) * 9, 900)) * dt * (tapeV < -0.5 ? -1 : 1);
+    const wHalf = tapeIn.scrollWidth / 2; if (wHalf) tapeX = ((tapeX % wHalf) - wHalf) % wHalf;
+    tapeIn.style.transform = `translate3d(${tapeX.toFixed(1)}px,0,0) skewX(${clamp(-tapeV * 0.35, -10, 10).toFixed(2)}deg)`;
+  }
+  frame(cur, curRaw, (now - t0) / 1000, dt);
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
