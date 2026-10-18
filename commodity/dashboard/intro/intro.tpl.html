@@ -489,10 +489,10 @@ if (renderer) {
   // chandelier's glow overhead and glints off the hoard (built like the studio above; a live capture would compile a second set of shaders)
   const roomEnv = (() => { const env = new THREE.Scene(), add = (geo, col, k, x, y, z) => { const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide }));
       m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m); return m; };
-    env.add(new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshBasicMaterial({ color: new THREE.Color(0x8a6640), side: THREE.BackSide })));
-    add(new THREE.PlaneGeometry(17, 17), 0xffe2b4, 1.5, 0, 5.95, 0);   // the lamplit ceiling: what the tops of the gold mirror
-    env.add(new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2).translate(0, -5.9, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xe0a63e).multiplyScalar(1.1) })));
-    [[-6, -3.5, 2, 4], [6, -3.8, -3, 3.5], [0, -4.2, -7, 4.5], [-3, -4.4, 7, 3]].forEach(([x, y, z, r]) => add(new THREE.SphereGeometry(r, 24, 12), 0xf0b44c, 1.2, x, y, z));   // banks of gold
+    env.add(new THREE.Mesh(new THREE.BoxGeometry(20, 12, 20), new THREE.MeshBasicMaterial({ color: new THREE.Color(0x8a7254), side: THREE.BackSide })));
+    add(new THREE.PlaneGeometry(17, 17), 0xffe6bf, 1.4, 0, 5.95, 0);   // the lamplit ceiling: what the tops of the gold mirror
+    env.add(new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2).translate(0, -5.9, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xd8b67a).multiplyScalar(1.1) })));
+    [[-6, -3.5, 2, 4], [6, -3.8, -3, 3.5], [0, -4.2, -7, 4.5], [-3, -4.4, 7, 3]].forEach(([x, y, z, r]) => add(new THREE.SphereGeometry(r, 24, 12), 0xe6c283, 1.15, x, y, z));   // banks of gold (paler than gold: what gold mirrors, it tints again)
     add(new THREE.CircleGeometry(2.4, 32), 0xfff0d0, 5, 0, 5.85, 0);   // the chandelier
     add(new THREE.PlaneGeometry(6, 2.2), 0xffd9a0, 1.8, 9.9, 1, -2); add(new THREE.PlaneGeometry(6, 2.2), 0xffd9a0, 1.5, -9.9, 1.5, 3);   // lamplight on the walls
     for (let k = 0; k < 14; k++) { const a = Math.random() * 6.28, r = 3 + Math.random() * 5; add(new THREE.CircleGeometry(0.18, 10), 0xfff4dc, 7, Math.cos(a) * r, -4 + Math.random() * 2, Math.sin(a) * r); }
@@ -503,7 +503,10 @@ if (renderer) {
 
   /* materials. The glass is faked (clearcoat reflections, see-through tint): real transmission renders the scene twice. */
   const goldMat = (c, r = 0.16) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.7, clearcoatRoughness: 0.08, envMapIntensity: 1.25 });
-  const g995 = goldMat(0xd6a24c, 0.28), g999 = goldMat(0xffcd5c, 0.14);   // 995 a shade paler than 999
+  // gold's colour is its reflectance: pure gold reflects about 100% red, 77% green and 34% blue (linear). Pushed past that it
+  // turns orange, so 999 sits just above it and 995, alloyed with silver, a shade paler and lighter
+  const G999 = 0xffd985, G995 = 0xf3d595;
+  const g995 = goldMat(G995, 0.28), g999 = goldMat(G999, 0.14);
   const flatN = new THREE.DataTexture(new Uint8Array([128, 128, 255, 255]), 1, 1); flatN.needsUpdate = true;   // a flat normal map, stand-in until a model's arrives
   const p995 = g995.clone(), p999 = g999.clone(), pCoin = g999.clone(); pCoin.normalMap = flatN;   // the four pieces get their own copies: at the finale they sit inside the vault
   const glass = () => new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, metalness: 0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06,
@@ -580,7 +583,7 @@ if (renderer) {
   /* gaps vs GOLDM, the cost line and GOLDPETAL's own ±1.5σ band, all on one scale (bp → scene units) */
   const K = 1.7 / Math.max(...D.gaps.map(g => g.gap), D.costLine * 1.1), BASE = -0.55;
   const colGeo = new RoundedBoxGeometry(0.36, 1, 0.36, 4, 0.05); colGeo.translate(0, 0.5, 0);
-  const cols = D.gaps.map(() => { const m = new THREE.Mesh(colGeo, goldMat(0xf3c257, 0.18)); m.material.emissive = new THREE.Color(0x7a4a00); m.material.emissiveIntensity = 0; world.add(m); return m; });
+  const cols = D.gaps.map(() => { const m = new THREE.Mesh(colGeo, goldMat(G999, 0.18)); m.material.emissive = new THREE.Color(0x7a4a00); m.material.emissiveIntensity = 0; world.add(m); return m; });
   const plane = new THREE.Mesh(new RoundedBoxGeometry(3.4, 0.035, 1.3, 3, 0.017), glass()); world.add(plane);
   const edge = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.012, 0.012), glow); world.add(edge);
   const bandH = D.petal.band * K;
@@ -636,7 +639,7 @@ if (renderer) {
   const bellLine = new THREE.Line(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(bpts, 3)), new THREE.LineBasicMaterial({ color: GLOWC, toneMapped: false })); bell.add(bellLine);
   const axis = new THREE.Mesh(new THREE.BoxGeometry(BELL.w + 0.2, 0.008, 0.008), glow); bell.add(axis);
   [-D.thr, D.thr].forEach(z => { const t = new THREE.Mesh(new THREE.BoxGeometry(0.008, by(z) + 0.14, 0.008), glow); t.position.set(bx(z), (by(z) + 0.14) / 2, 0.004); bell.add(t); });
-  const zDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 16), goldMat(0xf3c257, 0.15)); bell.add(zDot);
+  const zDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 16), goldMat(G999, 0.15)); bell.add(zDot);
   const bounceOut = x => { const n = 7.5625, d = 2.75; if (x < 1 / d) return n * x * x; if (x < 2 / d) return n * (x -= 1.5 / d) * x + 0.75; if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + 0.9375; return n * (x -= 2.625 / d) * x + 0.984375; };
 
   /* ---------- how we know: a bank-vault door set in a riveted wall plate. The dial spins, the wheel turns, ten locking
@@ -734,8 +737,8 @@ if (renderer) {
   // ---- the gold: CC0 models from TextureCan (texturecan.com), a stamped fine-gold bar and a coin re-faced with the Parity mark.
   //      They are a few KB each; until they arrive, plain stand-ins of the same size hold their places, and the models' normal
   //      maps swap in without a shader change (the materials carry a flat one from the start).
-  const tBar = roomMat(new THREE.MeshStandardMaterial({ color: 0xffc95a, metalness: 1, roughness: 0.2, normalMap: flatN, envMapIntensity: 1.35 }));
-  const tCoin = roomMat(new THREE.MeshStandardMaterial({ color: 0xffcd5c, metalness: 1, roughness: 0.26, normalMap: flatN, envMapIntensity: 1.35 }));
+  const tBar = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.2, normalMap: flatN, envMapIntensity: 1.3 }));
+  const tCoin = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.25, normalMap: flatN, envMapIntensity: 1.3 }));
   const BL = 0.34, BW = 0.119, BT = 0.064, CR = 0.075, CT = 0.01;   // bar and coin sizes in the room, in the models' own proportions
   const golds = [];
   // instanced gold, one mesh per patch of the room so the patches behind the camera are skipped; each piece a slightly
@@ -745,7 +748,7 @@ if (renderer) {
     list.forEach(M => { _s.setFromMatrixPosition(M); const key = Math.floor((_s.x + RW) / 3.2) + "," + Math.floor((_s.z - RZ1) / 3.2); if (!patch.has(key)) patch.set(key, []); patch.get(key).push(M); });
     patch.forEach(items => {
       const im = new THREE.InstancedMesh(geo, mat, items.length);
-      items.forEach((M, n) => { im.setMatrixAt(n, M); _c.setRGB(1, 0.955 + rnd(-0.04, 0.04), 0.88 + rnd(-0.12, 0.1)).multiplyScalar(rnd(0.86, 1.04)); im.setColorAt(n, _c); });
+      items.forEach((M, n) => { im.setMatrixAt(n, M); _c.setRGB(1, 0.975 + rnd(-0.03, 0.025), 0.95 + rnd(-0.08, 0.05)).multiplyScalar(rnd(0.86, 1.04)); im.setColorAt(n, _c); });
       im.castShadow = cast; im.receiveShadow = true; im.userData.kind = kind; im.computeBoundingSphere(); room.add(im); golds.push(im);
     });
   };
@@ -769,13 +772,42 @@ if (renderer) {
   const dN = (x, z) => V(-(dH(x + 0.04, z) - dH(x - 0.04, z)) / 0.08, 1, -(dH(x, z + 0.04) - dH(x, z - 0.04)) / 0.08).normalize();
   const lowest = (x, z, ry, hx, hz) => { let m = 1e9; const c = Math.cos(ry), s = Math.sin(ry);   // the lowest point of the dune under a footprint
     for (const u of [-1, 0, 1]) for (const v of [-1, 0, 1]) m = Math.min(m, dH(x + u * hx * c + v * hz * s, z - u * hx * s + v * hz * c)); return m; };
-  const coinTex = mkTex(512, 512, (x, w, h) => {   // coins piled on coins, each with a lit rim
-    x.fillStyle = "#7a5518"; x.fillRect(0, 0, w, h);
-    for (let k = 0; k < 420; k++) { const cx = Math.random() * w, cy = Math.random() * h, r = 11 + Math.random() * 13;
-      for (const [ox, oy] of [[0, 0], [w, 0], [-w, 0], [0, h], [0, -h]]) { const g = x.createRadialGradient(cx + ox - r * 0.3, cy + oy - r * 0.3, r * 0.1, cx + ox, cy + oy, r);
-        g.addColorStop(0, "#ffe9a8"); g.addColorStop(0.55, "#e2ac3e"); g.addColorStop(0.9, "#a8741f"); g.addColorStop(1, "rgba(60,38,8,.9)");
-        x.fillStyle = g; x.beginPath(); x.arc(cx + ox, cy + oy, r, 0, 6.283); x.fill(); } } }, 9, 11);
-  const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: coinTex, bumpMap: coinTex, bumpScale: 2.2, metalness: 1, roughness: 0.3, envMapIntensity: 1.2, vertexColors: true }));
+  // the hoard's surface: coins lying on coins, as colour plus a normal map so every coin has real relief: a face tilted its own
+  // way, a bevelled edge and a raised rim ring, the Parity mark struck on most, and a soft shadow where it rests on the coins
+  // below. It is drawn a few dozen coins at a time while the browser is idle (no frame waits for it); until then the hoard
+  // shows a plain gold, and the textures swap in without a shader change
+  const PS = mobile ? 512 : 1024, pileCol = new Uint8ClampedArray(PS * PS * 4), pileNrm = new Uint8ClampedArray(PS * PS * 4);
+  for (let i = 0; i < PS * PS * 4; i += 4) { pileCol[i] = 70; pileCol[i + 1] = 48; pileCol[i + 2] = 18; pileCol[i + 3] = 255; pileNrm[i] = pileNrm[i + 1] = 128; pileNrm[i + 2] = pileNrm[i + 3] = 255; }
+  const markIn = (u, v) => { const lx = 24 + u * 13.2, ly = 24 - v * 13.2; let best = -9;   // how far inside the Parity mark (u, v in -1..1) lies, 0..1 over its bevel
+    for (const y0 of [13, 26.4]) { const t = (ly - y0) / 8.6; best = Math.max(best, Math.min(ly - y0, y0 + 8.6 - ly, (lx - 14 + 3.2 * t) * 0.937, (34 + 3.2 * t - lx) * 0.937)); }
+    return clamp(best / 1.1); };
+  const pileCoin = () => {
+    const cx = Math.random() * PS, cy = Math.random() * PS, r = PS * (0.03 + Math.random() * 0.043), tx = rnd(-0.5, 0.5), ty = rnd(-0.5, 0.5), sh0 = rnd(0.8, 1.06);
+    const struck = r > PS * 0.042 && Math.random() < 0.75, ang = rnd(0, 6.28), ca = Math.cos(ang), sa = Math.sin(ang), R = Math.ceil(r * 1.3), ix = Math.round(cx), iy = Math.round(cy);
+    for (let dy = -R; dy <= R; dy++) { const span = Math.floor(Math.sqrt(R * R - dy * dy)); for (let dx = -span; dx <= span; dx++) {
+      const dist = Math.hypot(dx, dy), d = dist / r, i = ((((iy + dy) % PS + PS) % PS) * PS + (((ix + dx) % PS + PS) % PS)) * 4;
+      if (d > 1) { const f = 0.62 + 0.38 * ((d - 1) / 0.3) ** 2; pileCol[i] *= f; pileCol[i + 1] *= f; pileCol[i + 2] *= f; continue; }   // its shadow on what lies beneath
+      const ux = dist ? dx / dist : 0, uy = dist ? dy / dist : 0; let nx = tx, ny = ty, lift = 0;
+      if (d > 0.9) { const e = (d - 0.9) / 0.1; nx += ux * (0.4 + 1.6 * e); ny += uy * (0.4 + 1.6 * e); }   // the bevelled edge
+      else if (d > 0.79 && d < 0.87) { const k = d < 0.83 ? -0.7 : 0.7; nx += ux * k; ny += uy * k; }   // the raised rim ring
+      else if (struck && d < 0.66) { const sc = 0.6 * r, u = (dx * ca + dy * sa) / sc, v = (dy * ca - dx * sa) / sc, e = 2 / sc;
+        lift = markIn(u, v); nx -= (markIn(u + e, v) - lift) * 4; ny -= (markIn(u, v + e) - lift) * 4; }
+      const l = Math.hypot(nx, ny, 1);   // image y runs down, texture v up
+      pileNrm[i] = (nx / l * 0.5 + 0.5) * 255; pileNrm[i + 1] = (-ny / l * 0.5 + 0.5) * 255; pileNrm[i + 2] = (0.5 / l + 0.5) * 255;
+      const sh = sh0 * (d > 0.9 ? 0.85 : 1) * (0.95 + 0.05 * lift + (Math.random() - 0.5) * 0.04);
+      pileCol[i] = 255 * sh; pileCol[i + 1] = 220 * sh; pileCol[i + 2] = 140 * sh; } }
+  };
+  const pileTex = (data, srgb) => mkTex(PS, PS, x => x.putImageData(new ImageData(data, PS, PS), 0, 0), 9, 11, srgb);
+  const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: mkTex(4, 4, x => { x.fillStyle = "#e9c785"; x.fillRect(0, 0, 4, 4); }, 9, 11), normalMap: flatN,
+    metalness: 1, roughness: 0.27, envMapIntensity: 1.25, vertexColors: true }));
+  let heapM = null;
+  { let made = 0; const N = 300, idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
+    const work = dl => { const end = performance.now() + Math.max(4, Math.min(10, dl.timeRemaining())); while (made < N && performance.now() < end) { pileCoin(); made++; }
+      if (made < N) return idle(work);
+      const map = pileTex(pileCol, true), nrm = pileTex(pileNrm, false); hoardM.map = map; hoardM.normalMap = nrm; hoardM.normalScale.set(1.2, 1.2);
+      if (heapM) { heapM.map = map.clone(); heapM.normalMap = nrm.clone(); [heapM.map, heapM.normalMap].forEach(t => { t.repeat.set(3, 1.2); t.needsUpdate = true; }); heapM.normalScale.set(1.2, 1.2); }
+      try { [hoardM.map, hoardM.normalMap].forEach(t => renderer.initTexture(t)); } catch (e) {} };
+    idle(work); }
   const onD = (x, z, lift = 0) => V(x, FLOOR + dH(x, z) + lift, z);
 
   // ---- what stands where. Every piece claims its floor space first; nothing is placed inside anything else.
@@ -834,15 +866,17 @@ if (renderer) {
       if (k < 4) sparkAt.push(V(x, y + 0.01, z).applyMatrix4(M)); }
   });
   // little towers of coins near the aisle, then the hoard's loose coins (more where the gold is deeper)
-  for (let k = 0, made = 0, n = mobile ? 10 : 26; k < n * 8 && made < n; k++) { const x = rnd(-2.6, 2.6), z = rnd(RZ1 + 1.2, -3.4); if (Math.abs(x) < 0.9 || !coinFree(x, z) || !free(x, z, 0.1)) continue;
+  for (let k = 0, made = 0, n = mobile ? 14 : 40; k < n * 8 && made < n; k++) { const x = rnd(-2.6, 2.6), z = rnd(RZ1 + 1.2, -3.4); if (Math.abs(x) < 0.9 || !coinFree(x, z) || !free(x, z, 0.1)) continue;
     const y = FLOOR + lowest(x, z, 0, 0.07, 0.07), hgt = 3 + Math.floor(Math.random() * 7);
     for (let q = 0; q < hgt; q++) coins.push(new THREE.Matrix4().compose(V(x + rnd(-0.006, 0.006), y + q * CT, z + rnd(-0.006, 0.006)), _q.setFromAxisAngle(UP, rnd(0, 6.28)), _s.set(1, 1, 1)));
     putCoin(x, z, coins.pop()); claim(x, z, 0.09); made++; sparkAt.push(V(x, y + hgt * CT + 0.01, z)); }
-  for (let tries = 0, NC = mobile ? 900 : 2300, placed = 0; placed < NC && tries < NC * 10; tries++) {
+  for (let tries = 0, NC = mobile ? 1000 : 2700, placed = 0; placed < NC && tries < NC * 10; tries++) {
     const x = rnd(-RW + 0.3, RW - 0.3), z = rnd(RZ1 + 0.3, RZ0 - 0.3), h = dH(x, z);
     if (h < 0.03 ? Math.random() > 0.04 : Math.random() > Math.min(1, h * 2.5 + 0.2)) continue;
     if (!coinFree(x, z)) continue;
-    putCoin(x, z, lay(onD(x, z, -0.002), dN(x, z), rnd(0, 6.28), 0.12)); placed++;
+    const M = lay(onD(x, z, -0.002), dN(x, z), rnd(0, 6.28), 0.12);
+    if (h > 0.08 && Math.random() < 0.22) M.multiply(new THREE.Matrix4().makeRotationX(rnd(0.3, 0.75)));   // some stand half-buried at an angle, an edge up
+    putCoin(x, z, M); placed++;
     if (Math.random() < 0.07 && Math.abs(x) < 3) sparkAt.push(onD(x, z, 0.012)); }
   // the dune, with the shade of everything standing on it baked in: soft contact shadows round the chests, piles and props
   { const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, mobile ? 64 : 110, mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
@@ -854,11 +888,14 @@ if (renderer) {
     dg.setAttribute("color", new THREE.BufferAttribute(col, 3));
     dg.computeVertexNormals(); const dune = new THREE.Mesh(dg, hoardM); dune.receiveShadow = true; dune.position.set(0, FLOOR + 0.004, (RZ0 + RZ1) / 2); room.add(dune); }
   // the heaps of gold filling the open chests
-  if (heap.length) { const hm = roomMat(hoardM.clone()); hm.vertexColors = false; hm.map = coinTex.clone(); hm.map.repeat.set(3, 1.2); hm.bumpMap = hm.map;
+  if (heap.length) { const hm = heapM = roomMat(hoardM.clone()); hm.vertexColors = false;
     const hg = new THREE.SphereGeometry(1, 28, 10, 0, Math.PI * 2, 0, Math.PI / 2), hi = new THREE.InstancedMesh(hg, hm, heap.length);
     heap.forEach((M, n) => hi.setMatrixAt(n, M)); hi.receiveShadow = true; hi.computeBoundingSphere(); room.add(hi); }
   const barStand = new THREE.BoxGeometry(BL, BT, BW).translate(0, BT / 2, 0), coinStand = new THREE.CylinderGeometry(CR, CR, CT, 24).translate(0, CT / 2, 0);
   fill(barStand, tBar, stackBars, "bar", true); fill(barStand, tBar, strayBars, "bar"); fill(coinStand, tCoin, coins, "coin");
+  const NB = 10, burst = new THREE.InstancedMesh(coinStand, tCoin, NB);   // the coins Pari kicks up when it is clicked
+  for (let n = 0; n < NB; n++) { burst.setMatrixAt(n, new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4)); burst.setColorAt(n, _c.setRGB(1, 1, 1)); }
+  burst.frustumCulled = false; burst.receiveShadow = true; burst.visible = false; burst.userData.kind = "coin"; room.add(burst); golds.push(burst);
 
   // glints: points of light that flash on the gold now and then, as a lamp catches a facet
   const NSP = sparkAt.length;
@@ -931,7 +968,7 @@ if (renderer) {
     }).finally(loaded);
   // Pari, the Parity mascot, waits on the hoard for the finale
   const pari = new THREE.Group(), pariBody = new THREE.Group(); pari.add(pariBody); room.add(pari);
-  const pGold = roomMat(new THREE.MeshPhysicalMaterial({ color: 0xffcd5c, metalness: 1, roughness: 0.14, clearcoat: 0.8, clearcoatRoughness: 0.06, envMapIntensity: 1.3 })); pGold.envMap = null;   // bright as the four pieces
+  const pGold = roomMat(new THREE.MeshPhysicalMaterial({ color: G999, metalness: 1, roughness: 0.14, clearcoat: 0.8, clearcoatRoughness: 0.06, envMapIntensity: 1.3 })); pGold.envMap = null;   // bright as the four pieces
   const pLimb = roomMat(new THREE.MeshStandardMaterial({ color: 0xc98d0c, metalness: 0.7, roughness: 0.35 }));
   const pInk = roomMat(new THREE.MeshBasicMaterial({ color: 0x1b1300 })), pShine = roomMat(new THREE.MeshBasicMaterial({ color: 0xffffff }));
   { const sh = new THREE.Shape(); sh.moveTo(-0.44, 0); sh.lineTo(0.44, 0); sh.lineTo(0.28, 0.56); sh.lineTo(-0.28, 0.56); sh.closePath();
@@ -1123,7 +1160,7 @@ if (renderer) {
   const balL = label(`<b class="n">Within ${D.spreadBp} bp</b><small>of each other, per gram</small>`);
   const zL = label(`<b class="n">Today ${D.petal.z >= 0 ? "+" : ""}${D.petal.z.toFixed(2)}σ</b><small>GOLDPETAL, well inside</small>`);
   const tailL = [label("Alert zone", "line"), label("Alert zone", "line")];
-  const pariL = label(`<b>Hi, I’m Pari</b><small>Welcome to the vault</small>`);
+  const PARI_HI = `<b>Hi, I’m Pari</b><small>Welcome to the vault</small>`, pariL = label(PARI_HI);
   const headL = label(""), scanL = label(""); let headJ = -1, scanN = -1, scanM = "";
   const laneL = lanes.map(l => label(l.sym, "line"));
 
@@ -1173,8 +1210,25 @@ if (renderer) {
   /* Pari: breathes and sways, blinks at uneven moments (sometimes twice), turns to the cursor with a lag and leans into the turn,
      and every few seconds does something, never the same thing twice running: waves, hops, looks around, points up at the mark,
      cheers or spins. Every move eases in and out of the idle pose; squash and stretch keep the soles on the gold. */
-  const PA = { land: -1, act: null, next: 0, last: "", blink: 2, blink2: 0, yaw: 0, ex: 0, ey: 0 };
+  const PA = { land: -1, act: null, next: 0, last: "", blink: 2, blink2: 0, yaw: 0, ex: 0, ey: 0, poke: null, lastPoke: "", sayEnd: 0, burstT: -9 };
   const PACTS = { wave: 2.4, hop: 1.15, look: 2.6, point: 2.2, cheer: 1.7, spin: 1.4 };
+  // clicking (or tapping) Pari: a reaction, a line in its bubble and a few coins kicked up; clicking elsewhere: it looks and points there
+  const PREACT = { giggle: 1.4, boing: 1.25, twirl: 1.5, surprise: 1.5, lookat: 1.9 };
+  const PSAY = { giggle: ["Hee hee, that tickles!", "Hee hee!"], boing: ["Boing!", "Up we go!"], twirl: ["Wheee!", "Round and round!"], surprise: ["Oh! Hello there.", "You found me!"] };
+  const PJ = mobile ? 0.25 : 1;   // how high Pari may jump: on phones the mark sits close above
+  const BST = Array.from({ length: NB }, () => ({ p: V(0, 0, 0), v: V(0, 0, 0), land: -1, spin: 0, a: 0, r: 0, q: new THREE.Quaternion() }));
+  const BS = mobile ? 0.42 : 0.55;   // their size, against the hoard's coins
+  const _ph = new THREE.Vector3();
+  const pariScreen = () => { _ph.copy(pari.position); _ph.y += 0.25 * PARI_S; const d = _ph.distanceTo(camera.position); _ph.project(camera);
+    return [(_ph.x * 0.5 + 0.5) * innerWidth, (-_ph.y * 0.5 + 0.5) * innerHeight, 0.58 * PARI_S * innerHeight / (2 * d * Math.tan(camera.fov * Math.PI / 360))]; };
+  addEventListener("pointerdown", e => {
+    if (reduce || !pari.visible || fin < 0.5 || PA.land < 0) return;
+    if (e.target.closest && e.target.closest("a,button,input,textarea,select,label,.card,#dots,#chap")) return;
+    const [sx, sy, rp] = pariScreen(), dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.hypot(dx, dy) < rp) { const ks = Object.keys(PSAY).filter(k => k !== PA.lastPoke); PA.lastPoke = ks[Math.floor(Math.random() * ks.length)]; PA.poke = { k: PA.lastPoke }; }
+    else PA.poke = { k: "lookat", tx: clamp(dx / (innerWidth * 0.3), -1, 1) };
+  }, { passive: true });
+  let pariHov = false;
   function pariLive(v, t, dt) {
     const A = PA, k = 1 - Math.exp(-dt / 0.3);
     // the drop: falls in from above, faster as it goes and stretched a touch; a damped squash on landing, then a wave hello
@@ -1183,25 +1237,39 @@ if (renderer) {
     let lift = (1 - v * v) * P_DROP, sq = v < 1 ? -0.1 * Math.sin(Math.PI * v) : 0;   // a short drop (phones: it pops up in place); it never crosses the mark above
     if (A.land >= 0) { const u = t - A.land; sq += 0.26 * Math.exp(-u * 6.5) * Math.cos(u * 17); }
     let armRz = -0.16 + 0.05 * Math.sin(t * 1.6 + 0.5), armLz = 0.04 * Math.sin(t * 1.6), armRx = 0, yawAdd = 0, spin = 0, lookY = 0, eyeX = 0, eyeY = 0;
-    let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1);
+    let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1), squint = 0, wide = 0, grin = 0;
     if (!reduce && A.land >= 0) {
+      if (A.poke) { const q = A.poke; A.poke = null; A.act = { k: q.k, t0: t, d: PREACT[q.k], tx: q.tx || 0 };
+        if (q.k !== "lookat") { burstGo(t); const say = PSAY[q.k]; pariL.innerHTML = `<b>${say[Math.floor(Math.random() * say.length)]}</b><small>Welcome to the vault</small>`; A.sayEnd = t + 2.6; } }
+      if (A.sayEnd && t > A.sayEnd) { A.sayEnd = 0; pariL.innerHTML = PARI_HI; }
       if (!A.act && t > A.next) { const ks = Object.keys(PACTS).filter(x => x !== A.last), kk = ks[Math.floor(Math.random() * ks.length)]; A.act = { k: kk, t0: t, d: PACTS[kk] }; }
       const a = A.act;
       if (a && t >= a.t0) { const u = (t - a.t0) / a.d, e = sm(clamp(u / 0.18)) * sm(clamp((1 - u) / 0.22));
         if (a.k === "wave") { armRz = armRz * (1 - e) + e * (0.15 + 0.42 * Math.sin(u * Math.PI * 7)); sway += e * 0.05; }
         else if (a.k === "hop") {   // crouch, spring up with the arms flung up, land with a squash
-          const up = clamp((u - 0.22) / 0.42); if (up > 0 && up < 1) lift += 0.24 * Math.sin(Math.PI * up);
+          const up = clamp((u - 0.22) / 0.42); if (up > 0 && up < 1) lift += 0.24 * PJ * Math.sin(Math.PI * up);
           sq += u < 0.22 ? 0.16 * sm(u / 0.22) : up < 1 ? -0.12 * Math.sin(Math.PI * up) : 0.18 * Math.exp(-(u - 0.64) * 14) * Math.cos((u - 0.64) * 30);
           const fl = Math.sin(Math.PI * clamp((u - 0.15) / 0.6)); armRz += 0.35 * fl; armLz -= 1.3 * fl; }
         else if (a.k === "look") { yawAdd = 0.65 * Math.sin(u * Math.PI * 2) * e; eyeX = 0.045 * Math.sin(u * Math.PI * 2) * e; lookY = 0.08 * e; }
         else if (a.k === "point") { yawAdd = 0.45 * e; armRz = armRz * (1 - e) + e * 0.32; armRx = -0.7 * e; eyeX = 0.035 * e; eyeY = 0.025 * e; }   // up and back, at the mark
-        else if (a.k === "cheer") { armRz = armRz * (1 - e) + e * (0.32 + 0.1 * Math.sin(u * 30)); armLz = armLz * (1 - e) - e * (1.75 + 0.1 * Math.sin(u * 30 + 1)); lift += 0.05 * Math.abs(Math.sin(u * Math.PI * 3)) * e; sq -= 0.05 * e; }
-        else if (a.k === "spin") { const w = clamp((u - 0.15) / 0.7); spin = 6.2832 * sm(w); lift += 0.12 * Math.sin(Math.PI * w); sq += u < 0.15 ? 0.12 * sm(u / 0.15) : u > 0.85 ? 0.14 * Math.sin(Math.PI * (u - 0.85) / 0.15) : -0.06; }
+        else if (a.k === "cheer") { armRz = armRz * (1 - e) + e * (0.32 + 0.1 * Math.sin(u * 30)); armLz = armLz * (1 - e) - e * (1.75 + 0.1 * Math.sin(u * 30 + 1)); lift += 0.05 * PJ * Math.abs(Math.sin(u * Math.PI * 3)) * e; sq -= 0.05 * e; }
+        else if (a.k === "spin") { const w = clamp((u - 0.15) / 0.7); spin = 6.2832 * sm(w); lift += 0.12 * PJ * Math.sin(Math.PI * w); sq += u < 0.15 ? 0.12 * sm(u / 0.15) : u > 0.85 ? 0.14 * Math.sin(Math.PI * (u - 0.85) / 0.15) : -0.06; }
+        else if (a.k === "giggle") { squint = e; grin = e; sway += 0.1 * Math.sin(u * 46) * e; lift += 0.035 * PJ * Math.abs(Math.sin(u * Math.PI * 6)) * e;
+          armRz += 0.28 * Math.sin(u * 38) * e; armLz -= (0.5 + 0.3 * Math.sin(u * 38 + 1)) * e; }
+        else if (a.k === "boing") {   // squashed flat, then sprung up tall, then a wobbly landing
+          const up = clamp((u - 0.2) / 0.45); sq += u < 0.2 ? 0.26 * sm(u / 0.2) : up < 1 ? -0.2 * Math.sin(Math.PI * up) : 0.22 * Math.exp(-(u - 0.65) * 12) * Math.cos((u - 0.65) * 34);
+          if (up > 0 && up < 1) { lift += 0.3 * PJ * Math.sin(Math.PI * up); armRz += 0.4 * Math.sin(Math.PI * up); armLz -= 1.5 * Math.sin(Math.PI * up); wide = Math.sin(Math.PI * up); } }
+        else if (a.k === "twirl") { const w = clamp((u - 0.1) / 0.75); spin = 2 * 6.2832 * sm(w); lift += 0.1 * PJ * Math.sin(Math.PI * w);
+          armRz = armRz * (1 - e) - 0.7 * e; armLz = armLz * (1 - e) - 0.9 * e; grin = e; }
+        else if (a.k === "surprise") { wide = e; sq -= 0.12 * e; armRz = armRz * (1 - e) + 0.35 * e; armLz = armLz * (1 - e) - 1.7 * e; lift += 0.06 * PJ * Math.sin(Math.PI * clamp(u / 0.25)); }
+        else if (a.k === "lookat") { yawAdd = 0.75 * a.tx * e; eyeX = 0.045 * a.tx * e;   // turns to where you clicked and points that way
+          if (a.tx > 0) armRz = armRz * (1 - e) - 0.55 * e; else armLz = armLz * (1 - e) - 0.95 * e; }
         if (u >= 1) { A.last = a.k; A.act = null; A.next = t + 1.2 + Math.random() * 2.2; } }
       if (t > A.blink + 0.16) { A.blink = t + 1.8 + Math.random() * 3.4; A.blink2 = Math.random() < 0.25 ? A.blink + 0.32 : 0; }
     }
     const bl = x0 => { const d = t - x0; return d > 0 && d < 0.16 ? Math.sin(Math.PI * d / 0.16) : 0; };
-    eyes.scale.y = reduce ? 1 : 1 - 0.85 * Math.max(bl(A.blink), A.blink2 ? bl(A.blink2) : 0);
+    eyes.scale.set(1 + 0.12 * wide, reduce ? 1 : (1 - 0.85 * Math.max(bl(A.blink), A.blink2 ? bl(A.blink2) : 0)) * (1 - 0.72 * squint) * (1 + 0.35 * wide), 1);
+    mouth.scale.set(1 + 0.25 * grin + 0.1 * wide, 1 + 0.5 * grin, 1);
     const want = Math.atan2(camera.position.x - pari.position.x, camera.position.z - pari.position.z) + mx * 0.9 * fin + yawAdd;
     const prev = A.yaw; A.yaw += (want - A.yaw) * (reduce ? 1 : k); const turnV = (A.yaw - prev) / Math.max(dt, 1e-3);
     pari.rotation.y = A.yaw + spin;
@@ -1214,7 +1282,22 @@ if (renderer) {
     const pop = reduce ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
     pari.position.y = PARI_FY + lift + P_FOOT * PARI_S * sy * pop;   // the soles stay on the gold through every squash
     const hgt = clamp(lift / 0.6); pariShadow.material.opacity = 0.38 * (1 - hgt); pariShadow.scale.setScalar(1 - 0.5 * hgt);
+    burstStep(t, dt);
   }
+  // the kicked-up coins fly in arcs, land on the gold around Pari (never under its feet), lie flat and fade
+  function burstGo(t) { A_BURST = t;
+    const k = PARI_S / 0.72, r0 = 0.36 * k;   // they start from a ring just outside Pari's body, so none passes through it
+    BST.forEach((c, n) => { const vy = rnd(1.3, 1.8) * Math.sqrt(PJ), tf = 2 * vy / 9.8, out = (rnd(0.46, 0.56) * k - r0) / tf; c.a = n / NB * 6.2832 + rnd(-0.25, 0.25);
+      c.p.set(pari.position.x + Math.cos(c.a) * r0, PARI_FY + 0.04, pari.position.z + Math.sin(c.a) * r0); c.v.set(Math.cos(c.a) * out, vy, Math.sin(c.a) * out); c.land = -1; c.spin = rnd(8, 14); c.r = 0; }); }
+  let A_BURST = -9;
+  function burstStep(t, dt) {
+    const age = t - A_BURST; burst.visible = age >= 0 && age < 1.8; if (!burst.visible) return;
+    BST.forEach((c, n) => {
+      if (c.land < 0) { c.v.y -= 9.8 * dt; c.p.addScaledVector(c.v, dt); c.r += c.spin * dt; const ys = FLOOR + 0.004 + dH(c.p.x, c.p.z);
+        if (c.p.y < ys && c.v.y < 0) { c.p.y = ys - 0.002; c.land = t; c.q.setFromUnitVectors(UP, dN(c.p.x, c.p.z)).multiply(_q2.setFromAxisAngle(UP, c.a)); } }
+      if (c.land < 0) { ge.set(c.r, c.a, c.r * 0.5); gq.setFromEuler(ge); } else gq.copy(c.q);
+      gs.setScalar(Math.max(1e-4, BS * clamp(age / 0.08) * (c.land < 0 ? 1 : clamp(1 - (t - c.land - 0.6) / 0.4)))); gm.compose(c.p, gq, gs); burst.setMatrixAt(n, gm); });
+    burst.instanceMatrix.needsUpdate = true; }
   const camP = new THREE.Vector3(), camT = new THREE.Vector3();
   let ftimes = [], lastAdj = 0, drops = 0, frameNo = 0, lastB = -1;
   frame = (b, time, dt) => {
@@ -1270,9 +1353,11 @@ if (renderer) {
 
     ringSpin = -mx * 1.1 * fin;
     // Pari drops onto the hoard as the finale arrives, lands with a squash, then lives a little (see pariLive)
-    const pariV = clamp((b - (S.team - 0.3)) / 0.28);
+    const pariV = clamp((b - (S.team - 0.2)) / 0.19);   // once the camera has all but settled, so Pari never passes the mark
     pari.visible = pariShadow.visible = pariV > 0.001;
-    if (pari.visible) pariLive(pariV, time, dt);
+    if (pari.visible) pariLive(pariV, time, dt); else burst.visible = false;
+    const hov = !reduce && ptrOn && pari.visible && fin > 0.5 && PA.land >= 0 && (() => { const [sx, sy, rp] = pariScreen(); return Math.hypot(ptrX - sx, ptrY - sy) < rp; })();
+    if (hov !== pariHov) { pariHov = hov; document.documentElement.style.cursor = hov ? "pointer" : ""; }
     // the pieces: ease between poses; a slow, small float only at the opening and the finale
     const idle = b < 0.6 ? 1 - clamp(b / 0.6) : b > S.team - 0.4 ? clamp((b - (S.team - 0.4)) / 0.4) : 0;
     P.forEach((p, k) => {

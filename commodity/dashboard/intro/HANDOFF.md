@@ -278,3 +278,35 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Tests:** the machine's Python 3.15 beta now segfaults on `import numpy.random`. The suite was run in a scratch
   Python 3.12 venv built from `tools/requirements.txt` plus scipy: 10,357 passed, 0 failed.
 
+
+## Pari answers clicks, detailed coin piles, true gold colour (18 Oct 2026)
+- **Clicking (or tapping) Pari** in the finale picks a reaction, never the same twice running:
+  - **giggle:** squinting, grinning, wobbling;
+  - **boing:** squashed flat, then sprung up tall;
+  - **twirl:** two spins with the arms out;
+  - **surprise:** wide eyes, arms up.
+  - The bubble shows a matching line for 2.6 s ("Hee hee, that tickles!", "Boing!", "Wheee!", "You found me!").
+  - Ten coins hop up from a ring just outside Pari, land on the gold around it (never under its feet, never on
+    another coin), lie flat and fade.
+  - **Clicking elsewhere in the room:** Pari turns towards the spot and points that way.
+  - The cursor becomes a hand over Pari.
+  - Clicks on the card, links, buttons and chapter dots are ignored.
+  - With reduced motion, Pari does not react.
+  - **Phones:** jump heights are a quarter, and Pari comes in at the very end of the scroll, so nothing reaches the mark
+    above.
+- **Coin piles have real detail:**
+  - **Surface:** the hoard's surface is a generated colour and normal map of about 300 coins lying on coins
+    (1024², 512² on phones). Each coin has its own tilt, a bevelled edge, a raised rim ring and the Parity mark struck on
+    most, and casts a soft shadow onto the coins beneath.
+  - **Built in idle time:** the textures are drawn a few dozen coins at a time in `requestIdleCallback`, so no frame
+    waits, and they swap in without a shader change.
+  - **3D coins:** there are now 2,700 (1,000 on phones), with about a fifth standing half-buried at an angle, edge up,
+    and 40 coin towers. The finale draws 1.16M triangles in 183 calls.
+- **Gold colour:** gold's colour is its reflectance (pure gold reflects about 1.00, 0.77 and 0.34 of red, green and
+  blue, linear).
+  - The old values (`0xffc95a` and similar) were pushed well past that, towards orange, and inside the room that
+    compounded: gold mirrored a gold-coloured room.
+  - All gold now uses `G999 = 0xffd985`, with 995 a shade paler (`G995 = 0xf3d595`). This covers the pieces, river, room,
+    Pari, chart columns and the bell's dot.
+  - The room's mirrored surroundings are calmer and paler, and the per-piece shades vary in brightness rather than
+    drifting red.
