@@ -4,30 +4,46 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Parity in six steps: why MCX’s four gold futures should cost the same per gram, and when a gap is worth a look.">
-<meta name="theme-color" content="#0a0806">
+<meta name="theme-color" content="#060606" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#ebe5da" media="(prefers-color-scheme: light)">
 <title>Parity Intro</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<script>/* same theme as the site: its saved choice (parity-theme), else the system setting */
+try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-theme"), l = t === "light" || (t !== "dark" && matchMedia("(prefers-color-scheme: light)").matches);
+  document.documentElement.setAttribute("data-theme", l ? "light" : "dark"); } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }</script>
 <style>
 /* Layout: a fixed WebGL stage of real gold pieces; glass cards scroll over it, one per beat, and the camera
-   moves between beats. Desktop: cards left, gold right. Phone: gold above, card below. One dark gold world. */
+   moves between beats. Desktop: cards left, gold right. Phone: gold above, card below. Dark and light follow the site;
+   the room's lights are the site's own three: metallic gold, antique gold, champagne (dashboard/app/styles.css). */
 :root{
   color-scheme:dark;
-  --bg:#0a0806; --bg-2:#120e08;
-  --ink:#f6f0e4; --ink-2:rgba(246,240,228,.74); --ink-3:rgba(246,240,228,.52);
-  --gold:#e8b44a; --gold-2:#fbe3a1; --gold-3:#b7832a; --good:#7fd6a4;
-  --glass:rgba(255,248,232,.07); --glass-2:rgba(255,248,232,.03); --edge:rgba(255,236,200,.16); --hi:rgba(255,255,255,.22);
+  --bg:#060606; --bg-2:#0e0d0b;
+  --ink:#f5f3ee; --ink-2:rgba(245,243,238,.74); --ink-3:rgba(245,243,238,.52);
+  --gold:#e2b65a; --gold-2:#f3dfa8; --gold-3:#b08a3e; --good:#7fd6a4;
+  --glass:rgba(255,250,240,.07); --glass-2:rgba(255,250,240,.03); --edge:rgba(255,240,210,.16); --hi:rgba(255,255,255,.22);
+  --rule:rgba(255,240,210,.09); --lbl-bg:rgba(14,13,11,.42); --card-shadow:0 40px 90px -40px rgba(0,0,0,.85); --lbl-shadow:0 1px 10px rgba(0,0,0,.6);
+  --atmo-a:rgba(201,162,84,.22); --atmo-b:rgba(140,112,62,.22);
   --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,"Segoe UI",sans-serif;
   --f-disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,"Segoe UI",sans-serif;
   --spring:cubic-bezier(.32,.72,0,1); --out:cubic-bezier(.16,1,.3,1);
 }
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#ebe5da; --bg-2:#f4efe6;
+  --ink:#101215; --ink-2:rgba(16,18,21,.74); --ink-3:rgba(16,18,21,.56);
+  --gold:#835a07; --gold-2:#9a6c12; --gold-3:#5f4105; --good:#1f8a55;
+  --glass:rgba(255,255,255,.66); --glass-2:rgba(255,255,255,.42); --edge:rgba(90,66,24,.16); --hi:#fff;
+  --rule:rgba(90,66,24,.12); --lbl-bg:rgba(255,255,255,.66); --card-shadow:0 30px 70px -34px rgba(90,64,22,.38); --lbl-shadow:0 1px 8px rgba(255,255,255,.9);
+  --atmo-a:rgba(212,178,104,.36); --atmo-b:rgba(184,160,116,.30);
+}
 html{background:var(--bg)}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 .atmo{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(60vmax 50vmax at 72% 30%,rgba(232,180,74,.20),transparent 60%),
-             radial-gradient(50vmax 40vmax at 12% 90%,rgba(140,86,26,.22),transparent 65%),
+  background:radial-gradient(60vmax 50vmax at 72% 30%,var(--atmo-a),transparent 60%),
+             radial-gradient(50vmax 40vmax at 12% 90%,var(--atmo-b),transparent 65%),
              radial-gradient(80vmax 60vmax at 50% 50%,var(--bg-2),var(--bg) 70%)}
 #gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block;touch-action:pan-y}
 .grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
@@ -35,10 +51,10 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 .lbls{position:fixed;inset:0;z-index:3;pointer-events:none}
 .lbl{position:absolute;left:0;top:0;white-space:nowrap;opacity:0;will-change:transform,opacity;
   font:500 12px/1.3 var(--f-ui);letter-spacing:.02em;color:var(--ink-2);text-align:center;
-  padding:6px 10px;border-radius:12px;background:rgba(20,15,8,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge)}
+  padding:6px 10px;border-radius:12px;background:var(--lbl-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge)}
 .lbl b{display:block;font:600 13px/1.25 var(--f-disp);color:var(--ink);letter-spacing:.01em}
 .lbl .n{font-variant-numeric:tabular-nums;color:var(--gold-2)}
-.lbl.line{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--gold-2);font-weight:600;padding:0;text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.lbl.line{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--gold-2);font-weight:600;padding:0;text-shadow:var(--lbl-shadow)}
 
 /* top bar */
 .bar{position:fixed;z-index:10;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -50,7 +66,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 .pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;color:var(--ink);text-decoration:none;font:500 14px var(--f-ui);
   background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
   box-shadow:inset 0 1px 0 var(--hi);transition:transform .3s var(--spring),background-color .3s ease}
-.pill:hover{background:rgba(255,248,232,.12)}
+.pill:hover{background:color-mix(in srgb,var(--glass) 100%,var(--gold) 8%)}
 .pill:active{transform:scale(.96)}
 .pill:focus-visible,.dots button:focus-visible,.cta a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .progress{position:fixed;z-index:11;top:env(safe-area-inset-top,0px);left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);
@@ -71,7 +87,7 @@ main{position:relative;z-index:5;padding-left:max(16px,env(safe-area-inset-left,
 .beat:last-child{height:100vh;height:100svh}
 .card{position:sticky;top:50%;transform:translateY(-50%);width:min(470px,40vw);margin-left:max(0px,calc(6vw - 16px));padding:30px 32px 28px;border-radius:30px;
   background:linear-gradient(180deg,var(--glass),var(--glass-2));backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
-  box-shadow:inset 0 1px 0 var(--hi),0 40px 90px -40px rgba(0,0,0,.85);will-change:opacity,transform}
+  box-shadow:inset 0 1px 0 var(--hi),var(--card-shadow);will-change:opacity,transform}
 .card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
   background:linear-gradient(140deg,rgba(251,227,161,.55),rgba(255,236,200,.10) 30%,rgba(255,236,200,.06) 70%,rgba(232,180,74,.40));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
@@ -84,7 +100,7 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .card p b{color:var(--ink);font-weight:600}
 .num{font-variant-numeric:tabular-nums}
 .rows{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:2px}
-.rows li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,236,200,.09);font-size:15px}
+.rows li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--rule);font-size:15px}
 .rows li span{color:var(--ink-3)}
 .rows li b{font-weight:600;font-variant-numeric:tabular-nums}
 .rows li.over b{color:var(--gold-2)}
@@ -92,11 +108,11 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .facts li{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
 .facts li b{font:700 22px/1.1 var(--f-disp);letter-spacing:-.02em;color:var(--gold-2);font-variant-numeric:tabular-nums;min-width:4.6ch}
 .facts li span{color:var(--ink-2);font-size:15px;line-height:1.5}
-.verdict{padding:14px 16px;border-radius:16px;background:rgba(255,248,232,.05);border:1px solid rgba(255,236,200,.10);font-size:14.5px}
-.state{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:6px 12px;border-radius:999px;font:600 13px var(--f-ui);color:var(--ink);background:rgba(255,248,232,.07);border:1px solid var(--edge)}
+.verdict{padding:14px 16px;border-radius:16px;background:var(--glass-2);border:1px solid var(--rule);font-size:14.5px}
+.state{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:6px 12px;border-radius:999px;font:600 13px var(--f-ui);color:var(--ink);background:var(--glass);border:1px solid var(--edge)}
 .state i{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good)}
 .team{list-style:none;margin:6px 0 20px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
-.team li{padding:8px 14px;border-radius:999px;background:rgba(255,248,232,.07);border:1px solid var(--edge);font-weight:500}
+.team li{padding:8px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);font-weight:500}
 .cta{display:flex;flex-wrap:wrap;gap:10px}
 .cta a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:999px;text-decoration:none;font:600 15px var(--f-ui);transition:transform .3s var(--spring),filter .3s ease}
 .cta a:active{transform:scale(.96)}
@@ -123,7 +139,7 @@ html.lenis,html.lenis body{height:auto}
 .chap .n span,.chap .t span{display:block}
 .chap .t{display:inline-block;height:1em;overflow:clip}
 .tape{position:fixed;z-index:9;left:0;right:0;bottom:0;height:34px;overflow:hidden;pointer-events:none;border-top:1px solid rgba(255,236,200,.08);
-  background:linear-gradient(180deg,rgba(10,8,6,0),rgba(10,8,6,.7));-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--bg) 72%,transparent));-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .tape>div{display:inline-flex;white-space:nowrap;will-change:transform;font:500 12px/34px var(--f-ui);color:var(--ink-3);font-variant-numeric:tabular-nums}
 .tape span{padding:0 22px;border-right:1px solid rgba(255,236,200,.08)}
 .tape b{color:var(--ink-2);font-weight:600;letter-spacing:.04em;margin-right:4px}
@@ -282,6 +298,9 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 const D = {"pieces": [{"sym": "GOLDM", "kind": "100 g bar", "purity": "995", "rs_per_g": 14716.1, "per_g": "₹14,716", "close": "₹1,46,425", "per": "10 g", "pure": "9.95 g", "chg": 0.18}, {"sym": "GOLDTEN", "kind": "10 g bar", "purity": "999", "rs_per_g": 14696.6, "per_g": "₹14,697", "close": "₹1,46,819", "per": "10 g", "pure": "9.99 g", "chg": 0.2}, {"sym": "GOLDGUINEA", "kind": "8 g coin", "purity": "999", "rs_per_g": 14765.9, "per_g": "₹14,766", "close": "₹1,18,009", "per": "8 g", "pure": "7.992 g", "chg": 0.16}, {"sym": "GOLDPETAL", "kind": "1 g", "purity": "999", "rs_per_g": 14769.8, "per_g": "₹14,770", "close": "₹14,755", "per": "1 g", "pure": "0.999 g", "chg": 0.19}], "quoteDay": "16 Oct 2026", "spreadBp": 50, "gaps": [{"sym": "GOLDTEN", "gap": 13.1, "z": -0.2, "sd": 66.2}, {"sym": "GOLDGUINEA", "gap": 30.1, "z": -0.33, "sd": 90.8}, {"sym": "GOLDPETAL", "gap": 50.7, "z": 0.33, "sd": 151.8}], "costLine": 47.6, "roundTrip": 23.8, "thr": 1.5, "over": ["GOLDPETAL"], "signalToday": [], "rows": "55,697", "contracts": 711, "first": "20 Nov 2003", "years": 23, "tests": "10,357", "sealed": 3, "bootNet": "₹42,834", "bootLo": "−₹54,534", "bootHi": "₹1,42,962", "zeroInside": true, "series": {"dates": ["2023-10-12", "2023-10-17", "2023-10-20", "2023-10-25", "2023-10-30", "2023-11-02", "2023-11-07", "2023-11-10", "2023-11-14", "2023-11-17", "2023-11-22", "2023-11-27", "2023-11-30", "2023-12-05", "2023-12-08", "2023-12-13", "2023-12-18", "2023-12-21", "2023-12-27", "2024-01-01", "2024-01-04", "2024-01-09", "2024-01-12", "2024-01-17", "2024-01-22", "2024-01-25", "2024-01-31", "2024-02-05", "2024-02-08", "2024-02-13", "2024-02-16", "2024-02-21", "2024-02-26", "2024-02-29", "2024-03-05", "2024-03-08", "2024-03-13", "2024-03-18", "2024-03-21", "2024-03-26", "2024-04-01", "2024-04-04", "2024-04-09", "2024-04-12", "2024-04-17", "2024-04-22", "2024-04-25", "2024-04-30", "2024-05-03", "2024-05-08", "2024-05-13", "2024-05-16", "2024-05-21", "2024-05-24", "2024-05-29", "2024-06-03", "2024-06-06", "2024-06-11", "2024-06-14", "2024-06-19", "2024-06-24", "2024-06-27", "2024-07-02", "2024-07-05", "2024-07-10", "2024-07-15", "2024-07-18", "2024-07-23", "2024-07-26", "2024-07-31", "2024-08-05", "2024-08-08", "2024-08-13", "2024-08-19", "2024-08-22", "2024-08-27", "2024-08-30", "2024-09-04", "2024-09-09", "2024-09-12", "2024-09-17", "2024-09-20", "2024-09-25", "2024-09-30", "2024-10-04", "2024-10-09", "2024-10-14", "2024-10-17", "2024-10-22", "2024-10-25", "2024-10-30", "2024-11-04", "2024-11-07", "2024-11-12", "2024-11-15", "2024-11-20", "2024-11-25", "2024-11-28", "2024-12-03", "2024-12-06", "2024-12-11", "2024-12-16", "2024-12-19", "2024-12-24", "2025-01-03", "2025-01-08", "2025-01-13", "2025-01-16", "2025-01-21", "2025-01-24", "2025-01-29", "2025-02-01", "2025-02-05", "2025-02-10", "2025-02-13", "2025-02-18", "2025-02-21", "2025-02-26", "2025-03-03", "2025-03-06", "2025-03-11", "2025-03-14", "2025-03-19", "2025-03-24", "2025-03-27", "2025-04-01", "2025-04-04", "2025-04-09", "2025-04-14", "2025-04-17", "2025-04-23", "2025-04-28", "2025-05-01", "2025-05-06", "2025-05-09", "2025-05-14", "2025-05-19", "2025-05-22", "2025-05-27", "2025-05-30", "2025-06-04", "2025-06-09", "2025-06-12", "2025-06-17", "2025-06-20", "2025-06-25", "2025-06-30", "2025-07-03", "2025-07-08", "2025-07-11", "2025-07-16", "2025-07-21", "2025-07-24", "2025-07-29", "2025-08-01", "2025-08-06", "2025-08-11", "2025-08-14", "2025-08-20", "2025-08-25", "2025-08-28", "2025-09-02", "2025-09-05", "2025-09-10", "2025-09-15", "2025-09-18", "2025-09-23", "2025-09-26", "2025-10-01", "2025-10-07", "2025-10-10", "2025-10-15", "2025-10-20", "2025-10-23", "2025-10-28", "2025-10-31", "2025-11-05", "2025-11-10", "2025-11-13", "2025-11-18", "2025-11-21", "2025-11-26", "2025-12-01", "2025-12-04", "2025-12-09", "2025-12-12", "2025-12-17", "2025-12-22", "2025-12-26", "2025-12-31", "2026-01-05", "2026-01-08", "2026-01-13", "2026-01-16", "2026-01-21", "2026-01-27", "2026-01-30", "2026-02-03", "2026-02-06", "2026-02-11", "2026-02-16", "2026-02-19", "2026-02-24", "2026-02-27", "2026-03-04", "2026-03-09", "2026-03-12", "2026-03-17", "2026-03-20", "2026-03-25", "2026-03-30", "2026-04-02", "2026-04-08", "2026-04-13", "2026-04-16", "2026-04-21", "2026-04-24", "2026-04-29", "2026-05-04", "2026-05-07", "2026-05-12", "2026-05-15", "2026-05-20", "2026-05-25", "2026-05-28", "2026-06-02", "2026-06-05", "2026-06-10", "2026-06-15", "2026-06-18", "2026-06-23", "2026-06-26", "2026-07-01", "2026-07-06", "2026-07-09", "2026-07-14", "2026-07-17", "2026-07-22", "2026-07-27", "2026-07-30", "2026-08-04", "2026-08-07", "2026-08-12", "2026-08-17", "2026-08-20", "2026-08-25", "2026-08-28", "2026-09-02", "2026-09-07", "2026-09-10", "2026-09-15", "2026-09-18", "2026-09-23", "2026-09-28", "2026-10-01", "2026-10-07", "2026-10-12", "2026-10-15", "2026-10-16"], "GOLDTEN": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 12.5, 12.2, 8.9, 15.9, 5.1, 6.4, 12.9, 6.0, 7.4, 5.6, 6.0, 5.0, 2.2, 7.1, 8.9, 4.1, 4.9, 7.7, 5.3, 9.0, 9.1, 3.8, 5.6, 8.3, 6.6, 3.4, 2.8, 13.1, 17.2, 13.1, 11.5, 11.4, 2.0, 9.0, 8.3, 15.3, 19.9, 10.4, 19.1, 20.0, 17.5, 19.1, 11.0, 12.4, 11.7, 6.8, 7.5, 14.2, 9.7, 7.8, 9.8, 5.7, 8.9, 6.8, 16.9, 23.2, 24.4, 75.9, 70.6, 56.0, 44.6, 39.9, 270.6, 148.1, 598.4, 250.3, 315.3, 178.0, 170.2, 101.8, 29.7, 34.4, 40.1, 33.7, 21.1, 15.7, 24.1, 34.6, 26.7, 22.9, 31.1, 32.6, 37.6, 39.1, 45.1, 35.6, 26.5, 25.1, 28.0, 29.0, 39.4, 44.7, 42.7, 37.5, 35.8, 32.8, 35.2, 37.6, 32.9, 27.7, 19.0, 22.3, 24.4, 28.1, 30.6, 53.8, 46.3, 45.9, 39.5, 46.5, 45.6, 47.6, 46.4, 51.1, 40.6, 39.1, 37.1, 38.3, 37.6, 39.5, 30.0, 23.2, 17.3, 16.6, 20.5, 16.4, 13.1], "GOLDGUINEA": [null, null, null, null, null, null, 56.7, 89.9, 71.0, 44.9, 41.1, 22.5, 55.3, 37.3, 87.0, 97.9, 20.3, 12.6, 44.2, 11.0, 26.6, 30.8, 44.2, 78.6, 25.3, 46.8, 28.9, 55.7, 40.7, 47.2, 46.8, 38.5, 77.3, 55.4, 124.0, 266.3, 194.6, 117.7, 116.6, 60.0, 75.6, 54.9, 22.2, 67.0, 68.4, 53.2, 11.9, 56.0, 28.2, 25.8, 56.3, 36.6, 16.6, 76.4, 80.8, 106.0, 93.9, 160.0, 182.8, 74.0, 82.3, 96.5, 63.7, 17.3, 14.9, 8.5, 17.0, 181.2, 98.9, 67.6, 30.7, 41.3, 8.0, 26.0, 40.9, 24.5, 14.5, 22.4, 27.5, 6.4, 36.4, 47.2, 12.9, 24.1, 11.5, 33.5, 16.3, 29.2, 13.3, 22.1, 20.1, 26.4, 107.7, 94.3, 101.3, 41.5, 29.6, 31.8, 14.3, 15.6, 43.1, 31.6, 39.6, 39.4, 24.2, 17.8, 30.5, 37.9, 24.4, 38.1, 34.2, 31.0, 35.8, 27.3, 35.6, 71.5, 68.7, 58.6, 85.3, 62.5, 64.6, 15.1, 70.4, 39.2, 17.9, 67.3, 67.1, 52.0, 129.2, 65.3, 53.0, 46.0, 30.8, 62.0, 59.9, 28.8, 48.2, 70.9, 90.4, 68.1, 77.2, 51.6, 54.9, 63.5, 42.8, 19.6, 15.6, 47.2, 38.6, 58.0, 62.5, 69.0, 89.1, 39.2, 45.2, 68.9, 54.0, 28.6, 20.2, 57.2, 72.4, 64.8, 62.3, 66.6, 76.0, 51.2, 60.9, 19.7, 21.3, 9.1, 51.7, 34.2, 32.4, 33.6, 22.3, 19.1, 46.0, 30.8, 16.1, 61.8, 72.8, 24.4, 31.5, 17.8, 39.5, 47.1, 52.4, 55.7, 95.1, 286.8, 234.9, 167.5, 104.4, 100.1, 565.4, 418.3, 620.1, 353.7, 364.8, 271.0, 274.3, 265.8, 141.9, 68.4, 180.5, 164.2, 118.9, 124.8, 106.0, 105.1, 86.8, 58.2, 45.6, 50.4, 66.1, 50.9, 35.6, 45.7, 37.7, 39.7, 61.0, 43.0, 77.9, 57.8, 77.1, 66.6, 52.1, 37.8, 41.7, 55.2, 20.3, 67.6, 29.7, 37.4, 34.0, 27.8, 27.8, 71.3, 66.4, 78.3, 61.9, 95.1, 77.3, 71.6, 78.0, 80.2, 73.1, 65.8, 67.3, 74.2, 76.0, 88.1, 71.9, 57.9, 42.6, 42.1, 52.8, 28.7, 30.1], "GOLDPETAL": [null, null, null, null, null, null, 30.5, 37.2, 25.1, 62.9, 94.6, 104.2, 116.8, 125.1, 89.5, 7.9, 62.2, 93.6, 104.6, 76.3, 65.9, 41.2, 46.8, 58.4, 74.7, 113.2, 67.7, 85.5, 75.0, 54.2, 30.6, 24.7, 69.1, 75.7, 99.8, 100.3, 105.6, 78.9, 85.1, 76.4, 120.3, 125.4, 30.1, 55.3, 92.6, 73.9, 69.7, 59.9, 44.8, 24.5, 55.5, 55.3, 59.6, 55.4, 49.1, 68.0, 45.4, 85.2, 108.5, 65.6, 61.0, 76.5, 49.6, 23.5, 14.5, 44.8, 58.4, 107.4, 34.7, 26.2, 45.4, 40.5, 43.1, 84.3, 57.9, 145.1, 76.3, 47.7, 61.9, 81.1, 82.9, 91.1, 128.7, 41.7, 36.7, 10.9, 37.9, 64.5, 63.2, 26.8, 30.4, 38.9, 185.2, 294.2, 299.9, 258.8, 219.8, 204.2, 175.2, 172.7, 126.8, 173.8, 195.4, 182.3, 109.7, 86.6, 41.2, 43.4, 58.0, 61.7, 70.2, 38.0, 51.1, 43.1, 139.9, 229.0, 245.8, 276.8, 301.9, 282.9, 282.5, 269.1, 289.1, 294.8, 268.1, 195.2, 288.1, 284.6, 138.5, 182.8, 203.5, 187.9, 198.1, 189.0, 154.8, 204.5, 204.2, 124.1, 150.6, 154.3, 110.5, 153.1, 162.8, 138.5, 145.3, 175.7, 193.3, 166.8, 170.3, 167.2, 146.6, 140.2, 132.8, 149.8, 143.5, 89.4, 118.2, 130.2, 142.7, 122.9, 90.0, 84.7, 90.9, 87.7, 89.9, 102.3, 106.1, 109.5, 119.8, 111.5, 149.6, 141.1, 189.6, 157.0, 138.0, 143.3, 170.3, 158.8, 144.4, 186.6, 183.1, 148.2, 138.5, 149.6, 165.9, 178.1, 172.4, 178.5, 171.7, 320.2, 339.8, 261.9, 212.7, 233.0, 692.4, 536.9, 800.9, 428.8, 429.7, 375.3, 415.2, 356.3, 296.5, 254.6, 316.0, 311.3, 268.2, 262.0, 250.7, 265.3, 111.1, 68.7, 107.3, 88.9, 81.4, 112.1, 102.3, 98.8, 112.3, 105.9, 80.1, 85.4, 71.1, 53.6, 36.7, 62.1, 78.6, 82.4, 63.6, 56.7, 71.4, 78.0, 65.0, 53.5, 60.3, 64.5, 70.5, 63.8, 42.9, 17.7, 41.4, 16.5, 21.9, 24.5, 19.0, 15.1, 21.4, 20.6, 12.4, 17.3, 4.7, 9.7, 18.3, 39.1, 43.2, 43.9, 47.2, 57.0, 50.7]}, "seriesFrom": "10 Oct 2023", "petalPeak": 801, "petalMedian": 78, "alerts": [{"sym": "GOLDGUINEA", "start": "2023-11-07", "days": 2, "bp": 96.9}, {"sym": "GOLDGUINEA", "start": "2023-11-10", "days": 2, "bp": 129.5}, {"sym": "GOLDPETAL", "start": "2023-11-22", "days": 2, "bp": -186.5}, {"sym": "GOLDPETAL", "start": "2023-11-28", "days": 4, "bp": -216.2}, {"sym": "GOLDGUINEA", "start": "2023-12-08", "days": 3, "bp": 143.9}, {"sym": "GOLDPETAL", "start": "2023-12-21", "days": 1, "bp": -212.9}, {"sym": "GOLDPETAL", "start": "2023-12-27", "days": 1, "bp": -227.7}, {"sym": "GOLDGUINEA", "start": "2024-01-17", "days": 1, "bp": 145.1}, {"sym": "GOLDPETAL", "start": "2024-01-23", "days": 1, "bp": -246.6}, {"sym": "GOLDPETAL", "start": "2024-02-01", "days": 1, "bp": -222.2}, {"sym": "GOLDGUINEA", "start": "2024-02-23", "days": 2, "bp": -11.2}, {"sym": "GOLDPETAL", "start": "2024-03-01", "days": 1, "bp": -243.6}, {"sym": "GOLDGUINEA", "start": "2024-03-04", "days": 8, "bp": -49.4}, {"sym": "GOLDPETAL", "start": "2024-03-06", "days": 1, "bp": -228.7}, {"sym": "GOLDPETAL", "start": "2024-03-08", "days": 2, "bp": -248.1}, {"sym": "GOLDGUINEA", "start": "2024-03-18", "days": 3, "bp": -69.2}, {"sym": "GOLDPETAL", "start": "2024-03-19", "days": 1, "bp": -238.0}, {"sym": "GOLDPETAL", "start": "2024-03-28", "days": 4, "bp": -275.1}, {"sym": "GOLDPETAL", "start": "2024-04-17", "days": 1, "bp": -67.1}, {"sym": "GOLDGUINEA", "start": "2024-05-31", "days": 3, "bp": 155.4}, {"sym": "GOLDPETAL", "start": "2024-06-07", "days": 1, "bp": -69.7}, {"sym": "GOLDGUINEA", "start": "2024-06-07", "days": 6, "bp": 191.8}, {"sym": "GOLDPETAL", "start": "2024-06-13", "days": 1, "bp": -44.2}, {"sym": "GOLDGUINEA", "start": "2024-06-26", "days": 1, "bp": 155.6}, {"sym": "GOLDGUINEA", "start": "2024-07-23", "days": 2, "bp": 242.6}, {"sym": "GOLDPETAL", "start": "2024-07-23", "days": 1, "bp": -41.0}, {"sym": "GOLDPETAL", "start": "2024-08-16", "days": 1, "bp": -230.1}, {"sym": "GOLDPETAL", "start": "2024-08-23", "days": 1, "bp": -291.9}, {"sym": "GOLDPETAL", "start": "2024-09-13", "days": 1, "bp": -233.0}, {"sym": "GOLDPETAL", "start": "2024-09-20", "days": 3, "bp": -242.3}, {"sym": "GOLDPETAL", "start": "2024-11-06", "days": 12, "bp": 32.1}, {"sym": "GOLDGUINEA", "start": "2024-11-06", "days": 1, "bp": 174.1}, {"sym": "GOLDGUINEA", "start": "2024-11-11", "days": 5, "bp": 161.3}, {"sym": "GOLDPETAL", "start": "2024-11-25", "days": 11, "bp": 76.4}, {"sym": "GOLDPETAL", "start": "2024-12-13", "days": 7, "bp": 19.3}, {"sym": "GOLDPETAL", "start": "2025-02-13", "days": 40, "bp": 12.4}, {"sym": "GOLDGUINEA", "start": "2025-02-28", "days": 1, "bp": 154.1}, {"sym": "GOLDGUINEA", "start": "2025-04-10", "days": 1, "bp": -58.6}, {"sym": "GOLDPETAL", "start": "2025-04-17", "days": 1, "bp": 83.1}, {"sym": "GOLDPETAL", "start": "2025-04-22", "days": 2, "bp": 104.5}, {"sym": "GOLDPETAL", "start": "2025-04-25", "days": 1, "bp": 90.4}, {"sym": "GOLDPETAL", "start": "2025-04-29", "days": 4, "bp": 68.2}, {"sym": "GOLDPETAL", "start": "2025-05-12", "days": 6, "bp": 105.3}, {"sym": "GOLDGUINEA", "start": "2025-05-23", "days": 1, "bp": -23.1}, {"sym": "GOLDPETAL", "start": "2025-06-24", "days": 1, "bp": 93.1}, {"sym": "GOLDPETAL", "start": "2025-06-27", "days": 2, "bp": 111.9}, {"sym": "GOLDGUINEA", "start": "2025-07-22", "days": 1, "bp": -25.4}, {"sym": "GOLDPETAL", "start": "2025-10-17", "days": 1, "bp": 128.0}, {"sym": "GOLDPETAL", "start": "2025-11-14", "days": 3, "bp": 119.4}, {"sym": "GOLDPETAL", "start": "2025-11-20", "days": 1, "bp": 128.0}, {"sym": "GOLDPETAL", "start": "2025-12-10", "days": 1, "bp": 126.7}, {"sym": "GOLDTEN", "start": "2025-12-19", "days": 1, "bp": 15.7}, {"sym": "GOLDPETAL", "start": "2025-12-19", "days": 1, "bp": 129.0}, {"sym": "GOLDTEN", "start": "2025-12-26", "days": 10, "bp": 17.1}, {"sym": "GOLDGUINEA", "start": "2025-12-26", "days": 11, "bp": 157.4}, {"sym": "GOLDPETAL", "start": "2025-12-29", "days": 10, "bp": 195.6}, {"sym": "GOLDTEN", "start": "2026-01-12", "days": 24, "bp": 40.5}, {"sym": "GOLDPETAL", "start": "2026-01-13", "days": 29, "bp": 170.2}, {"sym": "GOLDGUINEA", "start": "2026-01-14", "days": 27, "bp": 166.8}, {"sym": "GOLDPETAL", "start": "2026-02-24", "days": 1, "bp": 220.0}, {"sym": "GOLDPETAL", "start": "2026-02-26", "days": 1, "bp": 234.8}, {"sym": "GOLDPETAL", "start": "2026-03-02", "days": 6, "bp": 251.7}, {"sym": "GOLDGUINEA", "start": "2026-03-03", "days": 3, "bp": 264.4}, {"sym": "GOLDPETAL", "start": "2026-03-11", "days": 4, "bp": 230.4}, {"sym": "GOLDPETAL", "start": "2026-03-18", "days": 1, "bp": 237.9}, {"sym": "GOLDPETAL", "start": "2026-03-23", "days": 1, "bp": 253.7}], "alertCount": 66, "alertDays": "295", "allDays": "1,858", "alertShare": 16, "closedAlert": 50, "closedNormal": 53, "alertsPerMonth": "1.8", "seriesYears": 3, "petal": {"gap": 50.7, "z": 0.33, "band": 227.7}};
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const LIGHT = document.documentElement.getAttribute("data-theme") === "light";
+/* glows add light on a dark room; on a light room they are drawn as deeper gold instead */
+const GLOWC = LIGHT ? 0xa57a22 : 0xffd27a;
 
 /* seen once per browser session; the site sends first-time visitors here */
 try { sessionStorage.setItem("parity:intro", "1"); } catch (e) {}
@@ -453,23 +472,24 @@ if (renderer) {
   const scene = new THREE.Scene();
   { // the room behind the glass: the same warm dark gradient as the page, so transmission has light to bend
     const c = document.createElement("canvas"); c.width = c.height = 1024; const x = c.getContext("2d");
-    x.fillStyle = "#0a0806"; x.fillRect(0, 0, 1024, 1024);
-    const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, "rgba(232,180,74,.30)"); g1.addColorStop(1, "rgba(232,180,74,0)"); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
-    const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, "rgba(140,86,26,.30)"); g2.addColorStop(1, "rgba(140,86,26,0)"); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
+    const [base, la, lb] = LIGHT ? ["#ebe5da", "212,178,104,.50", "184,160,116,.40"] : ["#060606", "201,162,84,.30", "140,112,62,.30"];
+    x.fillStyle = base; x.fillRect(0, 0, 1024, 1024);
+    const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, `rgba(${la})`); g1.addColorStop(1, `rgba(${la.replace(/[\d.]+$/, "0")})`); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
+    const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, `rgba(${lb})`); g2.addColorStop(1, `rgba(${lb.replace(/[\d.]+$/, "0")})`); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
   }
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
   const key = new THREE.DirectionalLight(0xffe2b0, 1.4); key.position.set(3, 5, 4); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xffc56b, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0xf0d49a, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
 
   /* materials */
   const goldMat = (c, r = 0.22) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.45, clearcoatRoughness: 0.18, envMapIntensity: 1.3 });
   const g995 = goldMat(0xe9c27c, 0.26), g999 = goldMat(0xf3c257);
   const glass = () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.1, transmission: 1, thickness: 0.4, ior: 1.42,
     attenuationColor: new THREE.Color(0xffd890), attenuationDistance: 2.5, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1, transparent: true, opacity: 1 });
-  const glow = new THREE.MeshBasicMaterial({ color: 0xffd27a, toneMapped: false, transparent: true, opacity: 0.95 });
+  const glow = new THREE.MeshBasicMaterial({ color: GLOWC, toneMapped: false, transparent: true, opacity: 0.95 });
 
   /* engraving: text on a decal that sits on a face */
   function decal(lines, w, h, ink = "rgba(110,70,8,.62)") {
@@ -515,8 +535,8 @@ if (renderer) {
   const edge = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.012, 0.012), glow); world.add(edge);
   const bandH = D.petal.band * K;
   const bandGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 48, 1, true); bandGeo.translate(0, 0.5, 0);
-  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
-  const bandRails = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.35, toneMapped: false }));
+  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
+  const bandRails = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.35, toneMapped: false }));
   band.add(bandRails);
   world.add(band);
   const bandCaps = [0].map(() => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); r.rotation.x = Math.PI / 2; world.add(r); return r; });
@@ -525,7 +545,7 @@ if (renderer) {
   const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
   const slabs = slabTxt.map(([big, small], i) => {
     const g = new THREE.Group(), s = new THREE.Mesh(new RoundedBoxGeometry(2.3, 1.45, 0.07, 4, 0.05), glass()); s.material.roughness = 0.22; s.material.thickness = 0.25; g.add(s);
-    const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, "rgba(255,226,160,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
+    const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, LIGHT ? "rgba(95,65,5,.95)" : "rgba(243,223,168,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
     t.position.z = 0.05; g.add(t); g.position.set(-0.75 + i * 1.2, [0.95, 0.35, -0.25][i] + 0.2, -0.4 - i * 0.9); g.rotation.y = -0.18; g.scale.setScalar(0.62); world.add(g); return g;
   });
 
@@ -533,8 +553,8 @@ if (renderer) {
   const NP = mobile ? 260 : 520, dust = new Float32Array(NP * 3), seed = new Float32Array(NP);
   for (let i = 0; i < NP; i++) { dust[i * 3] = (Math.random() - 0.5) * 14; dust[i * 3 + 1] = (Math.random() - 0.5) * 8; dust[i * 3 + 2] = 3 - Math.random() * 16; seed[i] = Math.random() * 6.28; }
   const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(dust, 3));
-  const dot = document.createElement("canvas"); dot.width = dot.height = 32; { const x = dot.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,225,150,1)"); gr.addColorStop(1, "rgba(255,225,150,0)"); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); }
-  const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  const dot = document.createElement("canvas"); dot.width = dot.height = 32; { const x = dot.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16); const dc = LIGHT ? "150,112,40" : "255,225,150"; gr.addColorStop(0, `rgba(${dc},1)`); gr.addColorStop(1, `rgba(${dc},0)`); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); }
+  const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
   scene.add(dustPts);
 
   /* ---------- poses. Beats: */
@@ -571,7 +591,8 @@ if (renderer) {
 
   /* ---------- every day: each small contract's distance from its usual premium, a ribbon per contract that draws with scroll */
   const SER = D.series, NS = SER.dates.length, RX0 = -1.4, RX1 = 2.2, RB = BASE;
-  const LANES = [["GOLDTEN", -1.0, 0xf3c257], ["GOLDGUINEA", -1.45, 0xe9a93a], ["GOLDPETAL", -1.9, 0xfbe3a1]];
+  const LANES = LIGHT ? [["GOLDTEN", -1.0, 0xa57a22], ["GOLDGUINEA", -1.45, 0x7d5a14], ["GOLDPETAL", -1.9, 0xc49a45]]
+                      : [["GOLDTEN", -1.0, 0xe2b65a], ["GOLDGUINEA", -1.45, 0xc9a254], ["GOLDPETAL", -1.9, 0xf3dfa8]];
   const KR = 1.55 / Math.max(...LANES.flatMap(([s]) => SER[s].filter(v => v != null)));
   const ribbon = new THREE.Group(); world.add(ribbon);
   const lanes = LANES.map(([sym, z, col]) => {
@@ -584,7 +605,7 @@ if (renderer) {
     }
     for (let j = Math.max(first, 0); j < NS - 1; j++) { const a = 2 * j; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
-    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
     const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(top, 3));
     const edgeL = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.95, toneMapped: false }));
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.035, 16, 12), glow);
@@ -598,18 +619,18 @@ if (renderer) {
   const QZ = { GOLDPETAL: -4.6, GOLDGUINEA: -4.2, GOLDTEN: -3.8 }, QX0 = -1.4, QX1 = 2.2, QY = -0.25;
   const tOf = d => (Date.parse(d) - Date.parse(SER.dates[0])) / (Date.parse(SER.dates[NS - 1]) - Date.parse(SER.dates[0]));
   const quiet = new THREE.Group(); quiet.position.y = QY; world.add(quiet);
-  Object.values(QZ).forEach(z => { const r = new THREE.Mesh(new THREE.BoxGeometry(QX1 - QX0, 0.008, 0.008), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.18, toneMapped: false })); r.position.z = z; quiet.add(r); });
-  const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.004, 0.03, 0.004), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.16, toneMapped: false }), NS * 3);
+  Object.values(QZ).forEach(z => { const r = new THREE.Mesh(new THREE.BoxGeometry(QX1 - QX0, 0.008, 0.008), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x8c6414 : GLOWC, transparent: true, opacity: 0.18, toneMapped: false })); r.position.z = z; quiet.add(r); });
+  const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.004, 0.03, 0.004), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x8c6414 : GLOWC, transparent: true, opacity: 0.16, toneMapped: false }), NS * 3);
   { let n = 0; Object.values(QZ).forEach(z => { for (let j = 0; j < NS; j++) { gm.makeTranslation(QX0 + (QX1 - QX0) * j / (NS - 1), 0.015, z); ticks.setMatrixAt(n++, gm); } }); }
   quiet.add(ticks);
   const AL = D.alerts.map(a => ({ ...a, x: QX0 + (QX1 - QX0) * tOf(a.start), z: QZ[a.sym], h: 0.12 + Math.min(a.bp, 450) / 450 * 0.75, w: 0.012 + Math.min(a.days, 8) * 0.003 }));
   const flareGeo = new THREE.BoxGeometry(1, 1, 1); flareGeo.translate(0, 0.5, 0);
   const flares = new THREE.InstancedMesh(flareGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, toneMapped: false }), AL.length);
   flares.frustumCulled = false; quiet.add(flares);
-  const fc = new THREE.Color(), GOLD = new THREE.Color(0xffc75e), HOT = new THREE.Color(0xfff2c8);
-  const scanner = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.1), new THREE.MeshBasicMaterial({ color: 0xffe2a0, transparent: true, opacity: 0.85, toneMapped: false, side: THREE.DoubleSide }));
+  const fc = new THREE.Color(), GOLD = new THREE.Color(LIGHT ? 0xa57a22 : 0xe2b65a), HOT = new THREE.Color(LIGHT ? 0x5f4105 : 0xfff2c8);
+  const scanner = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.1), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x7d5a14 : 0xffe2a0, transparent: true, opacity: 0.85, toneMapped: false, side: THREE.DoubleSide }));
   scanner.rotation.y = Math.PI / 2; scanner.scale.x = 1;
-  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }));
+  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.05, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }));
   scanGlow.rotation.y = Math.PI / 2;
   const scanH = new THREE.Group(); scanH.add(scanner, scanGlow); scanner.position.y = scanGlow.position.y = 0.55; quiet.add(scanH);
 

@@ -102,6 +102,7 @@ head, body = out.split("</style>", 1)
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
     '<meta name="description" content="Parity in six steps: why MCX\u2019s four gold futures should cost the same per gram, and when a gap is worth a look.">\n'
-    '<meta name="theme-color" content="#0a0806">\n'
+    '<meta name="theme-color" content="#060606" media="(prefers-color-scheme: dark)">\n'
+    '<meta name="theme-color" content="#ebe5da" media="(prefers-color-scheme: light)">\n'
     + head + "</style>\n</head>\n<body style=\"margin:0\">\n" + body + "\n</body>\n</html>\n")
 print(json.dumps(DATA, ensure_ascii=False, indent=1)[:1600])

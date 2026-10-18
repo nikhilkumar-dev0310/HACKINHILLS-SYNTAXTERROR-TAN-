@@ -3,24 +3,39 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<script>/* same theme as the site: its saved choice (parity-theme), else the system setting */
+try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-theme"), l = t === "light" || (t !== "dark" && matchMedia("(prefers-color-scheme: light)").matches);
+  document.documentElement.setAttribute("data-theme", l ? "light" : "dark"); } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }</script>
 <style>
 /* Layout: a fixed WebGL stage of real gold pieces; glass cards scroll over it, one per beat, and the camera
-   moves between beats. Desktop: cards left, gold right. Phone: gold above, card below. One dark gold world. */
+   moves between beats. Desktop: cards left, gold right. Phone: gold above, card below. Dark and light follow the site;
+   the room's lights are the site's own three: metallic gold, antique gold, champagne (dashboard/app/styles.css). */
 :root{
   color-scheme:dark;
-  --bg:#0a0806; --bg-2:#120e08;
-  --ink:#f6f0e4; --ink-2:rgba(246,240,228,.74); --ink-3:rgba(246,240,228,.52);
-  --gold:#e8b44a; --gold-2:#fbe3a1; --gold-3:#b7832a; --good:#7fd6a4;
-  --glass:rgba(255,248,232,.07); --glass-2:rgba(255,248,232,.03); --edge:rgba(255,236,200,.16); --hi:rgba(255,255,255,.22);
+  --bg:#060606; --bg-2:#0e0d0b;
+  --ink:#f5f3ee; --ink-2:rgba(245,243,238,.74); --ink-3:rgba(245,243,238,.52);
+  --gold:#e2b65a; --gold-2:#f3dfa8; --gold-3:#b08a3e; --good:#7fd6a4;
+  --glass:rgba(255,250,240,.07); --glass-2:rgba(255,250,240,.03); --edge:rgba(255,240,210,.16); --hi:rgba(255,255,255,.22);
+  --rule:rgba(255,240,210,.09); --lbl-bg:rgba(14,13,11,.42); --card-shadow:0 40px 90px -40px rgba(0,0,0,.85); --lbl-shadow:0 1px 10px rgba(0,0,0,.6);
+  --atmo-a:rgba(201,162,84,.22); --atmo-b:rgba(140,112,62,.22);
   --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,"Segoe UI",sans-serif;
   --f-disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,"Segoe UI",sans-serif;
   --spring:cubic-bezier(.32,.72,0,1); --out:cubic-bezier(.16,1,.3,1);
 }
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#ebe5da; --bg-2:#f4efe6;
+  --ink:#101215; --ink-2:rgba(16,18,21,.74); --ink-3:rgba(16,18,21,.56);
+  --gold:#835a07; --gold-2:#9a6c12; --gold-3:#5f4105; --good:#1f8a55;
+  --glass:rgba(255,255,255,.66); --glass-2:rgba(255,255,255,.42); --edge:rgba(90,66,24,.16); --hi:#fff;
+  --rule:rgba(90,66,24,.12); --lbl-bg:rgba(255,255,255,.66); --card-shadow:0 30px 70px -34px rgba(90,64,22,.38); --lbl-shadow:0 1px 8px rgba(255,255,255,.9);
+  --atmo-a:rgba(212,178,104,.36); --atmo-b:rgba(184,160,116,.30);
+}
 html{background:var(--bg)}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 .atmo{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(60vmax 50vmax at 72% 30%,rgba(232,180,74,.20),transparent 60%),
-             radial-gradient(50vmax 40vmax at 12% 90%,rgba(140,86,26,.22),transparent 65%),
+  background:radial-gradient(60vmax 50vmax at 72% 30%,var(--atmo-a),transparent 60%),
+             radial-gradient(50vmax 40vmax at 12% 90%,var(--atmo-b),transparent 65%),
              radial-gradient(80vmax 60vmax at 50% 50%,var(--bg-2),var(--bg) 70%)}
 #gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block;touch-action:pan-y}
 .grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
@@ -28,10 +43,10 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 .lbls{position:fixed;inset:0;z-index:3;pointer-events:none}
 .lbl{position:absolute;left:0;top:0;white-space:nowrap;opacity:0;will-change:transform,opacity;
   font:500 12px/1.3 var(--f-ui);letter-spacing:.02em;color:var(--ink-2);text-align:center;
-  padding:6px 10px;border-radius:12px;background:rgba(20,15,8,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge)}
+  padding:6px 10px;border-radius:12px;background:var(--lbl-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge)}
 .lbl b{display:block;font:600 13px/1.25 var(--f-disp);color:var(--ink);letter-spacing:.01em}
 .lbl .n{font-variant-numeric:tabular-nums;color:var(--gold-2)}
-.lbl.line{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--gold-2);font-weight:600;padding:0;text-shadow:0 1px 10px rgba(0,0,0,.6)}
+.lbl.line{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--gold-2);font-weight:600;padding:0;text-shadow:var(--lbl-shadow)}
 
 /* top bar */
 .bar{position:fixed;z-index:10;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -43,7 +58,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 .pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;color:var(--ink);text-decoration:none;font:500 14px var(--f-ui);
   background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
   box-shadow:inset 0 1px 0 var(--hi);transition:transform .3s var(--spring),background-color .3s ease}
-.pill:hover{background:rgba(255,248,232,.12)}
+.pill:hover{background:color-mix(in srgb,var(--glass) 100%,var(--gold) 8%)}
 .pill:active{transform:scale(.96)}
 .pill:focus-visible,.dots button:focus-visible,.cta a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .progress{position:fixed;z-index:11;top:env(safe-area-inset-top,0px);left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);
@@ -64,7 +79,7 @@ main{position:relative;z-index:5;padding-left:max(16px,env(safe-area-inset-left,
 .beat:last-child{height:100vh;height:100svh}
 .card{position:sticky;top:50%;transform:translateY(-50%);width:min(470px,40vw);margin-left:max(0px,calc(6vw - 16px));padding:30px 32px 28px;border-radius:30px;
   background:linear-gradient(180deg,var(--glass),var(--glass-2));backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
-  box-shadow:inset 0 1px 0 var(--hi),0 40px 90px -40px rgba(0,0,0,.85);will-change:opacity,transform}
+  box-shadow:inset 0 1px 0 var(--hi),var(--card-shadow);will-change:opacity,transform}
 .card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
   background:linear-gradient(140deg,rgba(251,227,161,.55),rgba(255,236,200,.10) 30%,rgba(255,236,200,.06) 70%,rgba(232,180,74,.40));
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
@@ -77,7 +92,7 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .card p b{color:var(--ink);font-weight:600}
 .num{font-variant-numeric:tabular-nums}
 .rows{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:2px}
-.rows li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,236,200,.09);font-size:15px}
+.rows li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--rule);font-size:15px}
 .rows li span{color:var(--ink-3)}
 .rows li b{font-weight:600;font-variant-numeric:tabular-nums}
 .rows li.over b{color:var(--gold-2)}
@@ -85,11 +100,11 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .facts li{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
 .facts li b{font:700 22px/1.1 var(--f-disp);letter-spacing:-.02em;color:var(--gold-2);font-variant-numeric:tabular-nums;min-width:4.6ch}
 .facts li span{color:var(--ink-2);font-size:15px;line-height:1.5}
-.verdict{padding:14px 16px;border-radius:16px;background:rgba(255,248,232,.05);border:1px solid rgba(255,236,200,.10);font-size:14.5px}
-.state{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:6px 12px;border-radius:999px;font:600 13px var(--f-ui);color:var(--ink);background:rgba(255,248,232,.07);border:1px solid var(--edge)}
+.verdict{padding:14px 16px;border-radius:16px;background:var(--glass-2);border:1px solid var(--rule);font-size:14.5px}
+.state{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:6px 12px;border-radius:999px;font:600 13px var(--f-ui);color:var(--ink);background:var(--glass);border:1px solid var(--edge)}
 .state i{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good)}
 .team{list-style:none;margin:6px 0 20px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
-.team li{padding:8px 14px;border-radius:999px;background:rgba(255,248,232,.07);border:1px solid var(--edge);font-weight:500}
+.team li{padding:8px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);font-weight:500}
 .cta{display:flex;flex-wrap:wrap;gap:10px}
 .cta a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:999px;text-decoration:none;font:600 15px var(--f-ui);transition:transform .3s var(--spring),filter .3s ease}
 .cta a:active{transform:scale(.96)}
@@ -116,7 +131,7 @@ html.lenis,html.lenis body{height:auto}
 .chap .n span,.chap .t span{display:block}
 .chap .t{display:inline-block;height:1em;overflow:clip}
 .tape{position:fixed;z-index:9;left:0;right:0;bottom:0;height:34px;overflow:hidden;pointer-events:none;border-top:1px solid rgba(255,236,200,.08);
-  background:linear-gradient(180deg,rgba(10,8,6,0),rgba(10,8,6,.7));-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--bg) 72%,transparent));-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .tape>div{display:inline-flex;white-space:nowrap;will-change:transform;font:500 12px/34px var(--f-ui);color:var(--ink-3);font-variant-numeric:tabular-nums}
 .tape span{padding:0 22px;border-right:1px solid rgba(255,236,200,.08)}
 .tape b{color:var(--ink-2);font-weight:600;letter-spacing:.04em;margin-right:4px}
@@ -272,6 +287,9 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 const D = __DATA__;
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const LIGHT = document.documentElement.getAttribute("data-theme") === "light";
+/* glows add light on a dark room; on a light room they are drawn as deeper gold instead */
+const GLOWC = LIGHT ? 0xa57a22 : 0xffd27a;
 
 /* seen once per browser session; the site sends first-time visitors here */
 try { sessionStorage.setItem("parity:intro", "1"); } catch (e) {}
@@ -443,23 +461,24 @@ if (renderer) {
   const scene = new THREE.Scene();
   { // the room behind the glass: the same warm dark gradient as the page, so transmission has light to bend
     const c = document.createElement("canvas"); c.width = c.height = 1024; const x = c.getContext("2d");
-    x.fillStyle = "#0a0806"; x.fillRect(0, 0, 1024, 1024);
-    const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, "rgba(232,180,74,.30)"); g1.addColorStop(1, "rgba(232,180,74,0)"); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
-    const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, "rgba(140,86,26,.30)"); g2.addColorStop(1, "rgba(140,86,26,0)"); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
+    const [base, la, lb] = LIGHT ? ["#ebe5da", "212,178,104,.50", "184,160,116,.40"] : ["#060606", "201,162,84,.30", "140,112,62,.30"];
+    x.fillStyle = base; x.fillRect(0, 0, 1024, 1024);
+    const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, `rgba(${la})`); g1.addColorStop(1, `rgba(${la.replace(/[\d.]+$/, "0")})`); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
+    const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, `rgba(${lb})`); g2.addColorStop(1, `rgba(${lb.replace(/[\d.]+$/, "0")})`); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
   }
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
   const key = new THREE.DirectionalLight(0xffe2b0, 1.4); key.position.set(3, 5, 4); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xffc56b, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0xf0d49a, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
 
   /* materials */
   const goldMat = (c, r = 0.22) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.45, clearcoatRoughness: 0.18, envMapIntensity: 1.3 });
   const g995 = goldMat(0xe9c27c, 0.26), g999 = goldMat(0xf3c257);
   const glass = () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.1, transmission: 1, thickness: 0.4, ior: 1.42,
     attenuationColor: new THREE.Color(0xffd890), attenuationDistance: 2.5, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1, transparent: true, opacity: 1 });
-  const glow = new THREE.MeshBasicMaterial({ color: 0xffd27a, toneMapped: false, transparent: true, opacity: 0.95 });
+  const glow = new THREE.MeshBasicMaterial({ color: GLOWC, toneMapped: false, transparent: true, opacity: 0.95 });
 
   /* engraving: text on a decal that sits on a face */
   function decal(lines, w, h, ink = "rgba(110,70,8,.62)") {
@@ -505,8 +524,8 @@ if (renderer) {
   const edge = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.012, 0.012), glow); world.add(edge);
   const bandH = D.petal.band * K;
   const bandGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 48, 1, true); bandGeo.translate(0, 0.5, 0);
-  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
-  const bandRails = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.35, toneMapped: false }));
+  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
+  const bandRails = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.35, toneMapped: false }));
   band.add(bandRails);
   world.add(band);
   const bandCaps = [0].map(() => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); r.rotation.x = Math.PI / 2; world.add(r); return r; });
@@ -515,7 +534,7 @@ if (renderer) {
   const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
   const slabs = slabTxt.map(([big, small], i) => {
     const g = new THREE.Group(), s = new THREE.Mesh(new RoundedBoxGeometry(2.3, 1.45, 0.07, 4, 0.05), glass()); s.material.roughness = 0.22; s.material.thickness = 0.25; g.add(s);
-    const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, "rgba(255,226,160,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
+    const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, LIGHT ? "rgba(95,65,5,.95)" : "rgba(243,223,168,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
     t.position.z = 0.05; g.add(t); g.position.set(-0.75 + i * 1.2, [0.95, 0.35, -0.25][i] + 0.2, -0.4 - i * 0.9); g.rotation.y = -0.18; g.scale.setScalar(0.62); world.add(g); return g;
   });
 
@@ -523,8 +542,8 @@ if (renderer) {
   const NP = mobile ? 260 : 520, dust = new Float32Array(NP * 3), seed = new Float32Array(NP);
   for (let i = 0; i < NP; i++) { dust[i * 3] = (Math.random() - 0.5) * 14; dust[i * 3 + 1] = (Math.random() - 0.5) * 8; dust[i * 3 + 2] = 3 - Math.random() * 16; seed[i] = Math.random() * 6.28; }
   const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(dust, 3));
-  const dot = document.createElement("canvas"); dot.width = dot.height = 32; { const x = dot.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,225,150,1)"); gr.addColorStop(1, "rgba(255,225,150,0)"); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); }
-  const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  const dot = document.createElement("canvas"); dot.width = dot.height = 32; { const x = dot.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16); const dc = LIGHT ? "150,112,40" : "255,225,150"; gr.addColorStop(0, `rgba(${dc},1)`); gr.addColorStop(1, `rgba(${dc},0)`); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); }
+  const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
   scene.add(dustPts);
 
   /* ---------- poses. Beats: */
@@ -561,7 +580,8 @@ if (renderer) {
 
   /* ---------- every day: each small contract's distance from its usual premium, a ribbon per contract that draws with scroll */
   const SER = D.series, NS = SER.dates.length, RX0 = -1.4, RX1 = 2.2, RB = BASE;
-  const LANES = [["GOLDTEN", -1.0, 0xf3c257], ["GOLDGUINEA", -1.45, 0xe9a93a], ["GOLDPETAL", -1.9, 0xfbe3a1]];
+  const LANES = LIGHT ? [["GOLDTEN", -1.0, 0xa57a22], ["GOLDGUINEA", -1.45, 0x7d5a14], ["GOLDPETAL", -1.9, 0xc49a45]]
+                      : [["GOLDTEN", -1.0, 0xe2b65a], ["GOLDGUINEA", -1.45, 0xc9a254], ["GOLDPETAL", -1.9, 0xf3dfa8]];
   const KR = 1.55 / Math.max(...LANES.flatMap(([s]) => SER[s].filter(v => v != null)));
   const ribbon = new THREE.Group(); world.add(ribbon);
   const lanes = LANES.map(([sym, z, col]) => {
@@ -574,7 +594,7 @@ if (renderer) {
     }
     for (let j = Math.max(first, 0); j < NS - 1; j++) { const a = 2 * j; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
-    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false }));
     const lg = new THREE.BufferGeometry(); lg.setAttribute("position", new THREE.Float32BufferAttribute(top, 3));
     const edgeL = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.95, toneMapped: false }));
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.035, 16, 12), glow);
@@ -588,18 +608,18 @@ if (renderer) {
   const QZ = { GOLDPETAL: -4.6, GOLDGUINEA: -4.2, GOLDTEN: -3.8 }, QX0 = -1.4, QX1 = 2.2, QY = -0.25;
   const tOf = d => (Date.parse(d) - Date.parse(SER.dates[0])) / (Date.parse(SER.dates[NS - 1]) - Date.parse(SER.dates[0]));
   const quiet = new THREE.Group(); quiet.position.y = QY; world.add(quiet);
-  Object.values(QZ).forEach(z => { const r = new THREE.Mesh(new THREE.BoxGeometry(QX1 - QX0, 0.008, 0.008), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.18, toneMapped: false })); r.position.z = z; quiet.add(r); });
-  const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.004, 0.03, 0.004), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.16, toneMapped: false }), NS * 3);
+  Object.values(QZ).forEach(z => { const r = new THREE.Mesh(new THREE.BoxGeometry(QX1 - QX0, 0.008, 0.008), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x8c6414 : GLOWC, transparent: true, opacity: 0.18, toneMapped: false })); r.position.z = z; quiet.add(r); });
+  const ticks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.004, 0.03, 0.004), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x8c6414 : GLOWC, transparent: true, opacity: 0.16, toneMapped: false }), NS * 3);
   { let n = 0; Object.values(QZ).forEach(z => { for (let j = 0; j < NS; j++) { gm.makeTranslation(QX0 + (QX1 - QX0) * j / (NS - 1), 0.015, z); ticks.setMatrixAt(n++, gm); } }); }
   quiet.add(ticks);
   const AL = D.alerts.map(a => ({ ...a, x: QX0 + (QX1 - QX0) * tOf(a.start), z: QZ[a.sym], h: 0.12 + Math.min(a.bp, 450) / 450 * 0.75, w: 0.012 + Math.min(a.days, 8) * 0.003 }));
   const flareGeo = new THREE.BoxGeometry(1, 1, 1); flareGeo.translate(0, 0.5, 0);
   const flares = new THREE.InstancedMesh(flareGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, toneMapped: false }), AL.length);
   flares.frustumCulled = false; quiet.add(flares);
-  const fc = new THREE.Color(), GOLD = new THREE.Color(0xffc75e), HOT = new THREE.Color(0xfff2c8);
-  const scanner = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.1), new THREE.MeshBasicMaterial({ color: 0xffe2a0, transparent: true, opacity: 0.85, toneMapped: false, side: THREE.DoubleSide }));
+  const fc = new THREE.Color(), GOLD = new THREE.Color(LIGHT ? 0xa57a22 : 0xe2b65a), HOT = new THREE.Color(LIGHT ? 0x5f4105 : 0xfff2c8);
+  const scanner = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 1.1), new THREE.MeshBasicMaterial({ color: LIGHT ? 0x7d5a14 : 0xffe2a0, transparent: true, opacity: 0.85, toneMapped: false, side: THREE.DoubleSide }));
   scanner.rotation.y = Math.PI / 2; scanner.scale.x = 1;
-  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.05, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }));
+  const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.1), new THREE.MeshBasicMaterial({ color: GLOWC, transparent: true, opacity: 0.05, depthWrite: false, blending: LIGHT ? THREE.NormalBlending : THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }));
   scanGlow.rotation.y = Math.PI / 2;
   const scanH = new THREE.Group(); scanH.add(scanner, scanGlow); scanner.position.y = scanGlow.position.y = 0.55; quiet.add(scanH);
 

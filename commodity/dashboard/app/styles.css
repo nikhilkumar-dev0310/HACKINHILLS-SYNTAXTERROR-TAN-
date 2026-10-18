@@ -668,7 +668,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.13); --hi:rgba(255,255,255,.055);
   --ink:#f5f5f7; --ink-2:#a1a1a6; --ink-3:#86868b; --inv:#050506;
   --gold:#f2b544; --gold-2:#ffd88a; --gold-soft:rgba(242,181,68,.13); --gold-ink:#1b1300;
-  --grid:rgba(255,255,255,.055); --glow-a:rgba(242,170,52,.20); --glow-b:rgba(196,120,38,.13); --glow-c:rgba(255,214,140,.07);
+  --grid:rgba(255,255,255,.055); --glow-a:rgba(201,162,84,.24); --glow-b:rgba(140,112,62,.20); --glow-c:rgba(230,208,160,.09);
   --r:12px; --r-lg:20px; --r-sm:8px;
   --g-fill:rgba(255,255,255,.035); --g-fill-hover:rgba(255,255,255,.05);
   --g-rim:linear-gradient(155deg,rgba(255,255,255,.26),rgba(255,255,255,.07) 28%,rgba(255,255,255,.025) 60%,rgba(255,236,200,.12));
@@ -685,7 +685,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --bg:#ebe5da; --bg-2:#e3dccf; --panel:rgba(255,255,255,.6); --panel-2:rgba(255,255,255,.8); --panel-solid:#ffffff;
   --line:rgba(70,52,20,.11); --line-2:rgba(70,52,20,.19); --hi:rgba(255,255,255,.55);
   --ink-3:#5c5f66;
-  --glow-a:rgba(240,168,56,.42); --glow-b:rgba(226,128,70,.24); --glow-c:rgba(255,206,120,.40);
+  --glow-a:rgba(212,178,104,.36); --glow-b:rgba(184,160,116,.26); --glow-c:rgba(240,226,190,.55);
   --g-fill:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.52));
   --g-fill-hover:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.64));
   --g-rim:linear-gradient(155deg,#fff,rgba(255,255,255,.75) 30%,rgba(255,255,255,.18) 62%,rgba(255,255,255,.85));
@@ -701,7 +701,7 @@ main.page.p-out{animation:page-out 160ms var(--ease-in-q) forwards;pointer-event
   --bg:#ebe5da; --bg-2:#e3dccf; --panel:rgba(255,255,255,.6); --panel-2:rgba(255,255,255,.8); --panel-solid:#ffffff;
   --line:rgba(70,52,20,.11); --line-2:rgba(70,52,20,.19); --hi:rgba(255,255,255,.55);
   --ink-3:#5c5f66;
-  --glow-a:rgba(240,168,56,.42); --glow-b:rgba(226,128,70,.24); --glow-c:rgba(255,206,120,.40);
+  --glow-a:rgba(212,178,104,.36); --glow-b:rgba(184,160,116,.26); --glow-c:rgba(240,226,190,.55);
   --g-fill:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.52));
   --g-fill-hover:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.64));
   --g-rim:linear-gradient(155deg,#fff,rgba(255,255,255,.75) 30%,rgba(255,255,255,.18) 62%,rgba(255,255,255,.85));
@@ -1081,10 +1081,17 @@ html{-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-t
 @media (max-width:900px){.take{grid-template-columns:1fr;gap:10px}}
 
 /* ======================= GLASS v2 + PHONE RHYTHM (prototype, 18 Oct 2026) ======================= */
-/* 1. A warmer room behind the glass: three soft gold lights (pre-blurred gradients, no filter cost) */
-:root{--glow-a:rgba(242,170,52,.26);--glow-b:rgba(196,120,38,.18);--glow-c:rgba(255,214,140,.10)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--glow-a:rgba(240,168,56,.46);--glow-b:rgba(226,128,70,.28);--glow-c:rgba(255,206,120,.44)}}
-:root[data-theme="light"]{--glow-a:rgba(240,168,56,.46);--glow-b:rgba(226,128,70,.28);--glow-c:rgba(255,206,120,.44)}
+/* 1. The room behind the glass: three soft lights in the brand's gold family (pre-blurred gradients, no filter cost).
+   Metallic gold, antique gold and champagne, all near hue 40°: no orange (below ~35°) and no lemon (above ~50°).
+   The intro (intro/intro.tpl.html) uses the same three lights. */
+:root{
+  --glow-a:rgba(201,162,84,.24);    /* metallic gold   #c9a254 */
+  --glow-b:rgba(140,112,62,.20);    /* antique gold    #8c703e */
+  --glow-c:rgba(230,208,160,.09)}   /* champagne       #e6d0a0 */
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --glow-a:rgba(212,178,104,.36);--glow-b:rgba(184,160,116,.26);--glow-c:rgba(240,226,190,.55)}}
+:root[data-theme="light"]{
+  --glow-a:rgba(212,178,104,.36);--glow-b:rgba(184,160,116,.26);--glow-c:rgba(240,226,190,.55)}
 .bgfx i:nth-child(1){width:78vw;height:78vw;left:-22vw;top:-30vw}
 .bgfx i:nth-child(2){width:66vw;height:66vw;right:-24vw;top:24vh}
 .bgfx::after{width:60vw;height:60vw;left:24vw;bottom:-30vw}
