@@ -100,3 +100,23 @@ Motion (open-source, MIT, pinned on jsDelivr):
   - grains near the cursor scatter and spring back;
   - the ring of pieces swings with the cursor.
   On touch screens this starts only once the finale is reached.
+
+## The treasure room (19 Oct 2026)
+- **Portal.** Behind the vault door is a full treasure room. A stencil portal (`portal`, `roomMats`) means it is seen only
+  through the open doorway until the camera passes the door plane. After that it surrounds you, and the finale's forge
+  happens inside it. The finale pieces and grains are also stencil-tested while the camera is outside, so they never
+  show around the vault.
+- **Contents**, all instanced:
+  - stacked bar pyramids along the walls and at the back;
+  - coin mounds and coin towers;
+  - chalices, orbs and nuggets;
+  - two warm lamps.
+  The centre stays low and clear behind the mark.
+- **Blur and depth.**
+  - Fog closes in only inside the vault. It is a uniform change; the fog itself is set up at load so no shader recompiles.
+  - Soft bokeh discs drift in the air.
+  - Billboarded light shafts fall from above.
+  - The field of view kicks wider for a moment as you pass the door.
+- **Phones** step back less as they head into the vault, so they end up inside.
+- **Light theme:** the top bar switches to light ink and a dark pill inside the vault (`html.in-vault`).
+- **Frame rate:** a full scroll still holds 60 fps on the Mac test machine (worst frame 18 ms).
