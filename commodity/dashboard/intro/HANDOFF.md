@@ -1,6 +1,6 @@
 # Prototype handoff: glass v2, phone layout, 3D scroll intro
 
-Branch `glass-proto`.
+Shipped on `main` (live at https://parity-gold-site.vercel.app, intro at https://parity-gold-site.vercel.app/intro).
 
 ## 1. Glass v2 + phone layout (approved)
 Already wired into the site on this branch:
@@ -12,10 +12,10 @@ Already wired into the site on this branch:
   - Equal-height 2-up number tiles; the "on this page" chips become one swipeable row.
 - `app/main.jsx`: `useSheen()` makes a soft reflection follow the mouse across `.card`, `.take` and `.more`.
 
-To ship:
+To rebuild after a change:
 1. Rebuild with `node dashboard/build_app.mjs && python3 dashboard/build.py`.
 2. Run `python3 tools/run_tests.py`, then restore `results/test_report.json`.
-3. Merge to `main`, then force-push `main:holdout-2`.
+3. Push to `main`, then force-push `main:holdout-2`.
 
 Check the phone layout on a real iPhone. The headless browser used for screenshots doesn't render `backdrop-filter`.
 

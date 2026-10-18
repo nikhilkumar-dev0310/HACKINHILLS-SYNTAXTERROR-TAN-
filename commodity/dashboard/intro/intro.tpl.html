@@ -67,7 +67,8 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 /* right-hand chapter dots (desktop) */
 .dots{position:fixed;z-index:10;right:max(20px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;list-style:none;margin:0;padding:0}
 .dots button{display:flex;align-items:center;justify-content:flex-end;gap:10px;background:none;border:0;padding:6px 0;cursor:pointer;color:var(--ink-3);font:500 12px var(--f-ui)}
-.dots button span{opacity:0;transform:translateX(6px);transition:opacity .3s ease,transform .4s var(--spring)}
+.dots button span{opacity:0;transform:translateX(6px);transition:opacity .3s ease,transform .4s var(--spring);
+  padding:3px 10px;border-radius:999px;background:var(--lbl-bg);border:1px solid var(--rule);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .dots button:hover span,.dots button[aria-current="step"] span{opacity:1;transform:none}
 .dots button i{width:7px;height:7px;border-radius:50%;background:var(--ink-3);transition:transform .4s var(--spring),background-color .3s ease}
 .dots button[aria-current="step"]{color:var(--ink)}

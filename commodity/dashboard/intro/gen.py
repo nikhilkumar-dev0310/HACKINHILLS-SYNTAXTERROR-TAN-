@@ -98,10 +98,12 @@ assert "{{" not in out, out[out.index("{{"):out.index("{{") + 40]
 (HERE / "intro.html").write_text(out)   # fragment, for previewing as a Claude artifact
 # the page the site serves at /intro (tools/vercel_build.sh copies it; the daily job regenerates it)
 head, body = out.split("</style>", 1)
+NUM = dict(enumerate("zero one two three four five six seven eight nine ten eleven twelve".split()))
+steps = NUM[tpl.count('<section class="beat')]   # the description names how many beats the intro has
 (HERE / "index.html").write_text(
     '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-    '<meta name="description" content="Parity in six steps: why MCX\u2019s four gold futures should cost the same per gram, and when a gap is worth a look.">\n'
+    f'<meta name="description" content="Parity in {steps} steps: why MCX\u2019s four gold futures should cost the same per gram, and when a gap is worth a look.">\n'
     '<meta name="theme-color" content="#060606" media="(prefers-color-scheme: dark)">\n'
     '<meta name="theme-color" content="#ebe5da" media="(prefers-color-scheme: light)">\n'
     + head + "</style>\n</head>\n<body style=\"margin:0\">\n" + body + "\n</body>\n</html>\n")
