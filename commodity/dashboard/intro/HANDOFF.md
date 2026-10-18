@@ -37,9 +37,12 @@ Check the phone layout on a real iPhone. The headless browser used for screensho
 
 Integration (done):
 - `gen.py` also writes `intro/index.html`, a full page. `tools/vercel_build.sh` copies it to `site/intro/index.html`, so it is served at `/intro`.
-- `template.html` sends the first visit of each browser session from `/` to `/intro`. It sets the
-  `sessionStorage` flag `parity:intro` before leaving, so the redirect can't loop. These go straight to the site:
-  deep links (`/#section`), `?nointro`, `file://`, the artifact copy, and bots or headless browsers.
+- `template.html` sends anyone who opens the site's link from outside the site to `/intro`, every time.
+  These go straight to the site:
+  - reloads and back/forward;
+  - arrivals from the site's own pages (same-origin referrer), such as the intro's Enter and Skip;
+  - deep links (`/#section`) and `?nointro`;
+  - `file://`, the artifact copy, and bots or headless browsers.
 - **Skip intro** stays in the top bar. The footer has a "Replay intro" link.
 - `tools/daily_update.py` runs `gen.py` after `build.py`. The daily workflow runs it again after the tests and commits `dashboard/intro/index.html`.
 
@@ -137,3 +140,21 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - `resize()` ignores a zero-size viewport. A page that loaded while hidden logged a NaN bounding-sphere error.
 - **Frame rate:** a full scroll holds 60 fps once the page has settled (worst frame 18 ms on two runs).
   The first pass straight after load can show a few slow frames while shaders finish compiling.
+
+## Vault set, fuller room, finale placement (19 Oct 2026)
+- **Default:** opening https://parity-gold-site.vercel.app from anywhere outside the site always plays the intro (see `template.html`).
+- **Vault:**
+  - It is set into a stone ashlar wall over a stone floor (`vaultSet`); the wall and floor rise into place with it.
+  - A soft contact-shadow ring sits round the door.
+  - Brushed-steel and mottled-graphite finishes.
+  - The portal and the room's front face sit just behind the wall, so the fly-through never goes dark.
+- **River:** it waits until the door is well open, then each bar leaves from its own point across the doorway, spills forward and falls.
+- **Room:**
+  - stone pillars along both walls, and steel shelving stacked with bars between them;
+  - six open chests brimming with coins, and loose coins across the floor (the camera's aisle stays clear);
+  - more bar stacks and coin mounds.
+- **Finale:** the cursor-reactive mark sits up and to the right on laptops, and stays centred above the card on phones.
+- **UI:** a larger Enter Parity button, and a dark band behind the price tape in both themes.
+- **Fixes:**
+  - The bokeh count was fractional (80/3), which caused the NaN bounding-sphere error. It is now rounded.
+  - Textures are uploaded to the GPU at load.

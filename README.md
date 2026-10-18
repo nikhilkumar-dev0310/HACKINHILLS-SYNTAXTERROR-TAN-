@@ -13,7 +13,7 @@ whether a gap is worth a look.
 | | |
 |---|---|
 | **Live site** | **https://parity-gold-site.vercel.app** (updates itself every trading day) |
-| 3D intro | https://parity-gold-site.vercel.app/intro (plays once per visit; `?nointro` on the main link skips it) |
+| 3D intro | https://parity-gold-site.vercel.app/intro (plays whenever the site's link is opened from outside; `?nointro` skips it) |
 | Pitch | https://parity-gold-site.vercel.app/pitch.html |
 | Report (PDF) | https://parity-gold-site.vercel.app/report.pdf · [`commodity/report/`](commodity/report/) |
 | Demo video | **https://parity-gold-site.vercel.app/demo** · [`commodity/presentation/round2/Parity_demo.mp4`](commodity/presentation/round2/Parity_demo.mp4) (1 min 28 s, subtitles in `.srt`; how it holds attention: [`ENGAGEMENT.md`](commodity/presentation/round2/ENGAGEMENT.md)) |
