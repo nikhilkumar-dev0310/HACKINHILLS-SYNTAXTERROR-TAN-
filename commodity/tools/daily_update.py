@@ -137,6 +137,8 @@ def main():
     if not (~pd.MultiIndex.from_frame(new[k]).isin(pd.MultiIndex.from_frame(old[k]))).any():
         print(f"No new rows after {last.date()} (and no late ones). Nothing to publish.")
         subprocess.run(["git", "checkout", "--", "raw_clean", "clean"], check=False)
+        with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as f:   # tells the workflow to skip the commit
+            f.write(f"updated=false\nthrough={last.date()}\nnew_rows=0\n")
         return 0
 
     # ---- checks on what changed
@@ -163,8 +165,9 @@ def main():
     # export again so the log line appears on the site
     run([sys.executable, "dashboard/export.py"])
     run([sys.executable, "dashboard/build.py"])
+    run([sys.executable, "dashboard/intro/gen.py"])      # the intro's figures come from the same data.json
     with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as f:
-        f.write(f"through={nlast.date()}\nnew_rows={len(fresh)}\n")
+        f.write(f"updated=true\nthrough={nlast.date()}\nnew_rows={len(fresh)}\n")
     if len(pending):
         print(f"::warning title=Waiting for MCX::published without {', '.join(f'{r.symbol} {r.expiry_date.date()}' for r in pending.itertuples())}; "
               "the next runs fetch them again and add the missing days when MCX returns them")

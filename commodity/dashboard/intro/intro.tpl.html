@@ -100,12 +100,27 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .hint i{width:22px;height:34px;border-radius:12px;border:1.5px solid var(--ink-3);position:relative}
 .hint i::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:var(--gold);animation:wheel 1.8s var(--out) infinite}
 @keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(10px);opacity:0}100%{opacity:0}}
+/* scroll motion (Lenis smooth scroll + Motion reveals). Cards are moved by --ty/--sc/--rx from the scroll loop. */
+html.lenis,html.lenis body{height:auto}
+.lenis:not(.lenis-autoToggle).lenis-stopped{overflow:clip}
+.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+.beat{perspective:1400px}
+.card{--ty:0px;--sc:1;--rx:0deg;transform:translateY(-50%) translateY(var(--ty)) rotateX(var(--rx)) scale(var(--sc));transform-origin:50% 100%}
+.w{display:inline-block;overflow:clip;overflow-clip-margin:.12em;vertical-align:top;padding-bottom:.06em;margin-bottom:-.06em}
+.w>i{display:inline-block;font-style:normal}
+.hl{background-size:220% 100%;background-position:calc(100% - var(--sh,0) * 100%) 0}
+.js-rv .rv{opacity:0}
+.chap{position:fixed;z-index:10;left:max(20px,env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));display:flex;align-items:baseline;gap:10px;
+  font:500 12px/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);pointer-events:none}
+.chap .n{display:inline-block;height:1em;overflow:clip;font:600 13px/1 var(--f-disp);color:var(--gold-2);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.chap .n span,.chap .t span{display:block}
+.chap .t{display:inline-block;height:1em;overflow:clip}
 .no-gl #gl{display:none}
 .no-gl .lbls{display:none}
 
 @media (max-width:760px){
   .beat{height:150vh;height:150svh}
-  .card{position:sticky;top:43svh;transform:none;width:auto;margin-left:0;padding:20px 18px 18px;border-radius:24px;max-height:calc(57svh - 16px - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain}
+  .card{position:sticky;top:43svh;transform:translateY(var(--ty)) rotateX(var(--rx)) scale(var(--sc));width:auto;margin-left:0;padding:20px 18px 18px;border-radius:24px;max-height:calc(57svh - 16px - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain}
   h1{font-size:clamp(32px,9.6vw,42px);margin-bottom:12px}
   h2{font-size:clamp(26px,7.6vw,32px);margin-bottom:10px}
   .eyebrow{font-size:11px;margin-bottom:10px}
@@ -119,8 +134,9 @@ h2{font-size:clamp(32px,3.6vw,48px)}
   .lbl b{font-size:12px}
   .lbl small{display:none}
   .hint{display:none}
+  .chap{display:none}
 }
-@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card{will-change:auto}}
+@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card{will-change:auto;--ty:0px!important;--sc:1!important;--rx:0deg!important}}
 </style>
 
 <div class="atmo" aria-hidden="true"></div>
@@ -130,11 +146,12 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 <div class="progress" id="prog" aria-hidden="true"></div>
 
 <header class="bar">
-  <a class="brand" href="https://parity-gold-site.vercel.app/" aria-label="Parity home"><span class="mark" aria-hidden="true"><i></i><i></i></span>Parity</a>
-  <a class="pill" href="https://parity-gold-site.vercel.app/">Skip intro</a>
+  <a class="brand" href="/" data-enter aria-label="Parity home"><span class="mark" aria-hidden="true"><i></i><i></i></span>Parity</a>
+  <a class="pill" href="/" data-enter>Skip intro</a>
 </header>
 
 <ol class="dots" id="dots" aria-label="Chapters"></ol>
+<div class="chap" id="chap" aria-hidden="true"><span class="n"><span>01</span></span><span id="chapOf"></span><span class="t"><span></span></span></div>
 
 <main id="story">
   <section class="beat" data-name="The problem">
@@ -194,13 +211,14 @@ h2{font-size:clamp(32px,3.6vw,48px)}
       <h2><span class="hl">Parity</span></h2>
       <p>Checks whether MCX’s four gold contracts agree, whether any gap survives real costs, and tells a trader when one is worth a look. Built for Hack in Hills ’26 by</p>
       <ul class="team"><li>Nikhil Kumar</li><li>Sai Ganesh</li><li>Ishaan Chhabra</li></ul>
-      <div class="cta"><a class="go" href="https://parity-gold-site.vercel.app/">Enter Parity</a><a class="alt" href="https://parity-gold-site.vercel.app/demo">Watch the 1:28 demo</a></div>
+      <div class="cta"><a class="go" href="/" data-enter>Enter Parity</a><a class="alt" href="/demo">Watch the 1:28 demo</a></div>
     </div>
   </section>
 </main>
 
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+ "lenis":"https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.mjs","motion":"https://cdn.jsdelivr.net/npm/motion@13.4.6/+esm"}}
 </script>
 <script type="module">
 import * as THREE from "three";
@@ -210,6 +228,17 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 const D = __DATA__;
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* seen once per browser session; the site sends first-time visitors here */
+try { sessionStorage.setItem("parity:intro", "1"); } catch (e) {}
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";   // the story always starts at the top
+
+/* open-source motion libraries (MIT): Lenis (darkroomengineering/lenis) for smooth scroll,
+   Motion (motiondivision/motion) for reveals. The intro still works if either fails to load. */
+const [{ default: Lenis }, M] = await Promise.all([
+  reduce ? Promise.resolve({ default: null }) : import("lenis").catch(() => ({ default: null })),
+  import("motion").catch(() => null),
+]);
 const and = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
 
 /* ---------- copy that depends on today's data */
@@ -222,9 +251,37 @@ $("#sigText").textContent = D.signalToday.length ? `Today: a signal on ${and(D.s
 const beats = [...document.querySelectorAll(".beat")], cards = beats.map(b => b.querySelector(".card")), N = beats.length - 1;
 const dots = $("#dots");
 beats.forEach((b, i) => { const li = document.createElement("li"); li.innerHTML = `<button type="button"><span>${b.dataset.name}</span><i></i></button>`;
-  li.firstChild.addEventListener("click", () => scrollTo({ top: beatTop(i), behavior: reduce ? "auto" : "smooth" })); dots.appendChild(li); });
+  li.firstChild.addEventListener("click", () => goTo(i)); dots.appendChild(li); });
 const dotBtns = [...dots.querySelectorAll("button")];
 const beatTop = i => beats[i].offsetTop;
+
+/* smooth scroll. Phones keep native touch scrolling; a card that scrolls inside itself keeps its own wheel. */
+const lenis = Lenis ? new Lenis({ autoRaf: false, lerp: 0.085, wheelMultiplier: 0.9, anchors: false,
+  prevent: n => { const c = n.closest && n.closest(".card"); return !!c && c.scrollHeight > c.clientHeight + 1; } }) : null;
+const goTo = i => lenis ? lenis.scrollTo(beatTop(i), { duration: 1.6, easing: t => 1 - Math.pow(1 - t, 4) })
+                        : scrollTo({ top: beatTop(i), behavior: reduce ? "auto" : "smooth" });
+addEventListener("keydown", e => {   // arrow keys step through beats
+  if (e.target.closest("input,textarea,[contenteditable]") || e.altKey || e.metaKey || e.ctrlKey) return;
+  const k = Math.round(cur);
+  if (e.key === "ArrowDown" || e.key === "PageDown") { e.preventDefault(); goTo(Math.min(N, k + 1)); }
+  if (e.key === "ArrowUp" || e.key === "PageUp") { e.preventDefault(); goTo(Math.max(0, k - 1)); }
+});
+
+/* chapter counter, bottom left: the number and name roll like an odometer when the beat changes */
+const pad = n => String(n).padStart(2, "0");
+$("#chapOf").textContent = "/ " + pad(beats.length);
+const chapN = $("#chap .n"), chapT = $("#chap .t");
+chapT.firstElementChild.textContent = beats[0].dataset.name;
+function rollChapter(k, dir) {
+  [[chapN, pad(k + 1)], [chapT, beats[k].dataset.name]].forEach(([host, txt]) => {
+    while (host.children.length > 1) host.firstElementChild.remove();   // a roll still in flight
+    const old = host.firstElementChild, nu = document.createElement("span"); nu.textContent = txt;
+    if (!M || reduce) { host.replaceChildren(nu); return; }
+    host.style.display = "inline-grid"; old.style.gridArea = nu.style.gridArea = "1/1"; host.appendChild(nu);
+    M.animate(old, { y: ["0%", dir > 0 ? "-110%" : "110%"], opacity: [1, 0] }, { duration: 0.45, ease: [0.16, 1, 0.3, 1] }).then(() => old.remove());
+    M.animate(nu, { y: [dir > 0 ? "110%" : "-110%", "0%"], opacity: [0, 1] }, { duration: 0.55, ease: [0.16, 1, 0.3, 1] });
+  });
+}
 
 /* scroll → beat value. Each beat holds still while its card is read, then glides to the next. */
 const sm = x => x * x * x * (x * (x * 6 - 15) + 10);                     // smootherstep
@@ -237,15 +294,74 @@ function scrollBeat() {
   return i + sm(clamp((f - 0.32) / 0.68));
 }
 
-/* ---------- cards: glass panels fade and lift with distance from their resting place */
+/* ---------- cards: glass panels fade, rise and tip back with distance from their resting place.
+   Arriving from below they lean back slightly and grow to full size; leaving upward they shrink a touch. */
 function cardsFrame(vh) {
   for (const c of cards) {
-    const r = c.getBoundingClientRect(), mid = r.top + r.height / 2;
+    const r = c.getBoundingClientRect();
+    const ty = parseFloat(c.style.getPropertyValue("--ty")) || 0;   // measure the card without our own offset
+    const mid = r.top - ty + r.height / 2;
     const rest = innerWidth <= 760 ? vh * 0.43 + r.height / 2 : vh * 0.5;
-    const d = Math.abs(mid - rest) / (vh * 0.55);
+    const s = (mid - rest) / (vh * 0.55), d = Math.abs(s);           // s > 0: still below its place
     const o = 1 - sm(clamp((d - 0.35) / 0.65));
     c.style.opacity = o.toFixed(3);
+    if (o > 0.55 && c._reveal) { const f = c._reveal; c._reveal = null; f(); }   // reveal once, as it settles
+    if (reduce) continue;
+    const e = sm(clamp((d - 0.2) / 0.8));
+    c.style.setProperty("--ty", (Math.sign(s) * e * vh * 0.06).toFixed(1) + "px");
+    c.style.setProperty("--sc", (1 - e * (s > 0 ? 0.05 : 0.03)).toFixed(4));
+    c.style.setProperty("--rx", (s > 0 ? e * 9 : -e * 4).toFixed(2) + "deg");
+    // gold headline sheen slides across as the card passes through
+    c.style.setProperty("--sh", clamp(0.5 - s * 0.6).toFixed(3));
   }
+}
+
+/* ---------- reveals: when a card arrives its headline rises word by word out of a mask, then the text
+   and rows follow in a stagger, and numbers count up to their real value from data.json. Once per card. */
+function splitWords(el) {
+  const walk = node => [...node.childNodes].forEach(n => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(part => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.append(part); return; }
+        const w = document.createElement("span"), i = document.createElement("i"); w.className = "w"; i.textContent = part; w.append(i); frag.append(w);
+      });
+      n.replaceWith(frag);
+    } else if (n.nodeType === 1) walk(n);
+  });
+  walk(el);
+  // the gold gradient is clipped to text, so each word inside .hl carries it itself
+  el.querySelectorAll(".hl .w > i").forEach(i => i.classList.add("hl"));
+  el.querySelectorAll(".hl").forEach(h => { if (!h.matches("i")) h.classList.replace("hl", "hl-src"); });
+  return [...el.querySelectorAll(".w > i")];
+}
+const NUM = /^([^\d−-]*)([−-]?)([\d,]*\d(?:\.\d+)?)(.*)$/;
+function countUp(el, delay) {
+  const fin = el.textContent, m = fin.match(NUM); if (!m) return;
+  const [, pre, neg, digits, post] = m, v = parseFloat(digits.replace(/,/g, "")), dec = (digits.split(".")[1] || "").length;
+  const indian = /\d,\d\d,\d{3}/.test(digits), grp = digits.includes(",");
+  const fmt = x => { let s = x.toFixed(dec); if (grp) { const [a, b] = s.split("."); s = (indian ? Number(a).toLocaleString("en-IN") : Number(a).toLocaleString("en-US")) + (b ? "." + b : ""); } return pre + neg + s + post; };
+  const from = v >= 1000 ? v * 0.9 : 0;   // big rupee figures settle from just below; small ones count from zero
+  el.textContent = fmt(from);
+  M.animate(from, v, { duration: 1.2, delay, ease: [0.16, 1, 0.3, 1], onUpdate: x => { el.textContent = fmt(x); }, onComplete: () => { el.textContent = fin; } });
+}
+if (M && !reduce) {
+  document.documentElement.classList.add("js-rv");
+  cards.forEach(card => {
+    const head = card.querySelector("h1,h2"), words = splitWords(head);
+    const rest = [...card.querySelectorAll(".eyebrow, p:not(.eyebrow), .rows li, .facts li, .state, .team li, .cta a")];
+    rest.forEach(el => el.classList.add("rv"));
+    M.animate(words, { y: "110%" }, { duration: 0 });
+    const nums = [...card.querySelectorAll(".rows li b, .facts li b, b.num")].filter(b => NUM.test(b.textContent));
+    card._reveal = () => {
+      M.animate(words, { y: ["110%", "0%"], rotate: [4, 0] }, { duration: 0.9, delay: M.stagger(0.045, { startDelay: 0.08 }), ease: [0.16, 1, 0.3, 1] });
+      M.animate(rest, { opacity: [0, 1], y: [18, 0], filter: ["blur(6px)", "blur(0px)"] }, { duration: 0.8, delay: M.stagger(0.05, { startDelay: 0.25 }), ease: [0.16, 1, 0.3, 1] });
+      nums.forEach((b, k) => countUp(b, 0.35 + k * 0.06));
+    };
+  });
+  // if frames are held back (a background tab, power saving), never leave the opening card blank
+  setTimeout(() => { const f = cards[0]._reveal; if (f) { cards[0]._reveal = null; f(); } }, 1200);
 }
 
 /* ---------- WebGL */
@@ -305,7 +421,7 @@ if (renderer) {
     const pts = [[0, th / 2], [r * 0.84, th / 2], [r * 0.9, th * 0.62], [r, th * 0.55], [r, -th * 0.55], [r * 0.9, -th * 0.62], [r * 0.84, -th / 2], [0, -th / 2]].map(([x, y]) => new THREE.Vector2(x, y));
     const geo = new THREE.LatheGeometry(pts, 96); geo.computeVertexNormals();
     const g = new THREE.Group(), m = new THREE.Mesh(geo, mat); g.add(m);
-    const dc = decal(lines, r * 1.5, r * 1.5); dc.rotation.x = -Math.PI / 2; dc.rotation.z = Math.PI; dc.position.y = th / 2 + 0.003; g.add(dc);
+    const dc = decal(lines, r * 1.5, r * 1.5); dc.rotation.x = -Math.PI / 2; dc.position.y = th / 2 + 0.003; g.add(dc);
     return g;
   }
 
@@ -417,16 +533,18 @@ if (renderer) {
     P.forEach((p, k) => {
       const a = pieceAt(k, i), c = pieceAt(k, j);
       p.position.copy(a.p).lerp(c.p, f);
-      const bob = reduce ? 0 : Math.sin(time * 0.9 + k * 1.7) * 0.04 * (b < 1.5 || b > 4.5 ? 1 : 0.3);
+      // calm: a slow, small float at the opening and closing beats only; no free spinning
+      const idle = b < 1.3 ? 1 - clamp(b / 1.3) : b > 4.5 ? clamp((b - 4.5) / 0.5) : 0;
+      const bob = reduce ? 0 : Math.sin(time * 0.6 + k * 1.7) * 0.012 * idle;
       p.position.y += bob;
       const s = a.s + (c.s - a.s) * f; p.scale.setScalar(Math.max(s, 0.001)); p.visible = s > 0.01;
       p.rotation.x = a.rx + (c.rx - a.rx) * f;
-      p.rotation.y = a.ry + (c.ry - a.ry) * f + (reduce ? 0 : (b < 1.3 ? time * 0.18 + k : b > 4.5 ? time * 0.3 : 0) * (b < 1.3 ? 1 - clamp(b / 1.3) : clamp((b - 4.5) / 0.5)));
+      p.rotation.y = a.ry + (c.ry - a.ry) * f + (reduce ? 0 : Math.sin(time * 0.35 + k) * 0.05 * idle);   // a slight sway, driven by scroll otherwise
     });
     cols.forEach((m, k) => {
       const h = colAt(k, i) + (colAt(k, j) - colAt(k, i)) * f;
       m.position.set(line[k + 1], BASE, 0); m.scale.set(1, Math.max(h, 0.0001), 1); m.visible = h > 0.005;
-      const lit = k === 2 ? bump(b, 3, 3, 0.6) : 0; m.material.emissiveIntensity = lit * (0.6 + 0.4 * Math.sin(time * 3));
+      const lit = k === 2 ? bump(b, 3, 3, 0.6) : 0; m.material.emissiveIntensity = lit * (reduce ? 0.8 : 0.75 + 0.1 * Math.sin(time * 1.4));
     });
     const pv = bump(b, 2, 3, 0.7);
     plane.position.set(0, BASE + D.costLine * K, 0); plane.scale.setScalar(Math.max(pv, 0.0001)); plane.visible = pv > 0.01;
@@ -435,10 +553,11 @@ if (renderer) {
     band.position.set(line[3], BASE, 0); band.scale.set(1, Math.max(bandH * sm(bv), 0.0001), 1); band.visible = bv > 0.01;
     bandCaps.forEach(r => { r.position.set(line[3], BASE + bandH * sm(bv), 0); r.visible = bv > 0.01; });
     const sv = bump(b, 4, 4, 0.7);
-    slabs.forEach((g, k) => { const e = sm(clamp(sv * 1.3 - k * 0.15)); g.scale.setScalar(Math.max(0.62 * e, 0.0001)); g.visible = e > 0.01; g.rotation.y = -0.18 + (reduce ? 0 : Math.sin(time * 0.4 + k) * 0.05); });
+    slabs.forEach((g, k) => { const e = sm(clamp(sv * 1.3 - k * 0.15)); g.scale.setScalar(Math.max(0.62 * e, 0.0001)); g.visible = e > 0.01; g.rotation.y = -0.18 + (reduce ? 0 : (b - 4) * 0.22 * (k - 1) + Math.sin(time * 0.3 + k) * 0.015); });   // fan open with scroll
 
     if (!reduce) { const a = dg.attributes.position.array; for (let k = 0; k < NP; k++) { a[k * 3 + 1] += Math.sin(time * 0.3 + seed[k]) * 0.0009; a[k * 3] += Math.cos(time * 0.2 + seed[k]) * 0.0006; } dg.attributes.position.needsUpdate = true; }
 
+    if (!reduce) { dustPts.position.y = -b * 0.18; dustPts.rotation.y = b * 0.04; }   // dust drifts with the story
     renderer.render(scene, camera);
 
     // labels follow their objects
@@ -460,14 +579,15 @@ let cur = scrollBeat(), last = performance.now(), t0 = last, shown = -1;
 const prog = $("#prog"), hint = $("#hint");
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (lenis) lenis.raf(now);
   const target = scrollBeat();
-  cur = reduce ? target : cur + (target - cur) * (1 - Math.exp(-dt / 0.14));
+  cur = reduce ? target : cur + (target - cur) * (1 - Math.exp(-dt / (lenis ? 0.07 : 0.14)));   // Lenis already eases the wheel
   if (Math.abs(target - cur) < 1e-4) cur = target;
   const vh = innerHeight;
   cardsFrame(vh);
   prog.style.transform = `scaleX(${(scrollY / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4)})`;
   if (hint) hint.style.opacity = String(1 - clamp(scrollY / (vh * 0.25)));
-  const k = Math.round(cur); if (k !== shown) { shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
+  const k = Math.round(cur); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
   frame(cur, (now - t0) / 1000, dt);
   requestAnimationFrame(loop);
 }

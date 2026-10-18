@@ -66,15 +66,19 @@ jobs:
         run: nice -n 10 python tools/daily_update.py
       - name: Tests
         # Runs the full suite and records the result for the site's Data quality page; a failure stops the publish.
+        # Skipped when MCX had nothing new: re-running would only refresh the report's timestamp and make an empty commit.
+        if: steps.upd.outputs.updated == 'true'
         run: |
           python tools/run_tests.py
           python dashboard/export.py
           python dashboard/build.py
+          python dashboard/intro/gen.py > /dev/null
       - name: Commit and push
+        if: steps.upd.outputs.updated == 'true'
         run: |
           git config user.name "parity-data-bot"
           git config user.email "parity-data-bot@users.noreply.github.com"
-          git add -A raw_clean clean results dashboard/data.json dashboard/index.html dashboard/artifact.html
+          git add -A raw_clean clean results dashboard/data.json dashboard/index.html dashboard/artifact.html dashboard/intro/index.html
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -m "Daily data: MCX Bhavcopy through ${{ steps.upd.outputs.through }} (+${{ steps.upd.outputs.new_rows }} rows)"
           git pull --rebase origin main

@@ -59,6 +59,13 @@ for k, v in DATA.items():
 out = out.replace("{{petalGap}}", f"{petal['gap']:.1f}").replace("{{petalZ}}", f"{petal['z']:+.2f}").replace("{{petalBand}}", f"{DATA['petal']['band']:.0f}")
 out = out.replace("{{costLine}}", f"{cost_line:.1f}")
 assert "{{" not in out, out[out.index("{{"):out.index("{{") + 40]
-(HERE / "intro.html").write_text(out)
-(HERE / "intro_local.html").write_text('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body style="margin:0">' + out + "</body></html>")
+(HERE / "intro.html").write_text(out)   # fragment, for previewing as a Claude artifact
+# the page the site serves at /intro (tools/vercel_build.sh copies it; the daily job regenerates it)
+head, body = out.split("</style>", 1)
+(HERE / "index.html").write_text(
+    '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+    '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+    '<meta name="description" content="Parity in six steps: why MCX\u2019s four gold futures should cost the same per gram, and when a gap is worth a look.">\n'
+    '<meta name="theme-color" content="#0a0806">\n'
+    + head + "</style>\n</head>\n<body style=\"margin:0\">\n" + body + "\n</body>\n</html>\n")
 print(json.dumps(DATA, ensure_ascii=False, indent=1)[:1600])

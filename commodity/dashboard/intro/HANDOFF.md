@@ -1,6 +1,6 @@
 # Prototype handoff: glass v2, phone layout, 3D scroll intro
 
-Branch `glass-proto`. Nothing here is on `main` or the live site yet.
+Branch `glass-proto`.
 
 ## 1. Glass v2 + phone layout (approved)
 Already wired into the site on this branch:
@@ -19,7 +19,7 @@ To ship:
 
 Check the phone layout on a real iPhone. The headless browser used for screenshots doesn't render `backdrop-filter`.
 
-## 2. 3D scroll intro (prototype, not wired in)
+## 2. 3D scroll intro (wired in: served at /intro)
 - `intro/intro.tpl.html` (page) and `intro/gen.py`. `gen.py` fills every figure from `dashboard/data.json` and writes `intro.html`.
 - Uses three.js **0.170.0** via an importmap (jsDelivr), plus `RoomEnvironment` and `RoundedBoxGeometry`.
 - Six beats: problem → per gram → cost line → ±1.5σ check → evidence → team.
@@ -29,11 +29,26 @@ Check the phone layout on a real iPhone. The headless browser used for screensho
 - If frames run long, the resolution drops a step.
 - `intro/shot.py` takes screenshots of each beat (desktop or phone). It needs three r170 in `intro/node_modules/three`.
 
-Suggested integration (the team had no preference; this is the default):
-- Serve the intro at `/intro`.
-- Show it once per browser session before the site, with **Skip intro** always visible. Put a "Replay intro" link in the footer.
-- Returning visitors go straight in.
-- Re-run `gen.py` in the daily chain so the intro's numbers stay current.
+Integration (done):
+- `gen.py` also writes `intro/index.html`, a full page. `tools/vercel_build.sh` copies it to `site/intro/index.html`, so it is served at `/intro`.
+- `template.html` sends the first visit of each browser session from `/` to `/intro`. It sets the
+  `sessionStorage` flag `parity:intro` before leaving, so the redirect can't loop. These go straight to the site:
+  deep links (`/#section`), `?nointro`, `file://`, the artifact copy, and bots or headless browsers.
+- **Skip intro** stays in the top bar. The footer has a "Replay intro" link.
+- `tools/daily_update.py` runs `gen.py` after `build.py`. The daily workflow runs it again after the tests and commits `dashboard/intro/index.html`.
+
+Motion (open-source, MIT, pinned on jsDelivr):
+- **Lenis 1.3.26** (darkroomengineering/lenis) for smooth wheel scrolling. Phones keep native touch scrolling. A card that scrolls inside itself keeps its own wheel.
+- **Motion 13.4.6** (motiondivision/motion):
+  - Headlines rise word by word out of a mask.
+  - Card text and rows follow in a stagger with a light blur.
+  - Numbers count up to the exact string from `data.json`.
+  - The chapter counter (bottom left) rolls like an odometer.
+- Cards tip back and rise into place with scroll. The gold headline sheen tracks scroll. The "how we know" slabs fan open with scroll.
+- The gold no longer spins on its own. Only a small slow float and sway remain on the first and last beats.
+- Arrow keys and Page Up/Down step between beats.
+- Reduced motion turns all of this off. If either library fails to load, the intro still works without it.
 
 ## Also noticed
-- On 17 Oct the second daily run committed with the message "Daily data: MCX Bhavcopy through  (+ rows)", with the date and row count blank. It probably ran when there were no new rows. Make it skip the commit, or write "no new rows".
+- Fixed: on 17 Oct the second daily run committed with the message "Daily data: MCX Bhavcopy through  (+ rows)".
+  When MCX has no new rows, `daily_update.py` now writes `updated=false`. The workflow then skips the tests and the commit.

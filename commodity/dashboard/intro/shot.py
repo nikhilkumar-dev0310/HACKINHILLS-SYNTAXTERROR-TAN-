@@ -18,7 +18,7 @@ async def main():
         pg=await ctx.new_page(); errs=[]; logs=[]
         pg.on("pageerror", lambda e: errs.append(str(e))); pg.on("console", lambda m: logs.append(m.text) if m.type in ("error","warning") else None)
         await pg.route("**/*", route)
-        await pg.goto("file://"+str(H/"intro_local.html")); await pg.wait_for_timeout(2500)
+        await pg.goto("file://"+str(H/"index.html")); await pg.wait_for_timeout(2500)
         n=await pg.evaluate("document.querySelectorAll('.beat').length")
         for i in range(n):
             top=await pg.evaluate(f"document.querySelectorAll('.beat')[{i}].offsetTop")
