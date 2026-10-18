@@ -196,7 +196,7 @@ Motion (open-source, MIT, pinned on jsDelivr):
   - Pari stands on a broad, smooth rise below the mark, with clutter kept off it, and the greeting sits beside Pari.
 - **Numbers** count up as plain tabular text instead of rolling digit strips, so nothing shifts or overlaps mid-animation.
 
-## Real models, no phasing, a plain stage for the mark (19 Oct 2026)
+## Real models, no phasing, a plain stage for the mark (18 Oct 2026)
 - **Props are real CC0 models from Poly Haven**, repacked to 2.2 MB in `intro/models/` (credits in `models/CREDITS.md`):
   - treasure chest, brass goblets, two brass vases and a brass pot;
   - a chandelier, lion heads on the walls, kite shields and an ornate dagger.
@@ -214,3 +214,67 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Reflections:** a photographed HDRI was tried. Its pure-white softboxes washed the gold to silver, so the warm built
   studio stays.
 - **Scroll mapping** guards against a zero-size viewport (a hidden tab measured 0 and crashed the camera curve).
+
+## Real gold models, real shadows, open chests, a livelier Pari, no lag at the vault (18 Oct 2026)
+- **The gold is real CC0 models from TextureCan** (credits in `models/CREDITS.md`):
+  - a stamped "FINE GOLD 999.9" bar and a coin, kept as mesh plus normal map (the colour stays the intro's own gold);
+  - the coin's $ was replaced on both faces by an embossed Parity mark;
+  - `gold_coin_plain.glb` has plain faces, for the GOLDGUINEA piece, which carries its own engraving.
+  - They are used for the room's stacks, stray bars, loose coins and coin towers, for the river, and for the shapes of
+    the four pieces on stage. Each piece is fitted to its old bounding box, so poses, grains and labels are unchanged.
+  - Until they load (14–23 KB each), same-size stand-ins hold their places. The materials carry a 1 px flat normal map
+    from the start, so the swap needs no new shader.
+- **Nothing intersects in the room:**
+  - every chest, pile, prop, shield, dagger, stray bar and coin tower claims floor space first;
+  - coins are Poisson-spaced at least a coin's width apart and lie along the dune's surface;
+  - stacks are stepped like brickwork and sit on the lowest point under their footprint.
+- **The river runs in lanes:**
+  - each piece has its own scattered lane across the doorway (at least 12.5 cm apart) and a fixed place along it, and all
+    pieces move at one speed, so no two pass through each other;
+  - pieces near the lens shrink away, so the camera never flies through one;
+  - the pieces are now at true proportions.
+- **Chests:**
+  - four of seven are open: the lid and hasp turn back on the hinge, with a heap of gold and coins inside;
+  - all are sunk a little into the gold, with a spill of coins in front.
+- **Pari:**
+  - the peak is flattened where Pari stands, and its soles rest on the gold through every squash, so no feet sink in;
+  - it pops in just above the peak and drops onto it (phones: it pops up in place, smaller, under the mark);
+  - it then breathes, sways, blinks at uneven moments (sometimes twice), and turns to the cursor with a lag, leaning
+    into the turn;
+  - every few seconds it does something different, never the same twice running: wave, hop, look around, point up at
+    the mark, cheer or spin, each eased in and out with squash and stretch.
+  - It keeps the studio's bright reflections, like the four pieces.
+- **Realism:**
+  - **Shadows:** the chandelier's lamp is a shadow-casting spot (2048² map, PCF soft), drawn once (`shadowMap.autoUpdate`
+    off) from the chests, piles and props.
+  - **Contact shade:** soft shade round everything standing on the dune, and in its low ground, is baked into the dune's
+    vertex colours.
+  - **Reflections:** room materials reflect the room (`roomEnv`: bronze walls, a lamplit ceiling, a floor of gold, the
+    chandelier, glints), built like the studio; a live cube capture would have compiled a second set of shaders.
+  - **Variety:** every bar and coin has a slightly different shade (instance colours).
+  - **Glints:** a small shader of points that flash briefly on stack tops, coin towers, heaps and loose coins.
+- **The mark's background:**
+  - no dark plate: the back wall behind the mark is a plain pool of warm lamplight;
+  - the back of the dune stays low behind it, and no light shaft, pile or bokeh sits between the camera and the mark.
+- **The vault door is solid:** the door and frame are lathes (open shells), now drawn on both faces. Seen from behind
+  once it swung open, the door used to vanish.
+- **The lag before the vault came from three things, all fixed:**
+  - **Lights:** the room's lamps were inside the room group, so they left the scene's light count while the room was
+    hidden. Every model material then compiled without them and recompiled the moment the room appeared. The lamps now
+    hang at the top of the scene; only their intensity changes.
+  - **Drawing too early:** the room was drawn from 0.6 beats before the vault while the door was still shut. It now
+    draws only once the door starts to open.
+  - **First-use costs:** buffers, textures and shadows are paid in a staged warm-up. Once the models are in and the
+    reader is idle after the opening (or at the latest when the vault rises), the room is drawn unseen over three frames
+    (its stencil test fails while the doorway is hidden).
+  - Measured at 1024×640: a first-pass sweep from beat 6 through the vault into the finale held 60 fps (worst frame
+    17.7 ms). The one-time warm-up is about 70–100 ms, early on.
+- **The props were re-packed lighter:**
+  - the chest is 24k triangles, from 79k;
+  - the lion head, chandelier and first vase were simplified;
+  - the models folder is 1.9 MB.
+- **`?debug`** exposes `window.__intro.at(b)` (pin the story to scene time `b`) and `window.__scene`, for checking a
+  scene by hand.
+- **Tests:** the machine's Python 3.15 beta now segfaults on `import numpy.random`. The suite was run in a scratch
+  Python 3.12 venv built from `tools/requirements.txt` plus scipy: 10,357 passed, 0 failed.
+
