@@ -140,9 +140,6 @@ html.lenis,html.lenis body{height:auto}
 .tape b{color:var(--ink-2);font-weight:600;letter-spacing:.04em;margin-right:4px}
 .tape i{font-style:normal;margin:0 6px}.tape .up{color:var(--good)}.tape .dn{color:#f08a7a}
 .tape em{font-style:normal;color:var(--gold-2)}
-.od{display:inline-block;height:1lh;overflow:clip;vertical-align:top}
-.od>span{display:flex;flex-direction:column}
-.od>span>span{height:1lh}
 .card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
   background:linear-gradient(105deg,transparent 35%,rgba(255,236,190,.16) 47%,rgba(255,255,255,.22) 50%,rgba(255,236,190,.16) 53%,transparent 65%) no-repeat;background-size:260% 100%;background-position:130% 0}
 .card.glint::after{animation:glint 1.5s var(--out) .1s}
@@ -286,7 +283,6 @@ html.lenis,html.lenis body{height:auto}
 </script>
 <script type="module">
 import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
 const D = __DATA__;
@@ -414,23 +410,16 @@ function splitWords(el) {
   return [...el.querySelectorAll(".w > i")];
 }
 const NUM = /\d/;
-/* odometer: each digit is a strip of 0-9 that rolls into place, right to left, like a ticker board; the
-   finished text is put back exactly as data.json wrote it */
-function odometer(el, delay) {
-  const fin = el.textContent; if (!NUM.test(fin)) return;
-  el.textContent = "";
-  const strips = [];
-  for (const ch of fin) {
-    if (!/\d/.test(ch)) { el.append(ch); continue; }
-    const od = document.createElement("span"), st = document.createElement("span"); od.className = "od";
-    for (let r = 0; r < 20; r++) { const d = document.createElement("span"); d.textContent = r % 10; st.append(d); }
-    od.append(st); el.append(od); strips.push([st, 10 + +ch]);
-  }
-  let left = strips.length;
-  strips.reverse().forEach(([st, n], k) => {
-    M.animate(st, { y: ["0%", `${-n * 5}%`] }, { duration: 1.1 + k * 0.05, delay: delay + k * 0.05, ease: [0.16, 1, 0.3, 1] })
-      .then(() => { if (--left === 0) el.textContent = fin; });
-  });
+/* count-up: numbers climb to their value as the card arrives, as plain text in tabular figures, so nothing shifts or
+   overlaps while they move; the finished text is put back exactly as data.json wrote it */
+function countUp(el, delay) {
+  const fin = el.textContent, m = fin.match(/^([^\d−-]*)([−-]?)([\d,]*\d(?:\.\d+)?)(.*)$/); if (!m) return;
+  const [, pre, neg, digits, post] = m, v = parseFloat(digits.replace(/,/g, "")), dec = (digits.split(".")[1] || "").length;
+  const indian = /\d,\d\d,\d{3}/.test(digits), grp = digits.includes(",");
+  const fmt = x => { let t = x.toFixed(dec); if (grp) { const [a, b] = t.split("."); t = Number(a).toLocaleString(indian ? "en-IN" : "en-US") + (b ? "." + b : ""); } return pre + neg + t + post; };
+  el.style.fontVariantNumeric = "tabular-nums";
+  const from = v >= 1000 ? v * 0.92 : 0; el.textContent = fmt(from);
+  M.animate(from, v, { duration: 1.1, delay, ease: [0.16, 1, 0.3, 1], onUpdate: x => { el.textContent = fmt(x); }, onComplete: () => { el.textContent = fin; } });
 }
 if (M && !reduce) {
   document.documentElement.classList.add("js-rv");
@@ -443,7 +432,7 @@ if (M && !reduce) {
     card._reveal = () => {
       M.animate(words, { y: ["110%", "0%"], rotate: [4, 0] }, { duration: 0.9, delay: M.stagger(0.045, { startDelay: 0.08 }), ease: [0.16, 1, 0.3, 1] });
       M.animate(rest, { opacity: [0, 1], y: [18, 0], filter: ["blur(6px)", "blur(0px)"] }, { duration: 0.8, delay: M.stagger(0.05, { startDelay: 0.25 }), ease: [0.16, 1, 0.3, 1] });
-      nums.forEach((b, k) => odometer(b, 0.3 + k * 0.08));
+      nums.forEach((b, k) => countUp(b, 0.3 + k * 0.08));
       card.classList.add("glint");
     };
   });
@@ -479,14 +468,27 @@ if (renderer) {
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
   }
   const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  { // reflections: a dark warm studio lit by bright softbox strips. High contrast in the reflection is what reads as polished metal
+    const env = new THREE.Scene(), E = (w, h, col, k, x, y, z) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide }));
+      m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m); };
+    env.add(new THREE.Mesh(new THREE.BoxGeometry(24, 14, 24), new THREE.MeshBasicMaterial({ color: 0xa48d72, side: THREE.BackSide })));   // light, warm-neutral walls: gold reflects them as gold
+    env.add(new THREE.Mesh(new THREE.PlaneGeometry(24, 24).rotateX(-Math.PI / 2).translate(0, -6.9, 0), new THREE.MeshBasicMaterial({ color: 0xbfa27c })));
+    E(18, 7, 0xfff1d8, 1.9, 0, 6.8, 0);          // a broad overhead softbox
+    E(4, 11, 0xffe6bf, 2.4, -11.5, 0.5, 2);      // tall side softboxes
+    E(4, 11, 0xfff4e4, 2.8, 11.5, 0.5, -2);
+    E(16, 4, 0xffcf8a, 1.6, 0, -1.5, 11.5);      // warm front fill
+    E(20, 2.4, 0x1a1008, 1, 0, 1.5, -11.8);      // dark bands, for contrast in the reflections
+    E(2.4, 14, 0x1a1008, 1, -11.8, 0, -7);
+    E(3.5, 3.5, 0xffffff, 3, 6, 4, 9);           // key highlights
+    E(2, 2, 0xffe9c0, 4, -7, 3, -9);
+    scene.environment = pmrem.fromScene(env, 0.012).texture; }
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
   const key = new THREE.DirectionalLight(0xffe2b0, 1.4); key.position.set(3, 5, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(0xf0d49a, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
 
   /* materials. The glass is faked (clearcoat reflections, see-through tint): real transmission renders the scene twice. */
-  const goldMat = (c, r = 0.22) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.45, clearcoatRoughness: 0.18, envMapIntensity: 1.3 });
-  const g995 = goldMat(0xe9c27c, 0.26), g999 = goldMat(0xf3c257);
+  const goldMat = (c, r = 0.16) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.7, clearcoatRoughness: 0.08, envMapIntensity: 1.25 });
+  const g995 = goldMat(0xe8bb6a, 0.24), g999 = goldMat(0xffcd5c, 0.14);   // 995 a shade paler than 999
   const p995 = g995.clone(), p999 = g999.clone();   // the four pieces get their own copies: at the finale they sit inside the vault
   const glass = () => new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, metalness: 0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06,
     envMapIntensity: 1.6, transparent: true, opacity: LIGHT ? 0.45 : 0.16, depthWrite: false });
@@ -590,7 +592,7 @@ if (renderer) {
     const c = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.07, 16).rotateZ(x > 0 ? -Math.PI / 2 : Math.PI / 2), steel); c.position.x = x + Math.sign(x) * 0.06; beam.add(c); });
   const needle = new THREE.Mesh(new THREE.ConeGeometry(0.011, 0.27, 12), glow); needle.position.set(0, 0.15, 0.1); beam.add(needle);
   let balAngle = 0;
-  const PG_S = [0.62, 0.95, 0.9, 1.7];
+  const PG_S = [0.62, 0.95, 0.62, 1.7];   // the coin stands face-on, so it rides smaller, clear of the dial
   const onBeam = (k, s) => { const xk = BEAM_X[k], yk = 0.044 + half[k] * s, c = Math.cos(balAngle), sn = Math.sin(balAngle);
     return V(xk * c - yk * sn, BAL_Y + xk * sn + yk * c, 0); };
 
@@ -618,13 +620,13 @@ if (renderer) {
       x.strokeStyle = "rgba(0,0,0,.35)"; x.lineWidth = 3;   // ashlar courses
       for (let r = 0; r < 8; r++) { const y = r * 64; x.beginPath(); x.moveTo(0, y); x.lineTo(w, y); x.stroke(); for (let c = 0; c < 4; c++) { const xx = c * 128 + (r % 2) * 64; x.beginPath(); x.moveTo(xx, y); x.lineTo(xx, y + 64); x.stroke(); } }
       x.strokeStyle = "rgba(255,240,215,.06)"; for (let r = 0; r < 8; r++) { x.beginPath(); x.moveTo(0, r * 64 + 3); x.lineTo(w, r * 64 + 3); x.stroke(); } }, 3, 2);
-    const sh = new THREE.Shape(); sh.moveTo(-6.5, VFLOOR - VC.y); sh.lineTo(6.5, VFLOOR - VC.y); sh.lineTo(6.5, 4.4 - VC.y); sh.lineTo(-6.5, 4.4 - VC.y); sh.closePath();
+    const sh = new THREE.Shape(); sh.moveTo(-14, VFLOOR - VC.y); sh.lineTo(14, VFLOOR - VC.y); sh.lineTo(14, 7 - VC.y); sh.lineTo(-14, 7 - VC.y); sh.closePath();
     const hl = new THREE.Path(); hl.absarc(0, 0, 0.82, 0, Math.PI * 2, true); sh.holes.push(hl);
     const wg = new THREE.ShapeGeometry(sh, 48), uv = wg.attributes.uv, pos = wg.attributes.position;
     for (let k = 0; k < uv.count; k++) uv.setXY(k, pos.getX(k) / 4.3, pos.getY(k) / 3.2);
     const wall = new THREE.Mesh(wg, new THREE.MeshStandardMaterial({ map: stone, roughness: 0.92, metalness: 0.02 })); wall.position.set(VC.x, VC.y, VC.z - 0.21); vaultSet.add(wall);
-    const fl = new THREE.Mesh(new THREE.PlaneGeometry(13, 7.5), new THREE.MeshStandardMaterial({ map: stone.clone(), roughness: 0.8, metalness: 0.05 }));
-    fl.material.map.repeat.set(4, 2.4); fl.rotation.x = -Math.PI / 2; fl.position.set(VC.x, VFLOOR, VC.z - 0.21 + 3.75); vaultSet.add(fl);
+    const fl = new THREE.Mesh(new THREE.PlaneGeometry(28, 7.5), new THREE.MeshStandardMaterial({ map: stone.clone(), roughness: 0.8, metalness: 0.05 }));
+    fl.material.map.repeat.set(8.6, 2.4); fl.rotation.x = -Math.PI / 2; fl.position.set(VC.x, VFLOOR, VC.z - 0.21 + 3.75); vaultSet.add(fl);
     // a soft contact shadow ring round the door; the doorway itself stays clear
     const shadow = mkTex(256, 256, (x, w, h) => { const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.5); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(0.45, "rgba(0,0,0,0)"); g.addColorStop(0.48, "rgba(0,0,0,.7)"); g.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = g; x.fillRect(0, 0, w, h); });
     const sm2 = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: shadow, transparent: true, depthWrite: false, opacity: LIGHT ? 0.55 : 0.8 }));
@@ -664,15 +666,7 @@ if (renderer) {
   const NRC = mobile ? 220 : 520;   // coins tumbling in the river with the bars
   const riverC = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.06, 0.013, 16), g999, NRC); riverC.frustumCulled = false; world.add(riverC);
   const rcSeed = Array.from({ length: NRC }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() * 6.283, 3 + Math.random() * 5]);
-  const RDIR = V(-0.3, -0.22, 1).normalize();   // the river spills down and to the left, clear of the plaques
-  /* the three counts on glass plaques that slide out of the vault */
-  const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
-  const SLAB_AT = [V(1.62, 1.28, -1.2), V(1.78, 0.5, -0.95), V(1.62, -0.28, -0.7)], SLAB_RY = [-0.42, -0.42, -0.42];   // a column to the vault's right
-  const slabs = slabTxt.map(([big, small]) => {
-    const g = new THREE.Group(); g.add(new THREE.Mesh(new RoundedBoxGeometry(2.3, 1.45, 0.07, 4, 0.05), glass()));
-    const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, LIGHT ? "rgba(95,65,5,.95)" : "rgba(243,223,168,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
-    t.position.z = 0.05; g.add(t); world.add(g); return g;
-  });
+  const RDIR = V(-0.3, -0.22, 1).normalize();   // the river spills forward, down and to the left
 
   /* ---------- the treasure room behind the vault door. From outside it is seen only through the open doorway (a stencil
      portal); once the camera flies through, it surrounds you, and the finale's forge happens inside it. */
@@ -701,15 +695,15 @@ if (renderer) {
   walls.position.set(0, FLOOR + RH / 2, (RZ0 + RZ1) / 2); room.add(walls);
   const floorM = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.32, metalness: 0.25 })));
   floorM.rotation.x = -Math.PI / 2; floorM.position.set(0, FLOOR + 0.002, (RZ0 + RZ1) / 2); room.add(floorM);
-  const tGold = roomMat(new THREE.MeshStandardMaterial({ color: 0xf0c25a, metalness: 1, roughness: 0.28, envMapIntensity: 1.5 }));
-  const tGoldDeep = roomMat(new THREE.MeshStandardMaterial({ color: 0xd9a441, metalness: 1, roughness: 0.34, envMapIntensity: 1.4 }));
+  const tGold = roomMat(new THREE.MeshStandardMaterial({ color: 0xffc95a, metalness: 1, roughness: 0.17, envMapIntensity: 1.3 }));
+  const tGoldDeep = roomMat(new THREE.MeshStandardMaterial({ color: 0xe8a93c, metalness: 1, roughness: 0.24, envMapIntensity: 1.25 }));
   const rnd = (a, b) => a + Math.random() * (b - a);
   const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3();
   const fill = (geo, mat, list) => { const im = new THREE.InstancedMesh(geo, mat, list.length); list.forEach((t, n) => { _m.compose(t[0], _q.setFromEuler(_e.set(t[1], t[2], t[3])), _s.setScalar(t[4] || 1)); im.setMatrixAt(n, _m); }); im.frustumCulled = false; room.add(im); return im; };
   // ---- the hoard is one solid mass: a coin-covered gold dune banked against the walls and swelling into mounds;
   //      everything else settles onto its surface. The camera's aisle down the middle stays clear.
   const PARI_AT = mobile ? [0.6, -9.3] : [0.2, -9.3];   // Pari's own peak, below and left of the mark at the finale
-  const MOUNDS = [[PARI_AT[0], PARI_AT[1], 0.95, mobile ? 0.95 : 1.05], [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
+  const MOUNDS = [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 0.9 : 0.74],   // a broad, smooth rise, not a spike [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
     [0.3, -13.5, 1.6, 0.6], [-1.3, -13.0, 0.9, 0.45], [1.9, -4.4, 0.8, 0.4], [-1.9, -10.1, 0.8, 0.4], [-2.2, -3.6, 0.7, 0.3]];
   const dH = (x, z) => { const ax = Math.abs(x);
     let h = 0.66 * Math.pow(clamp((ax - 1.0) / 2.6), 1.6) + 0.5 * clamp((-12.3 - z) / 1.6);
@@ -721,7 +715,7 @@ if (renderer) {
       for (const [ox, oy] of [[0, 0], [w, 0], [-w, 0], [0, h], [0, -h]]) { const g = x.createRadialGradient(cx + ox - r * 0.3, cy + oy - r * 0.3, r * 0.1, cx + ox, cy + oy, r);
         g.addColorStop(0, "#ffe9a8"); g.addColorStop(0.55, "#e2ac3e"); g.addColorStop(0.9, "#a8741f"); g.addColorStop(1, "rgba(60,38,8,.9)");
         x.fillStyle = g; x.beginPath(); x.arc(cx + ox, cy + oy, r, 0, 6.283); x.fill(); } } }, 9, 11);
-  const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: coinTex, bumpMap: coinTex, bumpScale: 1.5, metalness: 0.85, roughness: 0.36, envMapIntensity: 1.35 }));
+  const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: coinTex, bumpMap: coinTex, bumpScale: 2.2, metalness: 1, roughness: 0.3, envMapIntensity: 1.2 }));
   { const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, mobile ? 64 : 110, mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
     const p = dg.attributes.position; for (let k = 0; k < p.count; k++) { const x = p.getX(k), z = p.getZ(k) + (RZ0 + RZ1) / 2, h = dH(x, z); p.setY(k, h < 0.004 ? -0.03 : h); }
     dg.computeVertexNormals(); const dune = new THREE.Mesh(dg, hoardM); dune.position.set(0, FLOOR + 0.004, (RZ0 + RZ1) / 2); room.add(dune); }
@@ -738,13 +732,14 @@ if (renderer) {
     }
   });
   // stray bars half-sunk in the slopes
-  for (let k = 0; k < (mobile ? 40 : 110); k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2); if (dH(x, z) < 0.12) continue; bars.push([onD(x, z, -0.02), rnd(-0.4, 0.4), rnd(0, 6.28), rnd(-0.4, 0.4)]); }
+  for (let k = 0; k < (mobile ? 40 : 110); k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2); if (dH(x, z) < 0.12 || (x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.5) continue; bars.push([onD(x, z, -0.02), rnd(-0.4, 0.4), rnd(0, 6.28), rnd(-0.4, 0.4)]); }
   fill(barGeo, tGold, bars);
   // coins packed over the slopes (more where the gold is deeper), a scatter in the aisle, and standing towers
   const coinGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), coins = [];
   for (let tries = 0, NC = mobile ? 1600 : 4200; coins.length < NC && tries < NC * 8; tries++) {
     const x = rnd(-RW + 0.3, RW - 0.3), z = rnd(RZ1 + 0.3, RZ0 - 0.3), h = dH(x, z);
     if (h < 0.03 ? Math.random() > 0.04 : Math.random() > Math.min(1, h * 2.5 + 0.2)) continue;
+    if ((x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.36) continue;   // Pari's footing stays clear
     coins.push([V(x, FLOOR + h + 0.008, z), rnd(-0.55, 0.55), rnd(0, 6.28), rnd(-0.55, 0.55)]); }
   fill(coinGeo, tGold, coins);
   const towers = []; for (let k = 0; k < (mobile ? 30 : 80); k++) { const side = k % 2 ? 1 : -1, x = side * rnd(1.3, 3.2), z = rnd(-4.5, -13), n = 5 + Math.floor(Math.random() * 16), b0 = FLOOR + dH(x, z) - 0.02;
@@ -759,11 +754,11 @@ if (renderer) {
   fill(new THREE.SphereGeometry(0.11, 24, 16), tGold, tops.map(([cx, cz]) => [onD(cx + rnd(-0.45, 0.45), cz + rnd(-0.45, 0.45), 0.04), 0, 0, 0, rnd(0.8, 1.3)]));
   const shieldG = new THREE.CylinderGeometry(0.3, 0.3, 0.03, 40); shieldG.rotateX(Math.PI / 2);
   fill(shieldG, tGoldDeep, [[-3.9, -6.0], [3.9, -7.0], [-3.8, -11.0], [3.85, -12.2], [-2.0, -13.6], [2.4, -13.6], [-4.0, -8.3], [4.0, -9.6]].map(([x, z]) => [onD(x, z, 0.18), -0.35, x < 0 ? 1.2 : -1.2, rnd(-0.2, 0.2), rnd(0.8, 1.15)]));
-  const nug = []; for (let k = 0; k < (mobile ? 160 : 420); k++) { const x = rnd(-RW + 0.4, RW - 0.4), z = rnd(RZ1 + 0.4, -3); if (dH(x, z) < 0.05) continue;
+  const nug = []; for (let k = 0; k < (mobile ? 160 : 420); k++) { const x = rnd(-RW + 0.4, RW - 0.4), z = rnd(RZ1 + 0.4, -3); if (dH(x, z) < 0.05 || (x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.36) continue;
     nug.push([onD(x, z, 0.01), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.5, 1.5)]); }
   fill(new THREE.IcosahedronGeometry(0.04, 0), tGoldDeep, nug);
   // jewels: rubies, emeralds, sapphires, amethysts and diamonds among the coins
-  const gems = []; for (let k = 0; k < (mobile ? 90 : 240); k++) { const x = rnd(-RW + 0.5, RW - 0.5), z = rnd(RZ1 + 0.5, -3.5); if (dH(x, z) < 0.08) continue; gems.push([onD(x, z, 0.02), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.7, 1.4)]); }
+  const gems = []; for (let k = 0; k < (mobile ? 90 : 240); k++) { const x = rnd(-RW + 0.5, RW - 0.5), z = rnd(RZ1 + 0.5, -3.5); if (dH(x, z) < 0.08 || (x - PARI_AT[0]) ** 2 + (z - PARI_AT[1]) ** 2 < 0.36) continue; gems.push([onD(x, z, 0.02), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.7, 1.4)]); }
   const gemM = roomMat(new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.1, roughness: 0.08, envMapIntensity: 2.2 }));
   const gemIM = fill(new THREE.OctahedronGeometry(0.035, 0), gemM, gems), GEMC = [0xd0213b, 0x1e9e5a, 0x2557d6, 0x8a3bd1, 0xe8f4ff].map(c => new THREE.Color(c));
   gems.forEach((_, n) => gemIM.setColorAt(n, GEMC[n % GEMC.length]));
@@ -776,7 +771,7 @@ if (renderer) {
     for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283, sp = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.09, 8), tGold); sp.position.set(Math.cos(a) * 0.145, 0.11, Math.sin(a) * 0.145); cr.add(sp);
       const gm2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), k % 2 ? redGem : gemM); gm2.position.set(Math.cos(a + 0.39) * 0.152, 0.04, Math.sin(a + 0.39) * 0.152); cr.add(gm2); } });
   // chandeliers: rings of candles hanging over the hoard
-  [[0.2, -6.6], [0.2, -12.0]].forEach(([x, z]) => { const ch = new THREE.Group(); ch.position.set(x, FLOOR + RH - 1.05, z); room.add(ch);
+  [[0.2, -6.8]].forEach(([x, z]) => { const ch = new THREE.Group(); ch.position.set(x, FLOOR + RH - 1.05, z); room.add(ch);
     ch.add(new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.025, 10, 64).rotateX(Math.PI / 2), tGoldDeep));
     const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.05, 6), tGoldDeep); chain.position.y = 0.52; ch.add(chain);
     for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283, cx2 = Math.cos(a) * 0.55, cz2 = Math.sin(a) * 0.55;
@@ -827,7 +822,7 @@ if (renderer) {
   fill(coinGeo, tGold, spill);
   // Pari, the Parity mascot, waits on the hoard for the finale
   const pari = new THREE.Group(), pariBody = new THREE.Group(); pari.add(pariBody); room.add(pari);
-  const pGold = roomMat(new THREE.MeshStandardMaterial({ color: 0xf6c84f, metalness: 0.85, roughness: 0.22, envMapIntensity: 1.6 }));
+  const pGold = roomMat(new THREE.MeshPhysicalMaterial({ color: 0xffcd5c, metalness: 1, roughness: 0.14, clearcoat: 0.8, clearcoatRoughness: 0.06, envMapIntensity: 1.3 }));
   const pLimb = roomMat(new THREE.MeshStandardMaterial({ color: 0xc98d0c, metalness: 0.7, roughness: 0.35 }));
   const pInk = roomMat(new THREE.MeshBasicMaterial({ color: 0x1b1300 })), pShine = roomMat(new THREE.MeshBasicMaterial({ color: 0xffffff }));
   { const sh = new THREE.Shape(); sh.moveTo(-0.44, 0); sh.lineTo(0.44, 0); sh.lineTo(0.28, 0.56); sh.lineTo(-0.28, 0.56); sh.closePath();
@@ -886,7 +881,7 @@ if (renderer) {
     if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.3, 0.3, 0.6, 0.3][i], rz: 0 };   // melted into grains
     if (b === S.pergram) return { p: onBeam(i, PG_S[i]), s: PG_S[i], ry: 0, rx: 0, rz: balAngle };                // riding the balance
     if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i], rz: 0 };
-    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55 + ringSpin), s: [0.5, 0.7, 0.66, 1.25][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i], rz: 0 };   // a wide ring framing the mark
+    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55 + ringSpin), s: 0.001, ry: 0.6, rx: 0.5, rz: 0 };   // the mark stands alone   // a wide ring framing the mark
     return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3, rz: 0 };                                     // off stage
   };
 
@@ -1229,9 +1224,6 @@ if (renderer) {
       riverC.instanceMatrix.needsUpdate = true;
     }
     riverC.visible = river.visible;
-    const slabFade = 1 - clamp((b - (S.know + 0.55)) / 0.35);
-    slabs.forEach((g, k) => { const e = sm(clamp((open - 0.25 - k * 0.12) / 0.5)) * slabFade;
-      g.visible = e > 0.01; g.position.lerpVectors(VC, SLAB_AT[k], e); g.scale.setScalar(Math.max(0.33 * e, 0.0001)); g.rotation.y = SLAB_RY[k] * e; });
 
     // ribbon: rises with the beat, then draws left to right with the reader's scroll; a bead and a date ride the leading edge
     const rv = bump(b, S.daily, S.daily, 0.65), dp = clamp((b - (S.daily - 0.5)) / 0.95);
@@ -1289,7 +1281,8 @@ if (renderer) {
     place(headL, tmpV.set(h2.top[headJ * 3], h2.top[headJ * 3 + 1] * ribbon.scale.y + ribbon.position.y, h2.z).clone(), wh, -12);
     laneL.forEach((el, k) => { const l = lanes[k], e = (NS - 1) * 3; place(el, V(RX1 + 0.04, (l.top[e + 1] - RB) * ribbon.scale.y + RB + 0.02, l.z), sm(clamp((rv - 0.7) / 0.3)) * clamp((dp - 0.9) / 0.1) * (innerWidth > 760 ? 1 : 0), -2); });
     place(scanL, V(sx, QY + 1.2 * quiet.scale.y, -4.2), scanH.visible ? sm(clamp((qv - 0.5) / 0.5)) : 0, -4);
-    place(pariL, V(pari.position.x, pari.position.y + 0.62 * PARI_S, pari.position.z), pari.visible ? clamp((pariV - 0.85) / 0.15) * (innerWidth > 760 ? 1 : 0) : 0, -6);
+    place(pariL, V(pari.position.x - 0.62, pari.position.y + 0.42 * PARI_S, pari.position.z),   // beside Pari, clear of the mark
+      pari.visible ? clamp((pariV - 0.85) / 0.15) * (innerWidth > 760 ? 1 : 0) : 0, -6);
 
     // adaptive resolution: hold about 60 fps by stepping down when frames run long, and back up when there is room
     ftimes.push(dt); if (ftimes.length > 45) ftimes.shift();

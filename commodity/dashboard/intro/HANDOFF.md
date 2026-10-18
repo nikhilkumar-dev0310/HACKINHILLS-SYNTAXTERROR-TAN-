@@ -179,3 +179,19 @@ Motion (open-source, MIT, pinned on jsDelivr):
   - a domed lid with end caps and brass bands;
   - a heap of coins inside, and coins spilling over the front.
 - **River:** coins tumble edge over edge with the bars.
+
+## Metal and overlaps pass (19 Oct 2026)
+- **Reflections:** the environment is now a lit studio built in code, which is what makes the gold read as polished metal.
+  - light warm-neutral walls, a broad overhead softbox, tall side softboxes;
+  - a warm front fill, dark contrast bands, and two hot keys.
+  - All gold is tuned to it: metalness 1, roughness 0.14–0.3, with clearcoat on the hero pieces.
+  - `RoomEnvironment` is no longer used.
+- **Overlaps removed:**
+  - the glass plaques at the vault (the card lists the same counts);
+  - the ring of four pieces round the finale's mark;
+  - the second chandelier, which sat cut off at the top of the finale.
+- **Layout fixes:**
+  - the stone wall is wider and taller, so its edge never shows;
+  - the balance's coin rides smaller, clear of the dial;
+  - Pari stands on a broad, smooth rise below the mark, with clutter kept off it, and the greeting sits beside Pari.
+- **Numbers** count up as plain tabular text instead of rolling digit strips, so nothing shifts or overlaps mid-animation.
