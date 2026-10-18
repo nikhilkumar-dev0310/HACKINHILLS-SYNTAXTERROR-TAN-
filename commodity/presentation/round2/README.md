@@ -6,6 +6,10 @@
 
 To rebuild: `python3 pipeline/capture4.py` (about 25 min; writes `frames4/` and `timeline4_capture.json`; the edit decisions are in `timeline4.json` and Pari's extra lines in `banter4.json`), then `pipeline/run4.sh` (about 15 min) writes `Parity_demo_v4.mp4` and `.srt`, which are copied over the published names.
 
+## Vertical cut for social posts (18 Oct 2026)
+
+`Parity_demo_vertical.mp4`: the same 1 min 28 s demo in a 1080x1920 frame for Instagram and LinkedIn. The Parity mark and a one-line description sit above the video. Below it are the same captions as `Parity_demo.srt`, set large enough to read on a phone, then the GitHub and live links, which stay on screen the whole time. Everything that must be read sits inside Instagram's safe area. To rebuild: `python3 pipeline/vertical.py` (about two minutes).
+
 ## Previous cut (v3, 8 Oct 2026)
 
 A story, not a tour. It opens on the strategy's profit on unseen data and asks why we aren't trading it; asks the viewer to guess whether any gap is worth trading today before revealing the answer; shows four fast proofs (23 years of MCX data, slippage you control, the typical-report-vs-ours switch, the contract calendar and the sealed years); then the peak, "Too good to be true?", and the honest twist (January 2026 made the money; outside the crash the rule loses; picking the best of 72 settings is mostly noise); and ends on a true open question: tomorrow's answer is on the live site, not in the video. Why each choice was made, with the research behind it: [`ENGAGEMENT.md`](ENGAGEMENT.md). A voice-over script is in [`VOICEOVER.md`](VOICEOVER.md); save a recording as `pipeline/voice.wav` and rebuild, and the music ducks under it.
