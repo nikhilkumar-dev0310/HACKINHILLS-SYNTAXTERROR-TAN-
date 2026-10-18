@@ -1,0 +1,475 @@
+<title>Parity Intro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a fixed WebGL stage of real gold pieces; glass cards scroll over it, one per beat, and the camera
+   moves between beats. Desktop: cards left, gold right. Phone: gold above, card below. One dark gold world. */
+:root{
+  color-scheme:dark;
+  --bg:#0a0806; --bg-2:#120e08;
+  --ink:#f6f0e4; --ink-2:rgba(246,240,228,.74); --ink-3:rgba(246,240,228,.52);
+  --gold:#e8b44a; --gold-2:#fbe3a1; --gold-3:#b7832a; --good:#7fd6a4;
+  --glass:rgba(255,248,232,.07); --glass-2:rgba(255,248,232,.03); --edge:rgba(255,236,200,.16); --hi:rgba(255,255,255,.22);
+  --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,"Segoe UI",sans-serif;
+  --f-disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter",system-ui,"Segoe UI",sans-serif;
+  --spring:cubic-bezier(.32,.72,0,1); --out:cubic-bezier(.16,1,.3,1);
+}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.atmo{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(60vmax 50vmax at 72% 30%,rgba(232,180,74,.20),transparent 60%),
+             radial-gradient(50vmax 40vmax at 12% 90%,rgba(140,86,26,.22),transparent 65%),
+             radial-gradient(80vmax 60vmax at 50% 50%,var(--bg-2),var(--bg) 70%)}
+#gl{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block;touch-action:pan-y}
+.grain{position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.lbls{position:fixed;inset:0;z-index:3;pointer-events:none}
+.lbl{position:absolute;left:0;top:0;white-space:nowrap;opacity:0;will-change:transform,opacity;
+  font:500 12px/1.3 var(--f-ui);letter-spacing:.02em;color:var(--ink-2);text-align:center;
+  padding:6px 10px;border-radius:12px;background:rgba(20,15,8,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--edge)}
+.lbl b{display:block;font:600 13px/1.25 var(--f-disp);color:var(--ink);letter-spacing:.01em}
+.lbl .n{font-variant-numeric:tabular-nums;color:var(--gold-2)}
+.lbl.line{background:none;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;color:var(--gold-2);font-weight:600;padding:0;text-shadow:0 1px 10px rgba(0,0,0,.6)}
+
+/* top bar */
+.bar{position:fixed;z-index:10;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font:600 19px/1 var(--f-disp);letter-spacing:-.03em}
+.mark{width:26px;height:20px;position:relative}
+.mark i{position:absolute;left:3px;right:3px;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,var(--gold-3));clip-path:polygon(12% 0,88% 0,100% 100%,0 100%)}
+.mark i:first-child{top:0;left:5px;right:5px}.mark i:last-child{bottom:0}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;color:var(--ink);text-decoration:none;font:500 14px var(--f-ui);
+  background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+  box-shadow:inset 0 1px 0 var(--hi);transition:transform .3s var(--spring),background-color .3s ease}
+.pill:hover{background:rgba(255,248,232,.12)}
+.pill:active{transform:scale(.96)}
+.pill:focus-visible,.dots button:focus-visible,.cta a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.progress{position:fixed;z-index:11;top:env(safe-area-inset-top,0px);left:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--gold-3),var(--gold-2))}
+
+/* right-hand chapter dots (desktop) */
+.dots{position:fixed;z-index:10;right:max(20px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;list-style:none;margin:0;padding:0}
+.dots button{display:flex;align-items:center;justify-content:flex-end;gap:10px;background:none;border:0;padding:6px 0;cursor:pointer;color:var(--ink-3);font:500 12px var(--f-ui)}
+.dots button span{opacity:0;transform:translateX(6px);transition:opacity .3s ease,transform .4s var(--spring)}
+.dots button:hover span,.dots button[aria-current="step"] span{opacity:1;transform:none}
+.dots button i{width:7px;height:7px;border-radius:50%;background:var(--ink-3);transition:transform .4s var(--spring),background-color .3s ease}
+.dots button[aria-current="step"]{color:var(--ink)}
+.dots button[aria-current="step"] i{background:var(--gold);transform:scale(1.5);box-shadow:0 0 12px var(--gold)}
+
+/* the story */
+main{position:relative;z-index:5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.beat{height:160vh;height:160svh;position:relative}
+.beat:last-child{height:100vh;height:100svh}
+.card{position:sticky;top:50%;transform:translateY(-50%);width:min(470px,40vw);margin-left:max(0px,calc(6vw - 16px));padding:30px 32px 28px;border-radius:30px;
+  background:linear-gradient(180deg,var(--glass),var(--glass-2));backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
+  box-shadow:inset 0 1px 0 var(--hi),0 40px 90px -40px rgba(0,0,0,.85);will-change:opacity,transform}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(140deg,rgba(251,227,161,.55),rgba(255,236,200,.10) 30%,rgba(255,236,200,.06) 70%,rgba(232,180,74,.40));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.eyebrow{font:600 12px/1.4 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1,h2{font-family:var(--f-disp);font-weight:700;letter-spacing:-.035em;line-height:1.02;margin:0 0 16px;text-wrap:balance}
+h1{font-size:clamp(44px,5.6vw,76px)}
+h2{font-size:clamp(32px,3.6vw,48px)}
+.hl{background:linear-gradient(100deg,var(--gold-3),var(--gold) 30%,var(--gold-2) 50%,var(--gold) 70%,var(--gold-3));-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.card p{margin:0 0 12px;color:var(--ink-2);max-width:58ch}
+.card p b{color:var(--ink);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+.rows{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:2px}
+.rows li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid rgba(255,236,200,.09);font-size:15px}
+.rows li span{color:var(--ink-3)}
+.rows li b{font-weight:600;font-variant-numeric:tabular-nums}
+.rows li.over b{color:var(--gold-2)}
+.facts{list-style:none;margin:6px 0 14px;padding:0;display:grid;gap:12px}
+.facts li{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.facts li b{font:700 22px/1.1 var(--f-disp);letter-spacing:-.02em;color:var(--gold-2);font-variant-numeric:tabular-nums;min-width:4.6ch}
+.facts li span{color:var(--ink-2);font-size:15px;line-height:1.5}
+.verdict{padding:14px 16px;border-radius:16px;background:rgba(255,248,232,.05);border:1px solid rgba(255,236,200,.10);font-size:14.5px}
+.state{display:inline-flex;align-items:center;gap:8px;margin-top:4px;padding:6px 12px;border-radius:999px;font:600 13px var(--f-ui);color:var(--ink);background:rgba(255,248,232,.07);border:1px solid var(--edge)}
+.state i{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good)}
+.team{list-style:none;margin:6px 0 20px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.team li{padding:8px 14px;border-radius:999px;background:rgba(255,248,232,.07);border:1px solid var(--edge);font-weight:500}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.cta a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:999px;text-decoration:none;font:600 15px var(--f-ui);transition:transform .3s var(--spring),filter .3s ease}
+.cta a:active{transform:scale(.96)}
+.cta .go{color:#1b1206;background:linear-gradient(180deg,var(--gold-2),var(--gold) 55%,#c98f2c);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 12px 30px -10px rgba(232,180,74,.55)}
+.cta .go:hover{filter:brightness(1.06)}
+.cta .alt{color:var(--ink);background:var(--glass);border:1px solid var(--edge)}
+.hint{position:absolute;left:0;right:0;bottom:calc(28px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink-3);font:500 12px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;pointer-events:none;transition:opacity .4s ease}
+.hint i{width:22px;height:34px;border-radius:12px;border:1.5px solid var(--ink-3);position:relative}
+.hint i::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:var(--gold);animation:wheel 1.8s var(--out) infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(10px);opacity:0}100%{opacity:0}}
+.no-gl #gl{display:none}
+.no-gl .lbls{display:none}
+
+@media (max-width:760px){
+  .beat{height:150vh;height:150svh}
+  .card{position:sticky;top:43svh;transform:none;width:auto;margin-left:0;padding:20px 18px 18px;border-radius:24px;max-height:calc(57svh - 16px - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain}
+  h1{font-size:clamp(32px,9.6vw,42px);margin-bottom:12px}
+  h2{font-size:clamp(26px,7.6vw,32px);margin-bottom:10px}
+  .eyebrow{font-size:11px;margin-bottom:10px}
+  .card p{font-size:14.5px;line-height:1.5;margin-bottom:10px}
+  .facts{gap:8px}.verdict{padding:10px 12px}
+  .rows li{font-size:14px;padding:6px 0}
+  .facts li b{font-size:19px}
+  .facts li span,.verdict{font-size:14px}
+  .dots{display:none}
+  .lbl{font-size:11px;padding:5px 8px}
+  .lbl b{font-size:12px}
+  .lbl small{display:none}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card{will-change:auto}}
+</style>
+
+<div class="atmo" aria-hidden="true"></div>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="lbls" id="lbls" aria-hidden="true"></div>
+<div class="progress" id="prog" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="brand" href="https://parity-gold-site.vercel.app/" aria-label="Parity home"><span class="mark" aria-hidden="true"><i></i><i></i></span>Parity</a>
+  <a class="pill" href="https://parity-gold-site.vercel.app/">Skip intro</a>
+</header>
+
+<ol class="dots" id="dots" aria-label="Chapters"></ol>
+
+<main id="story">
+  <section class="beat" data-name="The problem">
+    <div class="card">
+      <p class="eyebrow">Hack in Hills ’26 · Problem 03</p>
+      <h1>One metal. <span class="hl">Four prices.</span></h1>
+      <p>MCX lists four gold futures that differ only in size and purity: a 100 g bar, a 10 g bar, an 8 g coin and a 1 g piece. Per gram of pure gold, they should cost the same.</p>
+      <p><b>Do they? And when they don’t, can anyone profit?</b></p>
+    </div>
+    <div class="hint" id="hint"><i></i>Scroll</div>
+  </section>
+
+  <section class="beat" data-name="Per gram">
+    <div class="card">
+      <p class="eyebrow">Per gram of pure gold · {{quoteDay}}</p>
+      <h2>They <span class="hl">nearly match.</span></h2>
+      <p>On {{quoteDay}} the four closed within <b class="num">{{spreadBp}} bp</b> of each other. Gaps like this open and close every day.</p>
+      <ul class="rows" id="pgRows"></ul>
+    </div>
+  </section>
+
+  <section class="beat" data-name="Cost line">
+    <div class="card">
+      <p class="eyebrow">Check 1 · the cost line</p>
+      <h2>A gap has to <span class="hl">pay for the trade.</span></h2>
+      <p>Buying one contract and selling another costs fees, taxes and slippage, in and out: <b class="num">{{roundTrip}} bp</b> at 5 bp slippage a leg. Parity sets the bar at twice that, <b class="num">{{costLine}} bp</b>. <span id="overText"></span></p>
+      <ul class="rows" id="gapRows"></ul>
+    </div>
+  </section>
+
+  <section class="beat" data-name="Unusual?">
+    <div class="card">
+      <p class="eyebrow">Check 2 · is it unusual?</p>
+      <h2>And it has to be <span class="hl">rare for that contract.</span></h2>
+      <p>GOLDPETAL’s premium swings widely from day to day. Its <b class="num">{{petalGap}} bp</b> gap is only <b class="num">{{petalZ}}σ</b> from its usual level. An alert needs <b class="num">±{{thr}}σ</b>, which for GOLDPETAL means <b class="num">{{petalBand}} bp</b>.</p>
+      <p>Both checks must pass.</p>
+      <span class="state" id="sigState"><i></i><span id="sigText"></span></span>
+    </div>
+  </section>
+
+  <section class="beat" data-name="How we know">
+    <div class="card">
+      <p class="eyebrow">How we know</p>
+      <h2>Every claim <span class="hl">can be checked.</span></h2>
+      <ul class="facts">
+        <li><b>{{years}} yrs</b><span><span class="num">{{rows}}</span> daily rows of official MCX Bhavcopy, {{contracts}} contracts since {{first}}</span></li>
+        <li><b>{{sealed}}</b><span>sealed tests: rules frozen in Git first, then run once on Aug 2025 – May 2026, 2016–2019 and 2020–2023</span></li>
+        <li><b class="num">{{tests}}</b><span>automated tests; the site rebuilds itself every trading day</span></li>
+      </ul>
+      <p class="verdict">The honest result: <b>no dependable edge after costs.</b> The fair-price model made <span class="num">{{bootNet}}</span> over 2016–2023 at 5 bp, but its 95% range (<span class="num">{{bootLo}}</span> to <span class="num">{{bootHi}}</span>) includes zero.</p>
+    </div>
+  </section>
+
+  <section class="beat" data-name="Team">
+    <div class="card">
+      <p class="eyebrow">Team SYNTAX TERROR (TAN)</p>
+      <h2><span class="hl">Parity</span></h2>
+      <p>Checks whether MCX’s four gold contracts agree, whether any gap survives real costs, and tells a trader when one is worth a look. Built for Hack in Hills ’26 by</p>
+      <ul class="team"><li>Nikhil Kumar</li><li>Sai Ganesh</li><li>Ishaan Chhabra</li></ul>
+      <div class="cta"><a class="go" href="https://parity-gold-site.vercel.app/">Enter Parity</a><a class="alt" href="https://parity-gold-site.vercel.app/demo">Watch the 1:28 demo</a></div>
+    </div>
+  </section>
+</main>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
+const D = __DATA__;
+const $ = s => document.querySelector(s);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const and = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+
+/* ---------- copy that depends on today's data */
+$("#pgRows").innerHTML = D.pieces.map(p => `<li><span>${p.sym} · ${p.kind}</span><b>${p.per_g}/g</b></li>`).join("");
+$("#gapRows").innerHTML = D.gaps.map(g => `<li class="${g.gap >= D.costLine ? "over" : ""}"><span>${g.sym} vs GOLDM</span><b>${g.gap.toFixed(1)} bp</b></li>`).join("");
+$("#overText").textContent = D.over.length ? `Today ${and(D.over)} ${D.over.length === 1 ? "clears" : "clear"} it.` : "Today none clear it.";
+$("#sigText").textContent = D.signalToday.length ? `Today: a signal on ${and(D.signalToday)}` : "Today: no signal, nothing to act on";
+
+/* ---------- chapters */
+const beats = [...document.querySelectorAll(".beat")], cards = beats.map(b => b.querySelector(".card")), N = beats.length - 1;
+const dots = $("#dots");
+beats.forEach((b, i) => { const li = document.createElement("li"); li.innerHTML = `<button type="button"><span>${b.dataset.name}</span><i></i></button>`;
+  li.firstChild.addEventListener("click", () => scrollTo({ top: beatTop(i), behavior: reduce ? "auto" : "smooth" })); dots.appendChild(li); });
+const dotBtns = [...dots.querySelectorAll("button")];
+const beatTop = i => beats[i].offsetTop;
+
+/* scroll → beat value. Each beat holds still while its card is read, then glides to the next. */
+const sm = x => x * x * x * (x * (x * 6 - 15) + 10);                     // smootherstep
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+function scrollBeat() {
+  const y = scrollY; let i = 0;
+  while (i < N && y >= beatTop(i + 1)) i++;
+  if (i >= N) return N;
+  const span = beatTop(i + 1) - beatTop(i), f = clamp((y - beatTop(i)) / span);
+  return i + sm(clamp((f - 0.32) / 0.68));
+}
+
+/* ---------- cards: glass panels fade and lift with distance from their resting place */
+function cardsFrame(vh) {
+  for (const c of cards) {
+    const r = c.getBoundingClientRect(), mid = r.top + r.height / 2;
+    const rest = innerWidth <= 760 ? vh * 0.43 + r.height / 2 : vh * 0.5;
+    const d = Math.abs(mid - rest) / (vh * 0.55);
+    const o = 1 - sm(clamp((d - 0.35) / 0.65));
+    c.style.opacity = o.toFixed(3);
+  }
+}
+
+/* ---------- WebGL */
+let renderer;
+try { renderer = new THREE.WebGLRenderer({ canvas: $("#gl"), antialias: true, alpha: false, powerPreference: "high-performance" }); }
+catch (e) { document.documentElement.classList.add("no-gl"); }
+
+const lblHost = $("#lbls");
+const label = (html, cls = "") => { const el = document.createElement("div"); el.className = "lbl " + cls; el.innerHTML = html; lblHost.appendChild(el); return el; };
+
+let frame = () => {};
+if (renderer) {
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  const mobile = matchMedia("(max-width: 760px)").matches;
+  let dpr = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 1.75); renderer.setPixelRatio(dpr);
+  const scene = new THREE.Scene();
+  { // the room behind the glass: the same warm dark gradient as the page, so transmission has light to bend
+    const c = document.createElement("canvas"); c.width = c.height = 1024; const x = c.getContext("2d");
+    x.fillStyle = "#0a0806"; x.fillRect(0, 0, 1024, 1024);
+    const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, "rgba(232,180,74,.30)"); g1.addColorStop(1, "rgba(232,180,74,0)"); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
+    const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, "rgba(140,86,26,.30)"); g2.addColorStop(1, "rgba(140,86,26,0)"); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
+  }
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
+  const key = new THREE.DirectionalLight(0xffe2b0, 1.4); key.position.set(3, 5, 4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffc56b, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
+
+  /* materials */
+  const goldMat = (c, r = 0.22) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.45, clearcoatRoughness: 0.18, envMapIntensity: 1.3 });
+  const g995 = goldMat(0xe9c27c, 0.26), g999 = goldMat(0xf3c257);
+  const glass = () => new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.1, transmission: 1, thickness: 0.4, ior: 1.42,
+    attenuationColor: new THREE.Color(0xffd890), attenuationDistance: 2.5, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1, transparent: true, opacity: 1 });
+  const glow = new THREE.MeshBasicMaterial({ color: 0xffd27a, toneMapped: false, transparent: true, opacity: 0.95 });
+
+  /* engraving: text on a decal that sits on a face */
+  function decal(lines, w, h, ink = "rgba(110,70,8,.62)") {
+    const c = document.createElement("canvas"), W = 512, H = Math.max(64, Math.round(512 * h / w)); c.width = W; c.height = H;
+    const x = c.getContext("2d"); x.fillStyle = ink; x.textAlign = "center"; x.textBaseline = "middle";
+    lines.forEach(([t, size, wt], i) => { x.font = `${wt || 600} ${size * W}px -apple-system, Inter, sans-serif`; x.fillText(t, W / 2, H * (i + 1) / (lines.length + 1)); });
+    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ map: tex, transparent: true, metalness: 0.7, roughness: 0.45, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+    return m;
+  }
+  function ingot(w, h, d, mat, lines) {
+    const t = w * 0.8, s = new THREE.Shape();
+    s.moveTo(-w / 2, 0); s.lineTo(w / 2, 0); s.lineTo(t / 2, h); s.lineTo(-t / 2, h); s.closePath();
+    const bs = h * 0.1, geo = new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: true, bevelThickness: h * 0.14, bevelSize: bs, bevelSegments: 5, curveSegments: 1 });
+    geo.center(); geo.computeVertexNormals();
+    const g = new THREE.Group(), m = new THREE.Mesh(geo, mat); g.add(m);
+    const dc = decal(lines, t * 0.86, d * 0.8); dc.rotation.x = -Math.PI / 2; dc.position.y = h / 2 + bs + 0.003; g.add(dc);
+    return g;
+  }
+  function coin(r, th, mat, lines) {
+    const pts = [[0, th / 2], [r * 0.84, th / 2], [r * 0.9, th * 0.62], [r, th * 0.55], [r, -th * 0.55], [r * 0.9, -th * 0.62], [r * 0.84, -th / 2], [0, -th / 2]].map(([x, y]) => new THREE.Vector2(x, y));
+    const geo = new THREE.LatheGeometry(pts, 96); geo.computeVertexNormals();
+    const g = new THREE.Group(), m = new THREE.Mesh(geo, mat); g.add(m);
+    const dc = decal(lines, r * 1.5, r * 1.5); dc.rotation.x = -Math.PI / 2; dc.rotation.z = Math.PI; dc.position.y = th / 2 + 0.003; g.add(dc);
+    return g;
+  }
+
+  /* the four contracts */
+  const P = [
+    ingot(0.62, 0.24, 1.2, g995, [["100 g", .2, 700], ["995 · GOLDM", .09, 600]]),
+    ingot(0.42, 0.16, 0.78, g999, [["10 g", .24, 700], ["999 · GOLDTEN", .1, 600]]),
+    coin(0.42, 0.09, g999, [["8 g", .26, 700], ["GOLDGUINEA", .1, 600]]),
+    ingot(0.24, 0.075, 0.4, g999, [["1 g", .3, 700], ["999", .14, 600]]),
+  ];
+  const world = new THREE.Group(); scene.add(world);
+  P.forEach(p => world.add(p));
+
+  /* gaps vs GOLDM, the cost line and GOLDPETAL's own ±1.5σ band, all on one scale (bp → scene units) */
+  const K = 1.7 / Math.max(...D.gaps.map(g => g.gap), D.costLine * 1.1), BASE = -0.55;
+  const colGeo = new RoundedBoxGeometry(0.36, 1, 0.36, 4, 0.05); colGeo.translate(0, 0.5, 0);
+  const cols = D.gaps.map((g, i) => { const m = new THREE.Mesh(colGeo, goldMat(0xf3c257, 0.18)); m.material.emissive = new THREE.Color(0x7a4a00); m.material.emissiveIntensity = 0; world.add(m); return m; });
+  const plane = new THREE.Mesh(new RoundedBoxGeometry(3.4, 0.035, 1.3, 3, 0.017), glass()); world.add(plane);
+  const edge = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.012, 0.012), glow); world.add(edge);
+  const bandH = D.petal.band * K;
+  const bandGeo = new THREE.CylinderGeometry(0.3, 0.3, 1, 48, 1, true); bandGeo.translate(0, 0.5, 0);
+  const band = new THREE.Mesh(bandGeo, new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  const bandRails = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CylinderGeometry(0.3, 0.3, 1, 12, 1, true).translate(0, 0.5, 0), 1), new THREE.LineBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.35, toneMapped: false }));
+  band.add(bandRails);
+  world.add(band);
+  const bandCaps = [0].map(() => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.008, 8, 64), glow); r.rotation.x = Math.PI / 2; world.add(r); return r; });
+
+  /* "how we know": three glass slabs the camera flies through */
+  const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
+  const slabs = slabTxt.map(([big, small], i) => {
+    const g = new THREE.Group(), s = new THREE.Mesh(new RoundedBoxGeometry(2.3, 1.45, 0.07, 4, 0.05), glass()); s.material.roughness = 0.22; s.material.thickness = 0.25; g.add(s);
+    const t = decal([[big, .17, 700], [small, .065, 500]], 2.0, 1.2, "rgba(255,226,160,.95)"); t.material = new THREE.MeshBasicMaterial({ map: t.material.map, transparent: true, toneMapped: false, depthWrite: false });
+    t.position.z = 0.05; g.add(t); g.position.set(-0.75 + i * 1.2, [0.95, 0.35, -0.25][i] + 0.2, -0.4 - i * 0.9); g.rotation.y = -0.18; g.scale.setScalar(0.62); world.add(g); return g;
+  });
+
+  /* gold dust */
+  const NP = mobile ? 260 : 520, dust = new Float32Array(NP * 3), seed = new Float32Array(NP);
+  for (let i = 0; i < NP; i++) { dust[i * 3] = (Math.random() - 0.5) * 14; dust[i * 3 + 1] = (Math.random() - 0.5) * 8; dust[i * 3 + 2] = 3 - Math.random() * 16; seed[i] = Math.random() * 6.28; }
+  const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.BufferAttribute(dust, 3));
+  const dot = document.createElement("canvas"); dot.width = dot.height = 32; { const x = dot.getContext("2d"), gr = x.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,225,150,1)"); gr.addColorStop(1, "rgba(255,225,150,0)"); x.fillStyle = gr; x.fillRect(0, 0, 32, 32); }
+  const dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.05, map: new THREE.CanvasTexture(dot), transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  scene.add(dustPts);
+
+  /* ---------- choreography: values at each beat 0..5, eased between */
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const cam = [
+    { p: V(0, 0.3, 6.6), t: V(0, -0.05, 0), fov: 34 },
+    { p: V(0, 2.1, 5.6), t: V(0, -0.3, 0), fov: 34 },
+    { p: V(-2.2, 1.3, 6.2), t: V(0.2, 0.45, 0), fov: 36 },
+    { p: V(4.2, 1.9, 8.4), t: V(0.9, 2.55, 0), fov: 50 },
+    { p: V(0.4, 0.7, 4.4), t: V(0.4, 0.55, -1.2), fov: 38 },
+    { p: V(0, 0.9, -5.6), t: V(0, 0.3, -10.6), fov: 36 },
+  ];
+  const ring = (i, n, r, cx, cy, cz, a0) => V(cx + Math.cos(a0 + i * 6.283 / n) * r, cy + Math.sin(a0 + i * 6.283 / n) * r * 0.35, cz + Math.sin(a0 + i * 6.283 / n) * r * 0.4);
+  // piece positions and scales per beat
+  const px = [-1.3, -0.42, 0.42, 1.18], line = [-1.2, -0.4, 0.4, 1.2];
+  const pieceAt = (i, b) => {
+    if (b === 0) return { p: V(px[i], [0.05, 0.12, 0.1, 0.18][i], [0, 0.3, 0.1, 0.45][i]), s: 1, ry: [-0.55, -0.35, 0, -0.2][i], rx: [0.25, 0.3, 1.25, 0.35][i] };
+    if (b === 1) return { p: V(line[i], -0.2, 0), s: [0.62, 0.95, 0.9, 1.7][i], ry: 0, rx: [0.65, 0.65, 1.35, 0.65][i] };
+    if (b === 2 || b === 3) return { p: V(line[i], BASE - 0.12, 0), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i] };
+    if (b === 4) return { p: V(line[i], BASE - 0.4, 0.5), s: 0.001, ry: 0, rx: 0.3 };
+    return { p: ring(i, 4, 1.15, 0, 0.2, -10.6, 0.4), s: [0.7, 1.0, 0.95, 1.7][i], ry: 0.6, rx: [0.5, 0.5, 1.3, 0.5][i] };
+  };
+  const colAt = (i, b) => (b === 2 || b === 3) ? D.gaps[i].gap * K : 0.0001;
+
+  /* labels */
+  const pl = D.pieces.map(p => label(`<b>${p.sym}</b><small>${p.kind} · ${p.purity}</small><div class="n">${p.per_g}/g</div>`));
+  const cl = D.gaps.map(g => label(`<b class="n">${g.gap.toFixed(1)} bp</b><small>${g.sym}</small>`));
+  const costL = label(`<b>Cost line</b><span class="n">${D.costLine.toFixed(1)} bp</span>`);
+  const bandL = label(`<b>Alert needs ±${D.thr}σ</b><span class="n">${D.petal.band.toFixed(0)} bp for GOLDPETAL</span>`);
+
+  const tmpV = new THREE.Vector3();
+  const place = (el, v, op, dy = 0) => {
+    if (op < 0.02) { if (el._o !== 0) { el.style.opacity = 0; el._o = 0; } return; }
+    tmpV.copy(v).project(camera);
+    const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = (-tmpV.y * 0.5 + 0.5) * innerHeight + dy;   // the view offset is already in the projection
+    el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-100%)`;
+    el.style.opacity = op.toFixed(3); el._o = op;
+  };
+  const bump = (b, a, c, w = 0.35) => clamp((b - (a - w)) / w) * clamp(((c + w) - b) / w);
+
+  /* view offset: desktop shifts the gold right of the card, phones lift it above the card */
+  const view = { x: 0, y: 0, w: 1, h: 1 };
+  function resize() {
+    const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    view.w = w; view.h = h; view.x = w > 760 ? -w * 0.23 : 0; view.y = w > 760 ? 0 : h * 0.27;
+    camera.setViewOffset(w, h, view.x, view.y, w, h); camera.updateProjectionMatrix();
+  }
+  addEventListener("resize", resize); resize();
+
+  /* pointer parallax (desktop) */
+  let mx = 0, my = 0, tmx = 0, tmy = 0;
+  addEventListener("pointermove", e => { if (e.pointerType === "mouse") { tmx = e.clientX / innerWidth - 0.5; tmy = e.clientY / innerHeight - 0.5; } }, { passive: true });
+
+  const lerpV = (a, b, f) => tmpA.copy(a).lerp(b, f);
+  const tmpA = new THREE.Vector3(), camP = new THREE.Vector3(), camT = new THREE.Vector3();
+  let ftimes = [], lastAdj = 0;
+  frame = (b, time, dt) => {
+    const i = Math.min(N - 1, Math.floor(b)), f = b - i, j = i + 1;
+    const A = cam[i], B = cam[j];
+    camP.copy(A.p).lerp(B.p, f); camT.copy(A.t).lerp(B.t, f);
+    if (camera.aspect < 1.1) camP.sub(camT).multiplyScalar(Math.min(2.0, 1.02 / camera.aspect)).add(camT);   // tall screens: step back so all four fit
+    mx += (tmx - mx) * (1 - Math.exp(-dt / 0.25)); my += (tmy - my) * (1 - Math.exp(-dt / 0.25));
+    if (!reduce) { camP.x += mx * 0.35; camP.y -= my * 0.22; }
+    camera.position.copy(camP); camera.lookAt(camT);
+    const fov = A.fov + (B.fov - A.fov) * f; if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
+
+    P.forEach((p, k) => {
+      const a = pieceAt(k, i), c = pieceAt(k, j);
+      p.position.copy(a.p).lerp(c.p, f);
+      const bob = reduce ? 0 : Math.sin(time * 0.9 + k * 1.7) * 0.04 * (b < 1.5 || b > 4.5 ? 1 : 0.3);
+      p.position.y += bob;
+      const s = a.s + (c.s - a.s) * f; p.scale.setScalar(Math.max(s, 0.001)); p.visible = s > 0.01;
+      p.rotation.x = a.rx + (c.rx - a.rx) * f;
+      p.rotation.y = a.ry + (c.ry - a.ry) * f + (reduce ? 0 : (b < 1.3 ? time * 0.18 + k : b > 4.5 ? time * 0.3 : 0) * (b < 1.3 ? 1 - clamp(b / 1.3) : clamp((b - 4.5) / 0.5)));
+    });
+    cols.forEach((m, k) => {
+      const h = colAt(k, i) + (colAt(k, j) - colAt(k, i)) * f;
+      m.position.set(line[k + 1], BASE, 0); m.scale.set(1, Math.max(h, 0.0001), 1); m.visible = h > 0.005;
+      const lit = k === 2 ? bump(b, 3, 3, 0.6) : 0; m.material.emissiveIntensity = lit * (0.6 + 0.4 * Math.sin(time * 3));
+    });
+    const pv = bump(b, 2, 3, 0.7);
+    plane.position.set(0, BASE + D.costLine * K, 0); plane.scale.setScalar(Math.max(pv, 0.0001)); plane.visible = pv > 0.01;
+    edge.position.set(0, BASE + D.costLine * K, 0.65); edge.scale.set(Math.max(pv, 0.0001), 1, 1); edge.visible = pv > 0.01;
+    const bv = bump(b, 3, 3, 0.75);
+    band.position.set(line[3], BASE, 0); band.scale.set(1, Math.max(bandH * sm(bv), 0.0001), 1); band.visible = bv > 0.01;
+    bandCaps.forEach(r => { r.position.set(line[3], BASE + bandH * sm(bv), 0); r.visible = bv > 0.01; });
+    const sv = bump(b, 4, 4, 0.7);
+    slabs.forEach((g, k) => { const e = sm(clamp(sv * 1.3 - k * 0.15)); g.scale.setScalar(Math.max(0.62 * e, 0.0001)); g.visible = e > 0.01; g.rotation.y = -0.18 + (reduce ? 0 : Math.sin(time * 0.4 + k) * 0.05); });
+
+    if (!reduce) { const a = dg.attributes.position.array; for (let k = 0; k < NP; k++) { a[k * 3 + 1] += Math.sin(time * 0.3 + seed[k]) * 0.0009; a[k * 3] += Math.cos(time * 0.2 + seed[k]) * 0.0006; } dg.attributes.position.needsUpdate = true; }
+
+    renderer.render(scene, camera);
+
+    // labels follow their objects
+    const w1 = bump(b, innerWidth > 760 ? 0 : 0.7, 1, 0.45);   // phones: names appear once the pieces line up
+    pl.forEach((el, k) => { tmpV.copy(P[k].position); tmpV.y += 0.42 * Math.max(P[k].scale.x, 0.6); place(el, tmpV, w1, -6); });
+    const w2 = bump(b, 2, 3, 0.45);
+    cl.forEach((el, k) => { place(el, V(line[k + 1], BASE + cols[k].scale.y + 0.08, 0), w2, -4); });
+    place(costL, V(-1.15, BASE + D.costLine * K + 0.06, 0.65), bump(b, 2, 3, 0.4) * (innerWidth > 760 ? 1 : 0.9));
+    place(bandL, V(line[3], BASE + bandH * sm(bv) + 0.14, 0), bump(b, 3, 3, 0.35));
+
+    // keep it smooth on slower phones: drop resolution a step if frames run long
+    ftimes.push(dt); if (ftimes.length > 50) ftimes.shift();
+    if (time - lastAdj > 2 && ftimes.length === 50) { const avg = ftimes.reduce((a, c) => a + c, 0) / 50; if (avg > 0.024 && dpr > 1) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); resize(); lastAdj = time; ftimes = []; } }
+  };
+}
+
+/* ---------- loop */
+let cur = scrollBeat(), last = performance.now(), t0 = last, shown = -1;
+const prog = $("#prog"), hint = $("#hint");
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const target = scrollBeat();
+  cur = reduce ? target : cur + (target - cur) * (1 - Math.exp(-dt / 0.14));
+  if (Math.abs(target - cur) < 1e-4) cur = target;
+  const vh = innerHeight;
+  cardsFrame(vh);
+  prog.style.transform = `scaleX(${(scrollY / Math.max(1, document.documentElement.scrollHeight - vh)).toFixed(4)})`;
+  if (hint) hint.style.opacity = String(1 - clamp(scrollY / (vh * 0.25)));
+  const k = Math.round(cur); if (k !== shown) { shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
+  frame(cur, (now - t0) / 1000, dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>

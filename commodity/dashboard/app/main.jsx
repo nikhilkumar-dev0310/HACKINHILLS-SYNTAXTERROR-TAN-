@@ -330,6 +330,23 @@ function useDock() {
   }, []);
 }
 
+/* ---------- glass sheen: a soft reflection follows the pointer across the panel under it (mouse only) */
+function useSheen() {
+  useEffect(() => {
+    if (!matchMedia("(hover: hover) and (pointer: fine)").matches || reducedMotion()) return;
+    let el = null, raf = 0, x = 0, y = 0, tgt = null;
+    const paint = () => { raf = 0;
+      if (tgt !== el) { if (el) el.classList.remove("lit"); el = tgt; if (el) el.classList.add("lit"); }
+      if (el) { const r = el.getBoundingClientRect(); el.style.setProperty("--mx", (x - r.left).toFixed(0) + "px"); el.style.setProperty("--my", (y - r.top).toFixed(0) + "px"); } };
+    const move = e => { if (e.pointerType !== "mouse") return; x = e.clientX; y = e.clientY;
+      tgt = e.target.closest ? e.target.closest(".card,.take,.more") : null; if (!raf) raf = requestAnimationFrame(paint); };
+    const leave = () => { tgt = null; if (!raf) raf = requestAnimationFrame(paint); };
+    document.addEventListener("pointermove", move, { passive: true });
+    document.documentElement.addEventListener("mouseleave", leave, { passive: true });
+    return () => { document.removeEventListener("pointermove", move); document.documentElement.removeEventListener("mouseleave", leave); cancelAnimationFrame(raf); if (el) el.classList.remove("lit"); };
+  }, []);
+}
+
 /* ---------- phone chrome (iOS): reading down hides the header and minimises the tab bar; the first flick up
    brings both back. Once the page title scrolls away, the header shows it in place of the wordmark. */
 function usePhoneChrome(view) {
@@ -376,7 +393,7 @@ function useSheetDrag(ref, open, close) {
 }
 
 function App() {
-  useDock();
+  useDock(); useSheen();
   const bad = h => h && h !== "main" && !PAGES[h];
   const init = () => { const h = location.hash.slice(1); return PAGES[h] ? h : bad(h) ? "404" : store.get("gsl-view", "overview"); };
   const [view, setView] = useState(init), [theme, setTheme] = useTheme(), [phase, setPhase] = useState("in"), [navN, setNavN] = useState(0);

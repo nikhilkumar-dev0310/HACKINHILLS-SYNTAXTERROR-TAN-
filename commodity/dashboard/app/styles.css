@@ -1079,3 +1079,77 @@ html{-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-t
 @media (prefers-reduced-motion:reduce){html.sd .top,html.sd .tabbar{transform:none}}
 @media (max-width:760px){.top{background:color-mix(in srgb,var(--bg) 74%,transparent)}}
 @media (max-width:900px){.take{grid-template-columns:1fr;gap:10px}}
+
+/* ======================= GLASS v2 + PHONE RHYTHM (prototype, 18 Oct 2026) ======================= */
+/* 1. A warmer room behind the glass: three soft gold lights (pre-blurred gradients, no filter cost) */
+:root{--glow-a:rgba(242,170,52,.26);--glow-b:rgba(196,120,38,.18);--glow-c:rgba(255,214,140,.10)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--glow-a:rgba(240,168,56,.46);--glow-b:rgba(226,128,70,.28);--glow-c:rgba(255,206,120,.44)}}
+:root[data-theme="light"]{--glow-a:rgba(240,168,56,.46);--glow-b:rgba(226,128,70,.28);--glow-c:rgba(255,206,120,.44)}
+.bgfx i:nth-child(1){width:78vw;height:78vw;left:-22vw;top:-30vw}
+.bgfx i:nth-child(2){width:66vw;height:66vw;right:-24vw;top:24vh}
+.bgfx::after{width:60vw;height:60vw;left:24vw;bottom:-30vw}
+
+/* 2. Glass surfaces: a frosted fill with a sheen at the top, a gold-tinted rim, a light catch along the top edge */
+:root{
+  --g-fill:linear-gradient(180deg,rgba(255,250,240,.085),rgba(255,250,240,.035) 60%,rgba(255,250,240,.03));
+  --g-fill-hover:linear-gradient(180deg,rgba(255,250,240,.11),rgba(255,250,240,.05) 60%,rgba(255,250,240,.04));
+  --g-rim:linear-gradient(150deg,rgba(255,240,210,.42),rgba(255,236,200,.10) 26%,rgba(255,236,200,.04) 62%,rgba(232,180,74,.26));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(0,0,0,.18);
+  --g-shadow:0 1px 1px rgba(0,0,0,.30),0 24px 50px -26px rgba(0,0,0,.9);
+  --g-blur:blur(20px) saturate(150%);
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --g-fill:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.44));
+  --g-fill-hover:linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.56));
+  --g-rim:linear-gradient(150deg,#fff,rgba(255,255,255,.7) 30%,rgba(255,240,214,.3) 62%,rgba(214,160,64,.42));
+  --g-hi:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(120,88,30,.06);
+  --g-shadow:0 1px 2px rgba(90,64,22,.07),0 8px 18px -8px rgba(90,64,22,.14),0 28px 52px -26px rgba(90,64,22,.34)}}
+:root[data-theme="light"]{
+  --g-fill:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.44));
+  --g-fill-hover:linear-gradient(180deg,rgba(255,255,255,.84),rgba(255,255,255,.56));
+  --g-rim:linear-gradient(150deg,#fff,rgba(255,255,255,.7) 30%,rgba(255,240,214,.3) 62%,rgba(214,160,64,.42));
+  --g-hi:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(120,88,30,.06);
+  --g-shadow:0 1px 2px rgba(90,64,22,.07),0 8px 18px -8px rgba(90,64,22,.14),0 28px 52px -26px rgba(90,64,22,.34)}
+/* real frosting on the big panels (laptops); phones keep the look without the per-frame blur cost */
+@media (hover:hover) and (pointer:fine) and (min-width:1101px){
+  .card,.take,.more,.rail{-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur)}
+}
+/* light that follows the pointer across a panel, like a reflection on glass */
+.card,.take,.more{--mx:50%;--my:-40%}
+.card>*,.take>*,.more>*{position:relative;z-index:1}
+.card::after,.take::after,.more::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;transition:opacity .5s ease;
+  background:radial-gradient(520px circle at var(--mx) var(--my),rgba(255,226,160,.09),transparent 45%)}
+.card.lit::after,.take.lit::after,.more.lit::after{opacity:1}
+.take::after{left:0;top:0;bottom:0;width:auto}
+
+/* 3. Phones: one rhythm everywhere (16 side, 20 inside, 12 between tiles, 24 between sections) */
+@media (max-width:760px){
+  main.page{padding-left:16px;padding-right:16px;gap:24px}
+  .hero{padding-top:20px;gap:12px}
+  .hero h1{font-size:clamp(34px,10vw,44px);line-height:1.04}
+  .hero .lead,.hero p{font-size:16px;line-height:1.55}
+  .grid{gap:12px}
+  .card{padding:20px}
+  .card-h{margin-bottom:14px;gap:10px}
+  .card h2{font-size:19px;line-height:1.25}
+  .card .sub,.card-h p{font-size:14px}
+  .take{padding:18px 18px 18px 22px}
+  .take-p{font-size:16.5px;line-height:1.5}
+  .quotes{gap:12px;margin:0}
+  .quote{padding:14px 14px 12px}
+  /* number tiles: two to a row, equal heights, compact like the laptop's row of four */
+  .g4,.g3:has(> .kpi){grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr}
+  .kpi{padding:16px;gap:8px}
+  .kpi .val{font-size:clamp(22px,6.6vw,28px);text-wrap:balance}
+  .kpi .val .val-sm{font-size:17px}
+  .kpi .note{font-size:12.5px;line-height:1.45}
+  .kpi .lab{font-size:10.5px}
+  /* "on this page" chips: one swipeable row that runs to the screen edge, as on iOS */
+  .jump{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px;scroll-snap-type:x proximity;scrollbar-width:none;
+    -webkit-mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 24px),transparent);mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 24px),transparent)}
+  .jump::-webkit-scrollbar{display:none}
+  .jump a{flex:none;scroll-snap-align:start;white-space:nowrap;padding:9px 14px;font-size:14px}
+  .stats .kpi{padding:18px 12px 18px 0}
+  .stats .kpi+.kpi{padding-left:12px}
+}
+@media (max-width:420px){.stats{grid-template-columns:1fr 1fr}.stats .kpi{border-bottom:1px solid var(--line)}}
