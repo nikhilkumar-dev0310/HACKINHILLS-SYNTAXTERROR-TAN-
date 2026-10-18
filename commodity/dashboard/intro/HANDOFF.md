@@ -158,3 +158,24 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Fixes:**
   - The bokeh count was fractional (80/3), which caused the NaN bounding-sphere error. It is now rounded.
   - Textures are uploaded to the GPU at load.
+
+## Pari, a dense hoard, a richer room (19 Oct 2026)
+- **Pari**, the gold-bar mascot from the demo (`presentation/round2/pipeline/render_pari3.py`), is built in 3D for the finale:
+  - an ingot body with eyes and a smile, stick arms and legs;
+  - stands on its own coin peak; on laptops below-left of the mark, on phones right of it;
+  - hops up as the finale arrives, then waves, blinks and bobs, and turns to follow the cursor;
+  - a "Hi, I'm Pari" bubble appears on laptops.
+- **The hoard is solid** (it no longer reads as see-through):
+  - One coin-textured gold dune (`dH`) is banked against the walls, rises behind the forge and swells into mounds.
+  - The camera's aisle stays clear.
+  - Bars, coins (4,200 on laptops), coin towers, chalices, urns, orbs, nuggets and stray bars all sit on its surface.
+- **Variety:**
+  - jewels (ruby, emerald, sapphire, amethyst, diamond) and jewelled crowns;
+  - gold shields leaning on the piles;
+  - two candle chandeliers;
+  - shelves whose lowest levels are buried in gold.
+- **Chests**, rebuilt:
+  - planked wood with brass straps, corners and rims, and a lock plate;
+  - a domed lid with end caps and brass bands;
+  - a heap of coins inside, and coins spilling over the front.
+- **River:** coins tumble edge over edge with the bars.

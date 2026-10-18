@@ -672,6 +672,9 @@ if (renderer) {
   const NR = mobile ? 380 : 900;
   const river = new THREE.InstancedMesh(new RoundedBoxGeometry(0.1, 0.03, 0.05, 1, 0.01), g999, NR); river.frustumCulled = false; world.add(river);
   const rSeed = Array.from({ length: NR }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() - 0.5]);
+  const NRC = mobile ? 220 : 520;   // coins tumbling in the river with the bars
+  const riverC = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.06, 0.013, 16), g999, NRC); riverC.frustumCulled = false; world.add(riverC);
+  const rcSeed = Array.from({ length: NRC }, () => [Math.random(), Math.random() * 6.283, 0.2 + Math.random() * 0.55, Math.random() * 6.283, 3 + Math.random() * 5]);
   const RDIR = V(-0.3, -0.22, 1).normalize();   // the river spills down and to the left, clear of the plaques
   /* the three counts on glass plaques that slide out of the vault */
   const slabTxt = [[D.rows, "daily rows, " + D.years + " years"], [String(D.sealed), "sealed tests"], [D.tests, "automated tests"]];
@@ -714,74 +717,148 @@ if (renderer) {
   const rnd = (a, b) => a + Math.random() * (b - a);
   const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3();
   const fill = (geo, mat, list) => { const im = new THREE.InstancedMesh(geo, mat, list.length); list.forEach((t, n) => { _m.compose(t[0], _q.setFromEuler(_e.set(t[1], t[2], t[3])), _s.setScalar(t[4] || 1)); im.setMatrixAt(n, _m); }); im.frustumCulled = false; room.add(im); return im; };
-  // bars, stacked in pyramids along the walls and at the back
+  // ---- the hoard is one solid mass: a coin-covered gold dune banked against the walls and swelling into mounds;
+  //      everything else settles onto its surface. The camera's aisle down the middle stays clear.
+  const PARI_AT = mobile ? [0.6, -9.3] : [0.2, -9.3];   // Pari's own peak, below and left of the mark at the finale
+  const MOUNDS = [[PARI_AT[0], PARI_AT[1], 0.95, mobile ? 0.95 : 1.05], [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
+    [0.3, -13.5, 1.6, 0.6], [-1.3, -13.0, 0.9, 0.45], [1.9, -4.4, 0.8, 0.4], [-1.9, -10.1, 0.8, 0.4], [-2.2, -3.6, 0.7, 0.3]];
+  const dH = (x, z) => { const ax = Math.abs(x);
+    let h = 0.66 * Math.pow(clamp((ax - 1.0) / 2.6), 1.6) + 0.5 * clamp((-12.3 - z) / 1.6);
+    for (const [cx, cz, R, H] of MOUNDS) h += H * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (R * R * 0.45));
+    return h * clamp((RZ0 - 0.1 - z) / 0.6); };
+  const coinTex = mkTex(512, 512, (x, w, h) => {   // coins piled on coins, each with a lit rim
+    x.fillStyle = "#7a5518"; x.fillRect(0, 0, w, h);
+    for (let k = 0; k < 420; k++) { const cx = Math.random() * w, cy = Math.random() * h, r = 11 + Math.random() * 13;
+      for (const [ox, oy] of [[0, 0], [w, 0], [-w, 0], [0, h], [0, -h]]) { const g = x.createRadialGradient(cx + ox - r * 0.3, cy + oy - r * 0.3, r * 0.1, cx + ox, cy + oy, r);
+        g.addColorStop(0, "#ffe9a8"); g.addColorStop(0.55, "#e2ac3e"); g.addColorStop(0.9, "#a8741f"); g.addColorStop(1, "rgba(60,38,8,.9)");
+        x.fillStyle = g; x.beginPath(); x.arc(cx + ox, cy + oy, r, 0, 6.283); x.fill(); } } }, 9, 11);
+  const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: coinTex, bumpMap: coinTex, bumpScale: 1.5, metalness: 0.85, roughness: 0.36, envMapIntensity: 1.35 }));
+  { const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, mobile ? 64 : 110, mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
+    const p = dg.attributes.position; for (let k = 0; k < p.count; k++) { const x = p.getX(k), z = p.getZ(k) + (RZ0 + RZ1) / 2, h = dH(x, z); p.setY(k, h < 0.004 ? -0.03 : h); }
+    dg.computeVertexNormals(); const dune = new THREE.Mesh(dg, hoardM); dune.position.set(0, FLOOR + 0.004, (RZ0 + RZ1) / 2); room.add(dune); }
+  const onD = (x, z, lift = 0) => V(x, FLOOR + dH(x, z) + lift, z);
+  // bars, stacked in pyramids that sit into the dune
   const barShape = new THREE.Shape(); barShape.moveTo(-0.17, 0); barShape.lineTo(0.17, 0); barShape.lineTo(0.13, 0.1); barShape.lineTo(-0.13, 0.1); barShape.closePath();
-  const barGeo = new THREE.ExtrudeGeometry(barShape, { depth: 0.16, bevelEnabled: false }); barGeo.translate(0, 0, -0.08);
-  const bars = [], STACKS = [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-1.7, -13.3], [1.8, -13.4], [-0.1, -13.7], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.6], [1.7, -9.2], [-3.9, -13.4], [3.9, -13.5]];
+  const barGeo = new THREE.ExtrudeGeometry(barShape, { depth: 0.16, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.006, bevelSegments: 1 }); barGeo.translate(0, 0, -0.08);
+  const bars = [], STACKS = [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-1.7, -13.3], [1.8, -13.4], [-0.1, -13.7], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.6], [2.7, -9.6], [-3.9, -13.4], [3.9, -13.5]];
   (mobile ? STACKS.slice(0, 9) : STACKS).forEach(([cx, cz]) => {
-    const ry = rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry);
+    const ry = rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry), y0 = FLOOR + dH(cx, cz) - 0.05;
     for (let L = 0; L < 5; L++) for (let i = 0; i < 7 - L; i++) for (let j = 0; j < 4 - Math.min(L, 3); j++) {
       const lx = (i - (6 - L) / 2) * 0.36, lz = (j - (3 - Math.min(L, 3)) / 2) * 0.18;
-      bars.push([V(cx + lx * c + lz * s, FLOOR + L * 0.1, cz - lx * s + lz * c), 0, ry, 0]);
+      bars.push([V(cx + lx * c + lz * s, y0 + L * 0.1, cz - lx * s + lz * c), 0, ry + rnd(-0.04, 0.04), 0]);
     }
   });
+  // stray bars half-sunk in the slopes
+  for (let k = 0; k < (mobile ? 40 : 110); k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2); if (dH(x, z) < 0.12) continue; bars.push([onD(x, z, -0.02), rnd(-0.4, 0.4), rnd(0, 6.28), rnd(-0.4, 0.4)]); }
   fill(barGeo, tGold, bars);
-  // coins heaped into mounds, plus a few standing towers
-  const coins = [], MOUNDS = [[-2.7, -6.6, 1.1, 0.9], [2.8, -7.3, 1.15, 0.95], [-2.6, -11.7, 1.3, 1.1], [2.6, -12.3, 1.25, 0.95], [-3.8, -9.0, 0.9, 0.7], [3.8, -9.9, 0.9, 0.7], [0.3, -13.6, 1.5, 0.75], [-1.3, -13.2, 0.8, 0.5], [1.7, -4.6, 0.7, 0.5], [-1.7, -10.3, 0.7, 0.5], [1.5, -11.0, 0.75, 0.55]];   // the centre stays low and clear behind the mark
-  const NC = mobile ? 1100 : 2800, areaSum = MOUNDS.reduce((a, m) => a + m[2] * m[2], 0);
-  MOUNDS.forEach(([cx, cz, R, H]) => { const n = Math.round(NC * R * R / areaSum);
-    for (let k = 0; k < n; k++) { const r = R * Math.sqrt(Math.random()), a = Math.random() * 6.283, h = H * Math.pow(1 - r / R, 1.3) * rnd(0.8, 1);
-      coins.push([V(cx + Math.cos(a) * r, FLOOR + h + 0.01, cz + Math.sin(a) * r), rnd(-0.7, 0.7), rnd(0, 6.28), rnd(-0.7, 0.7)]); } });
-  fill(new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), tGold, coins);
-  const towers = []; for (let k = 0; k < (mobile ? 24 : 60); k++) { const side = k % 2 ? 1 : -1, x = side * rnd(1.6, 3.0), z = rnd(-5, -12.8), n = 4 + Math.floor(Math.random() * 14);
-    for (let q = 0; q < n; q++) towers.push([V(x + rnd(-0.006, 0.006), FLOOR + 0.009 + q * 0.017, z), 0, Math.random() * 6.28, 0]); }
-  fill(new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), tGoldDeep, towers);
-  // chalices, orbs and nuggets on the piles
+  // coins packed over the slopes (more where the gold is deeper), a scatter in the aisle, and standing towers
+  const coinGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), coins = [];
+  for (let tries = 0, NC = mobile ? 1600 : 4200; coins.length < NC && tries < NC * 8; tries++) {
+    const x = rnd(-RW + 0.3, RW - 0.3), z = rnd(RZ1 + 0.3, RZ0 - 0.3), h = dH(x, z);
+    if (h < 0.03 ? Math.random() > 0.04 : Math.random() > Math.min(1, h * 2.5 + 0.2)) continue;
+    coins.push([V(x, FLOOR + h + 0.008, z), rnd(-0.55, 0.55), rnd(0, 6.28), rnd(-0.55, 0.55)]); }
+  fill(coinGeo, tGold, coins);
+  const towers = []; for (let k = 0; k < (mobile ? 30 : 80); k++) { const side = k % 2 ? 1 : -1, x = side * rnd(1.3, 3.2), z = rnd(-4.5, -13), n = 5 + Math.floor(Math.random() * 16), b0 = FLOOR + dH(x, z) - 0.02;
+    for (let q = 0; q < n; q++) towers.push([V(x + rnd(-0.006, 0.006), b0 + q * 0.017, z), 0, Math.random() * 6.28, 0]); }
+  fill(coinGeo, tGoldDeep, towers);
+  // chalices, urns, orbs, shields and nuggets on the piles
   const chalice = new THREE.LatheGeometry([[0, 0], [0.11, 0], [0.11, 0.015], [0.03, 0.04], [0.025, 0.16], [0.05, 0.19], [0.11, 0.26], [0.13, 0.36], [0.12, 0.36], [0.1, 0.27], [0, 0.22]].map(([x, y]) => new THREE.Vector2(x, y)), 24);
-  const cups = MOUNDS.slice(0, 6).flatMap(([cx, cz, R, H]) => [[V(cx + rnd(-0.2, 0.2), FLOOR + H * 0.85, cz + rnd(-0.2, 0.2)), rnd(-0.2, 0.2), 0, rnd(-0.2, 0.2), rnd(1.1, 1.6)],
-    [V(cx + rnd(-0.7, 0.7), FLOOR + H * 0.35, cz + rnd(-0.7, 0.7)), rnd(-0.5, 0.5), 0, rnd(-0.5, 0.5), rnd(0.8, 1.2)]]);
-  fill(chalice, tGoldDeep, cups);
-  const orbs = MOUNDS.slice(0, 6).map(([cx, cz, R, H]) => [V(cx + rnd(-0.4, 0.4), FLOOR + H * 0.6, cz + rnd(-0.4, 0.4)), 0, 0, 0, rnd(0.9, 1.4)]);
-  fill(new THREE.SphereGeometry(0.11, 24, 16), tGold, orbs);
-  const nug = []; for (let k = 0; k < (mobile ? 140 : 360); k++) { const m = MOUNDS[k % MOUNDS.length], a = Math.random() * 6.283, r = m[2] * rnd(0.9, 1.35);
-    nug.push([V(m[0] + Math.cos(a) * r, FLOOR + 0.03, m[1] + Math.sin(a) * r), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.5, 1.4)]); }
+  const urn = new THREE.LatheGeometry([[0, 0], [0.09, 0], [0.1, 0.02], [0.07, 0.05], [0.16, 0.18], [0.17, 0.27], [0.11, 0.4], [0.07, 0.46], [0.1, 0.5], [0.09, 0.51], [0, 0.48]].map(([x, y]) => new THREE.Vector2(x, y)), 28);
+  const tops = MOUNDS.slice(1).map(([cx, cz]) => [cx, cz]);   // not on Pari's peak
+  fill(chalice, tGoldDeep, tops.flatMap(([cx, cz]) => [[onD(cx + rnd(-0.25, 0.25), cz + rnd(-0.25, 0.25), -0.03), rnd(-0.2, 0.2), rnd(0, 6), rnd(-0.2, 0.2), rnd(1.1, 1.6)]]));
+  fill(urn, tGold, tops.slice(0, mobile ? 6 : 12).map(([cx, cz]) => { const a = rnd(0, 6.28), r = rnd(0.5, 0.8); return [onD(cx + Math.cos(a) * r, cz + Math.sin(a) * r, -0.04), rnd(-0.15, 0.15), rnd(0, 6), rnd(-0.15, 0.15), rnd(0.9, 1.3)]; }));
+  fill(new THREE.SphereGeometry(0.11, 24, 16), tGold, tops.map(([cx, cz]) => [onD(cx + rnd(-0.45, 0.45), cz + rnd(-0.45, 0.45), 0.04), 0, 0, 0, rnd(0.8, 1.3)]));
+  const shieldG = new THREE.CylinderGeometry(0.3, 0.3, 0.03, 40); shieldG.rotateX(Math.PI / 2);
+  fill(shieldG, tGoldDeep, [[-3.9, -6.0], [3.9, -7.0], [-3.8, -11.0], [3.85, -12.2], [-2.0, -13.6], [2.4, -13.6], [-4.0, -8.3], [4.0, -9.6]].map(([x, z]) => [onD(x, z, 0.18), -0.35, x < 0 ? 1.2 : -1.2, rnd(-0.2, 0.2), rnd(0.8, 1.15)]));
+  const nug = []; for (let k = 0; k < (mobile ? 160 : 420); k++) { const x = rnd(-RW + 0.4, RW - 0.4), z = rnd(RZ1 + 0.4, -3); if (dH(x, z) < 0.05) continue;
+    nug.push([onD(x, z, 0.01), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.5, 1.5)]); }
   fill(new THREE.IcosahedronGeometry(0.04, 0), tGoldDeep, nug);
+  // jewels: rubies, emeralds, sapphires, amethysts and diamonds among the coins
+  const gems = []; for (let k = 0; k < (mobile ? 90 : 240); k++) { const x = rnd(-RW + 0.5, RW - 0.5), z = rnd(RZ1 + 0.5, -3.5); if (dH(x, z) < 0.08) continue; gems.push([onD(x, z, 0.02), rnd(0, 3), rnd(0, 3), rnd(0, 3), rnd(0.7, 1.4)]); }
+  const gemM = roomMat(new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.1, roughness: 0.08, envMapIntensity: 2.2 }));
+  const gemIM = fill(new THREE.OctahedronGeometry(0.035, 0), gemM, gems), GEMC = [0xd0213b, 0x1e9e5a, 0x2557d6, 0x8a3bd1, 0xe8f4ff].map(c => new THREE.Color(c));
+  gems.forEach((_, n) => gemIM.setColorAt(n, GEMC[n % GEMC.length]));
+  // crowns, set with jewels
+  const crownAt = mobile ? [[-2.6, -11.6], [2.7, -12.2], [-2.7, -6.5]] : [[-2.6, -11.6], [2.7, -12.2], [-2.7, -6.5], [2.8, -7.2], [0.3, -13.4], [-3.6, -8.9]];
+  const crownGold = roomMat(tGold.clone()); crownGold.side = THREE.DoubleSide;
+  const redGem = roomMat(new THREE.MeshStandardMaterial({ color: 0xc81e3a, metalness: 0.1, roughness: 0.1, envMapIntensity: 2 }));
+  crownAt.forEach(([x, z]) => { const cr = new THREE.Group(); cr.position.copy(onD(x + rnd(-0.2, 0.2), z + rnd(-0.2, 0.2), 0.02)); cr.rotation.set(rnd(-0.25, 0.25), rnd(0, 6), rnd(-0.25, 0.25)); room.add(cr);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.14, 0.07, 32, 1, true), crownGold); band.position.y = 0.035; cr.add(band);
+    for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283, sp = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.09, 8), tGold); sp.position.set(Math.cos(a) * 0.145, 0.11, Math.sin(a) * 0.145); cr.add(sp);
+      const gm2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), k % 2 ? redGem : gemM); gm2.position.set(Math.cos(a + 0.39) * 0.152, 0.04, Math.sin(a + 0.39) * 0.152); cr.add(gm2); } });
+  // chandeliers: rings of candles hanging over the hoard
+  [[0.2, -6.6], [0.2, -12.0]].forEach(([x, z]) => { const ch = new THREE.Group(); ch.position.set(x, FLOOR + RH - 1.05, z); room.add(ch);
+    ch.add(new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.025, 10, 64).rotateX(Math.PI / 2), tGoldDeep));
+    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.05, 6), tGoldDeep); chain.position.y = 0.52; ch.add(chain);
+    for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283, cx2 = Math.cos(a) * 0.55, cz2 = Math.sin(a) * 0.55;
+      const cd = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.1, 8), roomMat(new THREE.MeshStandardMaterial({ color: 0xf3ead8, roughness: 0.7 }))); cd.position.set(cx2, 0.06, cz2); ch.add(cd);
+      const fl = new THREE.Mesh(new THREE.SphereGeometry(0.016, 8, 6), roomMat(new THREE.MeshBasicMaterial({ color: 0xffd27a, toneMapped: false }))); fl.scale.y = 1.8; fl.position.set(cx2, 0.135, cz2); ch.add(fl); } });
   // architecture: stone pillars along both walls, steel shelving between them stacked with bars
   const stoneM = roomMat(new THREE.MeshStandardMaterial({ map: wallTex.clone(), color: 0xcdb89a, roughness: 0.85 })); stoneM.map.repeat.set(1, 2);
   const rSteel = roomMat(steel.clone()), rGraph = roomMat(graphite.clone());
   const pil = [], pilCap = [];
-  [-1, 1].forEach(side => [-3.4, -6.4, -9.4, -12.4].forEach(z => { pil.push([V(side * (RW - 0.32), FLOOR + RH / 2, z), 0, 0, 0]); pilCap.push([V(side * (RW - 0.32), FLOOR + 0.12, z), 0, 0, 0], [V(side * (RW - 0.32), FLOOR + RH - 0.5, z), 0, 0, 0]); }));
+  [-1, 1].forEach(side => [-3.4, -6.4, -9.4, -12.4].forEach(z => { pil.push([V(side * (RW - 0.32), FLOOR + RH / 2, z), 0, 0, 0]); pilCap.push([V(side * (RW - 0.32), FLOOR + RH - 0.5, z), 0, 0, 0]); }));
   fill(new THREE.CylinderGeometry(0.24, 0.26, RH, 24), stoneM, pil);
   fill(new THREE.BoxGeometry(0.66, 0.24, 0.66), stoneM, pilCap);
-  const shelfF = [], shelfB = [];
+  const shelfF = [], shelfB = [], shelves = [];
   [-1, 1].forEach(side => [-4.9, -7.9, -10.9].forEach(z => {
     const x = side * (RW - 0.42);
     [-1.15, 1.15].forEach(dz => shelfF.push([V(x, FLOOR + 1.35, z + dz), 0, 0, 0]));
-    for (let L = 0; L < 4; L++) { const y = FLOOR + 0.35 + L * 0.62;
+    for (let L = 0; L < 4; L++) { const y = FLOOR + 0.35 + L * 0.62; shelves.push([V(x, y - 0.02, z), 0, 0, 0]);
+      if (y < FLOOR + dH(x, z) + 0.05) continue;   // the lowest shelves are buried in gold
       for (let q = 0; q < 11; q++) for (let st = 0; st < 2; st++) shelfB.push([V(x + side * 0.02, y + 0.03 + st * 0.1, z - 0.95 + q * 0.19), 0, Math.PI / 2, 0]); }
   }));
   fill(new THREE.BoxGeometry(0.5, 2.7, 0.06), rGraph, shelfF);
-  const shelves = []; [-1, 1].forEach(side => [-4.9, -7.9, -10.9].forEach(z => { for (let L = 0; L < 4; L++) shelves.push([V(side * (RW - 0.42), FLOOR + 0.33 + L * 0.62, z), 0, 0, 0]); }));
   fill(new THREE.BoxGeometry(0.52, 0.03, 2.36), rSteel, shelves);
   fill(barGeo, tGold, mobile ? shelfB.filter((_, k) => k % 2 === 0) : shelfB);
-  // open treasure chests brimming with coins
-  const wood = roomMat(new THREE.MeshStandardMaterial({ color: 0x5a2f18, roughness: 0.72, metalness: 0.05 }));
-  const CHESTS = [[-1.75, -4.3, 0.4], [1.9, -5.6, -0.5], [-2.0, -9.5, 0.25], [2.1, -10.5, -0.3], [-0.95, -12.6, 0.15], [3.1, -6.6, -1.2]];
-  const chestCoins = [];
+  // treasure chests: planked wood, brass straps and corners, a lock plate, a domed lid thrown open, coins heaped inside and spilling out
+  const plankTex = mkTex(256, 256, (x, w, h) => { x.fillStyle = "#5c321a"; x.fillRect(0, 0, w, h);
+    for (let j = 0; j < 5; j++) { x.fillStyle = j % 2 ? "rgba(0,0,0,.08)" : "rgba(255,200,150,.05)"; x.fillRect(0, j * 51, w, 51); x.fillStyle = "rgba(0,0,0,.45)"; x.fillRect(0, j * 51, w, 3); }
+    for (let k = 0; k < 900; k++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? "30,14,5" : "120,70,35"},.25)`; x.fillRect(Math.random() * w, Math.random() * h, 10 + Math.random() * 40, 1); } });
+  const woodM = roomMat(new THREE.MeshStandardMaterial({ map: plankTex, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide }));
+  const brass = tGoldDeep, spill = [];
+  const CHESTS = mobile ? [[-1.75, -4.4, 0.4], [1.95, -5.7, -0.5], [-2.0, -9.6, 0.25], [2.1, -10.6, -0.3]] : [[-1.75, -4.4, 0.4], [1.95, -5.7, -0.5], [-2.0, -9.6, 0.25], [2.1, -10.6, -0.3], [-0.95, -12.7, 0.15], [3.1, -6.6, -1.2], [-3.2, -12.4, 0.9]];
   CHESTS.forEach(([cx, cz, ry]) => {
-    const g = new THREE.Group(); g.position.set(cx, FLOOR, cz); g.rotation.y = ry; room.add(g);
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.36, 0.44), wood); body.position.y = 0.18; g.add(body);
-    [-0.25, 0.25].forEach(bx2 => { const band = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.37, 0.45), rSteel); band.position.set(bx2, 0.18, 0); g.add(band); });
-    const lid = new THREE.Group(); lid.position.set(0, 0.36, -0.22); lid.rotation.x = -1.95; g.add(lid);
-    const lidM = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.7, 24, 1, false, 0, Math.PI).rotateZ(Math.PI / 2), wood); lidM.position.z = 0.22; lid.add(lidM);
-    for (let k = 0; k < (mobile ? 50 : 120); k++) { const lx = rnd(-0.31, 0.31), lz = rnd(-0.18, 0.18), hgt = 0.36 + 0.14 * (1 - Math.abs(lx) / 0.31) * (1 - Math.abs(lz) / 0.18) * rnd(0.6, 1);
-      const c = Math.cos(ry), sn = Math.sin(ry); chestCoins.push([V(cx + lx * c + lz * sn, FLOOR + hgt, cz - lx * sn + lz * c), rnd(-0.6, 0.6), rnd(0, 6.28), rnd(-0.6, 0.6)]); }
+    const g = new THREE.Group(); g.position.set(cx, FLOOR + dH(cx, cz) - 0.06, cz); g.rotation.y = ry; room.add(g);
+    const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); g.add(m); return m; };
+    add(new RoundedBoxGeometry(0.74, 0.4, 0.48, 2, 0.02), woodM, 0, 0.2, 0);
+    add(new THREE.BoxGeometry(0.77, 0.035, 0.51), brass, 0, 0.395, 0); add(new THREE.BoxGeometry(0.77, 0.035, 0.51), brass, 0, 0.02, 0);
+    [-0.2, 0.2].forEach(x => add(new THREE.BoxGeometry(0.05, 0.41, 0.5), brass, x, 0.2, 0));
+    [[-0.37, -0.24], [0.37, -0.24], [-0.37, 0.24], [0.37, 0.24]].forEach(([x, z]) => add(new THREE.BoxGeometry(0.045, 0.41, 0.045), brass, x, 0.2, z));
+    add(new THREE.BoxGeometry(0.1, 0.12, 0.02), brass, 0, 0.3, 0.25); add(new THREE.BoxGeometry(0.018, 0.04, 0.01), roomMat(new THREE.MeshBasicMaterial({ color: 0x1b1300 })), 0, 0.3, 0.262);
+    const heap = add(new THREE.SphereGeometry(0.34, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), hoardM, 0, 0.36, 0); heap.scale.set(1, 0.42, 0.66);   // the coins inside
+    const lid = new THREE.Group(); lid.position.set(0, 0.4, -0.24); lid.rotation.x = -1.95; g.add(lid);
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.74, 28, 1, true, 0, Math.PI).rotateZ(Math.PI / 2), woodM); shell.position.z = 0.24; lid.add(shell);
+    [-0.37, 0.37].forEach(x => { const cap = new THREE.Mesh(new THREE.CircleGeometry(0.24, 24, 0, Math.PI).rotateY(Math.PI / 2), woodM); cap.position.set(x, 0, 0.24); lid.add(cap); });
+    [-0.2, 0.2, -0.36, 0.36].forEach(x => { const st = new THREE.Mesh(new THREE.TorusGeometry(0.245, 0.012, 6, 24, Math.PI).rotateY(Math.PI / 2), brass); st.position.set(x, 0, 0.24); lid.add(st); });
+    const c = Math.cos(ry), sn = Math.sin(ry);
+    for (let k = 0; k < (mobile ? 30 : 70); k++) { const lx = rnd(-0.45, 0.45), lz = rnd(0.2, 0.75), wx = cx + lx * c + lz * sn, wz = cz - lx * sn + lz * c;   // spilling out over the front
+      spill.push([onD(wx, wz, 0.008 + Math.max(0, 0.32 - lz * 0.5) * clamp(1 - Math.abs(lx) / 0.4)), rnd(-0.6, 0.6), rnd(0, 6.28), rnd(-0.6, 0.6)]); }
   });
-  fill(new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), tGold, chestCoins);
-  // loose coins scattered across the floor, keeping the camera's aisle clear
-  const loose = []; for (let k = 0; k < (mobile ? 500 : 1300); k++) { const x = rnd(-RW + 0.6, RW - 0.6), z = rnd(RZ1 + 0.4, RZ0 - 0.6); if (Math.abs(x) < 0.9 && z > -9.5) continue;
-    loose.push([V(x, FLOOR + 0.009, z), rnd(-0.12, 0.12), rnd(0, 6.28), rnd(-0.12, 0.12)]); }
-  fill(new THREE.CylinderGeometry(0.075, 0.075, 0.016, 18), tGoldDeep, loose);
+  fill(coinGeo, tGold, spill);
+  // Pari, the Parity mascot, waits on the hoard for the finale
+  const pari = new THREE.Group(), pariBody = new THREE.Group(); pari.add(pariBody); room.add(pari);
+  const pGold = roomMat(new THREE.MeshStandardMaterial({ color: 0xf6c84f, metalness: 0.85, roughness: 0.22, envMapIntensity: 1.6 }));
+  const pLimb = roomMat(new THREE.MeshStandardMaterial({ color: 0xc98d0c, metalness: 0.7, roughness: 0.35 }));
+  const pInk = roomMat(new THREE.MeshBasicMaterial({ color: 0x1b1300 })), pShine = roomMat(new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  { const sh = new THREE.Shape(); sh.moveTo(-0.44, 0); sh.lineTo(0.44, 0); sh.lineTo(0.28, 0.56); sh.lineTo(-0.28, 0.56); sh.closePath();
+    const bg2 = new THREE.ExtrudeGeometry(sh, { depth: 0.3, bevelEnabled: true, bevelThickness: 0.035, bevelSize: 0.03, bevelSegments: 3 }); bg2.translate(0, 0, -0.15);
+    pariBody.add(new THREE.Mesh(bg2, pGold));
+    const hi = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.016, 0.016), roomMat(new THREE.MeshBasicMaterial({ color: 0xfff0c8, toneMapped: false }))); hi.position.set(0, 0.54, 0.17); pariBody.add(hi); }
+  const eyes = new THREE.Group(); eyes.position.set(0, 0.33, 0.185); pariBody.add(eyes);
+  [-0.13, 0.13].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.05, 18, 12), pInk); e.scale.set(1, 1.25, 0.45); e.position.x = x; eyes.add(e);
+    const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), pShine); s2.position.set(x + 0.016, 0.022, 0.022); eyes.add(s2); });
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 8, 24, Math.PI), pInk); mouth.rotation.z = Math.PI; mouth.position.set(0, 0.215, 0.185); pariBody.add(mouth);
+  [-0.16, 0.16].forEach(x => { const lg = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.22, 10), pLimb); lg.position.set(x, -0.11, 0); pari.add(lg);
+    const ft = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.05, 0.14, 2, 0.02), pLimb); ft.position.set(x * 1.2, -0.22, 0.03); pari.add(ft); });
+  const arm = (pts) => { const g = new THREE.Group(), cv = new THREE.CatmullRomCurve3(pts.map(([x, y]) => V(x, y, 0)));
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(cv, 14, 0.026, 8), pLimb)); const hd = new THREE.Mesh(new THREE.SphereGeometry(0.042, 12, 10), pLimb); hd.position.copy(cv.getPoint(1)); g.add(hd); return g; };
+  const armR = arm([[0, 0], [0.12, 0.07], [0.19, 0.22]]); armR.position.set(0.37, 0.28, 0.02); pariBody.add(armR);   // the waving arm
+  const armL = arm([[0, 0], [-0.12, -0.06], [-0.17, -0.2]]); armL.position.set(-0.37, 0.28, 0.02); pariBody.add(armL);
+  const pariShadow = new THREE.Mesh(new THREE.CircleGeometry(0.42, 32), roomMat(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false })));
+  pariShadow.rotation.x = -Math.PI / 2; room.add(pariShadow);
+  const PARI_Y = FLOOR + dH(PARI_AT[0], PARI_AT[1]) + 0.1, PARI_S = mobile ? 0.62 : 0.72;
+  pari.position.set(PARI_AT[0], PARI_Y, PARI_AT[1]); pari.scale.setScalar(PARI_S); pariShadow.position.set(PARI_AT[0], PARI_Y - 0.2 * PARI_S - 0.17, PARI_AT[1]);
   // light: a warm lamp over the hoard, one over the forge
   const lamp = new THREE.PointLight(0xffd08a, 42, 18, 1.5); lamp.position.set(0.2, 3.4, -7.0); room.add(lamp);
   const lamp2 = new THREE.PointLight(0xffe0aa, 24, 12, 1.5); lamp2.position.set(0, 2.6, -11.6); room.add(lamp2);
@@ -942,6 +1019,7 @@ if (renderer) {
   const balL = label(`<b class="n">Within ${D.spreadBp} bp</b><small>of each other, per gram</small>`);
   const zL = label(`<b class="n">Today ${D.petal.z >= 0 ? "+" : ""}${D.petal.z.toFixed(2)}σ</b><small>GOLDPETAL, well inside</small>`);
   const tailL = [label("Alert zone", "line"), label("Alert zone", "line")];
+  const pariL = label(`<b>Hi, I’m Pari</b><small>Welcome to the vault</small>`);
   const headL = label(""), scanL = label(""); let headJ = -1, scanN = -1, scanM = "";
   const laneL = lanes.map(l => label(l.sym, "line"));
 
@@ -994,7 +1072,7 @@ if (renderer) {
     frameNo++;
     const dropping = dropOn && time < Math.max(landAt(3) + 1.2, OPEN_DUR + 0.3);
     trailO += ((reduce ? 0 : clamp((Math.abs(vel) - 2) / 28)) - trailO) * (1 - Math.exp(-dt / 0.25));
-    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01 || springy;
+    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01 || springy || b > S.team - 0.5;
     lastB = b;
     if (!moving && (frameNo & 1)) return;   // nothing scrolled: the slow ambient motion runs at half rate
 
@@ -1035,6 +1113,20 @@ if (renderer) {
     balance.visible = balV > 0.01; balance.scale.setScalar(Math.max(sm(balV), 0.0001)); beam.rotation.z = balAngle;
 
     ringSpin = -mx * 1.1 * fin;
+    // Pari: hops up out of the hoard as the finale arrives, then waves, blinks, bobs and turns to follow the cursor
+    const pariV = clamp((b - (S.team - 0.5)) / 0.35);
+    pari.visible = pariShadow.visible = pariV > 0.001;
+    if (pari.visible) {
+      const hop = reduce ? 1 : backOut(pariV), t = time;
+      pari.position.y = PARI_Y - (1 - hop) * 0.9 + (reduce ? 0 : Math.abs(Math.sin(t * 2.4)) * 0.03 * pariV);
+      pari.rotation.y = Math.atan2(camera.position.x - pari.position.x, camera.position.z - pari.position.z) + mx * 0.9 * fin;
+      pariBody.rotation.x = my * 0.25 * fin; pariBody.rotation.z = reduce ? 0 : Math.sin(t * 1.2) * 0.04;
+      eyes.position.x = mx * 0.03 * fin; eyes.position.y = 0.33 - my * 0.025 * fin;
+      eyes.scale.y = !reduce && (t % 3.3) < 0.13 ? 0.15 : 1;   // blink
+      armR.rotation.z = reduce ? -0.2 : (t % 4.2) < 1.8 || pariV < 1 ? -0.55 + 0.5 * Math.sin(t * 10) : -0.15;   // wave
+      armL.rotation.z = reduce ? 0 : Math.sin(t * 1.5) * 0.08;
+      pariShadow.material.opacity = 0.35 * hop;
+    }
     // the pieces: ease between poses; a slow, small float only at the opening and the finale
     const idle = b < 0.6 ? 1 - clamp(b / 0.6) : b > S.team - 0.4 ? clamp((b - (S.team - 0.4)) / 0.4) : 0;
     P.forEach((p, k) => {
@@ -1138,7 +1230,16 @@ if (renderer) {
         gs.setScalar(Math.max(0.75 * ro * clamp(s / 0.06) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm);
       }
       river.instanceMatrix.needsUpdate = true;
+      for (let n = 0; n < NRC; n++) {   // coins: the same spill, a little faster, spinning edge over edge
+        const [s0, a0, r0, sp, spin] = rcSeed[n], s = (s0 + flow * 1.15) % 1, sr = Math.sqrt(r0 / 0.75) * 0.6;
+        gv.set(VC.x + Math.cos(a0) * sr, VC.y + Math.sin(a0) * sr * 0.9, VC.z + 0.12);
+        gv.addScaledVector(RDIR, s * 3.9); gv.x += Math.cos(a0) * sr * s * 1.9; gv.y += Math.sin(a0) * sr * s * 0.7 - s * s * 1.6;
+        ge.set(sp + s * spin, a0, s * spin * 0.6); gq.setFromEuler(ge);
+        gs.setScalar(Math.max(ro * clamp(s / 0.05) * clamp((1 - s) / 0.2), 0.0001)); gm.compose(gv, gq, gs); riverC.setMatrixAt(n, gm);
+      }
+      riverC.instanceMatrix.needsUpdate = true;
     }
+    riverC.visible = river.visible;
     const slabFade = 1 - clamp((b - (S.know + 0.55)) / 0.35);
     slabs.forEach((g, k) => { const e = sm(clamp((open - 0.25 - k * 0.12) / 0.5)) * slabFade;
       g.visible = e > 0.01; g.position.lerpVectors(VC, SLAB_AT[k], e); g.scale.setScalar(Math.max(0.33 * e, 0.0001)); g.rotation.y = SLAB_RY[k] * e; });
@@ -1199,6 +1300,7 @@ if (renderer) {
     place(headL, tmpV.set(h2.top[headJ * 3], h2.top[headJ * 3 + 1] * ribbon.scale.y + ribbon.position.y, h2.z).clone(), wh, -12);
     laneL.forEach((el, k) => { const l = lanes[k], e = (NS - 1) * 3; place(el, V(RX1 + 0.04, (l.top[e + 1] - RB) * ribbon.scale.y + RB + 0.02, l.z), sm(clamp((rv - 0.7) / 0.3)) * clamp((dp - 0.9) / 0.1) * (innerWidth > 760 ? 1 : 0), -2); });
     place(scanL, V(sx, QY + 1.2 * quiet.scale.y, -4.2), scanH.visible ? sm(clamp((qv - 0.5) / 0.5)) : 0, -4);
+    place(pariL, V(pari.position.x, pari.position.y + 0.62 * PARI_S, pari.position.z), pari.visible ? clamp((pariV - 0.85) / 0.15) * (innerWidth > 760 ? 1 : 0) : 0, -6);
 
     // adaptive resolution: hold about 60 fps by stepping down when frames run long, and back up when there is room
     ftimes.push(dt); if (ftimes.length > 45) ftimes.shift();
