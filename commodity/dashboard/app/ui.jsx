@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useId, createContext, useContext } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useId, createContext, useContext, Children, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { ICON, GLOSSARY, D, inr, reducedMotion } from "./lib.js";
 
@@ -32,10 +32,24 @@ export function Reveal({ as: Tag = "div", className = "", children, ...rest }) {
   const [ref, shown] = useReveal(); return <Tag ref={ref} className={"rv " + className + (shown ? " in" : "")} {...rest}>{children}</Tag>;
 }
 
+/* Headlines arrive word by word, each rising out of its own mask (styles.css, MOTION v3). Text is split on spaces;
+   an element inside a title (a gold highlight, a source button) moves as one word, so its gradient stays whole.
+   The words stay real text: copying, search and screen readers read the title as before. */
+export function Words({ children }) {
+  let i = 0; const out = [];
+  const unit = (node, key) => <span className="wd" key={key}><span className="wi" style={{ "--wi": i++ }}>{node}</span></span>;
+  Children.toArray(children).forEach((c, k) => {
+    if (typeof c === "string" || typeof c === "number") String(c).split(/(\s+)/).forEach((part, j) => {
+      if (!part) return; out.push(/^\s+$/.test(part) ? <Fragment key={k + "s" + j}>{part}</Fragment> : unit(part, k + "w" + j)); });
+    else if (c != null && c !== false) out.push(unit(c, "e" + k));
+  });
+  return out;
+}
+
 export function Card({ fig, title, sub, actions, children, className = "", id, src, srcNote }) {
   return <Reveal as="section" className={"card " + className} id={id} aria-label={typeof title === "string" ? title : undefined}>
     {(title || actions) && <header className="card-h">
-      <div className="card-t">{title && <h2>{title}{src && <Src src={src} note={srcNote} />}</h2>}{sub && <p className="sub">{sub}</p>}</div>
+      <div className="card-t">{title && <h2><Words>{title}</Words>{src && <Src src={src} note={srcNote} />}</h2>}{sub && <p className="sub">{sub}</p>}</div>
       {actions && <div className="acts">{actions}</div>}
     </header>}
     {children}
@@ -136,7 +150,7 @@ export function Hero({ n, eyebrow, title, children, aside }) {
   return <header className="hero">
     <Reveal className="hero-t">
       <div className="eyebrow"><span className="idx">{String(n).padStart(2, "0")}</span>{eyebrow}</div>
-      <h1 tabIndex={-1}>{title}</h1>
+      <h1 tabIndex={-1}><Words>{title}</Words></h1>
       {children && <p className="lead">{children}</p>}
     </Reveal>
     {aside}
