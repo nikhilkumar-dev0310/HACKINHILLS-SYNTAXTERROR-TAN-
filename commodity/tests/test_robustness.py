@@ -2,7 +2,9 @@
 
 Break-even slippage, probabilistic and deflated Sharpe ratios, the ADF test, AR(1) half-life, regime
 segmentation and event matching are each checked on synthetic data whose answer is known, before the
-stored results/robustness.json is checked against the files it was computed from.
+stored results/robustness.json is checked against the files it was computed from. So are the count of every
+rule ever tried, the two half-spread estimators (Roll; Corwin and Schultz) and the delivery premium readings
+(delivery.py, results/delivery.json).
 """
 import json
 import math
@@ -11,8 +13,10 @@ import unittest
 import numpy as np
 import pandas as pd
 
+from _util import cases, result, site          # first: it puts commodity/ on the import path
+
+import delivery as dl
 import robustness as rb
-from _util import cases, result, site
 
 STORED = json.load(open("results/robustness.json"))
 
@@ -200,6 +204,206 @@ class Neighbourhood(unittest.TestCase):
             self.assertIn(f"{k}=", n)
         self.assertIn(f"k={p['k']}", n)
         self.assertIn(f"hold={p['hold']}", n)
+
+
+class RulesTried(unittest.TestCase):
+    """Every rule the project scored, each counted once, and the deflated Sharpe against that count"""
+    def test_families_add_up(self):
+        fam, total, _ = rb.rules_tried()
+        self.assertEqual(total, sum(fam.values()))
+        self.assertEqual(STORED["trials"]["total"], total)
+
+    def test_each_family_is_counted_from_its_sweep(self):
+        fam, _, ov = rb.rules_tried()
+        a = result("train_sweep.csv")[["lookback", "entry_z"]].drop_duplicates()
+        self.assertEqual(fam["A"], len(a))
+        self.assertEqual(fam["C"], result("strategy_c_dev_grid.csv").setting.nunique())
+        self.assertEqual(fam["methods"], result("methods_train.csv").method.nunique() - len(ov["methods_repeating_a"]))
+        self.assertEqual(fam["B"] + len(ov["b_k_in_c"]), result("fairvalue_dev.csv").k.nunique())
+
+    def test_overlaps_are_real_overlaps(self):
+        """A rule counted once must really appear in both places"""
+        _, _, ov = rb.rules_tried()
+        grid = [rb.parse_setting(x) for x in result("strategy_c_dev_grid.csv").setting]
+        for k in ov["b_k_in_c"]:
+            self.assertIn({"ref": "all", "k": float(k), "stress": None, "exit": 0.0, "hold": None}, grid)
+        for m in ov["methods_repeating_a"]:
+            self.assertTrue(m.startswith("zscore("))
+
+    def test_more_rules_never_raise_the_deflated_sharpe(self):
+        for r in STORED["trials"]["rows"]:
+            self.assertLessEqual(r["dsr_all"], r["dsr_own"] + 1e-9, r)
+            self.assertGreaterEqual(r["sr_luck_all"], r["sr_luck_own"] - 1e-9, r)
+
+    def test_deflated_matches_the_closed_form(self):
+        rng = np.random.default_rng(3)
+        x = rng.normal(0.2, 1, 60)
+        d, sr, sr0 = rb.deflated(x, 0.02, 50)
+        self.assertAlmostEqual(sr0, rb.expected_max_sr(0.02, 50))
+        p_at_luck, _ = rb.psr(x, sr0)
+        self.assertAlmostEqual(d, p_at_luck, places=9)
+
+    def test_stored_rows_recompute_from_the_trade_logs(self):
+        t = result("sealed_trades.csv")
+        t = t[t.slip_bp == STORED["trials"]["slip_bp"]]
+        for r in STORED["trials"]["rows"]:
+            x = t[t.strategy.str.startswith(r["strategy"])].net_rs
+            self.assertEqual(r["trades"], len(x))
+            self.assertEqual(r["net"], round(float(x.sum())))
+            self.assertAlmostEqual(r["sr_per_trade"], x.mean() / x.std(ddof=1), places=3)
+
+
+class HalfSpreads(unittest.TestCase):
+    """Roll (1984) and Corwin-Schultz (2012) on simulated markets whose spread is known"""
+    @staticmethod
+    def market(spread, days=400, steps=400, vol=0.004, seed=1):
+        """A mid price walking within each day; trades at mid +- half the spread. Returns daily high, low, close."""
+        rng = np.random.default_rng(seed)
+        mid = 100 * np.exp(np.cumsum(rng.normal(0, vol / np.sqrt(steps), days * steps))).reshape(days, steps)
+        side = rng.choice([-1, 1], (days, steps))
+        px = mid * (1 + side * spread / 2)
+        return px.max(1), px.min(1), px[:, -1]
+
+    def test_corwin_schultz_recovers_a_known_spread(self):
+        """Averaged over many days the raw two-day estimates come back to the true spread, even when the spread
+        is small next to the day's price swing"""
+        for vol in (0.01, 0.004):
+            for s in (0.001, 0.002):
+                h, l, c = self.market(s, vol=vol, days=1500)
+                self.assertAlmostEqual(float(np.mean(rb.cs_spread(h, l, c))), s, delta=s * 0.2 + 0.0003)
+
+    def test_flooring_each_day_first_would_overstate_it(self):
+        """Why the floor comes after the average: with no spread at all, zeroing each negative day reads a wide one"""
+        h, l, c = self.market(0.0, vol=0.01, days=1500, seed=4)
+        raw = rb.cs_spread(h, l, c)
+        self.assertLess(abs(float(raw.mean())), 0.0006)
+        self.assertGreater(float(np.maximum(raw, 0).mean()), 0.002)
+
+    def test_corwin_schultz_is_scale_free(self):
+        h, l, c = self.market(0.0015, days=60)
+        np.testing.assert_allclose(rb.cs_spread(h, l, c), rb.cs_spread(h * 37, l * 37, c * 37))
+
+    def test_roll_recovers_bid_ask_bounce(self):
+        """Bounce alone (no news): the estimator gets the spread back"""
+        rng = np.random.default_rng(7)
+        s = 0.002
+        close = 100 * (1 + rng.choice([-1, 1], 5000) * s / 2)
+        self.assertAlmostEqual(rb.roll_spread(close), s, delta=s * 0.1)
+
+    def test_roll_undefined_without_negative_covariance(self):
+        self.assertIsNone(rb.roll_spread(100 * np.exp(np.cumsum(np.full(50, 0.001)) + np.linspace(0, 0.01, 50) ** 2)))
+        self.assertIsNone(rb.roll_spread([100, 101]))
+
+    def test_pooled_half_spread_on_a_known_market(self):
+        h, l, c = self.market(0.002, vol=0.004, days=1200)
+        x = pd.DataFrame({"date": pd.bdate_range("2020-01-01", periods=len(h) - 1), "cs": rb.cs_spread(h, l, c)})
+        p = rb.pooled_half_spread(x)
+        self.assertLessEqual(p["lo"], 10.0)
+        self.assertGreaterEqual(p["hi"], 10.0)                    # the true half-spread is 10 bp
+        self.assertAlmostEqual(p["half_bp"], 10.0, delta=2.5)
+
+    def test_a_clearly_negative_mean_is_not_measurable(self):
+        x = pd.DataFrame({"date": pd.bdate_range("2020-01-01", periods=300), "cs": np.full(300, -0.0006)})
+        self.assertIsNone(rb.pooled_half_spread(x)["half_bp"])
+        x["cs"] = -0.00001                                          # a hair below zero: about nothing, read as zero
+        self.assertEqual(rb.pooled_half_spread(x)["half_bp"], 0.0)
+
+    def test_stored_windows_are_sane(self):
+        for w, m in STORED["costs"]["windows"].items():
+            self.assertIn(w, ("test3", "test2", "holdout", "recent"))
+            for sym, v in m.items():
+                if not isinstance(v, dict):
+                    continue
+                self.assertGreater(v["pairs"], 50, (w, sym))
+                if v["half_bp"] is not None:
+                    self.assertGreaterEqual(v["half_bp"], 0)
+                    self.assertLessEqual(v["half_bp"], v["hi"] + 1e-9, (w, sym))
+                else:
+                    self.assertLess(v["raw_bp"], -1)
+        for r in STORED["costs"]["rows"]:
+            self.assertLessEqual(r["roll_defined"], r["roll_months"])
+
+    def test_every_verdict_follows_from_its_numbers(self):
+        """Covered only if the break-even clears even the top of the measured cost's 95% range"""
+        for r in STORED["breakeven"]["rows"]:
+            if r["est_slip_bp"] is None:
+                self.assertFalse(r["survives_est"], r)
+                continue
+            self.assertLessEqual(r["est_slip_bp"], r["est_slip_hi_bp"] + 1e-9)
+            self.assertEqual(r["survives_est"], r["breakeven_bp"] is not None and r["breakeven_bp"] > r["est_slip_hi_bp"], r)
+
+    def test_measured_cost_is_the_mean_of_the_legs_traded(self):
+        """B and C trade a small contract against GOLDM, so their cost sits between the two legs' half-spreads"""
+        w = STORED["costs"]["windows"]
+        for r in STORED["breakeven"]["rows"]:
+            if r["strategy"] in ("B", "C") and r["est_slip_bp"] is not None:
+                m, small = w[r["test"]]["GOLDM"]["half_bp"], [w[r["test"]][s]["half_bp"] for s in ("GOLDGUINEA", "GOLDPETAL")]
+                self.assertGreaterEqual(r["est_slip_bp"], (m + min(small)) / 2 - 0.06, r)
+                self.assertLessEqual(r["est_slip_bp"], (m + max(small)) / 2 + 0.06, r)
+
+
+DELIV = json.load(open("results/delivery.json"))
+
+
+class DeliveryPremium(unittest.TestCase):
+    """delivery.py: three readings of the premium in every cycle, and the summaries built from them"""
+    @staticmethod
+    def frame(prem, ok=None):
+        idx = pd.bdate_range("2026-01-01", periods=len(prem))
+        exp = idx[-1]
+        f = pd.DataFrame({"prem_bp": prem, "ok": ok if ok is not None else [True] * len(prem)}, index=idx)
+        f["bleft"] = np.busday_count(idx.values.astype("datetime64[D]"), np.datetime64(exp.date()))
+        return f, pd.Series(10000.0, index=idx)
+
+    def test_readings_on_a_known_cycle(self):
+        prem = list(np.linspace(40, 60, 30)) + [90.0, 120.0]          # flat-ish, then up in the last days
+        f, price = self.frame(prem)
+        r = dl.readings(f, price)
+        e = f[f.bleft <= dl.ENTRY_BDAYS].index[0]
+        p = f[f.bleft >= 5].index[-1]
+        self.assertEqual(r["entry"], str(e.date()))
+        self.assertEqual(r["exit"], str(p.date()))
+        self.assertAlmostEqual(r["entry_bp"], f.prem_bp[e])
+        self.assertAlmostEqual(r["settle_bp"], 120.0)
+        self.assertAlmostEqual(r["early_exit_bp"], f.prem_bp[e] - f.prem_bp[p])
+        self.assertAlmostEqual(r["entry_rs_g"], 10000.0 * f.prem_bp[e] / 1e4)
+
+    def test_no_reading_without_a_settlement(self):
+        f, price = self.frame(list(np.linspace(40, 60, 40)))
+        self.assertIsNone(dl.readings(f.iloc[:-5], price))          # the last row is a week before expiry
+
+    def test_no_reading_if_only_liquid_inside_the_window(self):
+        ok = [False] * 28 + [True] * 4
+        f, price = self.frame(list(np.linspace(40, 60, 32)), ok)
+        self.assertIsNone(dl.readings(f, price))
+
+    def test_every_cycle_is_ordered_and_consistent(self):
+        for c in DELIV["cycles"]:
+            self.assertLessEqual(c["entry"], c["exit"])
+            self.assertLessEqual(c["exit"], c["settle"])
+            self.assertLessEqual(c["settle"], c["expiry"])
+            self.assertAlmostEqual(c["early_exit_bp"], c["entry_bp"] - c["exit_bp"], places=1)
+            self.assertAlmostEqual(c["window_change_bp"], c["settle_bp"] - c["exit_bp"], places=1)
+
+    def test_summaries_recompute_from_the_cycles(self):
+        c = pd.DataFrame(DELIV["cycles"])
+        v0 = DELIV["rules"]["verified_from"]
+        for r in DELIV["rows"]:
+            g = c[c.symbol == r["symbol"]]
+            self.assertEqual(r["all"]["cycles"], len(g))
+            ver = g[g.expiry >= v0]
+            if r["verified"]:
+                self.assertEqual(r["verified"]["cycles"], len(ver))
+                for k in ("entry_bp", "exit_bp", "settle_bp", "early_exit_bp"):
+                    self.assertAlmostEqual(r["verified"][k], round(float(ver[k].median()), 1), places=1)
+
+    def test_the_site_shows_only_verified_cycles(self):
+        S = site().get("delivery")
+        if S is None:
+            self.skipTest("delivery.py not run")
+        self.assertTrue(all(c["expiry"] >= DELIV["rules"]["verified_from"] for c in S["cycles"]))
+        self.assertEqual(S["rows"], DELIV["rows"])
+        self.assertIsNone(S["retail"])
 
 
 if __name__ == "__main__":

@@ -144,6 +144,22 @@ class Robustness(unittest.TestCase):
     def test_deflated_sharpe(self):
         self.assertIn(f"deflated Sharpe ratio is {round(100 * self.R['sharpe']['deflated_c']['dsr'])}%", FLAT)
 
+    def test_rules_tried_and_their_deflated_sharpe(self):
+        T = self.R["trials"]
+        f = T["families"]
+        self.assertIn(f"{T['total']} distinct rules** ({f['A']} in Strategy A's grid, {f['methods']} research methods, {f['B']} more for B, {f['C']} in C", FLAT)
+        b = next(r for r in T["rows"] if r["strategy"] == "B")
+        self.assertIn(f"deflated Sharpe ratio of {round(100 * b['dsr_all'])}% ({round(100 * b['dsr_own'])}% against its own {b['own_trials']} settings alone)", FLAT)
+        self.assertIn(f"best of {T['total']} tries", FLAT)
+
+    def test_sealed_spreads_under_the_stated_ceiling(self):
+        """"under 3 bp per order even at the top of its 95% range" in both sealed windows, and below every positive break-even"""
+        top = max(v["hi"] for w in ("test3", "test2") for v in self.R["costs"]["windows"][w].values() if isinstance(v, dict))
+        self.assertLess(top, 3)
+        self.assertIn("under 3 bp per order even at the top of its 95% range", FLAT)
+        be = [r["breakeven_bp"] for r in self.R["breakeven"]["rows"] if r["breakeven_bp"] is not None]
+        self.assertLess(top, min(be))
+
     def test_half_lives(self):
         """Half-lives move a little as each trading day is added, so the README rounds them: within a day of today's"""
         st = {r["symbol"]: r for r in self.R["stationarity"]["rows"]}

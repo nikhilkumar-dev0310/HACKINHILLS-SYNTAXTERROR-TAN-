@@ -37,6 +37,8 @@ export const SRC = {
   signals: { file: "results/fairvalue_params.json", by: "fairvalue.py (fair price), today's z in dashboard/export.py" },
   overfit: { file: "results/overfit.json", by: "overfit.py, on training years only" },
   robust: { file: "results/robustness.json", by: "robustness.py, from stored results and development data" },
+  costs: { file: "results/robustness.json", by: "robustness.py, half-spreads from every MCX row held" },
+  delivery: { file: "results/delivery.json", by: "delivery.py, from every MCX row held" },
   tests: { file: "results/test_report.json", by: "tools/run_tests.py, on every push and before every daily publish" }
 };
 export const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -125,7 +127,10 @@ export const GLOSSARY = {
   regime: ["Regime", "A stretch of months in which a premium sits around one level. A break is where the data says the level changed; we date breaks from the data alone, then look for an exchange or policy event within a month."],
   breakeven: ["Break-even slippage", "The slippage per leg, each side, at which a result's net profit falls to exactly zero. If real fills are worse than this, the result is a loss."],
   psr: ["Probabilistic Sharpe ratio", "The probability that a strategy's true risk-adjusted return is above zero, allowing for how few trades there were and for lopsided or fat-tailed results (Bailey and López de Prado, 2012)."],
-  dsr: ["Deflated Sharpe ratio", "The same probability, but measured against the best result luck alone would produce from all the settings that were tried, here 72 (Bailey and López de Prado, 2014). Below 50% means the result is what trying many settings would give by chance."],
+  dsr: ["Deflated Sharpe ratio", "The same probability, but measured against the best result luck alone would produce from all the settings that were tried (Bailey and López de Prado, 2014). Below 50% means the result is what trying many settings would give by chance."],
+  halfspread: ["Half-spread", "Half the gap between the best price to buy and the best price to sell: roughly what each order costs in slippage. MCX publishes no quotes, so it is estimated from daily highs and lows (Corwin and Schultz, 2012) and from how prices bounce day to day (Roll, 1984)."],
+  rulestried: ["Rules tried", "Every distinct trading rule the project ever scored on any data: Strategy A's grid, the research round's methods, Strategy B's settings and Strategy C's grid, each counted once. The more rules tried, the better the best one looks by luck alone."],
+  delivwin: ["Delivery window", "The last days of a contract, when positions still open turn into gold delivered. MCX's tender period is the last 3 trading days; Parity exits 5 business days before expiry, to stay well clear of it."],
   placebo: ["Placebo", "A fake strategy that trades at random times with the same contracts, holding times and costs. If the real rule does no better, its timing adds nothing."],
   bootstrap: ["Resampling (bootstrap)", "Re-drawing whole weeks of trade results at random, thousands of times, to see how much the total could vary by chance alone."],
   median: ["Median", "The middle value: half the cases are above it, half below. Less swayed by one extreme day than the average."],

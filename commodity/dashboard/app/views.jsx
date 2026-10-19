@@ -240,6 +240,29 @@ function Behaviour() {
   </Card>;
 }
 
+/* What the premium costs a trader: selling before the delivery window, or taking delivery. delivery.py */
+function Delivery() {
+  const L = D.delivery; if (!L) return null;
+  const rows = L.rows.filter(r => r.verified), pet = rows.find(r => r.symbol === "GOLDPETAL"), v = pet && pet.verified;
+  const ten = (rows.find(r => r.symbol === "GOLDTEN") || {}).verified;
+  if (!v) return null;
+  return <Card src={SRC.delivery} title="What the premium costs: sell before delivery, or take the gold"
+    sub={<>Each small contract's <Term k="premium">premium</Term> over GOLDM (same expiry, per pure gram) read three times in every contract cycle since GOLDTEN started trading: about a month before expiry, on the last safe exit day before the <Term k="delivwin">delivery window</Term>, and at the final settlement (<Term k="ddr">Due Date Rate</Term>).</>}>
+    <div className="grid g3">
+      <Kpi src={SRC.delivery} label="GOLDPETAL premium, a month out" note={`Median of ${v.cycles} cycles: about ${inr(v.entry_rs_g)} per gram above GOLDM's bar.`}><Num v={v.entry_bp} f="sgn1" k="dlent" /><small>bp</small></Kpi>
+      <Kpi src={SRC.delivery} label="Sell before the delivery window" note={`What a buyer gives up by selling on the last safe day: how far the premium fell while held (a rise would be a gain). The median is small; single cycles swing about ±${v.early_exit_abs_bp.toFixed(0)} bp.`}><Num v={v.early_exit_bp} f="sgn1" k="dlex" /><small>bp</small></Kpi>
+      <Kpi src={SRC.delivery} tone="warn" label="At final settlement" note={`The premium at delivery: about ${inr(v.settle_rs_g)} per gram. It jumps inside the delivery window, a median ${sgn(v.window_change_bp, 0)} bp from the last safe exit.`}><Num v={v.settle_bp} f="sgn1" k="dlset" /><small>bp</small></Kpi>
+    </div>
+    <div className="tw"><table><thead><tr><th>Contract</th><th className="n">A month out</th><th className="n">Last safe exit</th><th className="n">Final settlement</th><th className="n">Selling early, a buyer gives up</th></tr></thead>
+      <tbody>{rows.map(r => { const x = r.verified; return <tr key={r.symbol}><td className="nowrap"><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b><br /><small className="dim">{x.cycles} cycles, {fmon(x.first)} – {fmon(x.last)}</small></td>
+        <td className="n">{sgn(x.entry_bp, 0)} bp<br /><small className="dim">{inr(x.entry_rs_g)}/g</small></td><td className="n">{sgn(x.exit_bp, 0)} bp</td>
+        <td className="n">{sgn(x.settle_bp, 0)} bp<br /><small className="dim">{inr(x.settle_rs_g)}/g</small></td>
+        <td className="n">{sgn(x.early_exit_bp, 0)} bp<br /><small className="dim">middle half {sgn(x.early_exit_bp_iqr[0], 0)} to {sgn(x.early_exit_bp_iqr[1], 0)}</small></td></tr>; })}</tbody></table></div>
+    <p className="note"><b>What this says.</b> Buying GOLDPETAL or GOLDGUINEA instead of GOLDM costs a trader little if they sell before the delivery window: they give up only how far the premium fell while they held it. Holding on means taking delivery (it is compulsory), and then the gold has cost the whole premium they bought at, about {inr(v.entry_rs_g)} a gram for GOLDPETAL.{v.window_change_bp > 10 ? <> The premium then rises at the final settlement, which MCX sets from polled spot prices rather than from futures trading (a median {sgn(v.window_change_bp, 0)} bp from the last safe exit): a short who stays into the window pays that rise, one more reason Parity's rules exit 5 business days early.{ten && ten.window_change_bp > 10 ? <> GOLDTEN, a bar with no coin premium, rises at settlement too ({sgn(ten.window_change_bp, 0)} bp), so much of the jump is spot gold settling above the futures, not the coins themselves.</> : ""}</> : ""}{" "}
+      Medians over the cycles since April 2025, when GOLDM and GOLDTEN started agreeing per pure gram and so confirmed the purity conversion. Older cycles (from 2008) are in the data file but not read here: the small contracts often sat at a discount then, and their specifications over those years have not been checked. A retail comparison (a 1 g coin at a jeweller) would need retail prices, which we do not have.</p>
+  </Card>;
+}
+
 export function Relative() {
   const { rvPair: pair, setRvPair: setPair } = useApp();
   const p = P[pair], s = D.pair_series[pair];
@@ -262,6 +285,7 @@ export function Relative() {
       </div>
     </Card>
     <Behaviour />
+    <Delivery />
     <div className="more-list"><More title="All six pairs in one table" hint="Mean gap by period, with its 95% range. Click a row to chart it.">
       <div className="tw"><table><thead><tr><th>Pair</th><th className="n">2024</th><th className="n">2025–26 quiet</th><th className="n">95% range</th><th className="n">Crash period</th><th className="n">All days</th><th className="n">Cycles</th></tr></thead>
         <tbody>{D.pairs.map(q => { const zero = q.normal[1] <= 0 && q.normal[2] >= 0;
@@ -401,7 +425,8 @@ function LuckCheck() {
 /* How much can go wrong before the profit is gone? robustness.py, from stored results; nothing sealed is re-run. */
 function Robustness() {
   const R = D.robustness; if (!R) return null;
-  const be = R.breakeven.rows, sh = R.sharpe.rows, dc = R.sharpe.deflated_c, nb = R.neighbourhood;
+  const be = R.breakeven.rows, sh = R.sharpe.rows, dc = R.sharpe.deflated_c, nb = R.neighbourhood, tr = R.trials;
+  const tB = tr && tr.rows.find(x => x.strategy === "B"), tC = tr && tr.rows.find(x => x.strategy === "C");
   const WIN = { holdout: "Aug 2025 – May 2026", test3: "2016 – 2019", test2: "2020 – 2023" };
   const psrOf = (t, st) => (sh.find(x => x.test === t && x.strategy === st) || {}).psr;
   const rows = ["holdout", "test3", "test2"].flatMap(t => ["A", "B", "C"].map(st => be.find(x => x.test === t && x.strategy === st)).filter(Boolean));
@@ -411,16 +436,40 @@ function Robustness() {
     <div className="grid g3">
       <Kpi src={SRC.robust} label={<>Most <Term k="breakeven">break-even slippage</Term></>} note={`Of ${be.length} results, ${ok.length} were profitable before slippage; the most forgiving survives up to this much per leg, each side. We test at 5 bp.`}>
         <Num v={Math.max(...ok.map(x => x.breakeven_bp))} f="d1" k="bemax" /><small>bp</small></Kpi>
-      <Kpi src={SRC.robust} tone={dc.dsr < 0.5 ? "warn" : ""} label={<>Strategy C, <Term k="dsr">deflated Sharpe</Term></>}
+      {tB ? <Kpi src={SRC.robust} tone={tB.dsr_all < 0.5 ? "warn" : ""} label={<>Fair-price model, <Term k="dsr">deflated Sharpe</Term></>}
+        note={`Its ${tB.trades} sealed trades against the best of all ${tr.total} rules we ever tried (${tr.families.A} in A, ${tr.families.methods} research methods, ${tr.families.B} more for B, ${tr.families.C} in C). Against its own ${tB.own_trials} settings alone: ${Math.round(100 * tB.dsr_own)}%. Strategy C: ${Math.round(100 * tC.dsr_all)}%.`}>
+        <Num v={100 * tB.dsr_all} f="pct" k="dsr" /><small>%</small></Kpi>
+      : <Kpi src={SRC.robust} tone={dc.dsr < 0.5 ? "warn" : ""} label={<>Strategy C, <Term k="dsr">deflated Sharpe</Term></>}
         note={`C's ${dc.trades} sealed trades against the best of ${dc.trials} settings that luck alone would give. Approximate: the spread across settings is estimated from the training years.`}>
-        <Num v={100 * dc.dsr} f="pct" k="dsr" /><small>%</small></Kpi>
+        <Num v={100 * dc.dsr} f="pct" k="dsr" /><small>%</small></Kpi>}
       <Kpi src={SRC.robust} label="Neighbouring settings also profitable" note={`Of the ${nb.neighbours} settings one step from C's choice, ${nb.neighbours_positive} also made money on the training years (${nb.all_positive} of all ${nb.all_settings}). A lone island would be a warning sign.`}>
         <Num v={nb.neighbours_positive} f="int" k="nbp" /><small>of {nb.neighbours}</small></Kpi>
     </div>
-    <div className="tw"><table><thead><tr><th>Window</th><th>Strategy</th><th className="n">Net at 0 bp</th><th className="n">Net at 5 bp</th><th className="n"><Term k="breakeven">Break-even</Term></th><th className="n"><Term k="psr">Edge is real</Term></th></tr></thead>
+    <div className="tw"><table><thead><tr><th>Window</th><th>Strategy</th><th className="n">Net at 0 bp</th><th className="n">Net at 5 bp</th><th className="n"><Term k="breakeven">Break-even</Term></th><th className="n"><Term k="halfspread">Measured cost</Term></th><th className="n"><Term k="psr">Edge is real</Term></th></tr></thead>
       <tbody>{rows.map(r => <tr key={r.test + r.strategy}><td>{WIN[r.test]}</td><td>{r.strategy}</td><td className={"n " + (r.net0 >= 0 ? "pos" : "neg")}>{inr(r.net0)}</td><td className={"n " + (r.net5 >= 0 ? "pos" : "neg")}>{inr(r.net5)}</td>
-        <td className="n">{r.breakeven_bp != null ? `${r.breakeven_bp.toFixed(1)} bp` : <span className="dim">loses at 0 bp</span>}</td><td className="n">{psrOf(r.test, r.strategy) != null ? `${Math.round(100 * psrOf(r.test, r.strategy))}%` : "–"}</td></tr>)}</tbody></table></div>
-    <p className="note"><b>What this says.</b> No result survives much worse fills than 12 bp per leg, and several turn to losses between 4 and 6 bp. "Edge is real" is the <Term k="psr">probabilistic Sharpe ratio</Term> of each result's trades at 5 bp. Strategy C's {Math.round(100 * dc.dsr)}% <Term k="dsr">deflated Sharpe</Term> says its sealed result is about what picking the best of {dc.trials} settings gives by chance, which agrees with the <Term k="pbo">overfitting</Term> check above.</p>
+        <td className="n">{r.breakeven_bp != null ? `${r.breakeven_bp.toFixed(1)} bp` : <span className="dim">loses at 0 bp</span>}</td>
+        <td className="n">{r.est_slip_bp != null ? <>{r.est_slip_bp.toFixed(1)} bp<br /><small className="dim">up to {r.est_slip_hi_bp.toFixed(1)}</small>{r.breakeven_bp != null && <> {r.survives_est ? <Pill tone="good">covered</Pill> : <Pill tone="warn">not covered</Pill>}</>}</> : <span className="dim">not measurable</span>}</td><td className="n">{psrOf(r.test, r.strategy) != null ? `${Math.round(100 * psrOf(r.test, r.strategy))}%` : "–"}</td></tr>)}</tbody></table></div>
+    <p className="note"><b>What this says.</b> No result survives much worse fills than 12 bp per leg, and several turn to losses between 4 and 6 bp. "Measured cost" is the <Term k="halfspread">half-spread</Term> of the legs each result actually traded, in its own years, estimated from MCX's daily highs and lows (below); "covered" means the break-even clears even the top of its 95% range. It measures the quoted spread only, not the price impact of the order itself, so the 5 bp we test at stays the yardstick. "Edge is real" is the <Term k="psr">probabilistic Sharpe ratio</Term> of each result's trades at 5 bp.
+      {tB ? <> Counted against every one of the {tr.total} <Term k="rulestried">rules we tried</Term>, not only its own, the fair-price model's sealed profit has a {Math.round(100 * tB.dsr_all)}% <Term k="dsr">deflated Sharpe</Term>: about what the best of that many rules would earn by luck. Strategy C's is {Math.round(100 * tC.dsr_all)}%, which agrees with the <Term k="pbo">overfitting</Term> check above.</>
+        : <> Strategy C's {Math.round(100 * dc.dsr)}% <Term k="dsr">deflated Sharpe</Term> says its sealed result is about what picking the best of {dc.trials} settings gives by chance, which agrees with the <Term k="pbo">overfitting</Term> check above.</>}</p>
+  </Card>;
+}
+
+/* What does a trade really cost? Half-spreads estimated from the daily data. robustness.py */
+function Costs() {
+  const C = D.robustness && D.robustness.costs; if (!C || !C.windows) return null;
+  const W = [["test3", "2016 – 19"], ["test2", "2020 – 23"], ["holdout", "Holdout"], ["recent", "Last 12 months"]], w = C.windows;
+  const cell = (k, sym) => { const x = w[k] && w[k][sym]; if (!x) return "–";
+    return x.half_bp != null ? <>{x.half_bp.toFixed(1)} bp<br /><small className="dim">up to {x.hi.toFixed(1)}</small></> : <span className="dim">not measurable</span>; };
+  const meas = ["test3", "test2"].flatMap(k => Object.values(w[k] || {}).filter(x => x && x.half_bp != null));
+  const top = meas.length ? Math.max(...meas.map(x => x.hi)) : null, broke = ["holdout", "recent"].every(k => Object.values(w[k] || {}).filter(x => x && typeof x === "object" && "half_bp" in x).every(x => x.half_bp == null));
+  return <Card src={SRC.costs} title="What a trade actually costs"
+    sub={<>MCX publishes no quotes, so each contract's <Term k="halfspread">half-spread</Term> (about what one order pays to cross the spread) is estimated from daily highs and lows (Corwin and Schultz, 2012) on each day's most-traded contract. A few bp is small next to gold's daily moves, so the estimates are pooled over each test window, with a 95% range.</>}>
+    <div className="tw"><table><thead><tr><th>Contract</th>{W.map(([k, l]) => <th key={k} className="n">{l}</th>)}<th className="n">Roll (rough)</th></tr></thead>
+      <tbody>{C.rows.map(r => <tr key={r.symbol}><td className="nowrap"><span className="sw" style={{ background: SYM[r.symbol].c }} /><b>{r.symbol}</b><br /><small className="dim">from {fdate(r.first)}</small></td>
+        {W.map(([k]) => <td key={k} className="n">{cell(k, r.symbol)}</td>)}
+        <td className="n">{r.roll_half_bp != null ? `${r.roll_half_bp.toFixed(0)} bp` : "–"}<br /><small className="dim">defined in {r.roll_defined} of {r.roll_months} months</small></td></tr>)}</tbody></table></div>
+    <p className="note"><b>What this says.</b>{top != null && <> In the sealed-test years the quoted spread was small: under {Math.ceil(top)} bp per order even at the top of its range, well below the {C.realistic_bp} bp we test at, because every MCX gold price moves in steps of ₹1, about 1 bp of the price or less. So the sealed results that made money were not living off an unrealistically cheap spread; slippage beyond it comes from the order's own effect on price, which daily data cannot show.</>}{broke && <> Since 2025 the estimator breaks down (it reads a spread below zero, which no market has): most likely the crash's day-to-day swings in volatility, which break its assumption of a steady two-day volatility, so we say "not measurable" rather than guess.</>} Roll's estimator needs prices to bounce between bid and ask more than gold itself moves in a day; at daily frequency it rarely does, so it is shown only as a cross-check.</p>
   </Card>;
 }
 
@@ -483,6 +532,7 @@ export function Backtest() {
     <SealedTests s={s} />
     <LuckCheck />
     <Robustness />
+    <Costs />
     <div className="more-list">
       <More title="Profit by month of entry" hint="Net at the selected slippage">
         <Chart className="bars" deps={[key, s, tonly]} draw={host => barChart(host, { labels: mk.map(fmon), values: mk.map(k => bm[k].v), yfmt: kfmt, tfmt: v => inr(v), short: i => MON[+mk[i].slice(5) - 1], extra: i => `<div class="r"><span>Trades</span><b>${bm[mk[i]].n}</b></div>`, aria: "Profit by month" })} />

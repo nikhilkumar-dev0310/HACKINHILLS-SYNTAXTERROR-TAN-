@@ -308,7 +308,14 @@ def main():
     out["attribution"] = pd.read_csv(R + "attribution_summary.csv").to_dict(orient="records")
     _of = R + "overfit.json"                     # overfit.py: PBO, placebo and no-carry checks on DEV years only
     out["overfit"] = json.load(open(_of)) if os.path.exists(_of) else None
-    _rb = R + "robustness.json"                  # robustness.py: break-even slippage, Sharpe tests, half-lives, regimes
+    _dl = R + "delivery.json"                    # delivery.py: the premium a month out, at the last safe exit and at settlement
+    if os.path.exists(_dl):
+        dl = json.load(open(_dl))
+        out["delivery"] = {**{k: v for k, v in dl.items() if k != "cycles"},
+                           "cycles": [c for c in dl["cycles"] if c["expiry"] >= dl["rules"]["verified_from"]]}   # the verified cycles only
+    else:
+        out["delivery"] = None
+    _rb = R + "robustness.json"                  # robustness.py: break-even slippage, Sharpe tests, rules tried, trading costs, half-lives, regimes
     out["robustness"] = json.load(open(_rb)) if os.path.exists(_rb) else None
     _tr = R + "test_report.json"                 # tools/run_tests.py: the latest full test run
     out["tests"] = json.load(open(_tr)) if os.path.exists(_tr) else None

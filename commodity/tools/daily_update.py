@@ -13,7 +13,7 @@
      published with what came back, and the missing contracts are filled in on a later run once MCX returns them)
      - a contract's close moved more than 9% from its previous close (MCX's widest daily band for gold is 9%...
        a larger jump means a bad file, not a market move)
-3. Re-run the market views (testbed, accuracy, curve, roll-down, alerts, lifecycle) and the export.
+3. Re-run the market views (testbed, accuracy, curve, roll-down, alerts, lifecycle, delivery premium) and the export.
    Strategy rules and the stored TEST / HOLDOUT / SEALED trade logs are frozen and are NOT re-run.
 4. Append one line to results/update_log.csv (shown on the site) and rebuild dashboard/index.html.
 """
@@ -30,7 +30,7 @@ os.chdir(HERE)
 CLEAN = "clean/gold_futures.csv"
 LOG = "results/update_log.csv"
 SYMS = ["GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]
-CHAIN = ["testbed.py", "accuracy.py", "curve.py", "rolldown.py", "alerts.py", "lifecycle.py", "dashboard/export.py",
+CHAIN = ["testbed.py", "accuracy.py", "curve.py", "rolldown.py", "alerts.py", "lifecycle.py", "delivery.py", "dashboard/export.py",
          "robustness.py"]          # gap half-lives and regimes use the exported daily series; the export below picks them up
 
 

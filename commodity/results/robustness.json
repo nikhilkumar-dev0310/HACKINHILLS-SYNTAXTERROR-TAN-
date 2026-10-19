@@ -7,7 +7,10 @@
         "net0": -6732,
         "net5": -62774,
         "net10": -118816,
-        "breakeven_bp": null
+        "breakeven_bp": null,
+        "est_slip_bp": 0.2,
+        "est_slip_hi_bp": 1.7,
+        "survives_est": false
       },
       {
         "test": "test2",
@@ -15,7 +18,10 @@
         "net0": 39436,
         "net5": 6962,
         "net10": -25513,
-        "breakeven_bp": 6.07
+        "breakeven_bp": 6.07,
+        "est_slip_bp": 0.3,
+        "est_slip_hi_bp": 1.9,
+        "survives_est": true
       },
       {
         "test": "test2",
@@ -23,7 +29,10 @@
         "net0": 22146,
         "net5": -3707,
         "net10": -29561,
-        "breakeven_bp": 4.28
+        "breakeven_bp": 4.28,
+        "est_slip_bp": 0.3,
+        "est_slip_hi_bp": 1.9,
+        "survives_est": true
       },
       {
         "test": "test3",
@@ -31,7 +40,10 @@
         "net0": -21408,
         "net5": -48734,
         "net10": -76059,
-        "breakeven_bp": null
+        "breakeven_bp": null,
+        "est_slip_bp": 0.5,
+        "est_slip_hi_bp": 1.7,
+        "survives_est": false
       },
       {
         "test": "test3",
@@ -39,7 +51,10 @@
         "net0": 62279,
         "net5": 35873,
         "net10": 9467,
-        "breakeven_bp": 11.79
+        "breakeven_bp": 11.79,
+        "est_slip_bp": 0.4,
+        "est_slip_hi_bp": 1.8,
+        "survives_est": true
       },
       {
         "test": "test3",
@@ -47,7 +62,10 @@
         "net0": 36949,
         "net5": 21415,
         "net10": 5881,
-        "breakeven_bp": 11.89
+        "breakeven_bp": 11.89,
+        "est_slip_bp": 0.4,
+        "est_slip_hi_bp": 1.8,
+        "survives_est": true
       },
       {
         "test": "holdout",
@@ -55,7 +73,10 @@
         "net0": 365755,
         "net5": 190340,
         "net10": 14926,
-        "breakeven_bp": 10.43
+        "breakeven_bp": 10.43,
+        "est_slip_bp": null,
+        "est_slip_hi_bp": null,
+        "survives_est": false
       },
       {
         "test": "holdout",
@@ -63,7 +84,10 @@
         "net0": 74808,
         "net5": 12990,
         "net10": -48828,
-        "breakeven_bp": 6.05
+        "breakeven_bp": 6.05,
+        "est_slip_bp": null,
+        "est_slip_hi_bp": null,
+        "survives_est": false
       }
     ],
     "realistic_bp": 5,
@@ -270,5 +294,219 @@
     ],
     "method": "binary segmentation of monthly mean premium, BIC-type stopping with 3 parameters per break (false breaks in pure noise: about 3%), at least 3 months per regime",
     "source": "dashboard/data.json premium_daily"
+  },
+  "trials": {
+    "families": {
+      "A": 9,
+      "methods": 8,
+      "B": 1,
+      "C": 72
+    },
+    "total": 90,
+    "overlap": {
+      "methods_repeating_a": [
+        "zscore(N=10, entry=2.0)"
+      ],
+      "b_k_in_c": [
+        1.5,
+        2.0
+      ]
+    },
+    "rows": [
+      {
+        "strategy": "B",
+        "trades": 38,
+        "net": 42834,
+        "sr_per_trade": 0.136,
+        "own_trials": 3,
+        "sr_luck_own": 0.137,
+        "dsr_own": 0.499,
+        "sr_luck_all": 0.399,
+        "dsr_all": 0.05
+      },
+      {
+        "strategy": "C",
+        "trades": 26,
+        "net": 17707,
+        "sr_per_trade": 0.108,
+        "own_trials": 72,
+        "sr_luck_own": 0.467,
+        "dsr_own": 0.042,
+        "sr_luck_all": 0.483,
+        "dsr_all": 0.035
+      }
+    ],
+    "slip_bp": 5,
+    "windows": "sealed tests 2016-2019 and 2020-2023, pooled",
+    "source": "results/train_sweep.csv, methods_train.csv, fairvalue_dev.csv, strategy_c_dev_grid.csv, sealed_trades.csv"
+  },
+  "costs": {
+    "rows": [
+      {
+        "symbol": "GOLDM",
+        "first": "2003-11-24",
+        "pairs": 6075,
+        "roll_half_bp": 29.1,
+        "roll_months": 275,
+        "roll_defined": 153
+      },
+      {
+        "symbol": "GOLDTEN",
+        "first": "2025-04-02",
+        "pairs": 379,
+        "roll_half_bp": 53.0,
+        "roll_months": 19,
+        "roll_defined": 13
+      },
+      {
+        "symbol": "GOLDGUINEA",
+        "first": "2008-05-09",
+        "pairs": 4791,
+        "roll_half_bp": 23.3,
+        "roll_months": 222,
+        "roll_defined": 131
+      },
+      {
+        "symbol": "GOLDPETAL",
+        "first": "2011-04-19",
+        "pairs": 3924,
+        "roll_half_bp": 25.5,
+        "roll_months": 187,
+        "roll_defined": 111
+      }
+    ],
+    "windows": {
+      "test3": {
+        "from": "2016-01-01",
+        "to": "2019-12-31",
+        "GOLDGUINEA": {
+          "half_bp": 0.89,
+          "lo": 0.0,
+          "hi": 1.98,
+          "pairs": 979,
+          "months": 48,
+          "raw_bp": 0.89
+        },
+        "GOLDM": {
+          "half_bp": 0.38,
+          "lo": 0.0,
+          "hi": 1.86,
+          "pairs": 979,
+          "months": 48,
+          "raw_bp": 0.38
+        },
+        "GOLDPETAL": {
+          "half_bp": 0.09,
+          "lo": 0.0,
+          "hi": 1.48,
+          "pairs": 979,
+          "months": 48,
+          "raw_bp": 0.09
+        }
+      },
+      "test2": {
+        "from": "2020-01-01",
+        "to": "2023-10-09",
+        "GOLDGUINEA": {
+          "half_bp": 0.41,
+          "lo": 0.0,
+          "hi": 2.17,
+          "pairs": 926,
+          "months": 46,
+          "raw_bp": 0.41
+        },
+        "GOLDM": {
+          "half_bp": 0.42,
+          "lo": 0.0,
+          "hi": 2.13,
+          "pairs": 926,
+          "months": 46,
+          "raw_bp": 0.42
+        },
+        "GOLDPETAL": {
+          "half_bp": 0.0,
+          "lo": 0.0,
+          "hi": 1.23,
+          "pairs": 926,
+          "months": 46,
+          "raw_bp": -0.09
+        }
+      },
+      "holdout": {
+        "from": "2025-08-06",
+        "to": "2026-05-29",
+        "GOLDGUINEA": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": -0.34,
+          "pairs": 199,
+          "months": 10,
+          "raw_bp": -10.56
+        },
+        "GOLDM": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": 1.13,
+          "pairs": 200,
+          "months": 10,
+          "raw_bp": -9.03
+        },
+        "GOLDPETAL": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": 0.46,
+          "pairs": 199,
+          "months": 10,
+          "raw_bp": -11.14
+        },
+        "GOLDTEN": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": -0.92,
+          "pairs": 199,
+          "months": 10,
+          "raw_bp": -13.14
+        }
+      },
+      "recent": {
+        "from": "2025-10-16",
+        "to": "2026-10-16",
+        "GOLDGUINEA": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": 1.57,
+          "pairs": 247,
+          "months": 13,
+          "raw_bp": -8.06
+        },
+        "GOLDM": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": 2.44,
+          "pairs": 247,
+          "months": 13,
+          "raw_bp": -6.56
+        },
+        "GOLDPETAL": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": 2.09,
+          "pairs": 247,
+          "months": 13,
+          "raw_bp": -8.04
+        },
+        "GOLDTEN": {
+          "half_bp": null,
+          "lo": 0.0,
+          "hi": 1.44,
+          "pairs": 247,
+          "months": 13,
+          "raw_bp": -9.9
+        }
+      }
+    },
+    "realistic_bp": 5,
+    "method": "half the estimated bid-ask spread, bp of price: mean of the two-day Corwin-Schultz estimates over the window on each day's most-traded contract, 95% interval by resampling whole months; Roll per month as a cross-check",
+    "source": "clean/gold_futures_history.csv, clean/sealed_rows.csv, clean/gold_futures.csv"
   }
 }

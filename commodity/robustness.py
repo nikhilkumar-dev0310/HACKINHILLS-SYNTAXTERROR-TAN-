@@ -17,6 +17,22 @@
    parameter, how many also made money on the development years (strategy_c_dev_grid.csv)?
 5. Premium regimes: monthly average premium per contract type split into regimes by binary segmentation
    (BIC), each break dated and set next to the dated MCX event closest to it. Coincidence, not proof of cause.
+6. Every rule ever tried. The deflated Sharpe in check 2 counts Strategy C's 72 settings; the honest count is
+   every distinct rule the project scored on any data (Strategy A's grid, the methods round, Strategy B's k
+   and C's grid, with rules that appear in two places counted once). The fair-price model (B) and C are
+   deflated against that count too.
+7. What trading actually costs. Break-even slippage only means something next to the slippage real trading
+   would cost, so the half-spread is estimated from the daily data with two standard estimators: Roll (1984,
+   Journal of Finance 39(4)), from the negative autocovariance of price changes, and Corwin & Schultz (2012,
+   Journal of Finance 67(2)), from two-day high-low ranges with their overnight adjustment. Each day uses the
+   most-traded contract of each type, over all MCX rows held (2003 on; the sealed tests are long run and nothing
+   is re-run). A spread of a few bp is small next to gold's daily moves, so a month of daily data cannot pin it
+   down: the two-day estimates are pooled over each test window (about a thousand pairs), with a 95% interval
+   from resampling whole months. Each result's break-even is set against the half-spread of the legs it actually
+   traded, in its own window. Where the estimator breaks down (a negative mean, as in the 2025-26 crash, when
+   volatility swung from day to day) it is reported as not measurable rather than as zero. Roll's estimator
+   needs bid-ask bounce to dominate day-to-day price changes; at daily frequency gold's own moves swamp it (it is
+   undefined in about 4 months of 10), so it is shown only as a cross-check.
 """
 import itertools
 import json
@@ -72,6 +88,111 @@ def psr(x, sr0=0.0):
 def expected_max_sr(var_sr, trials):
     """Expected best Sharpe ratio among `trials` independent tries with no skill."""
     return math.sqrt(var_sr) * ((1 - EULER) * N.inv_cdf(1 - 1 / trials) + EULER * N.inv_cdf(1 - 1 / (trials * math.e)))
+
+
+def deflated(x, var_sr, trials):
+    """Deflated Sharpe ratio of per-trade results x against the best of `trials` tries with no skill."""
+    m, sd, g3, g4 = moments(x)
+    sr, n = m / sd, len(x)
+    sr0 = expected_max_sr(var_sr, trials)
+    return N.cdf((sr - sr0) * math.sqrt(n - 1) / math.sqrt(max(1e-12, 1 - g3 * sr + (g4 - 1) / 4 * sr ** 2))), sr, sr0
+
+
+def parse_setting(s):
+    """A Strategy C grid label ("ref=all k=1.5 stress=None exit=0.0 hold=None") as a dict."""
+    d = dict(kv.split("=") for kv in s.split())
+    f = lambda v: None if v == "None" else (float(v) if v.replace(".", "", 1).isdigit() else v)
+    return {"ref": d["ref"], "k": f(d["k"]), "stress": f(d["stress"]), "exit": f(d["exit"]), "hold": None if d["hold"] == "None" else int(float(d["hold"]))}
+
+
+def rules_tried(res=RES):
+    """Every distinct rule scored anywhere in the project, by family, from the stored sweeps.
+    Overlaps counted once: the methods round re-scored Strategy A's frozen z-score setting, and Strategy B's
+    rule with k = 1.5 or 2.0 is also one of Strategy C's grid settings (B's rules are C's with no stress
+    filter, no exit buffer and no holding cap)."""
+    a = pd.read_csv(os.path.join(res, "train_sweep.csv"))[["lookback", "entry_z"]].drop_duplicates()
+    meth = pd.read_csv(os.path.join(res, "methods_train.csv")).method.drop_duplicates().tolist()
+    bk = sorted(pd.read_csv(os.path.join(res, "fairvalue_dev.csv")).k.drop_duplicates().tolist())
+    grid = [parse_setting(x) for x in pd.read_csv(os.path.join(res, "strategy_c_dev_grid.csv")).setting.drop_duplicates()]
+    in_a = [m for m in meth if m.startswith("zscore(")
+            and any(f"N={int(r.lookback)}, entry={r.entry_z}" in m for r in a.itertuples())]
+    b_rule = lambda k: {"ref": "all", "k": float(k), "stress": None, "exit": 0.0, "hold": None}
+    b_new = [k for k in bk if b_rule(k) not in grid]
+    fam = {"A": int(len(a)), "methods": len(meth) - len(in_a), "B": len(b_new), "C": len(grid)}
+    return fam, sum(fam.values()), {"methods_repeating_a": in_a, "b_k_in_c": [k for k in bk if k not in b_new]}
+
+
+# ---------------------------------------------------------------- 7. what trading costs: half-spread estimators
+def roll_spread(close):
+    """Roll (1984): spread = 2 sqrt(-cov(r_t, r_t-1)) of log price changes, as a fraction of price.
+    None when the covariance is not negative (the estimator is undefined there)."""
+    r = np.diff(np.log(np.asarray(close, float)))
+    if len(r) < 3:
+        return None
+    c = float(np.cov(r[1:], r[:-1], ddof=1)[0, 1])
+    return 2 * math.sqrt(-c) if c < 0 else None
+
+
+def cs_spread(high, low, close):
+    """Corwin & Schultz (2012): a spread estimate for every pair of consecutive days, from their high-low
+    ranges, with the overnight adjustment (a day whose whole range sits above or below the previous close is
+    shifted by that gap). Returned raw, negatives included: averaged over a month they are close to unbiased,
+    whereas setting each day's negative estimate to zero first adds a large upward bias when the spread is
+    small next to the day's price swing (as gold's is; tests/test_robustness.py measures both). Callers
+    average, then set a negative average to zero."""
+    H, L, C = (np.asarray(v, float) for v in (high, low, close))
+    h2, l2, c0 = H[1:].copy(), L[1:].copy(), C[:-1]
+    gap = np.where(l2 > c0, l2 - c0, np.where(h2 < c0, h2 - c0, 0.0))
+    h2, l2 = h2 - gap, l2 - gap
+    beta = np.log(H[:-1] / L[:-1]) ** 2 + np.log(h2 / l2) ** 2
+    gamma = np.log(np.maximum(H[:-1], h2) / np.minimum(L[:-1], l2)) ** 2
+    k = 3 - 2 * math.sqrt(2)
+    alpha = (np.sqrt(2 * beta) - np.sqrt(beta)) / k - np.sqrt(gamma / k)
+    return 2 * (np.exp(alpha) - 1) / (1 + np.exp(alpha))
+
+
+def most_traded(d):
+    """Each day's most-traded contract of each type, traded rows with a usable high-low range."""
+    t = d[~d.no_trade & (d.volume_lots > 0) & (d.high > 0) & (d.low > 0) & (d.high >= d.low)].copy()
+    t["grams"] = t.volume_lots * t.symbol.map({"GOLDM": 100, "GOLDTEN": 10, "GOLDGUINEA": 8, "GOLDPETAL": 1})
+    return t.loc[t.groupby(["date", "symbol"]).grams.idxmax()].sort_values(["symbol", "expiry_date", "date"])
+
+
+def cs_pairs(top):
+    """Every Corwin-Schultz two-day estimate, pairs of days only within one contract: symbol, date, estimate."""
+    rows = []
+    for (sym, _), g in top.groupby(["symbol", "expiry_date"]):
+        if len(g) >= 2:
+            est = cs_spread(g.high.values, g.low.values, g.close.values)
+            rows += [(sym, dt, v) for dt, v in zip(g.date.values[1:], est)]
+    return pd.DataFrame(rows, columns=["symbol", "date", "cs"]).assign(date=lambda x: pd.to_datetime(x.date))
+
+
+def pooled_half_spread(x, seed=20261019, draws=1000):
+    """Half-spread (bp) from a stretch of two-day estimates: their mean, with a 95% interval from resampling
+    whole calendar months (estimates within a month are not independent). A mean a little below zero is noise
+    around a spread of about nothing and reads as zero; one clearly below zero (under -1 bp) is a spread no market
+    has, so the estimator has broken down there (large swings in volatility from day to day): None."""
+    v, mo = x.cs.values, x.date.dt.to_period("M").values
+    blocks = [v[mo == m] for m in pd.unique(mo)]
+    rng = np.random.default_rng(seed)
+    bs = np.array([np.concatenate([blocks[i] for i in rng.integers(len(blocks), size=len(blocks))]).mean() for _ in range(draws)])
+    m = float(v.mean()) / 2 * 1e4
+    return {"half_bp": round(max(0.0, m), 2) if m >= -1 else None, "lo": round(max(0.0, float(np.percentile(bs, 2.5)) / 2 * 1e4), 2),
+            "hi": round(float(np.percentile(bs, 97.5)) / 2 * 1e4, 2), "pairs": int(len(v)), "months": len(blocks), "raw_bp": round(m, 2)}
+
+
+def roll_months(top):
+    """Roll's estimate for each type and calendar month (at least 10 days, one contract)."""
+    roll = []
+    for (sym, mo), g in top.assign(month=top.date.dt.to_period("M").astype(str)).groupby(["symbol", "month"]):
+        g = g.sort_values("date")
+        if g.expiry_date.nunique() > 1:      # the most-traded contract changed in the month: use the one with more days
+            g = g[g.expiry_date == g.expiry_date.value_counts().idxmax()]
+        if len(g) >= 10:
+            s_ = roll_spread(g.close.values)
+            roll.append({"symbol": sym, "month": mo, "roll_half_bp": s_ / 2 * 1e4 if s_ is not None else None})
+    return pd.DataFrame(roll)
 
 
 # ---------------------------------------------------------------- 3. stationarity and half-life
@@ -214,12 +335,8 @@ def main():
     p = json.load(open(os.path.join(RES, "strategy_c_params.json")))
     chosen = {k: p[k] for k in ("ref", "k", "stress", "exit", "hold")}
 
-    def parse(s):
-        d = dict(kv.split("=") for kv in s.split())
-        f = lambda v: None if v == "None" else (float(v) if v.replace(".", "", 1).isdigit() else v)
-        return {"ref": d["ref"], "k": f(d["k"]), "stress": f(d["stress"]), "exit": f(d["exit"]), "hold": None if d["hold"] == "None" else int(float(d["hold"]))}
     tot = grid[yrs].sum(axis=1)
-    settings = {s: parse(s) for s in grid.index}
+    settings = {s: parse_setting(s) for s in grid.index}
     me = next(s for s, v in settings.items() if all(v[k] == chosen[k] for k in chosen))
     nb = [s for s, v in settings.items() if sum(v[k] != settings[me][k] for k in chosen) == 1]
     out["neighbourhood"] = {"chosen": me, "chosen_net": round(float(tot[me])), "neighbours": len(nb),
@@ -241,6 +358,54 @@ def main():
         reg.append({"symbol": sym, "months": int(len(mo)), "regimes": regimes, "breaks": breaks})
     out["regimes"] = {"rows": reg, "method": "binary segmentation of monthly mean premium, BIC-type stopping with 3 parameters per break (false breaks in pure noise: about 3%), at least 3 months per regime",
                       "source": "dashboard/data.json premium_daily"}
+
+    # 6. every rule ever tried: the fair-price model (B) and C deflated against the honest count
+    fam, total, overlap = rules_tried()
+    drows = []
+    for strat, own in (("B", fam["B"] + len(overlap["b_k_in_c"])), ("C", fam["C"])):
+        x = t[t.strategy.str.startswith(strat)].net_rs
+        var = float(gsr.var(ddof=1)) / (len(x) / 8.0)        # as in check 2: cross-setting spread, per trade
+        d_all, sr, sr0_all = deflated(x, var, total)
+        d_own, _, sr0_own = deflated(x, var, own)
+        drows.append({"strategy": strat, "trades": int(len(x)), "net": round(float(x.sum())), "sr_per_trade": round(sr, 3),
+                      "own_trials": int(own), "sr_luck_own": round(sr0_own, 3), "dsr_own": round(d_own, 3),
+                      "sr_luck_all": round(sr0_all, 3), "dsr_all": round(d_all, 3)})
+    out["trials"] = {"families": fam, "total": int(total), "overlap": overlap, "rows": drows, "slip_bp": SLIP,
+                     "windows": "sealed tests 2016-2019 and 2020-2023, pooled",
+                     "source": "results/train_sweep.csv, methods_train.csv, fairvalue_dev.csv, strategy_c_dev_grid.csv, sealed_trades.csv"}
+
+    # 7. what trading actually costs: half-spread estimates against each result's break-even slippage
+    allrows = pd.concat([pd.read_csv(os.path.join(HERE, "clean", f), parse_dates=["date", "expiry_date"])
+                         for f in ("gold_futures_history.csv", "sealed_rows.csv", "gold_futures.csv")
+                         if os.path.exists(os.path.join(HERE, "clean", f))], ignore_index=True)
+    top = most_traded(allrows)
+    cp, rl = cs_pairs(top), roll_months(top)
+    last = cp.date.max()
+    WIN = {"test3": ("2016-01-01", "2019-12-31"), "test2": ("2020-01-01", "2023-10-09"), "holdout": ("2025-08-06", "2026-05-29"),
+           "recent": (str((last - pd.DateOffset(years=1)).date()), str(last.date()))}
+    win = {w: {"from": a_, "to": b_, **{sym: pooled_half_spread(g) for sym, g in cp[cp.date.between(a_, b_)].groupby("symbol")}}
+           for w, (a_, b_) in WIN.items()}
+    crow = []
+    for sym in ("GOLDM", "GOLDTEN", "GOLDGUINEA", "GOLDPETAL"):
+        r_ = rl[rl.symbol == sym]
+        rv = r_.roll_half_bp.dropna()
+        crow.append({"symbol": sym, "first": str(cp[cp.symbol == sym].date.min().date()), "pairs": int((cp.symbol == sym).sum()),
+                     "roll_half_bp": round(float(rv.median()), 1) if len(rv) else None, "roll_months": int(len(r_)), "roll_defined": int(len(rv))})
+    # each result against its own legs in its own window (per trade, the mean of its two legs; then over trades),
+    # at the estimate and at the top of its 95% interval; not measurable if a leg's estimate broke down
+    legs = {(test, strat[0]): [x.split("-") if "-" in x else [x, "GOLDM"] for x in g.symbol] for (test, strat), g in t.groupby(["test", "strategy"])}
+    legs[("holdout", "A")] = [x.split("-") for x in logs[("holdout", "A")].query("slip_bp == @SLIP").pair]
+    legs[("holdout", "B")] = [[x, "GOLDM"] for x in logs[("holdout", "B")].query("slip_bp == @SLIP").symbol]
+    for r_ in out["breakeven"]["rows"]:
+        w = win[r_["test"]]
+        L = legs[(r_["test"], r_["strategy"])]
+        ok = all(w[x]["half_bp"] is not None for pair in L for x in pair)
+        r_["est_slip_bp"] = round(float(np.mean([np.mean([w[x]["half_bp"] for x in pair]) for pair in L])), 1) if ok else None
+        r_["est_slip_hi_bp"] = round(float(np.mean([np.mean([w[x]["hi"] for x in pair]) for pair in L])), 1) if ok else None
+        r_["survives_est"] = bool(ok and r_["breakeven_bp"] is not None and r_["breakeven_bp"] > r_["est_slip_hi_bp"])
+    out["costs"] = {"rows": crow, "windows": win, "realistic_bp": 5,
+                    "method": "half the estimated bid-ask spread, bp of price: mean of the two-day Corwin-Schultz estimates over the window on each day's most-traded contract, 95% interval by resampling whole months; Roll per month as a cross-check",
+                    "source": "clean/gold_futures_history.csv, clean/sealed_rows.csv, clean/gold_futures.csv"}
 
     json.dump(out, open(OUT, "w"), indent=2)
     print(json.dumps(out, indent=2))
