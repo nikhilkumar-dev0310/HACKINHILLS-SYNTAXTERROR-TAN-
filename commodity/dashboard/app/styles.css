@@ -1221,3 +1221,55 @@ html.reveal main.page>*,html.reveal .hero>*,html.reveal .hero h1 .wi,html.reveal
 /* the gold light that follows the pointer across a card: deeper gold in the light theme, where pale gold vanishes */
 :root[data-theme="light"] .card::after,:root[data-theme="light"] .take::after,:root[data-theme="light"] .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(176,125,28,.13),transparent 45%)}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .card::after,:root:not([data-theme="dark"]) .take::after,:root:not([data-theme="dark"]) .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(176,125,28,.13),transparent 45%)}}
+
+/* ======================= DESIGNER PASS (19 Oct 2026) =======================
+   One voice, the way a product designer would set it, not a pile of effects:
+   - Labels are set in the interface font, sentence case, no letter-spacing. Monospace is kept for figures only.
+   - Gold is the brand accent, used sparingly: the mark, the hero's accent word, the active section, primary actions
+     and the one figure a reader must see. Links, list numbers, labels and chips go back to neutral ink.
+   - Glass stays on the navigation layer (header, sidebar, sheets, menus), as in Apple's own apps. Content panels
+     keep their frosting but lose the gold rim and the heavy shadow, so sections read as calm surfaces.
+   - Fewer outlines: chips become quiet text links; status pills drop their weight; dotted term underlines fade.
+   - More air between sections, and the ambient gold light in the background is turned down. */
+
+/* labels and table headers: sentence case in the interface font */
+.eyebrow,.lab,.take-l,th{font-family:var(--f-ui);text-transform:none;letter-spacing:0}
+.eyebrow{font-size:14px;font-weight:600;color:var(--ink-2);gap:10px}
+.eyebrow .idx{color:var(--ink-3);font-family:var(--f-num);font-weight:500}
+.lab{font-size:13px;font-weight:600;color:var(--ink-2)}
+.take-l{font-size:14px;font-weight:600;color:var(--ink-2)}
+th{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+
+/* gold, used sparingly */
+.dir .fn,.find .fn{color:var(--ink)}
+.dir .fn{color:var(--ink-3)}
+.go{color:var(--ink)}
+.go svg{color:var(--gold)}
+.go:hover{color:var(--gold)}
+
+/* content panels: frosted, but quiet: a neutral hairline instead of a gold rim, a soft shadow */
+main .card::before,main .take::before,main .more::before{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.05))!important}
+:root[data-theme="light"] main .card::before,:root[data-theme="light"] main .take::before,:root[data-theme="light"] main .more::before{background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.08))!important}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) main .card::before,:root:not([data-theme="dark"]) main .take::before,:root:not([data-theme="dark"]) main .more::before{background:linear-gradient(180deg,rgba(0,0,0,.06),rgba(0,0,0,.08))!important}}
+main .card,main .take,main .more{box-shadow:0 1px 2px rgba(0,0,0,.18),0 12px 32px -20px rgba(0,0,0,.55)}
+:root[data-theme="light"] main .card,:root[data-theme="light"] main .take,:root[data-theme="light"] main .more{box-shadow:0 1px 2px rgba(60,44,16,.06),0 12px 28px -20px rgba(60,44,16,.22)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) main .card,:root:not([data-theme="dark"]) main .take,:root:not([data-theme="dark"]) main .more{box-shadow:0 1px 2px rgba(60,44,16,.06),0 12px 28px -20px rgba(60,44,16,.22)}}
+
+/* "on this page" chips become a quiet row of text links */
+.jump{gap:6px 22px}
+.jump a,.jump a:hover{border:0!important;background:none!important;padding:6px 0!important;border-radius:0!important;color:var(--ink-2);font-size:15px}
+.jump a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:color-mix(in srgb,var(--gold) 70%,transparent)}
+
+/* status pills: lighter weight, so the figure next to them leads */
+.pill{font-weight:500}
+
+/* defined terms: a faint dotted underline, stronger on hover */
+.term{text-decoration-color:color-mix(in srgb,var(--ink) 22%,transparent)!important}
+.term:hover{text-decoration-color:color-mix(in srgb,var(--gold) 80%,transparent)!important}
+
+/* more air between sections; the background light turned down */
+@media (min-width:761px){main.page{gap:40px}}
+.bgfx{opacity:.6}
+.jump a{text-decoration:none}
+.uq-n{color:var(--ink-3);font-weight:500}
+.wm small{font-family:var(--f-ui);text-transform:none;letter-spacing:0;font-size:12px;font-weight:500}
