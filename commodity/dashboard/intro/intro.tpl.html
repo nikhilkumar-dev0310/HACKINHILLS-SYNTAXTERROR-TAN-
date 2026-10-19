@@ -806,10 +806,10 @@ if (renderer) {
   for (let k = 0; k < 20; k++) { const a = k / 20 * Math.PI * 2, t = new THREE.Mesh(new THREE.BoxGeometry(0.004, k % 5 ? 0.012 : 0.022, 0.004), steel);
     t.position.set(Math.sin(a) * 0.065, Math.cos(a) * 0.065, 0.022); t.rotation.z = -a; dial.add(t); }
   const dialMark = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.02, 0.004), glow); dialMark.position.set(0, 0.105, 0.18); door.add(dialMark);
-  const NR = mobile ? 150 : 320;
+  const NR = mobile ? 50 : 110;   // a measured stream, not a blizzard: few enough that none crowds the lens
   const rBar = g999.clone(), rCoin = g999.clone(); rBar.normalMap = rCoin.normalMap = flatN;   // they take the models' normal maps when those arrive
   const river = new THREE.InstancedMesh(new RoundedBoxGeometry(0.1, 0.03, 0.05, 1, 0.01), rBar, NR); river.frustumCulled = false; world.add(river);
-  const NRC = mobile ? 120 : 260;   // coins tumbling in the river with the bars
+  const NRC = mobile ? 36 : 80;   // coins tumbling in the river with the bars
   const riverC = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.06, 0.008, 16), rCoin, NRC); riverC.frustumCulled = false; world.add(riverC);
   // the river runs in lanes: every piece keeps its own lane across the doorway and its own place along it, and all move at one
   // speed, so no two pieces ever pass through each other (lanes are a piece's width apart and only spread further as they go)
@@ -828,23 +828,34 @@ if (renderer) {
     stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp }));
   portal.position.z = -0.24; portal.renderOrder = -1; vault.add(portal);   // just behind the stone wall, inside its opening
   const RZ0 = VC.z - 0.26, RZ1 = -14.2, FLOOR = -1.3, RW = 4.8, RH = 5.6;
+  /* MODERN (19 Oct): the room behind the vault is a modern bullion vault, not an old treasure chamber: graphite walls with a
+     warm cove light at the floor, a polished dark floor, and neat stacks of bars along the walls. No hoard, chests, brass,
+     chandelier or arms. Set it to false to bring the old room back. */
+  const MODERN = true;
   const room = new THREE.Group(); room.renderOrder = 2; world.add(room);
   const canvasTex = (w, h, draw, rx, ry) => { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 4; return t; };
-  const wallTex = canvasTex(512, 512, (x, w, h) => {   // warm sandstone panels between pilasters, a cornice band near the top
+  const wallTex = MODERN ? canvasTex(512, 512, (x, w, h) => {   // graphite panels, hairline seams, a warm cove light along the floor
+    const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#15120e"); g.addColorStop(0.85, "#1c1812"); g.addColorStop(1, "#2a2216"); x.fillStyle = g; x.fillRect(0, 0, w, h);
+    for (let k = 0; k < 4; k++) { x.fillStyle = "rgba(255,236,200,.045)"; x.fillRect(k * 128, 0, 1, h); }
+    const cove = x.createLinearGradient(0, h - 40, 0, h); cove.addColorStop(0, "rgba(242,181,68,0)"); cove.addColorStop(0.8, "rgba(242,181,68,.28)"); cove.addColorStop(1, "rgba(255,214,140,.55)");
+    x.fillStyle = cove; x.fillRect(0, h - 40, w, 40);
+  }, 4, 1) : canvasTex(512, 512, (x, w, h) => {   // warm sandstone panels between pilasters, a cornice band near the top
     const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#3d2f20"); g.addColorStop(1, "#261d13"); x.fillStyle = g; x.fillRect(0, 0, w, h);
     for (let k = 0; k < 4; k++) { const px0 = k * 128; x.fillStyle = "rgba(255,226,170,.07)"; x.fillRect(px0 + 4, 0, 18, h); x.fillStyle = "rgba(0,0,0,.3)"; x.fillRect(px0 + 22, 0, 3, h);
       x.strokeStyle = "rgba(0,0,0,.22)"; x.lineWidth = 3; x.strokeRect(px0 + 38, 70, 76, h - 120); x.strokeStyle = "rgba(255,226,170,.10)"; x.strokeRect(px0 + 42, 74, 68, h - 128); }
     x.fillStyle = "rgba(255,226,170,.14)"; x.fillRect(0, 26, w, 10); x.fillStyle = "rgba(0,0,0,.25)"; x.fillRect(0, 36, w, 4);
     const img = x.getImageData(0, 0, w, h), d = img.data; for (let k = 0; k < d.length; k += 4) { const n = (Math.random() - 0.5) * 14; d[k] += n; d[k + 1] += n; d[k + 2] += n; } x.putImageData(img, 0, 0);
   }, 4, 1);
-  const floorTex = canvasTex(256, 256, (x, w, h) => {   // polished two-tone stone tiles
+  const floorTex = MODERN ? canvasTex(256, 256, (x, w, h) => {   // one polished dark stone, large slabs with hairline joints
+    x.fillStyle = "#13100c"; x.fillRect(0, 0, w, h); x.fillStyle = "rgba(255,226,170,.05)"; x.fillRect(0, 0, w, 1); x.fillRect(0, 0, 1, h);
+  }, 3, 4) : canvasTex(256, 256, (x, w, h) => {   // polished two-tone stone tiles
     for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { x.fillStyle = (i + j) % 2 ? "#2c2116" : "#221a11"; x.fillRect(i * 128, j * 128, 128, 128); }
     x.strokeStyle = "rgba(255,220,160,.12)"; x.lineWidth = 2; for (let k = 0; k <= 256; k += 128) { x.beginPath(); x.moveTo(k, 0); x.lineTo(k, h); x.moveTo(0, k); x.lineTo(w, k); x.stroke(); }
   }, 6, 8);
   const walls = new THREE.Mesh(new THREE.BoxGeometry(RW * 2, RH, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.88, metalness: 0.05, side: THREE.BackSide })));
   walls.position.set(0, FLOOR + RH / 2, (RZ0 + RZ1) / 2); room.add(walls);
-  const floorM = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.32, metalness: 0.25 })));
+  const floorM = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, RZ0 - RZ1), roomMat(new THREE.MeshStandardMaterial({ map: floorTex, roughness: MODERN ? 0.22 : 0.32, metalness: MODERN ? 0.35 : 0.25 })));
   floorM.rotation.x = -Math.PI / 2; floorM.position.set(0, FLOOR + 0.002, (RZ0 + RZ1) / 2); room.add(floorM);
   const rnd = (a, b) => a + Math.random() * (b - a);
   const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _c = new THREE.Color(), UP = V(0, 1, 0);
@@ -877,7 +888,7 @@ if (renderer) {
   const MOUNDS = [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
     [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
     [-3.1, -13.5, 1.2, 0.5], [3.3, -13.6, 1.2, 0.5], [1.9, -4.4, 0.8, 0.4], [-1.9, -10.1, 0.8, 0.4], [-2.2, -3.6, 0.7, 0.3]];   // the back stays low behind the mark
-  const dH0 = (x, z) => { const ax = Math.abs(x);
+  const dH0 = (x, z) => { if (MODERN) return 0; const ax = Math.abs(x);
     let h = 0.66 * Math.pow(clamp((ax - 1.0) / 2.6), 1.6) + 0.42 * clamp((-12.6 - z) / 1.6) * clamp((ax - 0.6) / 1.8);
     for (const [cx, cz, R, H] of MOUNDS) h += H * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (R * R * 0.45));
     return h * clamp((RZ0 - 0.1 - z) / 0.6); };
@@ -915,7 +926,7 @@ if (renderer) {
   const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: mkTex(4, 4, x => { x.fillStyle = "#e9c785"; x.fillRect(0, 0, 4, 4); }, 9, 11), normalMap: flatN,
     metalness: 1, roughness: 0.27, envMapIntensity: 1.25, vertexColors: true }));
   let heapM = null;
-  { let made = 0; const N = 300, idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
+  if (!MODERN) { let made = 0; const N = 300, idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
     const work = dl => { const end = performance.now() + Math.max(4, Math.min(10, dl.timeRemaining())); while (made < N && performance.now() < end) { pileCoin(); made++; }
       if (made < N) return idle(work);
       const map = pileTex(pileCol, true), nrm = pileTex(pileNrm, false); hoardM.map = map; hoardM.normalMap = nrm; hoardM.normalScale.set(1.2, 1.2);
@@ -929,17 +940,17 @@ if (renderer) {
   claim(PARI_AT[0], PARI_AT[1], 0.55);
   // chests [x, z, turn, lid angle (0 shut)]: their size is the CC0 Poly Haven chest's, fitted 0.82 wide
   const CH = { w: 0.41, d: 0.22, top: 0.364, hingeY: 0.417, hingeZ: -0.261 };
-  const CHESTS = (mobile ? [[-1.75, -4.4, 0.4, 1.95], [1.95, -5.7, -0.5, 1.8], [-2.0, -9.6, 0.25, 0], [2.1, -10.6, -0.3, 2.0]]
+  const CHESTS = MODERN ? [] : (mobile ? [[-1.75, -4.4, 0.4, 1.95], [1.95, -5.7, -0.5, 1.8], [-2.0, -9.6, 0.25, 0], [2.1, -10.6, -0.3, 2.0]]
     : [[-1.75, -4.4, 0.4, 1.95], [1.95, -5.7, -0.5, 1.8], [-2.0, -9.6, 0.25, 0], [2.1, -10.6, -0.3, 2.0], [-0.95, -12.7, 0.15, 1.85], [3.1, -6.6, -1.2, 0], [-3.2, -12.4, 0.9, 0]])
     .map(([x, z, ry, open]) => { const c = Math.cos(ry), s = Math.sin(ry);   // the body is held by two discs along its length; an open lid needs room behind
       [-0.2, 0.2].forEach(u => claim(x + u * c, z - u * s, 0.27)); if (open) claim(x - 0.42 * s, z - 0.42 * c, 0.26);
       return { x, z, ry, open, y: FLOOR + lowest(x, z, ry, CH.w, CH.d) - 0.03 }; });   // sunk a little into the gold
   // bars stacked in stepped piles, each layer offset by half a bar like brickwork
-  const STACKS = (mobile ? [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.4]]
+  const STACKS = MODERN ? (mobile ? [[-3.4, -5.6], [3.4, -5.6], [-3.4, -10.2], [3.4, -10.2]] : [[-3.4, -5.2], [3.4, -5.2], [-3.4, -8.4], [3.4, -8.4], [-3.4, -11.6], [3.4, -11.6]]) : (mobile ? [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.4]]
     : [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-3.0, -13.3], [3.1, -13.3], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.4], [2.75, -9.6], [-3.9, -12.2], [3.95, -12.6]]);
   const stackBars = [], strayBars = [], coins = [], sparkAt = [];
   STACKS.forEach(([cx, cz]) => {
-    const ry = rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry);
+    const ry = MODERN ? 0 : rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry);
     if (![-0.5, 0, 0.5].every(u => free(cx + u * c, cz - u * s, 0.42))) return;
     [-0.5, 0, 0.5].forEach(u => claim(cx + u * c, cz - u * s, 0.42));
     const y0 = FLOOR + lowest(cx, cz, ry, 0.71, 0.39) - 0.012;
@@ -952,14 +963,14 @@ if (renderer) {
   });
   // props on the mounds: brass goblets, vases and a pot (placed when their models load; their floor space is held now)
   const PROPS = [];
-  MOUNDS.slice(1).forEach(([cx, cz], i) => { for (let t = 0; t < 12; t++) { const a = rnd(0, 6.28), d = rnd(0.15, 0.6), x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
+  if (!MODERN) MOUNDS.slice(1).forEach(([cx, cz], i) => { for (let t = 0; t < 12; t++) { const a = rnd(0, 6.28), d = rnd(0.15, 0.6), x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
     if (Math.abs(x) < 1.2 || !free(x, z, 0.26)) continue; claim(x, z, 0.26); PROPS.push({ x, z, kind: i % 4, ry: rnd(0, 6.28), s: rnd(0.85, 1.15) }); break; } });
-  const SHIELDS = [[-3.95, -5.4, 0.9], [3.95, -7.2, -0.9], [-3.9, -11.2, 0.8], [3.9, -12.4, -0.8]].filter(([x, z]) => free(x, z, 0.4));
+  const SHIELDS = MODERN ? [] : [[-3.95, -5.4, 0.9], [3.95, -7.2, -0.9], [-3.9, -11.2, 0.8], [3.9, -12.4, -0.8]].filter(([x, z]) => free(x, z, 0.4));
   SHIELDS.forEach(([x, z]) => claim(x, z, 0.4));
-  const DAGGERS = [[-2.4, -7.6, 0.4], [2.2, -11.0, -0.8], [-1.2, -12.2, 1.6]].filter(([x, z]) => free(x, z, 0.32));
+  const DAGGERS = MODERN ? [] : [[-2.4, -7.6, 0.4], [2.2, -11.0, -0.8], [-1.2, -12.2, 1.6]].filter(([x, z]) => free(x, z, 0.32));
   DAGGERS.forEach(([x, z]) => claim(x, z, 0.32));
   // stray bars half-sunk in the slopes
-  for (let k = 0, n = mobile ? 30 : 80; k < n * 6 && strayBars.length < n; k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2);
+  for (let k = 0, n = MODERN ? 0 : mobile ? 30 : 80; k < n * 6 && strayBars.length < n; k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2);
     if (dH(x, z) < 0.12 || !free(x, z, 0.19)) continue; claim(x, z, 0.19); strayBars.push(lay(onD(x, z, -0.02), dN(x, z), rnd(0, 6.28), 0.22)); }
   // coins: never closer than a coin's width to each other or to anything else, so none passes through another
   const cGrid = new Map(), cKey = (x, z) => Math.floor(x / 0.16) + "," + Math.floor(z / 0.16);
@@ -980,11 +991,11 @@ if (renderer) {
       if (k < 4) sparkAt.push(V(x, y + 0.01, z).applyMatrix4(M)); }
   });
   // little towers of coins near the aisle, then the hoard's loose coins (more where the gold is deeper)
-  for (let k = 0, made = 0, n = mobile ? 14 : 40; k < n * 8 && made < n; k++) { const x = rnd(-2.6, 2.6), z = rnd(RZ1 + 1.2, -3.4); if (Math.abs(x) < 0.9 || !coinFree(x, z) || !free(x, z, 0.1)) continue;
+  for (let k = 0, made = 0, n = MODERN ? 0 : mobile ? 14 : 40; k < n * 8 && made < n; k++) { const x = rnd(-2.6, 2.6), z = rnd(RZ1 + 1.2, -3.4); if (Math.abs(x) < 0.9 || !coinFree(x, z) || !free(x, z, 0.1)) continue;
     const y = FLOOR + lowest(x, z, 0, 0.07, 0.07), hgt = 3 + Math.floor(Math.random() * 7);
     for (let q = 0; q < hgt; q++) coins.push(new THREE.Matrix4().compose(V(x + rnd(-0.006, 0.006), y + q * CT, z + rnd(-0.006, 0.006)), _q.setFromAxisAngle(UP, rnd(0, 6.28)), _s.set(1, 1, 1)));
     putCoin(x, z, coins.pop()); claim(x, z, 0.09); made++; sparkAt.push(V(x, y + hgt * CT + 0.01, z)); }
-  for (let tries = 0, NC = mobile ? 1000 : 2700, placed = 0; placed < NC && tries < NC * 10; tries++) {
+  for (let tries = 0, NC = MODERN ? 0 : mobile ? 1000 : 2700, placed = 0; placed < NC && tries < NC * 10; tries++) {
     const x = rnd(-RW + 0.3, RW - 0.3), z = rnd(RZ1 + 0.3, RZ0 - 0.3), h = dH(x, z);
     if (h < 0.03 ? Math.random() > 0.04 : Math.random() > Math.min(1, h * 2.5 + 0.2)) continue;
     if (!coinFree(x, z)) continue;
@@ -993,7 +1004,7 @@ if (renderer) {
     putCoin(x, z, M); placed++;
     if (Math.random() < 0.07 && Math.abs(x) < 3) sparkAt.push(onD(x, z, 0.012)); }
   // the dune, with the shade of everything standing on it baked in: soft contact shadows round the chests, piles and props
-  { const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, mobile ? 64 : 110, mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
+  if (!MODERN) { const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, mobile ? 64 : 110, mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
     const p = dg.attributes.position, col = new Float32Array(p.count * 3);
     for (let k = 0; k < p.count; k++) { const x = p.getX(k), z = p.getZ(k) + (RZ0 + RZ1) / 2, h = dH(x, z); p.setY(k, h < 0.004 ? -0.03 : h);
       let ao = 1; for (let q = 1; q < claims.length; q++) { const [cx, cz, r] = claims[q]; const d = Math.sqrt((x - cx) ** 2 + (z - cz) ** 2) / (r + 0.25); if (d < 1) ao *= 0.55 + 0.45 * d * d; }
@@ -1063,7 +1074,7 @@ if (renderer) {
       riverC.geometry = shapeOf(coin, 0.075, true).geo; }
     if (coinP) { const { geo, nmap, ns } = shapeOf(coinP, 1, true); pCoin.normalMap = nmap; pCoin.normalScale.copy(ns); heroShape(2, geo, true); }
   }).finally(loaded);
-  Promise.all(["treasure_chest", "brass_goblets", "brass_vase_01", "brass_vase_03", "brass_pot_01", "Chandelier_03", "lion_head", "kite_shield", "ornate_medieval_dagger"].map(get))
+  (MODERN ? Promise.resolve([]) : Promise.all(["treasure_chest", "brass_goblets", "brass_vase_01", "brass_vase_03", "brass_pot_01", "Chandelier_03", "lion_head", "kite_shield", "ornate_medieval_dagger"].map(get)))
     .then(([chest, goblets, vase1, vase3, pot, chand, lion, shield, dagger]) => {
       const T = (m, h, axis, cast) => { if (!m) return null; const f = fit(m, h, axis); roomify(f, cast); return f; };
       chest = T(chest, 0.82, "x"); goblets = T(goblets, 0.34); vase1 = T(vase1, 0.62); vase3 = T(vase3, 0.5); pot = T(pot, 0.34);
@@ -1176,6 +1187,13 @@ if (renderer) {
   let logoSp = 0.03; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
   const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, 0.15 + Math.random() * 0.6, 0.2 + Math.random() * 0.5).normalize().multiplyScalar(1.6 + Math.random() * 0.9).add(LOGO));
   const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the coin fills left to right
+  // a polished gold face behind the grains: once they settle the coin reads as one solid piece, not a mosaic,
+  // and when the cursor lifts grains off it the gold underneath shows instead of the dark room
+  const finCoin = new THREE.Group(), coinMat = grainMat.clone(); coinMat.stencilFunc = THREE.AlwaysStencilFunc;
+  { const face = new THREE.Mesh(new THREE.CylinderGeometry(0.585, 0.585, 0.05, 96), coinMat); face.rotation.x = Math.PI / 2; finCoin.add(face);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.575, 0.022, 16, 128), coinMat); rim.position.z = 0.02; finCoin.add(rim);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.006, 8, 128), coinMat); ring.position.z = 0.026; finCoin.add(ring); }   // one fine inner ring, as on a minted coin
+  finCoin.position.copy(LOGO); finCoin.position.z -= 0.012; finCoin.visible = false; finCoin.frustumCulled = false; world.add(finCoin);
   // behind the mark the back wall is plain: no panels, no gold, just a soft pool of warm lamplight, so the cursor's scatter reads clearly
   const pool = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 4.6), roomMat(new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false,
     map: mkTex(256, 256, (x, w, h) => { x.fillStyle = "rgba(0,0,0,0)"; x.fillRect(0, 0, w, h); const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
@@ -1480,7 +1498,7 @@ if (renderer) {
       gs.setScalar(Math.max(1e-4, BS * clamp(age / 0.08) * (c.land < 0 ? 1 : clamp(1 - (t - c.land - 0.6) / 0.4)))); gm.compose(c.p, gq, gs); burst.setMatrixAt(n, gm); });
     burst.instanceMatrix.needsUpdate = true; }
   const camP = new THREE.Vector3(), camT = new THREE.Vector3(), camPs = new THREE.Vector3(), camTs = new THREE.Vector3(); let camInit = false, camLag = 0;
-  const zP = new THREE.Vector3(), zT = new THREE.Vector3();
+  const zP = new THREE.Vector3(), zT = new THREE.Vector3();   // the opening: from the right of the line, so the 1 g piece leads and the rest recede behind it
   let ftimes = [], lastAdj = 0, drops = 0, frameNo = 0, lastB = -1;
   frame = (b, time, dt) => {
     frameNo++;
@@ -1498,7 +1516,8 @@ if (renderer) {
     if (dropOn) { const w0 = (1 - sm(clamp((time - 0.15) / OPEN_DUR))) * (1 - clamp(b / 0.25)); camP.lerp(OPEN_P, w0); camT.lerp(OPEN_T, w0); }   // the opening sweep
     if (OPEN_B && b < ZOOM) {   // true scale: start a hand's width from the 1 g piece, pull back as the first scrolls come in
       const w = 1 - sm(clamp(b / ZOOM)), pet = P[3].position;
-      zT.set(pet.x - 0.11, pet.y + 0.02, pet.z); zP.set(pet.x + 0.08, pet.y + 0.17, pet.z + 0.92);
+      if (mobile) { zT.set(pet.x + 0.05, pet.y + 0.2, pet.z); zP.set(pet.x + 0.23, pet.y + 0.62, pet.z + 2.4); }   // phones: the piece centred above the card, the coin cropped at the left edge
+        else { zT.set(pet.x + 0.53, pet.y + 0.02, pet.z); zP.set(pet.x + 1.08, pet.y + 0.45, pet.z + 2.6); }   // a step back: the 1 g piece at a modest size right of the card, the 8 g coin waits behind the card
       camP.lerp(zP, w); camT.lerp(zT, w);
     }
     if (camera.aspect < 1.1) {   // tall screens: step back so all four fit (a little further, and re-centred, for the opening's angled view)
@@ -1578,6 +1597,7 @@ if (renderer) {
     // grains: the recast (pieces → four gram cubes) or the finale (air → the Parity mark)
     const x = 1 - Math.min(1, Math.abs(b - S.recast)), lgo = clamp((b - (S.team - 0.95)) / 0.85);
     grains.visible = x > 0.001 || lgo > 0.001;
+    if (lgo <= 0.001) finCoin.visible = false;
     if (x > 0.001) {
       const side = b < S.recast ? S.problem : S.pergram;
       for (let k = 0, n = 0; k < 4; k++) {
@@ -1595,6 +1615,7 @@ if (renderer) {
       if (react) { ndc.set(ptrX / innerWidth * 2 - 1, -(ptrY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera); if (!ray.ray.intersectPlane(logoPlane, hit)) hit.set(1e3, 1e3, 0); }
       le.set(-my * 0.55 * fin, mx * 0.75 * fin, 0); lq.setFromEuler(le);
       const k2 = 1 - Math.exp(-dt / 0.14); springy = false;
+      const solid = sm(clamp((lgo - 0.82) / 0.18));
       for (let n = 0; n < NGT; n++) {
         if (n >= logoDst.length) { gs.setScalar(0.0001); gm.compose(LOGO, gq.identity(), gs); grains.setMatrixAt(n, gm); continue; }
         const e = sm(clamp(lgo * 1.5 - logoDel[n] * 0.5)), ang = (1 - e) * 2.6;
@@ -1608,9 +1629,14 @@ if (renderer) {
         if (Math.abs(off[o]) + Math.abs(off[o + 1]) + Math.abs(off[o + 2]) > 1e-3) springy = true;
         gv.x += off[o]; gv.y += off[o + 1]; gv.z += off[o + 2];
         const tumble = 1 - e; ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
-        gs.setScalar(Math.max(clamp(e * 4) * (logoSp / GS) * 1.05, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
+        // once the face is solid the grains merge into it; only the ones the cursor lifts stay visible as gold dust
+        const lift = clamp((Math.abs(off[o]) + Math.abs(off[o + 1]) + Math.abs(off[o + 2])) * 14), vis = 1 - solid * (1 - lift);
+        gs.setScalar(Math.max(clamp(e * 4) * (logoSp / GS) * 1.05 * vis, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
       }
       grains.instanceMatrix.needsUpdate = true;
+      // the solid face grows in under the grains as they land, and tilts with them
+      finCoin.visible = solid > 0.001;   // full size from the start: it sits behind the grains until they melt into it
+      if (fin > 0.001) finCoin.quaternion.copy(lq); else finCoin.quaternion.identity();
     }
 
     cols.forEach((m, k) => {
@@ -1757,7 +1783,8 @@ function loop(now) {
       massEl.classList.add("swap"); massB.textContent = m ? m[0] : pc.kind; massS.textContent = `${pc.sym} · ${pc.kind.replace(/^[\d.]+ g ?/, "") || "piece"}, ${pc.purity}`;
       requestAnimationFrame(() => massEl.classList.remove("swap")); }
   }
-  const k = Math.round(cur); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
+  // the last stretch of scroll rounds past the final chapter, so the chapter index is held to the last one
+  const k = Math.min(N - 1, Math.round(cur)); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
   if (!reduce && tapeOn && tapeW) {
     tapeV += (vel - tapeV) * (1 - Math.exp(-dt / 0.2));
     tapeX -= (28 + Math.min(Math.abs(tapeV) * 9, 900)) * dt * (tapeV < -0.5 ? -1 : 1);
