@@ -343,3 +343,19 @@ Motion (open-source, MIT, pinned on jsDelivr):
     spin. The jump stays under the mark (phones a quarter as high).
   - kicked-up coins fly to the sides and back, never across its face.
 - **Reduced motion:** none of it runs.
+
+## A filled modern vault (20 Oct 2026)
+- **Layout:** layout B, "Islands", from the "Final room: gold" page of the design canvas. Separate coin piles with
+  polished floor between them, and bar stacks in the gaps and the back corners. All of it sits in the band of floor the
+  finale camera actually sees (about z = -10.3 back to the wall), plus two taller piles a side further forward for the
+  walk in. `MOUNDS` (when `MODERN`) and `STACKS` hold the positions.
+- **Piles:** each pile is its own round mesh, so its foot meets the floor in a clean circle. They use the coin-relief
+  surface and loose coins, with no coins on the open floor. The gold is a little deeper and less glossy than before,
+  so it reads as metal rather than cream.
+- **Pari:** Pari stood on the bare floor in front of the visible band, below the bottom of the screen. Pari now has
+  a low pile of its own at (-0.95, -10.5) on laptops and (-0.35, -10.6) on phones, and the "Hi, I'm Pari" label sits
+  on Pari's right, clear of the card.
+- **End-of-scroll fixes:** past the last chapter `b` runs to about N + 0.75. The camera curves, the field of view (it
+  went negative) and the beat fraction now hold at the last key, so on tall screens the camera no longer flies out of
+  the room. The chapter index is clamped to N, the last chapter, so the final chapter is now shown; the earlier
+  N - 1 clamp hid it.
