@@ -151,6 +151,23 @@ class Robustness(unittest.TestCase):
         b = next(r for r in T["rows"] if r["strategy"] == "B")
         self.assertIn(f"deflated Sharpe ratio of {round(100 * b['dsr_all'])}% ({round(100 * b['dsr_own'])}% against its own {b['own_trials']} settings alone)", FLAT)
         self.assertIn(f"best of {T['total']} tries", FLAT)
+        if f.get("checks"):
+            self.assertIn(f"{f['C']} in C, {f['checks']} later check without the carry adjustment", FLAT)
+
+    def test_each_sealed_result_deflated_alone(self):
+        """The rules scored before each window was opened, and the fair-price model's score in each window"""
+        T = self.R["trials"]
+        oc = T["opened_counts"]
+        self.assertIn(f"({oc['test']} before the first test, {oc['holdout']} before the holdout, {oc['test3']} before 2016–2023", FLAT)
+        b = {r["test"]: round(100 * r["dsr_opened"]) for r in T["per_result"] if r["strategy"] == "B"}
+        self.assertIn(f"the fair-price model scores {b['holdout']}% on the holdout, {b['test3']}% on 2016–2019 and {b['test2']}% on 2020–2023", FLAT)
+        if all(v < 50 for v in b.values()):
+            self.assertIn("below 50% every time", FLAT)
+
+    def test_first_test_against_its_measured_spread(self):
+        r = next(x for x in self.R["breakeven"]["rows"] if x["test"] == "test" and x["strategy"] == "A")
+        self.assertIn(f"Strategy A's first test broke even at {r['breakeven_bp']:.1f} bp against a measured {r['est_slip_bp']:.1f} bp", FLAT)
+        self.assertGreater(r["est_slip_bp"], r["breakeven_bp"])          # "even its profit before slippage sat inside the spread"
 
     def test_sealed_spreads_under_the_stated_ceiling(self):
         """"under 3 bp per order even at the top of its 95% range" in both sealed windows, and below every positive break-even"""

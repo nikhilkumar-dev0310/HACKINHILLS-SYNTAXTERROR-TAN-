@@ -19,6 +19,16 @@ import delivery as dl
 import robustness as rb
 
 STORED = json.load(open("results/robustness.json"))
+LOGS = {("holdout", "A"): "holdout_trades.csv", ("holdout", "B"): "fairvalue_holdout_trades.csv", ("test", "A"): "test_trades.csv"}
+
+
+def sealed_log(test, strat):
+    """One sealed result's trades at the stored slippage, from the file the result was recorded in."""
+    if (test, strat) in LOGS:
+        g = result(LOGS[(test, strat)])
+        return g[g.slip_bp == rb.SLIP]
+    t = result("sealed_trades.csv")
+    return t[(t.slip_bp == rb.SLIP) & (t.test == test) & t.strategy.str.startswith(strat)]
 
 
 class BreakEven(unittest.TestCase):
@@ -36,6 +46,12 @@ class BreakEven(unittest.TestCase):
         with self.assertRaises(ValueError):
             rb.breakeven(10_000, 20_000)
 
+    def test_first_test_agrees_with_its_own_write_up(self):
+        """Strategy A's first sealed test, May-July 2025: the commodity README said "about 3.5 bp" when it ran"""
+        r = next(x for x in STORED["breakeven"]["rows"] if x["test"] == "test" and x["strategy"] == "A")
+        self.assertAlmostEqual(r["breakeven_bp"], 3.5, delta=0.05)
+        self.assertIn("Breakeven slippage: about 3.5 bp per leg per side", open("README.md", encoding="utf-8").read())
+
     def test_slippage_cost_is_linear_in_the_stored_results(self):
         """The 5 bp net lies exactly between the 0 and 10 bp nets, so a straight line is the right model"""
         for r in STORED["breakeven"]["rows"]:
@@ -45,12 +61,15 @@ class BreakEven(unittest.TestCase):
 @cases([r["test"] + "_" + r["strategy"] for r in STORED["breakeven"]["rows"]])
 class EachBreakEven(unittest.TestCase):
     def check_matches_the_stored_results(self, key):
-        """Each stored break-even is recomputed from the sealed summary or the holdout backtest"""
+        """Each stored break-even is recomputed from the sealed summary, the holdout backtest or the first test's log"""
         test, strat = key.rsplit("_", 1)
         r = next(x for x in STORED["breakeven"]["rows"] if x["test"] == test and x["strategy"] == strat)
         if test == "holdout":
             rows = {x["slip"]: x["net"] for x in site()["backtests"][f"{strat}_hold"]["rows"]}
             n0, n10 = rows[0], rows[10]
+        elif test == "test":
+            g = result("test_trades.csv").groupby("slip_bp").net_rs.sum()
+            n0, n10 = g[0], g[10]
         else:
             s = result("sealed_summary.csv")
             g = s[(s.test == test) & s.strategy.str.startswith(strat)].set_index("slip_bp").net
@@ -106,12 +125,8 @@ class SharpeTests(unittest.TestCase):
         self.assertLessEqual(d["dsr"], next(r["psr"] for r in STORED["sharpe"]["rows"] if r["test"] == "test3" and r["strategy"] == "C"))
 
     def test_stored_sharpe_recomputes_from_the_trade_logs(self):
-        t = result("sealed_trades.csv")
-        t = t[t.slip_bp == rb.SLIP]
         for r in STORED["sharpe"]["rows"]:
-            if r["test"] == "holdout":
-                continue
-            g = t[(t.test == r["test"]) & t.strategy.str.startswith(r["strategy"])]
+            g = sealed_log(r["test"], r["strategy"])
             p, sr = rb.psr(g.net_rs)
             self.assertEqual(r["trades"], len(g))
             self.assertAlmostEqual(r["psr"], p, places=3)
@@ -212,6 +227,34 @@ class RulesTried(unittest.TestCase):
         fam, total, _ = rb.rules_tried()
         self.assertEqual(total, sum(fam.values()))
         self.assertEqual(STORED["trials"]["total"], total)
+        self.assertEqual(STORED["trials"]["families"], fam)
+
+    def test_method_labels_become_rule_keys(self):
+        """The methods round's z-score label is the same rule as A's grid point; every other method is its own"""
+        self.assertEqual(rb.method_key("zscore(N=10, entry=2.0)"), ("zscore", 10, 2.0))
+        self.assertEqual(rb.method_key("kalman(W=20, c=1.0)"), ("method", "kalman(W=20, c=1.0)"))
+        self.assertIn(rb.method_key("zscore(N=10, entry=2.0)"), rb.rule_sets()["A"])
+
+    def test_the_no_carry_check_counts_as_a_new_rule(self):
+        """overfit.py scored B's rules without the carry adjustment: a rule no other family scored"""
+        s = rb.rule_sets()
+        has = "no_carry" in json.load(open("results/overfit.json"))
+        self.assertEqual(len(s["checks"]), int(has))
+        for f, v in s.items():
+            if f != "checks":
+                self.assertFalse(s["checks"] & v, f)
+
+    def test_counts_when_each_window_was_opened(self):
+        """9 rules before the first test; A, the methods and B's 3 settings before the holdout (C did not exist
+        yet, so B's shared settings count as B's); everything but the later check before 2016-2023"""
+        s, (fam, total, _) = rb.rule_sets(), rb.rules_tried()
+        oc = STORED["trials"]["opened_counts"]
+        self.assertEqual(oc["test"], len(s["A"]))
+        self.assertEqual(oc["holdout"], len(s["A"]) + fam["methods"] + len(s["B"]))
+        self.assertEqual(oc["test3"], total - fam["checks"])
+        self.assertEqual(oc["test2"], oc["test3"])
+        self.assertTrue(oc["test"] <= oc["holdout"] <= oc["test3"] <= total)
+        self.assertEqual(STORED["trials"]["opened_after"], {w: list(f) for w, f in rb.OPENED_AFTER.items()})
 
     def test_each_family_is_counted_from_its_sweep(self):
         fam, _, ov = rb.rules_tried()
@@ -232,8 +275,55 @@ class RulesTried(unittest.TestCase):
 
     def test_more_rules_never_raise_the_deflated_sharpe(self):
         for r in STORED["trials"]["rows"]:
-            self.assertLessEqual(r["dsr_all"], r["dsr_own"] + 1e-9, r)
+            self.assertLessEqual(r["dsr_all"], r["dsr_opened"] + 1e-9, r)
+            self.assertLessEqual(r["dsr_opened"], r["dsr_own"] + 1e-9, r)
             self.assertGreaterEqual(r["sr_luck_all"], r["sr_luck_own"] - 1e-9, r)
+        for r in STORED["trials"]["per_result"]:
+            self.assertTrue(r["own_trials"] <= r["opened_trials"] <= r["ever_trials"], r)
+            self.assertTrue(r["dsr_ever"] <= r["dsr_opened"] + 1e-9 and r["dsr_opened"] <= r["dsr_own"] + 1e-9, r)
+            self.assertTrue(r["sr_luck_own"] <= r["sr_luck_opened"] + 1e-9 and r["sr_luck_opened"] <= r["sr_luck_ever"] + 1e-9, r)
+            self.assertLessEqual(r["dsr_own"], r["psr"] + 1e-9, r)             # beating luck is harder than beating zero
+
+    def test_every_sealed_result_is_deflated_once(self):
+        """One row per sealed result, the same results the break-even table lists"""
+        per = [(r["test"], r["strategy"]) for r in STORED["trials"]["per_result"]]
+        self.assertEqual(len(per), len(set(per)))
+        self.assertEqual(set(per), {(r["test"], r["strategy"]) for r in STORED["breakeven"]["rows"]})
+
+    def test_each_result_counts_the_rules_of_its_own_window(self):
+        s, (_, total, _) = rb.rule_sets(), rb.rules_tried()
+        for r in STORED["trials"]["per_result"]:
+            self.assertEqual(r["own_trials"], len(s[r["strategy"]]), r)
+            self.assertEqual(r["opened_trials"], STORED["trials"]["opened_counts"][r["test"]], r)
+            self.assertEqual(r["ever_trials"], total, r)
+
+    def test_per_result_rows_recompute_from_the_trade_logs(self):
+        sh = {(r["test"], r["strategy"]): r for r in STORED["sharpe"]["rows"]}
+        for r in STORED["trials"]["per_result"]:
+            x = sealed_log(r["test"], r["strategy"]).net_rs
+            self.assertEqual(r["trades"], len(x), r)
+            self.assertEqual(r["net"], round(float(x.sum())), r)
+            self.assertAlmostEqual(r["sr_per_trade"], x.mean() / x.std(ddof=1), places=3)
+            self.assertAlmostEqual(r["psr"], sh[(r["test"], r["strategy"])]["psr"], places=3)
+            years = (pd.Timestamp(r["to"]) - pd.Timestamp(r["from"])).days / 365.25
+            self.assertTrue(0.2 < years < 4.1, r)                                # a declared window, not a typo
+            self.assertAlmostEqual(r["sr_luck_ever"], rb.expected_max_sr(self.var_per_trade(len(x), years), r["ever_trials"]), places=3)
+
+    @staticmethod
+    def var_per_trade(n, years):
+        grid = result("strategy_c_dev_grid.csv").set_index("setting")
+        yrs = [c for c in grid.columns if c != "2026"]
+        gsr = (grid[yrs].mean(axis=1) / grid[yrs].std(axis=1, ddof=1)).replace([np.inf, -np.inf], np.nan).dropna()
+        return float(gsr.var(ddof=1)) / (n / years)
+
+    def test_windows_are_the_declared_ones(self):
+        """Each result's window comes from the parameters frozen before it ran"""
+        fp, fvp, cp = (json.load(open(f"results/{f}")) for f in ("frozen_params.json", "fairvalue_params.json", "strategy_c_params.json"))
+        want = {("test", "A"): fp["test"], ("holdout", "B"): fvp["holdout"]}
+        want.update({(w, st): cp["sealed_windows"][w] for w in ("test3", "test2") for st in "ABC"})
+        for r in STORED["trials"]["per_result"]:
+            if (r["test"], r["strategy"]) in want:
+                self.assertEqual([r["from"], r["to"]], want[(r["test"], r["strategy"])], r)
 
     def test_deflated_matches_the_closed_form(self):
         rng = np.random.default_rng(3)
@@ -304,17 +394,21 @@ class HalfSpreads(unittest.TestCase):
 
     def test_a_clearly_negative_mean_is_not_measurable(self):
         x = pd.DataFrame({"date": pd.bdate_range("2020-01-01", periods=300), "cs": np.full(300, -0.0006)})
-        self.assertIsNone(rb.pooled_half_spread(x)["half_bp"])
+        p = rb.pooled_half_spread(x)
+        self.assertIsNone(p["half_bp"])
+        self.assertEqual((p["lo"], p["hi"]), (0.0, 0.0))                 # floored like the estimate: never lo above hi
+        self.assertLess(p["raw_bp"], -1)
         x["cs"] = -0.00001                                          # a hair below zero: about nothing, read as zero
         self.assertEqual(rb.pooled_half_spread(x)["half_bp"], 0.0)
 
     def test_stored_windows_are_sane(self):
         for w, m in STORED["costs"]["windows"].items():
-            self.assertIn(w, ("test3", "test2", "holdout", "recent"))
+            self.assertIn(w, ("test3", "test2", "test", "holdout", "recent"))
             for sym, v in m.items():
                 if not isinstance(v, dict):
                     continue
                 self.assertGreater(v["pairs"], 50, (w, sym))
+                self.assertTrue(0 <= v["lo"] <= v["hi"], (w, sym))
                 if v["half_bp"] is not None:
                     self.assertGreaterEqual(v["half_bp"], 0)
                     self.assertLessEqual(v["half_bp"], v["hi"] + 1e-9, (w, sym))

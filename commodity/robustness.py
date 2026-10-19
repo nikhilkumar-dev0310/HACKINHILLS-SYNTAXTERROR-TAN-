@@ -4,12 +4,14 @@
 
 1. Break-even slippage. Costs rise linearly with slippage while gross profit does not change, so each
    sealed or holdout result has one slippage at which its net profit is exactly zero. Read from the
-   stored results at 0 and 10 bp (sealed_summary.csv; data.json backtests for the holdouts).
+   stored results at 0 and 10 bp (sealed_summary.csv; data.json backtests for the holdouts and Strategy A's
+   first test, May-July 2025).
 2. Probabilistic Sharpe ratio (Bailey & Lopez de Prado, 2012, "The Sharpe ratio efficient frontier",
    Journal of Risk 15(2)): the probability that the true per-trade Sharpe ratio is above zero, given the
    trades' number, skew and fat tails. Deflated Sharpe ratio (Bailey & Lopez de Prado, 2014, Journal of
    Portfolio Management 40(5)) for Strategy C: the same test against the best Sharpe expected by luck
-   from its 72 tried settings. Trade logs from results/sealed_trades.csv and the holdout logs, at 5 bp.
+   from its 72 tried settings. Trade logs from results/sealed_trades.csv, the holdout logs and the first test's
+   log, at 5 bp.
 3. Does the premium mean-revert, and how fast? For each small contract's premium over GOLDM (same expiry,
    the series on the site): an augmented Dickey-Fuller test (lags chosen by AIC, constant, MacKinnon
    critical values) and the AR(1) half-life in market days.
@@ -19,8 +21,11 @@
    (BIC), each break dated and set next to the dated MCX event closest to it. Coincidence, not proof of cause.
 6. Every rule ever tried. The deflated Sharpe in check 2 counts Strategy C's 72 settings; the honest count is
    every distinct rule the project scored on any data (Strategy A's grid, the methods round, Strategy B's k
-   and C's grid, with rules that appear in two places counted once). The fair-price model (B) and C are
-   deflated against that count too.
+   and C's grid, with rules that appear in two places counted once, and the no-carry variant overfit.py scored
+   after every sealed run). The fair-price model (B) and C are deflated against that count too. Then every
+   sealed result on its own (A's first test, both holdouts, each 2016-2023 window) is deflated three ways: against
+   its own strategy's settings, against every rule scored before its window was opened (OPENED_AFTER, from the
+   Git history), and against every rule ever scored. Each count only grows, so each deflated Sharpe only falls.
 7. What trading actually costs. Break-even slippage only means something next to the slippage real trading
    would cost, so the half-spread is estimated from the daily data with two standard estimators: Roll (1984,
    Journal of Finance 39(4)), from the negative autocovariance of price changes, and Corwin & Schultz (2012,
@@ -42,6 +47,8 @@ from statistics import NormalDist
 
 import numpy as np
 import pandas as pd
+
+import backtest as bt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RES = os.path.join(HERE, "results")
@@ -105,21 +112,61 @@ def parse_setting(s):
     return {"ref": d["ref"], "k": f(d["k"]), "stress": f(d["stress"]), "exit": f(d["exit"]), "hold": None if d["hold"] == "None" else int(float(d["hold"]))}
 
 
-def rules_tried(res=RES):
-    """Every distinct rule scored anywhere in the project, by family, from the stored sweeps.
-    Overlaps counted once: the methods round re-scored Strategy A's frozen z-score setting, and Strategy B's
-    rule with k = 1.5 or 2.0 is also one of Strategy C's grid settings (B's rules are C's with no stress
-    filter, no exit buffer and no holding cap)."""
+def method_key(m):
+    """A methods-round label as a rule key; "zscore(N=10, entry=2.0)" is the same rule as Strategy A's N=10, z=2.0."""
+    if m.startswith("zscore("):
+        z = dict(kv.strip().split("=") for kv in m[len("zscore("):-1].split(","))
+        return ("zscore", int(z["N"]), float(z["entry"]))
+    return ("method", m)
+
+
+def rule_sets(res=RES):
+    """Every rule scored anywhere in the project, per family, as keys that compare equal when two families scored
+    the same rule: the methods round re-scored Strategy A's frozen z-score setting, and Strategy B's rule with
+    k = 1.5 or 2.0 is also one of Strategy C's grid settings (B's rules are C's with no stress filter, no exit
+    buffer and no holding cap). "checks" holds rules scored only as an after-the-fact check: overfit.py's
+    Strategy B without the carry adjustment, scored on the development years."""
     a = pd.read_csv(os.path.join(res, "train_sweep.csv"))[["lookback", "entry_z"]].drop_duplicates()
-    meth = pd.read_csv(os.path.join(res, "methods_train.csv")).method.drop_duplicates().tolist()
-    bk = sorted(pd.read_csv(os.path.join(res, "fairvalue_dev.csv")).k.drop_duplicates().tolist())
-    grid = [parse_setting(x) for x in pd.read_csv(os.path.join(res, "strategy_c_dev_grid.csv")).setting.drop_duplicates()]
-    in_a = [m for m in meth if m.startswith("zscore(")
-            and any(f"N={int(r.lookback)}, entry={r.entry_z}" in m for r in a.itertuples())]
+    A = {("zscore", int(r.lookback), float(r.entry_z)) for r in a.itertuples()}
+    M = {method_key(m) for m in pd.read_csv(os.path.join(res, "methods_train.csv")).method.drop_duplicates()}
+    fkey = lambda s: ("fair", s["ref"], s["k"], s["stress"], s["exit"], s["hold"])
     b_rule = lambda k: {"ref": "all", "k": float(k), "stress": None, "exit": 0.0, "hold": None}
-    b_new = [k for k in bk if b_rule(k) not in grid]
-    fam = {"A": int(len(a)), "methods": len(meth) - len(in_a), "B": len(b_new), "C": len(grid)}
-    return fam, sum(fam.values()), {"methods_repeating_a": in_a, "b_k_in_c": [k for k in bk if k not in b_new]}
+    B = {fkey(b_rule(k)) for k in pd.read_csv(os.path.join(res, "fairvalue_dev.csv")).k.drop_duplicates()}
+    C = {fkey(parse_setting(x)) for x in pd.read_csv(os.path.join(res, "strategy_c_dev_grid.csv")).setting.drop_duplicates()}
+    of = os.path.join(res, "overfit.json")
+    nc = json.load(open(of)).get("no_carry") if os.path.exists(of) else None
+    k_b = json.load(open(os.path.join(res, "fairvalue_params.json")))["k"]
+    checks = {("fair, no carry",) + fkey(b_rule(k_b))[1:]} if nc else set()
+    return {"A": A, "methods": M, "B": B, "C": C, "checks": checks}
+
+
+# Which families had been scored when each sealed window was opened, from the Git history: Strategy A's grid and its
+# first TEST in the first commit (962dab7); the methods round on TRAIN after it (08507a9); B's k grid pre-registered
+# (045ab2b) before both holdouts ran (3e9e82d); C's grid frozen (a984901) before 2016-2023 ran (6df3bbd); the
+# no-carry check on 8 Oct 2026 (4791f1c), after every sealed run, so it counts only in "ever".
+OPENED_AFTER = {"test": ("A",), "holdout": ("A", "methods", "B"),
+                "test3": ("A", "methods", "B", "C"), "test2": ("A", "methods", "B", "C")}
+OWN = {"A": ("A",), "B": ("B",), "C": ("C",)}
+
+
+def count_rules(sets, families):
+    """Distinct rules in the union of the given families."""
+    return len(set().union(*(sets[f] for f in families)))
+
+
+def rules_tried(res=RES):
+    """Every distinct rule scored anywhere in the project, by family, each counted once. A family's count is the
+    rules it added that no other family scored (C's grid absorbs B's two shared settings)."""
+    s = rule_sets(res)
+    others = lambda f: set().union(*(v for k, v in s.items() if k != f))
+    fam = {"A": len(s["A"]), "methods": len(s["methods"] - s["A"]), "B": len(s["B"] - s["C"]), "C": len(s["C"]),
+           "checks": len(s["checks"] - others("checks"))}
+    meth = pd.read_csv(os.path.join(res, "methods_train.csv")).method.drop_duplicates()
+    in_a = [m for m in meth if method_key(m) in s["A"]]
+    b_in_c = sorted(k[2] for k in s["B"] & s["C"])
+    total = count_rules(s, s.keys())
+    assert total == sum(fam.values()), "families overlap in a way the counts do not cover"
+    return fam, total, {"methods_repeating_a": in_a, "b_k_in_c": b_in_c}
 
 
 # ---------------------------------------------------------------- 7. what trading costs: half-spread estimators
@@ -172,14 +219,17 @@ def pooled_half_spread(x, seed=20261019, draws=1000):
     """Half-spread (bp) from a stretch of two-day estimates: their mean, with a 95% interval from resampling
     whole calendar months (estimates within a month are not independent). A mean a little below zero is noise
     around a spread of about nothing and reads as zero; one clearly below zero (under -1 bp) is a spread no market
-    has, so the estimator has broken down there (large swings in volatility from day to day): None."""
+    has, so the estimator has broken down there (large swings in volatility from day to day): None. Both ends of the
+    interval are floored at zero like the estimate (a spread is never negative), so the low end never passes the high
+    one; raw_bp keeps the unfloored mean."""
     v, mo = x.cs.values, x.date.dt.to_period("M").values
     blocks = [v[mo == m] for m in pd.unique(mo)]
     rng = np.random.default_rng(seed)
     bs = np.array([np.concatenate([blocks[i] for i in rng.integers(len(blocks), size=len(blocks))]).mean() for _ in range(draws)])
     m = float(v.mean()) / 2 * 1e4
-    return {"half_bp": round(max(0.0, m), 2) if m >= -1 else None, "lo": round(max(0.0, float(np.percentile(bs, 2.5)) / 2 * 1e4), 2),
-            "hi": round(float(np.percentile(bs, 97.5)) / 2 * 1e4, 2), "pairs": int(len(v)), "months": len(blocks), "raw_bp": round(m, 2)}
+    lo, hi = (round(max(0.0, float(np.percentile(bs, q)) / 2 * 1e4), 2) for q in (2.5, 97.5))
+    return {"half_bp": round(max(0.0, m), 2) if m >= -1 else None, "lo": lo, "hi": hi,
+            "pairs": int(len(v)), "months": len(blocks), "raw_bp": round(m, 2)}
 
 
 def roll_months(top):
@@ -278,9 +328,9 @@ def main():
         g = g.set_index("slip_bp").net
         rows.append({"test": test, "strategy": strat[0], "net0": round(float(g[0])), "net5": round(float(g[5])),
                      "net10": round(float(g[10])), "breakeven_bp": round(breakeven(g[0], g[10]), 2) if g[0] > 0 else None})
-    for key, strat in (("A_hold", "A"), ("B_hold", "B")):
+    for key, test, strat in (("A_hold", "holdout", "A"), ("B_hold", "holdout", "B"), ("A_test", "test", "A")):
         r = {x["slip"]: x["net"] for x in D["backtests"][key]["rows"]}
-        rows.append({"test": "holdout", "strategy": strat, "net0": round(r[0]), "net5": round(r[5]), "net10": round(r[10]),
+        rows.append({"test": test, "strategy": strat, "net0": round(r[0]), "net5": round(r[5]), "net10": round(r[10]),
                      "breakeven_bp": round(breakeven(r[0], r[10]), 2) if r[0] > 0 else None})
     out["breakeven"] = {"rows": rows, "realistic_bp": 5, "source": "results/sealed_summary.csv; dashboard/data.json backtests"}
 
@@ -288,7 +338,10 @@ def main():
     t = pd.read_csv(os.path.join(RES, "sealed_trades.csv"))
     t = t[t.slip_bp == SLIP]
     logs = {("holdout", "A"): pd.read_csv(os.path.join(RES, "holdout_trades.csv")),
-            ("holdout", "B"): pd.read_csv(os.path.join(RES, "fairvalue_holdout_trades.csv"))}
+            ("holdout", "B"): pd.read_csv(os.path.join(RES, "fairvalue_holdout_trades.csv")),
+            ("test", "A"): pd.read_csv(os.path.join(RES, "test_trades.csv"))}
+    nets = {(test, strat[0]): g.net_rs for (test, strat), g in t.groupby(["test", "strategy"])}
+    nets.update({key: g[g.slip_bp == SLIP].net_rs for key, g in logs.items()})
     sharpe = []
     for (test, strat), g in t.groupby(["test", "strategy"]):
         p, sr = psr(g.net_rs)
@@ -313,7 +366,7 @@ def main():
     out["sharpe"] = {"rows": sharpe, "slip_bp": SLIP,
                      "deflated_c": {"trials": int(len(grid)), "trades": int(n_c), "sr_per_trade": round(sr_c, 3),
                                     "sr_expected_by_luck": round(sr0, 3), "dsr": round(dsr, 3)},
-                     "source": "results/sealed_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, strategy_c_dev_grid.csv"}
+                     "source": "results/sealed_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, test_trades.csv, strategy_c_dev_grid.csv"}
 
     # 3. stationarity and half-life of each premium
     pdly = D["premium_daily"]
@@ -361,18 +414,42 @@ def main():
 
     # 6. every rule ever tried: the fair-price model (B) and C deflated against the honest count
     fam, total, overlap = rules_tried()
+    sets = rule_sets()
+    opened_c = count_rules(sets, OPENED_AFTER["test3"])
     drows = []
-    for strat, own in (("B", fam["B"] + len(overlap["b_k_in_c"])), ("C", fam["C"])):
+    for strat, own in (("B", count_rules(sets, OWN["B"])), ("C", count_rules(sets, OWN["C"]))):
         x = t[t.strategy.str.startswith(strat)].net_rs
         var = float(gsr.var(ddof=1)) / (len(x) / 8.0)        # as in check 2: cross-setting spread, per trade
         d_all, sr, sr0_all = deflated(x, var, total)
         d_own, _, sr0_own = deflated(x, var, own)
+        d_op, _, _ = deflated(x, var, opened_c)
         drows.append({"strategy": strat, "trades": int(len(x)), "net": round(float(x.sum())), "sr_per_trade": round(sr, 3),
                       "own_trials": int(own), "sr_luck_own": round(sr0_own, 3), "dsr_own": round(d_own, 3),
+                      "opened_trials": int(opened_c), "dsr_opened": round(d_op, 3),
                       "sr_luck_all": round(sr0_all, 3), "dsr_all": round(d_all, 3)})
-    out["trials"] = {"families": fam, "total": int(total), "overlap": overlap, "rows": drows, "slip_bp": SLIP,
-                     "windows": "sealed tests 2016-2019 and 2020-2023, pooled",
-                     "source": "results/train_sweep.csv, methods_train.csv, fairvalue_dev.csv, strategy_c_dev_grid.csv, sealed_trades.csv"}
+    # every sealed result on its own: against its own strategy's settings, every rule scored before its window was
+    # opened, and every rule ever scored. The cross-setting spread is scaled to per-trade units by the result's own
+    # trades per year over its declared window.
+    fp, fvp, cpar = (json.load(open(os.path.join(RES, f))) for f in ("frozen_params.json", "fairvalue_params.json", "strategy_c_params.json"))
+    span = {("test", "A"): fp["test"], ("holdout", "A"): [str(bt.HOLDOUT_START.date()), str(bt.HOLDOUT_END.date())],
+            ("holdout", "B"): fvp["holdout"], **{(w, st_): cpar["sealed_windows"][w] for w in ("test3", "test2") for st_ in "ABC"}}
+    per = []
+    for (test, strat), (a_, b_) in span.items():
+        x = nets[(test, strat)]
+        years = (pd.Timestamp(b_) - pd.Timestamp(a_)).days / 365.25
+        var = float(gsr.var(ddof=1)) / (len(x) / years)
+        n = {"own": count_rules(sets, OWN[strat]), "opened": count_rules(sets, OPENED_AFTER[test]), "ever": total}
+        d = {k: deflated(x, var, v) for k, v in n.items()}
+        per.append({"test": test, "strategy": strat, "from": a_, "to": b_, "trades": int(len(x)), "net": round(float(x.sum())),
+                    "sr_per_trade": round(d["own"][1], 3), "psr": round(psr(x)[0], 3),
+                    **{f"{k}_trials": int(v) for k, v in n.items()},
+                    **{f"sr_luck_{k}": round(v[2], 3) for k, v in d.items()}, **{f"dsr_{k}": round(v[0], 3) for k, v in d.items()}})
+    out["trials"] = {"families": fam, "total": int(total), "overlap": overlap, "rows": drows, "per_result": per,
+                     "opened_after": {w: list(f) for w, f in OPENED_AFTER.items()},
+                     "opened_counts": {w: count_rules(sets, f) for w, f in OPENED_AFTER.items()}, "slip_bp": SLIP,
+                     "windows": "rows: sealed tests 2016-2019 and 2020-2023, pooled; per_result: each sealed result alone",
+                     "source": "results/train_sweep.csv, methods_train.csv, fairvalue_dev.csv, strategy_c_dev_grid.csv, overfit.json, "
+                               "sealed_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, test_trades.csv"}
 
     # 7. what trading actually costs: half-spread estimates against each result's break-even slippage
     allrows = pd.concat([pd.read_csv(os.path.join(HERE, "clean", f), parse_dates=["date", "expiry_date"])
@@ -381,7 +458,7 @@ def main():
     top = most_traded(allrows)
     cp, rl = cs_pairs(top), roll_months(top)
     last = cp.date.max()
-    WIN = {"test3": ("2016-01-01", "2019-12-31"), "test2": ("2020-01-01", "2023-10-09"), "holdout": ("2025-08-06", "2026-05-29"),
+    WIN = {"test3": ("2016-01-01", "2019-12-31"), "test2": ("2020-01-01", "2023-10-09"), "test": tuple(fp["test"]), "holdout": ("2025-08-06", "2026-05-29"),
            "recent": (str((last - pd.DateOffset(years=1)).date()), str(last.date()))}
     win = {w: {"from": a_, "to": b_, **{sym: pooled_half_spread(g) for sym, g in cp[cp.date.between(a_, b_)].groupby("symbol")}}
            for w, (a_, b_) in WIN.items()}
@@ -396,6 +473,7 @@ def main():
     legs = {(test, strat[0]): [x.split("-") if "-" in x else [x, "GOLDM"] for x in g.symbol] for (test, strat), g in t.groupby(["test", "strategy"])}
     legs[("holdout", "A")] = [x.split("-") for x in logs[("holdout", "A")].query("slip_bp == @SLIP").pair]
     legs[("holdout", "B")] = [[x, "GOLDM"] for x in logs[("holdout", "B")].query("slip_bp == @SLIP").symbol]
+    legs[("test", "A")] = [x.split("-") for x in logs[("test", "A")].query("slip_bp == @SLIP").pair]
     for r_ in out["breakeven"]["rows"]:
         w = win[r_["test"]]
         L = legs[(r_["test"], r_["strategy"])]

@@ -49,15 +49,20 @@ Three standard checks, run on training years only so the sealed results stay unt
   and costs. Its timing carries some information, but only about 1 in 19 random runs did as well: borderline.
 - **Without the carry adjustment** the same rules made ₹1,02,383 on 73 trades, against ₹79,982 on 72 with it.
   The adjustment puts each fair price at the right level but did not add profit on these years; we report that.
-- **How much can go wrong:** every result that made money before slippage breaks even at between 4.3 and 11.9 bp of
+- **How much can go wrong:** every result that made money before slippage breaks even at between 3.5 and 11.9 bp of
   slippage per leg; we test at 5. Strategy C's deflated Sharpe ratio is 4%: its sealed result is what picking the best
   of 72 settings gives by chance ([`commodity/robustness.py`](commodity/robustness.py)).
-- **Every rule we ever tried: 90 distinct rules** (9 in Strategy A's grid, 8 research methods, 1 more for B, 72 in C;
-  a rule that appears twice is counted once). Against all of them, the fair-price model's sealed profit has a deflated
-  Sharpe ratio of 5% (50% against its own 3 settings alone): about what the best of 90 tries earns by luck.
-- **What a trade actually costs:** pooled over each sealed window, the quoted half-spread estimated from daily highs
-  and lows (Corwin and Schultz, 2012) was under 3 bp per order even at the top of its 95% range, below every
-  positive break-even. Since 2025 that estimator breaks down, and the site says "not measurable" rather than guess.
+- **Every rule we ever tried: 91 distinct rules** (9 in Strategy A's grid, 8 research methods, 1 more for B, 72 in C,
+  1 later check without the carry adjustment; a rule that appears twice is counted once). Against all of them, the
+  fair-price model's sealed profit has a deflated Sharpe ratio of 5% (50% against its own 3 settings alone): about
+  what the best of 91 tries earns by luck. Each sealed result is also deflated on its own, against the rules scored
+  before its window was opened (9 before the first test, 20 before the holdout, 90 before 2016–2023, from the Git
+  history): the fair-price model scores 46% on the holdout, 27% on 2016–2019 and 7% on 2020–2023, below 50% every time.
+- **What a trade actually costs:** pooled over each 2016–2023 sealed window, the quoted half-spread estimated from daily
+  highs and lows (Corwin and Schultz, 2012) was under 3 bp per order even at the top of its 95% range, below every
+  positive break-even. In May–July 2025 it was wider: Strategy A's first test broke even at 3.5 bp against a measured
+  3.8 bp on the legs it traded, so even its profit before slippage sat inside the spread. From August 2025 that
+  estimator breaks down, and the site says "not measurable" rather than guess.
 - **The delivery premium** ([`commodity/delivery.py`](commodity/delivery.py)): a buyer of GOLDPETAL or GOLDGUINEA who
   sells before the delivery window gives up only how far the premium fell while held; one who takes delivery pays the
   whole premium. At the final settlement the premium rises, GOLDTEN's included, so much of that rise is spot gold
@@ -86,7 +91,7 @@ Three standard checks, run on training years only so the sealed results stay unt
 
 [![Tests](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml/badge.svg)](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml)
 
-About 10,000 automated tests (287 distinct checks, run per contract, per raw file and per trade log so a failure
+About 10,000 automated tests (297 distinct checks, run per contract, per raw file and per trade log so a failure
 names exactly what broke). They run on GitHub on every push, and on the team computer before the daily job may
 publish; the latest run is shown on the site's Data quality page. Standard-library `unittest`, no extra packages.
 
@@ -101,7 +106,7 @@ publish; the latest run is shown on the site's Data quality page. Standard-libra
 | `test_analysis.py` | Profit split adds up, overfitting statistic behaves on known cases, alerts fire only beyond the threshold |
 | `test_daily_update.py` | The publish gate rejects changed history, missing contracts, bad prices and unit errors |
 | `test_site_data.py`, `test_site_build.py`, `test_site_format.py` | The site shows exactly the computed numbers; every term defined, every source file real; rupee and date formatting checked in Node |
-| `test_robustness.py`, `test_statistics.py` | Break-even slippage, Sharpe tests, the count of rules tried, both half-spread estimators, the delivery premium, ADF, half-life, regime breaks and the bootstraps, each on cases with a known answer, then the stored results recomputed |
+| `test_robustness.py`, `test_statistics.py` | Break-even slippage, Sharpe tests, the count of rules tried (in all, and before each sealed window was opened), both half-spread estimators, the delivery premium, ADF, half-life, regime breaks and the bootstraps, each on cases with a known answer, then the stored results recomputed |
 | `test_events.py` | Every dated note on the charts, including each stated price move, matches the MCX prices of that day |
 | `test_video.py` | Every number in the demo video's subtitles matches the data; counts never overstate |
 | `test_docs.py` | This README's results table, figures, data claims, test counts and links match the computed files; the published test report is complete |

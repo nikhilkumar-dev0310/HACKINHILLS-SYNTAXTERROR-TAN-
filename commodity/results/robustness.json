@@ -88,6 +88,17 @@
         "est_slip_bp": null,
         "est_slip_hi_bp": null,
         "survives_est": false
+      },
+      {
+        "test": "test",
+        "strategy": "A",
+        "net0": 10292,
+        "net5": -4466,
+        "net10": -19224,
+        "breakeven_bp": 3.49,
+        "est_slip_bp": 3.8,
+        "est_slip_hi_bp": 7.0,
+        "survives_est": false
       }
     ],
     "realistic_bp": 5,
@@ -150,6 +161,13 @@
         "trades": 12,
         "sr_per_trade": 0.139,
         "psr": 0.674
+      },
+      {
+        "test": "test",
+        "strategy": "A",
+        "trades": 19,
+        "sr_per_trade": -0.297,
+        "psr": 0.115
       }
     ],
     "slip_bp": 5,
@@ -160,7 +178,7 @@
       "sr_expected_by_luck": 0.467,
       "dsr": 0.042
     },
-    "source": "results/sealed_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, strategy_c_dev_grid.csv"
+    "source": "results/sealed_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, test_trades.csv, strategy_c_dev_grid.csv"
   },
   "stationarity": {
     "rows": [
@@ -300,9 +318,10 @@
       "A": 9,
       "methods": 8,
       "B": 1,
-      "C": 72
+      "C": 72,
+      "checks": 1
     },
-    "total": 90,
+    "total": 91,
     "overlap": {
       "methods_repeating_a": [
         "zscore(N=10, entry=2.0)"
@@ -321,7 +340,9 @@
         "own_trials": 3,
         "sr_luck_own": 0.137,
         "dsr_own": 0.499,
-        "sr_luck_all": 0.399,
+        "opened_trials": 90,
+        "dsr_opened": 0.05,
+        "sr_luck_all": 0.4,
         "dsr_all": 0.05
       },
       {
@@ -332,13 +353,216 @@
         "own_trials": 72,
         "sr_luck_own": 0.467,
         "dsr_own": 0.042,
+        "opened_trials": 90,
+        "dsr_opened": 0.035,
         "sr_luck_all": 0.483,
         "dsr_all": 0.035
       }
     ],
+    "per_result": [
+      {
+        "test": "test",
+        "strategy": "A",
+        "from": "2025-05-01",
+        "to": "2025-07-31",
+        "trades": 19,
+        "net": -4466,
+        "sr_per_trade": -0.297,
+        "psr": 0.115,
+        "own_trials": 9,
+        "opened_trials": 9,
+        "ever_trials": 91,
+        "sr_luck_own": 0.061,
+        "sr_luck_opened": 0.061,
+        "sr_luck_ever": 0.1,
+        "dsr_own": 0.074,
+        "dsr_opened": 0.074,
+        "dsr_ever": 0.055
+      },
+      {
+        "test": "holdout",
+        "strategy": "A",
+        "from": "2025-08-01",
+        "to": "2026-09-30",
+        "trades": 156,
+        "net": 190340,
+        "sr_per_trade": 0.217,
+        "psr": 1.0,
+        "own_trials": 9,
+        "opened_trials": 20,
+        "ever_trials": 91,
+        "sr_luck_own": 0.046,
+        "sr_luck_opened": 0.057,
+        "sr_luck_ever": 0.075,
+        "dsr_own": 0.998,
+        "dsr_opened": 0.996,
+        "dsr_ever": 0.99
+      },
+      {
+        "test": "holdout",
+        "strategy": "B",
+        "from": "2025-08-06",
+        "to": "2026-05-29",
+        "trades": 12,
+        "net": 12990,
+        "sr_per_trade": 0.139,
+        "psr": 0.674,
+        "own_trials": 3,
+        "opened_trials": 20,
+        "ever_trials": 91,
+        "sr_luck_own": 0.077,
+        "sr_luck_opened": 0.172,
+        "sr_luck_ever": 0.226,
+        "dsr_own": 0.579,
+        "dsr_opened": 0.457,
+        "dsr_ever": 0.388
+      },
+      {
+        "test": "test3",
+        "strategy": "A",
+        "from": "2016-01-01",
+        "to": "2019-12-31",
+        "trades": 109,
+        "net": -48734,
+        "sr_per_trade": -0.643,
+        "psr": 0.0,
+        "own_trials": 9,
+        "opened_trials": 90,
+        "ever_trials": 91,
+        "sr_luck_own": 0.102,
+        "sr_luck_opened": 0.167,
+        "sr_luck_ever": 0.167,
+        "dsr_own": 0.0,
+        "dsr_opened": 0.0,
+        "dsr_ever": 0.0
+      },
+      {
+        "test": "test3",
+        "strategy": "B",
+        "from": "2016-01-01",
+        "to": "2019-12-31",
+        "trades": 22,
+        "net": 35873,
+        "sr_per_trade": 0.247,
+        "psr": 0.894,
+        "own_trials": 3,
+        "opened_trials": 90,
+        "ever_trials": 91,
+        "sr_luck_own": 0.127,
+        "sr_luck_opened": 0.371,
+        "sr_luck_ever": 0.371,
+        "dsr_own": 0.728,
+        "dsr_opened": 0.266,
+        "dsr_ever": 0.265
+      },
+      {
+        "test": "test3",
+        "strategy": "C",
+        "from": "2016-01-01",
+        "to": "2019-12-31",
+        "trades": 13,
+        "net": 21415,
+        "sr_per_trade": 0.434,
+        "psr": 0.927,
+        "own_trials": 72,
+        "opened_trials": 90,
+        "ever_trials": 91,
+        "sr_luck_own": 0.467,
+        "sr_luck_opened": 0.483,
+        "sr_luck_ever": 0.483,
+        "dsr_own": 0.456,
+        "dsr_opened": 0.436,
+        "dsr_ever": 0.435
+      },
+      {
+        "test": "test2",
+        "strategy": "A",
+        "from": "2020-01-01",
+        "to": "2023-10-09",
+        "trades": 137,
+        "net": -62774,
+        "sr_per_trade": -0.364,
+        "psr": 0.0,
+        "own_trials": 9,
+        "opened_trials": 90,
+        "ever_trials": 91,
+        "sr_luck_own": 0.088,
+        "sr_luck_opened": 0.144,
+        "sr_luck_ever": 0.145,
+        "dsr_own": 0.0,
+        "dsr_opened": 0.0,
+        "dsr_ever": 0.0
+      },
+      {
+        "test": "test2",
+        "strategy": "B",
+        "from": "2020-01-01",
+        "to": "2023-10-09",
+        "trades": 16,
+        "net": 6962,
+        "sr_per_trade": 0.042,
+        "psr": 0.565,
+        "own_trials": 3,
+        "opened_trials": 90,
+        "ever_trials": 91,
+        "sr_luck_own": 0.144,
+        "sr_luck_opened": 0.422,
+        "sr_luck_ever": 0.423,
+        "dsr_own": 0.345,
+        "dsr_opened": 0.069,
+        "dsr_ever": 0.069
+      },
+      {
+        "test": "test2",
+        "strategy": "C",
+        "from": "2020-01-01",
+        "to": "2023-10-09",
+        "trades": 13,
+        "net": -3707,
+        "sr_per_trade": -0.035,
+        "psr": 0.451,
+        "own_trials": 72,
+        "opened_trials": 90,
+        "ever_trials": 91,
+        "sr_luck_own": 0.453,
+        "sr_luck_opened": 0.469,
+        "sr_luck_ever": 0.469,
+        "dsr_own": 0.045,
+        "dsr_opened": 0.04,
+        "dsr_ever": 0.04
+      }
+    ],
+    "opened_after": {
+      "test": [
+        "A"
+      ],
+      "holdout": [
+        "A",
+        "methods",
+        "B"
+      ],
+      "test3": [
+        "A",
+        "methods",
+        "B",
+        "C"
+      ],
+      "test2": [
+        "A",
+        "methods",
+        "B",
+        "C"
+      ]
+    },
+    "opened_counts": {
+      "test": 9,
+      "holdout": 20,
+      "test3": 90,
+      "test2": 90
+    },
     "slip_bp": 5,
-    "windows": "sealed tests 2016-2019 and 2020-2023, pooled",
-    "source": "results/train_sweep.csv, methods_train.csv, fairvalue_dev.csv, strategy_c_dev_grid.csv, sealed_trades.csv"
+    "windows": "rows: sealed tests 2016-2019 and 2020-2023, pooled; per_result: each sealed result alone",
+    "source": "results/train_sweep.csv, methods_train.csv, fairvalue_dev.csv, strategy_c_dev_grid.csv, overfit.json, sealed_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, test_trades.csv"
   },
   "costs": {
     "rows": [
@@ -432,13 +656,49 @@
           "raw_bp": -0.09
         }
       },
+      "test": {
+        "from": "2025-05-01",
+        "to": "2025-07-31",
+        "GOLDGUINEA": {
+          "half_bp": 4.03,
+          "lo": 3.02,
+          "hi": 5.18,
+          "pairs": 63,
+          "months": 3,
+          "raw_bp": 4.03
+        },
+        "GOLDM": {
+          "half_bp": 2.22,
+          "lo": 0.0,
+          "hi": 8.41,
+          "pairs": 63,
+          "months": 3,
+          "raw_bp": 2.22
+        },
+        "GOLDPETAL": {
+          "half_bp": 4.0,
+          "lo": 0.0,
+          "hi": 7.15,
+          "pairs": 63,
+          "months": 3,
+          "raw_bp": 4.0
+        },
+        "GOLDTEN": {
+          "half_bp": 3.23,
+          "lo": 0.0,
+          "hi": 9.83,
+          "pairs": 63,
+          "months": 3,
+          "raw_bp": 3.23
+        }
+      },
       "holdout": {
         "from": "2025-08-06",
         "to": "2026-05-29",
         "GOLDGUINEA": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": -0.34,
+          "hi": 0.0,
           "pairs": 199,
           "months": 10,
           "raw_bp": -10.56
@@ -462,7 +722,7 @@
         "GOLDTEN": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": -0.92,
+          "hi": 0.0,
           "pairs": 199,
           "months": 10,
           "raw_bp": -13.14
