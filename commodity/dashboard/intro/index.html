@@ -129,7 +129,7 @@ html.lenis,html.lenis body{height:auto}
 .lenis:not(.lenis-autoToggle).lenis-stopped{overflow:clip}
 .lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
 .beat{perspective:1400px}
-.card{--ty:0px;--sc:1;--rx:0deg;transform:translateY(-50%) translateY(var(--ty)) rotateX(var(--rx)) scale(var(--sc));transform-origin:50% 100%}
+.card{--ty:0px;--sc:1;--rx:0deg;--tlx:0deg;--tly:0deg;--sk:0deg;transform:translateY(-50%) translateY(var(--ty)) rotateX(calc(var(--rx) + var(--tlx))) rotateY(var(--tly)) skewY(var(--sk)) scale(var(--sc));transform-origin:50% 100%}
 .w{display:inline-block;overflow:clip;overflow-clip-margin:.12em;vertical-align:top;padding-bottom:.06em;margin-bottom:-.06em}
 .w>i{display:inline-block;font-style:normal}
 .hl{background-size:220% 100%;background-position:calc(100% - var(--sh,0) * 100%) 0}
@@ -157,10 +157,47 @@ html.lenis,html.lenis body{height:auto}
 .no-gl #gl{display:none}
 .no-gl .lbls{display:none}
 
+/* ---- designer motion, all in gold.
+   The cursor: a soft gold light trails it over the stage; the glass card under it catches the light and its border
+   glints near it (as on the site in dark mode); a click sends out a gold ripple. Buttons lean towards the cursor. */
+.cglow{position:fixed;left:0;top:0;z-index:4;width:680px;height:680px;margin:-340px 0 0 -340px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .8s ease;will-change:transform;
+  background:radial-gradient(circle,rgba(255,214,138,.17),rgba(232,180,74,.07) 32%,rgba(232,180,74,.02) 52%,transparent 66%);mix-blend-mode:screen}
+:root[data-theme="light"] .cglow{mix-blend-mode:multiply;background:radial-gradient(circle,rgba(206,160,64,.20),rgba(206,160,64,.07) 34%,transparent 64%)}
+.cglow.on{opacity:1}
+.card>:not(.sheen){position:relative;z-index:1}
+.card .sheen{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;transition:opacity .5s ease;
+  background:radial-gradient(520px circle at var(--mx,50%) var(--my,-40%),rgba(255,226,160,.12),transparent 45%)}
+.card .sheen::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:radial-gradient(260px circle at var(--mx,50%) var(--my,-40%),rgba(255,231,170,.95),rgba(255,231,170,0) 70%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+:root[data-theme="light"] .card .sheen{background:radial-gradient(520px circle at var(--mx,50%) var(--my,-40%),rgba(214,170,80,.14),transparent 45%)}
+:root[data-theme="light"] .card .sheen::after{background:radial-gradient(260px circle at var(--mx,50%) var(--my,-40%),rgba(176,124,26,.8),rgba(176,124,26,0) 70%)}
+.card.lit .sheen{opacity:1}
+.ripple{position:fixed;left:0;top:0;z-index:12;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;pointer-events:none;
+  border:1.5px solid rgba(246,222,160,.95);box-shadow:0 0 18px rgba(232,180,74,.6),inset 0 0 14px rgba(232,180,74,.35)}
+:root[data-theme="light"] .ripple{border-color:rgba(150,106,20,.9);box-shadow:0 0 16px rgba(176,124,26,.35)}
+/* the text: the headline's gold phrase shimmers, the body lights up word by word as the scene arrives,
+   table rules draw in, and the eyebrow decodes like a ticker */
+.js-sw .card p .sw{opacity:clamp(.24,calc(.24 + (var(--rp,1) * 1.3 - var(--i)) * 7),1)}
+.js-rv .rows li{border-top-color:transparent;position:relative}
+.js-rv .rows li::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;transform-origin:0 50%;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--gold),var(--rule) 40%);transition:transform 1s var(--out) calc(var(--d,0) * 1s)}
+.js-rv .rows.drawn li::before{transform:scaleX(1)}
+/* the gold button: its label rolls over on hover, a shine sweeps across it, and it leans towards the cursor */
+.cta a{position:relative;overflow:hidden}
+.cta .roll{display:inline-grid;overflow:hidden;line-height:1.25}
+.cta .roll>span{grid-area:1/1;transition:transform .55s var(--spring)}
+.cta .roll>span+span{transform:translateY(115%)}
+.cta a:hover .roll>span:first-child{transform:translateY(-115%)}
+.cta a:hover .roll>span+span{transform:none}
+.cta .go::after{content:"";position:absolute;inset:0;pointer-events:none;transform:translateX(-120%);
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 48%,rgba(255,255,255,.1) 56%,transparent 70%)}
+.cta .go:hover::after{transform:translateX(120%);transition:transform .9s var(--out)}
+
 @media (max-width:760px){
   .beat{height:230vh;height:230svh}
   .beat:last-child{height:150vh;height:150svh}
-  .card{position:sticky;top:43svh;transform:translateY(var(--ty)) rotateX(var(--rx)) scale(var(--sc));width:auto;margin-left:0;padding:20px 18px 18px;border-radius:24px;max-height:calc(57svh - 16px - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain}
+  .card{position:sticky;top:43svh;transform:translateY(var(--ty)) rotateX(var(--rx)) skewY(var(--sk)) scale(var(--sc));width:auto;margin-left:0;padding:20px 18px 18px;border-radius:24px;max-height:calc(57svh - 16px - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain}
   h1{font-size:clamp(32px,9.6vw,42px);margin-bottom:12px}
   h2{font-size:clamp(26px,7.6vw,32px);margin-bottom:10px}
   .eyebrow{font-size:11px;margin-bottom:10px}
@@ -178,7 +215,9 @@ html.lenis,html.lenis body{height:auto}
   .tape{display:none}
 }
 @media (max-width:420px){.lbl{font-size:10px;padding:4px 6px;border-radius:10px}.lbl b{font-size:11px;letter-spacing:0}}
-@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card.glint::after{animation:none}.card{will-change:auto;--ty:0px!important;--sc:1!important;--rx:0deg!important}}
+@media (prefers-reduced-motion:reduce){.hint i::after{animation:none}.card.glint::after{animation:none}.card{will-change:auto;--ty:0px!important;--sc:1!important;--rx:0deg!important;--tlx:0deg!important;--tly:0deg!important;--sk:0deg!important}
+  .cta .roll>span{transition:none}.cta .go::after{display:none}}
+@media (hover:none){.cglow{display:none}}
 </style>
 </head>
 <body style="margin:0">
@@ -188,6 +227,7 @@ html.lenis,html.lenis body{height:auto}
 <canvas id="gl" aria-hidden="true"></canvas>
 <div class="lbls" id="lbls" aria-hidden="true"></div>
 <div class="progress" id="prog" aria-hidden="true"></div>
+<div class="cglow" id="cglow" aria-hidden="true"></div>
 
 <header class="bar">
   <a class="brand" href="/" data-enter aria-label="Parity home"><span class="mark" aria-hidden="true"><i></i><i></i></span>Parity</a>
@@ -283,7 +323,7 @@ html.lenis,html.lenis body{height:auto}
       <h2><span class="hl">Parity</span></h2>
       <p>Checks whether MCX’s four gold contracts agree, whether any gap survives real costs, and tells a trader when one is worth a look. Built for Hack in Hills ’26 by</p>
       <ul class="team"><li>Nikhil Kumar</li><li>Sai Ganesh</li><li>Ishaan Chhabra</li></ul>
-      <div class="cta"><a class="go" href="/" data-enter>Enter Parity</a><a class="alt" href="/demo">Watch the 1:28 demo</a></div>
+      <div class="cta"><a class="go" href="/" data-enter aria-label="Enter Parity"><span class="roll" aria-hidden="true"><span>Enter Parity</span><span>Enter Parity</span></span></a><a class="alt" href="/demo" aria-label="Watch the 1:28 demo"><span class="roll" aria-hidden="true"><span>Watch the 1:28 demo</span><span>Watch the 1:28 demo</span></span></a></div>
     </div>
   </section>
 </main>
@@ -381,8 +421,16 @@ function sceneB() {      // the first stretch eases in at half speed, so even th
 
 /* ---------- cards: glass panels fade, rise and tip back with distance from their resting place.
    Arriving from below they lean back slightly and grow to full size; leaving upward they shrink a touch. */
-function cardsFrame(vh) {
+const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+const cglow = $("#cglow");
+cards.forEach(c => { const sh = document.createElement("i"); sh.className = "sheen"; sh.setAttribute("aria-hidden", "true"); c.prepend(sh); c._tl = [0, 0]; c._ci = -1; c._rp = -1; });
+const mags = [...document.querySelectorAll(".cta a, .bar .pill, .bar .brand")].map(el => ({ el, x: 0, y: 0, w: "" }));
+let gx = 0, gy = 0, gtx = 0, gty = 0, gOn = false, hoverCard = null, skew = 0;
+function cardsFrame(vh, dt) {
   const rects = cards.map(c => c.getBoundingClientRect());   // every read first, then every write: one layout per frame
+  const mrect = fine && !reduce ? mags.map(m => m.el.getBoundingClientRect()) : null;
+  const ks = 1 - Math.exp(-dt / 0.14);
+  if (!reduce) skew += (clamp(-vel * 0.045, -2.4, 2.4) - skew) * (1 - Math.exp(-dt / 0.12));   // cards lean with scroll speed
   cards.forEach((c, n) => {
     const r = rects[n];
     const ty = parseFloat(c.style.getPropertyValue("--ty")) || 0;   // measure the card without our own offset
@@ -392,15 +440,49 @@ function cardsFrame(vh) {
     const o = 1 - sm(clamp((d - 0.35) / 0.65));
     c.style.opacity = o.toFixed(3);
     if (o > 0.55 && c._reveal) { const f = c._reveal; c._reveal = null; f(); }   // reveal once, as it settles
-    if (reduce) return;
+    if (reduce || o < 0.01) return;
     const e = sm(clamp((d - 0.2) / 0.8));
     c.style.setProperty("--ty", (Math.sign(s) * e * vh * 0.06).toFixed(1) + "px");
     c.style.setProperty("--sc", (1 - e * (s > 0 ? 0.05 : 0.03)).toFixed(4));
     c.style.setProperty("--rx", (s > 0 ? e * 9 : -e * 4).toFixed(2) + "deg");
-    // gold headline sheen slides across as the card passes through
-    c.style.setProperty("--sh", clamp(0.5 - s * 0.6).toFixed(3));
+    c.style.setProperty("--sh", clamp(0.5 - s * 0.6).toFixed(3));   // gold headline sheen slides across as the card passes through
+    c.style.setProperty("--sk", skew.toFixed(2) + "deg");
+    // arriving, the card opens out of a rounded slit (a clip wipe); leaving, it closes a little
+    const ci = Math.round((s > 0 ? e : e * 0.35) * 400) / 400;
+    if (ci !== c._ci) { c._ci = ci; const rr = innerWidth <= 760 ? 24 : 30;
+      c.style.clipPath = `inset(calc(${(ci * 18).toFixed(2)}% - ${((1 - ci) * 80).toFixed(1)}px) calc(${(ci * 6).toFixed(2)}% - ${((1 - ci) * 80).toFixed(1)}px) round ${rr}px)`; }
+    // the body text lights up word by word as its scene arrives (the first card is lit from the start)
+    const rp = n === 0 ? 1 : Math.round(clamp((cur - (n - 0.42)) / 0.45) * 200) / 200;
+    if (rp !== c._rp) { c._rp = rp; c.style.setProperty("--rp", rp); }
+    // a gentle tilt towards the cursor, and the light under it
+    let tx = 0, tyy = 0;
+    if (c === hoverCard && gOn) { tx = (gty - r.top) / r.height - 0.5; tyy = (gtx - r.left) / r.width - 0.5;
+      c.style.setProperty("--mx", (gtx - r.left).toFixed(0) + "px"); c.style.setProperty("--my", (gty - r.top).toFixed(0) + "px"); }
+    c._tl[0] += (tx - c._tl[0]) * ks; c._tl[1] += (tyy - c._tl[1]) * ks;
+    if (Math.abs(c._tl[0]) + Math.abs(c._tl[1]) > 0.002 || c === hoverCard) { c.style.setProperty("--tlx", (-c._tl[0] * 6).toFixed(2) + "deg"); c.style.setProperty("--tly", (c._tl[1] * 7).toFixed(2) + "deg"); }
   });
+  if (!mrect) return;
+  // the light trails the cursor; buttons lean towards it
+  const kg = 1 - Math.exp(-dt / 0.15); gx += (gtx - gx) * kg; gy += (gty - gy) * kg;
+  if (gOn) cglow.style.transform = `translate3d(${gx.toFixed(1)}px,${gy.toFixed(1)}px,0)`;
+  mags.forEach((m, n) => { const r = mrect[n]; if (!r.width) return;
+    const cx = r.left + r.width / 2 - m.x, cy = r.top + r.height / 2 - m.y, dx = gtx - cx, dy = gty - cy, R = Math.max(r.width, r.height) * 0.75 + 46, dd = Math.hypot(dx, dy);
+    const pull = gOn && dd < R ? (1 - dd / R) * 0.32 : 0, km = 1 - Math.exp(-dt / (pull ? 0.12 : 0.28));
+    m.x += (dx * pull - m.x) * km; m.y += (dy * pull - m.y) * km;
+    const w = Math.abs(m.x) + Math.abs(m.y) < 0.05 ? "" : `${m.x.toFixed(1)}px ${m.y.toFixed(1)}px`; if (w !== m.w) { m.w = w; m.el.style.translate = w; } });
 }
+if (fine && !reduce) {
+  addEventListener("pointermove", e => { if (e.pointerType !== "mouse") return; gtx = e.clientX; gty = e.clientY;
+    if (!gOn) { gOn = true; gx = gtx; gy = gty; cglow.classList.add("on"); }
+    const c = e.target.closest ? e.target.closest(".card") : null;
+    if (c !== hoverCard) { if (hoverCard) hoverCard.classList.remove("lit"); hoverCard = c; if (c) c.classList.add("lit"); } }, { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => { gOn = false; cglow.classList.remove("on"); if (hoverCard) hoverCard.classList.remove("lit"); hoverCard = null; });
+}
+if (!reduce) addEventListener("pointerdown", e => {   // a gold ripple where you click
+  const el = document.createElement("i"); el.className = "ripple"; document.body.appendChild(el);
+  const at = `translate3d(${e.clientX}px,${e.clientY}px,0)`;
+  el.animate([{ transform: at + " scale(.2)", opacity: 1 }, { transform: at + " scale(2.6)", opacity: 0 }], { duration: 700, easing: "cubic-bezier(.16,1,.3,1)" }).onfinish = () => el.remove();
+}, { passive: true });
 
 /* ---------- reveals: when a card arrives its headline rises word by word out of a mask, then the text
    and rows follow in a stagger, and numbers count up to their real value from data.json. Once per card. */
@@ -423,6 +505,15 @@ function splitWords(el) {
   return [...el.querySelectorAll(".w > i")];
 }
 const NUM = /\d/;
+/* the eyebrow decodes left to right like a ticker board, then settles on its real text */
+const GLYPH = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+function scramble(el, dur = 0.75) {
+  const fin = el.textContent, t0 = performance.now(), n = fin.length;
+  const step = now => { const u = Math.min(1, (now - t0) / (dur * 1000)); let out = "";
+    for (let i = 0; i < n; i++) { const c = fin[i]; out += /[\s·’'–-]/.test(c) || i < u * n * 1.2 - 3 ? c : GLYPH[(Math.random() * GLYPH.length) | 0]; }
+    el.textContent = u >= 1 ? fin : out; if (u < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 /* count-up: numbers climb to their value as the card arrives, as plain text in tabular figures, so nothing shifts or
    overlaps while they move; the finished text is put back exactly as data.json wrote it */
 function countUp(el, delay) {
@@ -447,8 +538,19 @@ if (M && !reduce) {
       M.animate(rest, { opacity: [0, 1], y: [18, 0], filter: ["blur(6px)", "blur(0px)"] }, { duration: 0.8, delay: M.stagger(0.05, { startDelay: 0.25 }), ease: [0.16, 1, 0.3, 1] });
       nums.forEach((b, k) => countUp(b, 0.3 + k * 0.08));
       card.classList.add("glint");
+      const eb = card.querySelector(".eyebrow"); if (eb) scramble(eb);
+      card.querySelectorAll(".rows").forEach(r => { [...r.children].forEach((li, k) => li.style.setProperty("--d", (0.3 + k * 0.09).toFixed(2))); r.classList.add("drawn"); });
     };
   });
+  // body text, word by word (a <b> or number counts as one word), for the light that sweeps through it as the scene arrives
+  document.documentElement.classList.add("js-sw");
+  cards.forEach(card => { const units = [];
+    card.querySelectorAll("p:not(.eyebrow)").forEach(p => [...p.childNodes].forEach(n => {
+      if (n.nodeType === 3) { const frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(part => { if (!part) return; if (/^\s+$/.test(part)) { frag.append(part); return; } const w = document.createElement("span"); w.className = "sw"; w.textContent = part; frag.append(w); units.push(w); });
+        n.replaceWith(frag); }
+      else if (n.nodeType === 1) { n.classList.add("sw"); units.push(n); } }));
+    units.forEach((u, i) => u.style.setProperty("--i", (i / Math.max(1, units.length)).toFixed(3))); });
   // if frames are held back (a background tab, power saving), never leave the opening card blank
   setTimeout(() => { const f = cards[0]._reveal; if (f) { cards[0]._reveal = null; f(); } }, 1200);
 }
@@ -916,8 +1018,8 @@ if (renderer) {
     return new THREE.CanvasTexture(c); })();
   const spGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(sparkAt.flatMap(v => [v.x, v.y, v.z]), 3))
     .setAttribute("ph", new THREE.Float32BufferAttribute(sparkAt.map(() => Math.random() * 100), 1));
-  const sparkMat = roomMat(new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, map: { value: starTex }, k: { value: 1 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: "attribute float ph; uniform float t, k; varying float a; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); float s = sin(t * (0.5 + fract(ph * 7.31) * 0.8) + ph); a = pow(max(s, 0.), 30.); gl_PointSize = k * (30. + 70. * a) / -mv.z; gl_Position = projectionMatrix * mv; }",
+  const sparkMat = roomMat(new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, map: { value: starTex }, k: { value: 1 }, boost: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: "attribute float ph; uniform float t, k, boost; varying float a; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); float s = sin(t * (0.5 + fract(ph * 7.31) * 0.8) + ph); a = max(pow(max(s, 0.), 30.), boost * pow(max(sin(t * 9. + ph * 3.), 0.), 4.)); gl_PointSize = k * (30. + 70. * a) / -mv.z; gl_Position = projectionMatrix * mv; }",
     fragmentShader: "uniform sampler2D map; varying float a; void main(){ vec4 c = texture2D(map, gl_PointCoord); gl_FragColor = vec4(c.rgb * a * 1.5, c.a * a); }" }));
   const sparks = new THREE.Points(spGeo, sparkMat); sparks.frustumCulled = false; room.add(sparks);
 
@@ -1221,25 +1323,55 @@ if (renderer) {
   /* Pari: breathes and sways, blinks at uneven moments (sometimes twice), turns to the cursor with a lag and leans into the turn,
      and every few seconds does something, never the same thing twice running: waves, hops, looks around, points up at the mark,
      cheers or spins. Every move eases in and out of the idle pose; squash and stretch keep the soles on the gold. */
-  const PA = { land: -1, act: null, next: 0, last: "", blink: 2, blink2: 0, yaw: 0, ex: 0, ey: 0, poke: null, lastPoke: "", sayEnd: 0, burstT: -9 };
+  const PA = { land: -1, act: null, next: 0, last: "", blink: 2, blink2: 0, yaw: 0, ex: 0, ey: 0, poke: null, lastPoke: "", sayEnd: 0, press: null, pressId: -1, clicks: [], noticed: 0 };
   const PACTS = { wave: 2.4, hop: 1.15, look: 2.6, point: 2.2, cheer: 1.7, spin: 1.4 };
-  // clicking (or tapping) Pari: a reaction, a line in its bubble and a few coins kicked up; clicking elsewhere: it looks and points there
-  const PREACT = { giggle: 1.4, boing: 1.25, twirl: 1.5, surprise: 1.5, lookat: 1.9 };
-  const PSAY = { giggle: ["Hee hee, that tickles!", "Hee hee!"], boing: ["Boing!", "Up we go!"], twirl: ["Wheee!", "Round and round!"], surprise: ["Oh! Hello there.", "You found me!"] };
+  /* playing with Pari. A click (or tap) on it: one of eight reactions, never the same twice running, with a line in its
+     bubble and a few coins kicked up. Three quick clicks make it dizzy; six in a few seconds hit the jackpot. Press and
+     hold to charge a super jump, released when you let go. Click anywhere else: it turns and points there. Its eyes
+     follow the cursor, and it notices when the cursor first reaches it. */
+  const TAPS = ["giggle", "boing", "twirl", "surprise", "dance", "flip", "shy", "heart"];
+  const PREACT = { giggle: 1.4, boing: 1.25, twirl: 1.5, surprise: 1.5, lookat: 1.9, dance: 2.2, flip: 1.3, shy: 1.9, heart: 1.9, dizzy: 2.6, jackpot: 2.2, super: 1.7, notice: 0.75 };
+  const PSAY = { giggle: ["Hee hee, that tickles!", "Hee hee!"], boing: ["Boing!", "Up we go!"], twirl: ["Wheee!", "Round and round!"], surprise: ["Oh! Hello there.", "You found me!"],
+    dance: ["Dance break!", "Watch these moves!"], flip: ["Ta-da!", "Nailed it!"], shy: ["Oh, stop it…", "You’re making me blush!"], heart: ["Love you too!", "Pure gold, that’s you."],
+    dizzy: ["Whoa… dizzy!", "Too many clicks!"], jackpot: ["Jackpot!", "Coins for everyone!"], super: ["Super jump!", "Boing-oing-oing!"] };
   const PJ = mobile ? 0.25 : 1;   // how high Pari may jump: on phones the mark sits close above
   const BST = Array.from({ length: NB }, () => ({ p: V(0, 0, 0), v: V(0, 0, 0), land: -1, spin: 0, a: 0, r: 0, q: new THREE.Quaternion() }));
   const BS = mobile ? 0.42 : 0.55;   // their size, against the hoard's coins
   const _ph = new THREE.Vector3();
   const pariScreen = () => { _ph.copy(pari.position); _ph.y += 0.25 * PARI_S; const d = _ph.distanceTo(camera.position); _ph.project(camera);
     return [(_ph.x * 0.5 + 0.5) * innerWidth, (-_ph.y * 0.5 + 0.5) * innerHeight, 0.58 * PARI_S * innerHeight / (2 * d * Math.tan(camera.fov * Math.PI / 360))]; };
+  const onPari = (x, y) => { const [sx, sy, rp] = pariScreen(); return Math.hypot(x - sx, y - sy) < rp; };
   addEventListener("pointerdown", e => {
     if (reduce || !pari.visible || fin < 0.5 || PA.land < 0) return;
     if (e.target.closest && e.target.closest("a,button,input,textarea,select,label,.card,#dots,#chap")) return;
-    const [sx, sy, rp] = pariScreen(), dx = e.clientX - sx, dy = e.clientY - sy;
-    if (Math.hypot(dx, dy) < rp) { const ks = Object.keys(PSAY).filter(k => k !== PA.lastPoke); PA.lastPoke = ks[Math.floor(Math.random() * ks.length)]; PA.poke = { k: PA.lastPoke }; }
-    else PA.poke = { k: "lookat", tx: clamp(dx / (innerWidth * 0.3), -1, 1) };
+    if (onPari(e.clientX, e.clientY)) { PA.press = performance.now(); PA.pressId = e.pointerId; }
+    else { const [sx] = pariScreen(); PA.poke = { k: "lookat", tx: clamp((e.clientX - sx) / (innerWidth * 0.3), -1, 1) }; }
   }, { passive: true });
-  let pariHov = false;
+  addEventListener("pointerup", e => {
+    if (PA.press == null || e.pointerId !== PA.pressId) return;
+    const now = performance.now(), held = (now - PA.press) / 1000; PA.press = null;
+    if (held >= 0.35) { PA.poke = { k: "super", power: clamp((held - 0.15) / 1.0, 0.4, 1) }; PA.lastPoke = "super"; return; }
+    PA.clicks = PA.clicks.filter(c => now - c < 4000); PA.clicks.push(now);
+    // a combo in progress (dizzy, jackpot, super jump) plays out: ordinary clicks neither cut it short nor replace it
+    const BIG = ["dizzy", "jackpot", "super"], busy = (PA.act && BIG.includes(PA.act.k)) || (PA.poke && BIG.includes(PA.poke.k));
+    let k = null;
+    if (PA.clicks.length >= 6) { k = "jackpot"; PA.clicks = []; }
+    else if (PA.clicks.filter(c => now - c < 1200).length >= 3) { if (!busy) k = "dizzy"; }
+    else if (!busy) { const ks = TAPS.filter(x => x !== PA.lastPoke); k = ks[Math.floor(Math.random() * ks.length)]; if (mobile && k === "flip") k = "boing"; }
+    if (!k) return;
+    PA.lastPoke = k; PA.poke = { k };
+  }, { passive: true });
+  addEventListener("pointercancel", e => { if (e.pointerId === PA.pressId) PA.press = null; }, { passive: true });
+  let pariHov = false, eyeTX = 0, eyeTY = 0;
+  // little gold hearts and stars, for the 'heart' and 'dizzy' reactions
+  const fxTex = draw => { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d"), g = x.createLinearGradient(0, 8, 0, 58);
+    g.addColorStop(0, "#fff1c4"); g.addColorStop(0.5, "#f2c255"); g.addColorStop(1, "#b9822a"); x.fillStyle = g; x.shadowColor = "rgba(255,220,140,.9)"; x.shadowBlur = 6; draw(x); x.fill();
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+  const heartT = fxTex(x => { x.beginPath(); x.moveTo(32, 54); x.bezierCurveTo(6, 36, 6, 12, 22, 12); x.bezierCurveTo(28, 12, 31, 16, 32, 20); x.bezierCurveTo(33, 16, 36, 12, 42, 12); x.bezierCurveTo(58, 12, 58, 36, 32, 54); });
+  const starT = fxTex(x => { x.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 11 : 26, a = -Math.PI / 2 + i * Math.PI / 5; x.lineTo(32 + Math.cos(a) * r, 32 + Math.sin(a) * r); } x.closePath(); });
+  const fx = new THREE.Group(); room.add(fx);
+  const sprite = map => { const s = new THREE.Sprite(roomMat(new THREE.SpriteMaterial({ map, transparent: true, depthWrite: false, toneMapped: false }))); s.visible = false; fx.add(s); return s; };
+  const hearts = Array.from({ length: 5 }, () => sprite(heartT)), stars = Array.from({ length: 3 }, () => sprite(starT));
   function pariLive(v, t, dt) {
     const A = PA, k = 1 - Math.exp(-dt / 0.3);
     // the drop: falls in from above, faster as it goes and stretched a touch; a damped squash on landing, then a wave hello
@@ -1247,13 +1379,19 @@ if (renderer) {
     if (v < 0.97 && A.land >= 0) { A.land = -1; A.act = null; }
     let lift = (1 - v * v) * P_DROP, sq = v < 1 ? -0.1 * Math.sin(Math.PI * v) : 0;   // a short drop (phones: it pops up in place); it never crosses the mark above
     if (A.land >= 0) { const u = t - A.land; sq += 0.26 * Math.exp(-u * 6.5) * Math.cos(u * 17); }
-    let armRz = -0.16 + 0.05 * Math.sin(t * 1.6 + 0.5), armLz = 0.04 * Math.sin(t * 1.6), armRx = 0, yawAdd = 0, spin = 0, lookY = 0, eyeX = 0, eyeY = 0;
-    let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1), squint = 0, wide = 0, grin = 0;
+    let armRz = -0.16 + 0.05 * Math.sin(t * 1.6 + 0.5), armLz = 0.04 * Math.sin(t * 1.6), armRx = 0, armLx = 0, yawAdd = 0, spin = 0, flip = 0, lookY = 0, eyeX = 0, eyeY = 0;
+    let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1), squint = 0, wide = 0, grin = 0, heartU = -1, dizzyE = 0;
+    const kz = PARI_S / 0.72;
     if (!reduce && A.land >= 0) {
-      if (A.poke) { const q = A.poke; A.poke = null; A.act = { k: q.k, t0: t, d: PREACT[q.k], tx: q.tx || 0 };
-        if (q.k !== "lookat") { burstGo(t); const say = PSAY[q.k]; pariL.innerHTML = `<b>${say[Math.floor(Math.random() * say.length)]}</b><small>Welcome to the vault</small>`; A.sayEnd = t + 2.6; } }
+      if (A.poke) { const q = A.poke; A.poke = null; A.act = { k: q.k, t0: t, d: PREACT[q.k], tx: q.tx || 0, power: q.power || 0 };
+        if (q.k !== "lookat" && q.k !== "notice") { burstGo(t); if (q.k === "jackpot") { A.burst2 = t + 0.4; A.burst3 = t + 0.8; }
+          const say = PSAY[q.k]; pariL.innerHTML = `<b>${say[Math.floor(Math.random() * say.length)]}</b><small>Welcome to the vault</small>`; A.sayEnd = t + 2.6; } }
+      if (A.burst2 && t > A.burst2) { A.burst2 = 0; burstGo(t); }
+      if (A.burst3 && t > A.burst3) { A.burst3 = 0; burstGo(t); }
       if (A.sayEnd && t > A.sayEnd) { A.sayEnd = 0; pariL.innerHTML = PARI_HI; }
-      if (!A.act && t > A.next) { const ks = Object.keys(PACTS).filter(x => x !== A.last), kk = ks[Math.floor(Math.random() * ks.length)]; A.act = { k: kk, t0: t, d: PACTS[kk] }; }
+      if (!A.act && t > A.next && A.press == null) { const ks = Object.keys(PACTS).filter(x => x !== A.last), kk = ks[Math.floor(Math.random() * ks.length)]; A.act = { k: kk, t0: t, d: PACTS[kk] }; }
+      // held down: it crouches lower and trembles as the jump charges
+      if (A.press != null) { const ch = clamp((performance.now() - A.press) / 1000 / 1.15); if (ch > 0.12) { A.act = null; sq += 0.3 * sm(ch); sway += 0.04 * Math.sin(t * 70) * ch; squint = 0.6 * ch; armRz -= 0.45 * ch; armLz += 0.35 * ch; } }
       const a = A.act;
       if (a && t >= a.t0) { const u = (t - a.t0) / a.d, e = sm(clamp(u / 0.18)) * sm(clamp((1 - u) / 0.22));
         if (a.k === "wave") { armRz = armRz * (1 - e) + e * (0.15 + 0.42 * Math.sin(u * Math.PI * 7)); sway += e * 0.05; }
@@ -1275,7 +1413,25 @@ if (renderer) {
         else if (a.k === "surprise") { wide = e; sq -= 0.12 * e; armRz = armRz * (1 - e) + 0.35 * e; armLz = armLz * (1 - e) - 1.7 * e; lift += 0.06 * PJ * Math.sin(Math.PI * clamp(u / 0.25)); }
         else if (a.k === "lookat") { yawAdd = 0.75 * a.tx * e; eyeX = 0.045 * a.tx * e;   // turns to where you clicked and points that way
           if (a.tx > 0) armRz = armRz * (1 - e) - 0.55 * e; else armLz = armLz * (1 - e) - 0.95 * e; }
-        if (u >= 1) { A.last = a.k; A.act = null; A.next = t + 1.2 + Math.random() * 2.2; } }
+        else if (a.k === "dance") { const beat = Math.sin(u * Math.PI * 8); grin = e;   // a side-to-side shuffle on the beat, arms pumping
+          sway += 0.17 * beat * e; yawAdd = 0.35 * Math.sin(u * Math.PI * 4) * e; lift += 0.03 * PJ * Math.abs(beat) * e;
+          armRz = armRz * (1 - e) + e * (-0.2 + 0.55 * beat); armLz = armLz * (1 - e) + e * (-0.55 + 0.55 * beat); }
+        else if (a.k === "flip") { const up = clamp((u - 0.12) / 0.66);   // a backflip (laptops; phones get a boing instead)
+          sq += u < 0.12 ? 0.18 * sm(u / 0.12) : up >= 1 ? 0.2 * Math.exp(-(u - 0.78) * 12) * Math.cos((u - 0.78) * 30) : -0.08;
+          if (up > 0 && up < 1) lift += 0.34 * Math.sin(Math.PI * up); flip = -6.2832 * sm(up); armRz += 0.5 * Math.sin(Math.PI * up); armLz -= 1.2 * Math.sin(Math.PI * up); }
+        else if (a.k === "shy") { squint = e; grin = 0.6 * e; sway += 0.05 * Math.sin(u * 9) * e; yawAdd = -0.35 * e;   // hides its eyes behind its hands
+          armRz = armRz * (1 - e) + 0.95 * e; armLz = armLz * (1 - e) - 0.95 * e; armRx = -0.95 * e; armLx = -0.95 * e; }
+        else if (a.k === "heart") { squint = e; grin = e; heartU = u; sway += 0.04 * Math.sin(u * 7) * e;   // hugs itself; little gold hearts float up
+          armRz = armRz * (1 - e) + 0.75 * e; armLz = armLz * (1 - e) - 0.75 * e; armRx = -0.6 * e; armLx = -0.6 * e; }
+        else if (a.k === "dizzy") { dizzyE = e; sway += 0.22 * Math.sin(u * 22) * (1 - u) * e; yawAdd = 0.4 * Math.sin(u * 14) * e;
+          squint = 0.5 * e; armRz += 0.5 * Math.sin(u * 17) * e; armLz -= 0.5 * Math.sin(u * 17 + 2) * e; }
+        else if (a.k === "jackpot") { wide = e; grin = e; armRz = armRz * (1 - e) + e * (0.32 + 0.12 * Math.sin(u * 34)); armLz = armLz * (1 - e) - e * (1.75 + 0.12 * Math.sin(u * 34 + 1));
+          lift += 0.07 * PJ * Math.abs(Math.sin(u * Math.PI * 4)) * e; sparkMat.uniforms.boost.value = Math.sin(Math.PI * clamp(u / 0.9)); }
+        else if (a.k === "super") { const up = clamp((u - 0.04) / 0.62), h = (mobile ? 0.09 : 0.36) * a.power;   // the charged jump: higher the longer you held
+          if (up > 0 && up < 1) { lift += h * Math.sin(Math.PI * up); spin = 6.2832 * sm(up); wide = Math.sin(Math.PI * up); armRz += 0.5 * Math.sin(Math.PI * up); armLz -= 1.6 * Math.sin(Math.PI * up); }
+          sq += up < 1 ? -0.16 * Math.sin(Math.PI * up) : 0.24 * Math.exp(-(u - 0.66) * 11) * Math.cos((u - 0.66) * 32); }
+        else if (a.k === "notice") { wide = Math.sin(Math.PI * u) * 0.8; lift += 0.04 * PJ * Math.sin(Math.PI * u); armRz += 0.2 * Math.sin(Math.PI * u); }
+        if (u >= 1) { A.last = a.k; A.act = null; A.next = t + 1.2 + Math.random() * 2.2; if (a.k === "jackpot") sparkMat.uniforms.boost.value = 0; } }
       if (t > A.blink + 0.16) { A.blink = t + 1.8 + Math.random() * 3.4; A.blink2 = Math.random() < 0.25 ? A.blink + 0.32 : 0; }
     }
     const bl = x0 => { const d = t - x0; return d > 0 && d < 0.16 ? Math.sin(Math.PI * d / 0.16) : 0; };
@@ -1283,22 +1439,34 @@ if (renderer) {
     mouth.scale.set(1 + 0.25 * grin + 0.1 * wide, 1 + 0.5 * grin, 1);
     const want = Math.atan2(camera.position.x - pari.position.x, camera.position.z - pari.position.z) + mx * 0.9 * fin + yawAdd;
     const prev = A.yaw; A.yaw += (want - A.yaw) * (reduce ? 1 : k); const turnV = (A.yaw - prev) / Math.max(dt, 1e-3);
-    pari.rotation.y = A.yaw + spin;
+    pari.rotation.set(flip, A.yaw + spin, 0);
     pariBody.rotation.z = reduce ? 0 : sway - clamp(turnV * 0.05, -0.12, 0.12); pariBody.rotation.x = my * 0.25 * fin - lookY;
-    A.ex += (mx * 0.03 * fin + eyeX - A.ex) * Math.min(1, k * 1.6); A.ey += (-my * 0.025 * fin + eyeY - A.ey) * Math.min(1, k * 1.6);
+    // its eyes follow the cursor: they look towards it, as far as the face allows
+    if (ptrOn && !reduce) { const [sx, sy, rp] = pariScreen(), dx = (ptrX - sx) / (rp * 3.5), dy = (ptrY - sy) / (rp * 3.5), l = Math.max(1, Math.hypot(dx, dy)); eyeTX = dx / l; eyeTY = dy / l; }
+    else { eyeTX *= 0.95; eyeTY *= 0.95; }
+    const ke = Math.min(1, k * 2.2);
+    A.ex += (eyeTX * 0.055 + eyeX - A.ex) * ke; A.ey += (-eyeTY * 0.04 + eyeY - A.ey) * ke;
     eyes.position.x = A.ex; eyes.position.y = 0.33 + A.ey;
-    armR.rotation.z = reduce ? -0.2 : armRz; armR.rotation.x = armRx; armL.rotation.z = reduce ? 0 : armLz;
+    armR.rotation.z = reduce ? -0.2 : armRz; armR.rotation.x = armRx; armL.rotation.z = reduce ? 0 : armLz; armL.rotation.x = armLx;
     if (reduce) { lift = 0; sq = 0; }
     const sy = 1 - sq + (reduce ? 0 : 0.018 * Math.sin(t * 1.9)), sxz = 1 + sq * 0.5;   // squash and stretch, and breathing
     const pop = reduce ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
     pari.position.y = PARI_FY + lift + P_FOOT * PARI_S * sy * pop;   // the soles stay on the gold through every squash
     const hgt = clamp(lift / 0.6); pariShadow.material.opacity = 0.38 * (1 - hgt); pariShadow.scale.setScalar(1 - 0.5 * hgt);
+    // hearts rise beside it and fade (on phones they stay low, under the mark); dizzy stars circle its head
+    const top = pari.position.y + 0.62 * PARI_S;
+    hearts.forEach((h, i) => { const hu = heartU < 0 ? -1 : (heartU * PREACT.heart - i * 0.2) / 1.1; h.visible = hu > 0 && hu < 1; if (!h.visible) return;
+      h.position.set(pari.position.x + (i % 2 ? 1 : -1) * (0.2 + 0.12 * hu + 0.03 * i) * kz, top - 0.1 * kz + hu * 0.34 * kz * (mobile ? 0.3 : 1), pari.position.z + 0.08);
+      h.material.opacity = Math.sin(Math.PI * hu); h.scale.setScalar((0.07 + 0.05 * hu) * kz); });
+    stars.forEach((st, i) => { st.visible = dizzyE > 0.01; if (!st.visible) return; const ang = t * 5 + i * 2.094;
+      st.position.set(pari.position.x + Math.cos(ang) * 0.24 * kz, top + 0.04 * kz + Math.sin(t * 9 + i) * 0.015, pari.position.z + Math.sin(ang) * 0.12 * kz);
+      st.material.opacity = dizzyE; st.scale.setScalar(0.09 * kz); });
     burstStep(t, dt);
   }
   // the kicked-up coins fly in arcs, land on the gold around Pari (never under its feet), lie flat and fade
   function burstGo(t) { A_BURST = t;
     const k = PARI_S / 0.72, r0 = 0.36 * k;   // they start from a ring just outside Pari's body, so none passes through it
-    BST.forEach((c, n) => { const vy = rnd(1.3, 1.8) * Math.sqrt(PJ), tf = 2 * vy / 9.8, out = (rnd(0.46, 0.56) * k - r0) / tf; c.a = n / NB * 6.2832 + rnd(-0.25, 0.25);
+    BST.forEach((c, n) => { const vy = rnd(1.3, 1.8) * Math.sqrt(PJ), tf = 2 * vy / 9.8, out = (rnd(0.46, 0.56) * k - r0) / tf; c.a = Math.PI / 2 + 0.95 + (n + 0.5) / NB * (6.2832 - 1.9) + rnd(-0.12, 0.12);   // to the sides and back, never across its face towards the camera
       c.p.set(pari.position.x + Math.cos(c.a) * r0, PARI_FY + 0.04, pari.position.z + Math.sin(c.a) * r0); c.v.set(Math.cos(c.a) * out, vy, Math.sin(c.a) * out); c.land = -1; c.spin = rnd(8, 14); c.r = 0; }); }
   let A_BURST = -9;
   function burstStep(t, dt) {
@@ -1309,13 +1477,13 @@ if (renderer) {
       if (c.land < 0) { ge.set(c.r, c.a, c.r * 0.5); gq.setFromEuler(ge); } else gq.copy(c.q);
       gs.setScalar(Math.max(1e-4, BS * clamp(age / 0.08) * (c.land < 0 ? 1 : clamp(1 - (t - c.land - 0.6) / 0.4)))); gm.compose(c.p, gq, gs); burst.setMatrixAt(n, gm); });
     burst.instanceMatrix.needsUpdate = true; }
-  const camP = new THREE.Vector3(), camT = new THREE.Vector3();
+  const camP = new THREE.Vector3(), camT = new THREE.Vector3(), camPs = new THREE.Vector3(), camTs = new THREE.Vector3(); let camInit = false, camLag = 0;
   let ftimes = [], lastAdj = 0, drops = 0, frameNo = 0, lastB = -1;
   frame = (b, time, dt) => {
     frameNo++;
     const dropping = dropOn && time < Math.max(landAt(3) + 1.2, OPEN_DUR + 0.3);
     trailO += ((reduce ? 0 : clamp((Math.abs(vel) - 2) / 28)) - trailO) * (1 - Math.exp(-dt / 0.25));
-    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01 || springy || b > S.team - 0.5;
+    const moving = Math.abs(b - lastB) > 1e-5 || Math.abs(tmx - mx) + Math.abs(tmy - my) > 2e-3 || dropping || trailO > 0.01 || springy || b > S.team - 0.5 || camLag > 3e-3;
     lastB = b;
     if (!moving && (frameNo & 1)) return;   // nothing scrolled: the slow ambient motion runs at half rate
 
@@ -1333,7 +1501,11 @@ if (renderer) {
     mx += (tmx - mx) * (1 - Math.exp(-dt / 0.25)); my += (tmy - my) * (1 - Math.exp(-dt / 0.25));
     fin = reduce ? 0 : clamp((b - (S.team - 0.15)) / 0.15);   // the finale: the scroll has ended, the cursor takes over
     if (!reduce) { camP.x += mx * (0.35 + 0.9 * fin); camP.y -= my * (0.22 + 0.55 * fin); }
-    camera.position.copy(camP); camera.lookAt(camT);
+    // the camera rides a spring a beat behind the scroll, so every move eases in and out, and drifts a breath at rest
+    if (!reduce) { camP.x += Math.sin(time * 0.31) * 0.022; camP.y += Math.sin(time * 0.43 + 1) * 0.016; }
+    if (camInit && !reduce) { const kc = 1 - Math.exp(-dt / 0.13); camPs.lerp(camP, kc); camTs.lerp(camT, kc); } else { camPs.copy(camP); camTs.copy(camT); camInit = true; }
+    camLag = camPs.distanceTo(camP) + camTs.distanceTo(camT);
+    camera.position.copy(camPs); camera.lookAt(camTs);
     // through the door: the field of view kicks wider for a moment, like a rush of speed
     const rush = reduce ? 0 : 9 * Math.exp(-Math.pow((camera.position.z - VC.z) / 0.9, 2)) * clamp((b - S.know) * 4);
     const fov = cam[i].fov + (cam[j].fov - cam[i].fov) * sm(f) + rush; if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
@@ -1368,7 +1540,8 @@ if (renderer) {
     pari.visible = pariShadow.visible = pariV > 0.001;
     if (pari.visible) pariLive(pariV, time, dt); else burst.visible = false;
     const hov = !reduce && ptrOn && pari.visible && fin > 0.5 && PA.land >= 0 && (() => { const [sx, sy, rp] = pariScreen(); return Math.hypot(ptrX - sx, ptrY - sy) < rp; })();
-    if (hov !== pariHov) { pariHov = hov; document.documentElement.style.cursor = hov ? "pointer" : ""; }
+    if (hov !== pariHov) { pariHov = hov; document.documentElement.style.cursor = hov ? "pointer" : "";
+      if (hov && !PA.act && !PA.poke && time - PA.noticed > 3) { PA.noticed = time; PA.poke = { k: "notice" }; } }
     // the pieces: ease between poses; a slow, small float only at the opening and the finale
     const idle = b < 0.6 ? 1 - clamp(b / 0.6) : b > S.team - 0.4 ? clamp((b - (S.team - 0.4)) / 0.4) : 0;
     P.forEach((p, k) => {
@@ -1566,7 +1739,7 @@ function loop(now) {
   if (Math.abs(target - cur) < 1e-4) cur = target;
   vel = lenis ? lenis.velocity : (scrollY - lastY) / Math.max(dt, 1e-3) / 60; lastY = scrollY;
   const vh = innerHeight;
-  cardsFrame(vh);
+  cardsFrame(vh, dt);
   prog.style.transform = `scaleX(${(scrollY / Math.max(1, tops[N] + heights[N] - vh)).toFixed(4)})`;
   if (hint) hint.style.opacity = String(1 - clamp(scrollY / (vh * 0.25)));
   const k = Math.round(cur); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }

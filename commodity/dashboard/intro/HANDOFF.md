@@ -310,3 +310,35 @@ Motion (open-source, MIT, pinned on jsDelivr):
     Pari, chart columns and the bell's dot.
   - The room's mirrored surroundings are calmer and paler, and the per-piece shades vary in brightness rather than
     drifting red.
+
+## Designer motion, a cursor light, and a Pari to play with (19 Oct 2026)
+- **Cursor (laptops):**
+  - a soft gold light trails the cursor over the stage (`.cglow`, screen blend; multiply in light mode);
+  - the glass card under the cursor catches the light and its border glints near it (`.sheen`, as on the site in dark
+    mode);
+  - a click sends out a gold ripple;
+  - "Enter Parity", "Watch the demo", "Skip intro" and the brand lean towards the cursor (magnetic, using the CSS
+    `translate` property so they never fight the card's transform).
+- **Cards, all scroll-driven:**
+  - each card opens out of a rounded slit as it arrives (an `inset()` clip wipe whose negative inset at rest keeps the
+    shadow);
+  - it tilts a few degrees towards the cursor and leans with scroll speed (`--tlx/--tly/--sk`);
+  - the body text lights up word by word as its scene arrives (one CSS variable per card, `--rp`);
+  - the eyebrow decodes like a ticker board;
+  - table rules draw in from a gold tip;
+  - the gold button's label rolls over on hover, with a shine sweeping across it.
+  - All reads happen before all writes in `cardsFrame`, so it is still one layout per frame.
+- **Fluidity:** the camera rides a spring a beat behind the scroll (tau 0.13 s), so every move eases in and out, and it
+  drifts a breath at rest. Frames keep full rate while the camera is still catching up (`camLag`).
+- **Pari:**
+  - its eyes follow the cursor (up to the edge of its face);
+  - it notices the cursor arriving;
+  - **click:** eight reactions, never the same twice running: giggle, boing, twirl, surprise, dance, backflip (phones
+    get a boing), shy (hides its eyes) and heart (gold hearts float up). Each has a line in its bubble.
+  - **combos:** three clicks within 1.2 s make it dizzy, with stars circling its head; six within 4 s hit the jackpot:
+    three bursts of coins and the whole hoard sparkling (a `boost` uniform on the glint shader). Combos play out
+    without being interrupted.
+  - **press and hold** charges a super jump: it crouches and trembles, then jumps higher the longer you held, with a
+    spin. The jump stays under the mark (phones a quarter as high).
+  - kicked-up coins fly to the sides and back, never across its face.
+- **Reduced motion:** none of it runs.
