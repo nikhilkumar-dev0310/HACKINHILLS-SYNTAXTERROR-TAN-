@@ -29,6 +29,7 @@ Check the phone layout on a real iPhone. The headless browser used for screensho
     It draws left to right with scroll, with a dated bead on the leading edge.
   - **Quiet:** every alert episode (`alerts.history`) sits on a dark three-lane rail. A scanner sweeps across with scroll,
     and each flare rises as it passes. A counter tallies the alerts so far.
+- Opening ("true scale", 19 Oct): the camera starts close on the 1 g GOLDPETAL piece and the first scrolls pull back past the 8 g coin and the 10 g bar to the 100 g bar, while a mass counter (top right) steps 1 g, 8 g, 10 g, 100 g. It replaces the drop-in opening. `OPEN_B`, `ZOOM` and `MASS_AT` in `intro.tpl.html` set it.
 - The camera holds still while each card is read, then glides to the next beat.
 - Phones step the camera back and put the gold above the card.
 - Reduced motion turns off smoothing and bobbing.

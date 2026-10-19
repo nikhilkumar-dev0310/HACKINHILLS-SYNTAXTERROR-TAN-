@@ -52,7 +52,12 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 .bar{position:fixed;z-index:10;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font:600 19px/1 var(--f-disp);letter-spacing:-.03em}
-.bar .pill{margin-left:auto}   /* the intro carries no logo: the mark is revealed on the site, after Enter */
+.bar .pill{margin-left:auto}
+.mass{position:fixed;z-index:9;right:max(32px,env(safe-area-inset-right,0px));top:calc(96px + env(safe-area-inset-top,0px));text-align:right;pointer-events:none;opacity:0}
+.mass b{display:block;font:700 76px/1 var(--f-disp);letter-spacing:-.045em;color:var(--ink);font-variant-numeric:tabular-nums;transition:transform .5s var(--out),opacity .3s ease}
+.mass small{display:block;margin-top:8px;font:500 15px/1.3 var(--f-ui);color:var(--ink-2)}
+.mass.swap b{transform:translateY(10px);opacity:0;transition:none}
+@media (max-width:760px){.mass{top:calc(70px + env(safe-area-inset-top,0px));right:18px}.mass b{font-size:48px}.mass small{font-size:13px}}   /* the intro carries no logo: the mark is revealed on the site, after Enter */
 .pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;color:var(--ink);text-decoration:none;font:500 14px var(--f-ui);
   background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
   box-shadow:inset 0 1px 0 var(--hi);transition:transform .3s var(--spring),background-color .3s ease}
@@ -216,6 +221,7 @@ html.lenis,html.lenis body{height:auto}
 <div class="progress" id="prog" aria-hidden="true"></div>
 <div class="cglow" id="cglow" aria-hidden="true"></div>
 
+<div class="mass" id="mass" aria-hidden="true"><b></b><small></small></div>
 <header class="bar">
   <a class="pill" href="/" data-enter>Skip intro</a>
 </header>
@@ -332,6 +338,9 @@ import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 const D = __DATA__;
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* the opening ("true scale"): the camera starts close on the 1 g GOLDPETAL piece and the first scrolls pull back past
+   the 8 g coin and the 10 g bar to the 100 g bar, while a mass counter steps 1 g, 8 g, 10 g, 100 g. ZOOM is in beats. */
+const OPEN_B = !reduce, ZOOM = 0.27, MASS_AT = [0.19, 0.12, 0.05, 0];   // b at which each piece (GOLDM … GOLDPETAL) takes the counter
 const LIGHT = document.documentElement.getAttribute("data-theme") === "light";
 /* glows add light on a dark room; on a light room they are drawn as deeper gold instead */
 const GLOWC = LIGHT ? 0xa57a22 : 0xffd27a;
@@ -1250,7 +1259,7 @@ if (renderer) {
   scene.add(trail); let trailO = 0;
 
   /* ---------- opening: the four pieces drop in and land with a bounce and a puff of dust (once, on arrival) */
-  const dropOn = !reduce && scrollY < 40, OPEN_P = V(0.5, 4.8, 3.2), OPEN_T = V(0, -0.25, 0), OPEN_DUR = 2.9, DROP0 = 0.3, DROP_T = 1.15, landAt = k => DROP0 + k * 0.17 + DROP_T / 2.75;
+  const dropOn = !reduce && !OPEN_B && scrollY < 40, OPEN_P = V(0.5, 4.8, 3.2), OPEN_T = V(0, -0.25, 0), OPEN_DUR = 2.9, DROP0 = 0.3, DROP_T = 1.15, landAt = k => DROP0 + k * 0.17 + DROP_T / 2.75;
   const PUFF = 24, puffA = new Float32Array(4 * PUFF * 3), puffDir = [];
   for (let k = 0; k < 4 * PUFF; k++) { const a = Math.random() * 6.283; puffDir.push(V(Math.cos(a), 0.15 + Math.random() * 0.35, Math.sin(a)).multiplyScalar(0.3 + Math.random() * 0.45)); }
   const puffG = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(puffA, 3));
@@ -1471,6 +1480,7 @@ if (renderer) {
       gs.setScalar(Math.max(1e-4, BS * clamp(age / 0.08) * (c.land < 0 ? 1 : clamp(1 - (t - c.land - 0.6) / 0.4)))); gm.compose(c.p, gq, gs); burst.setMatrixAt(n, gm); });
     burst.instanceMatrix.needsUpdate = true; }
   const camP = new THREE.Vector3(), camT = new THREE.Vector3(), camPs = new THREE.Vector3(), camTs = new THREE.Vector3(); let camInit = false, camLag = 0;
+  const zP = new THREE.Vector3(), zT = new THREE.Vector3();
   let ftimes = [], lastAdj = 0, drops = 0, frameNo = 0, lastB = -1;
   frame = (b, time, dt) => {
     frameNo++;
@@ -1486,6 +1496,11 @@ if (renderer) {
     const qv = bump(b, S.quiet, S.quiet, 0.7), sx = QX0 + (QX1 - QX0) * clamp((b - (S.quiet - 0.5)) / 0.95);
     camP.x += sx * 0.06 * qv; camT.x += sx * 0.08 * qv;
     if (dropOn) { const w0 = (1 - sm(clamp((time - 0.15) / OPEN_DUR))) * (1 - clamp(b / 0.25)); camP.lerp(OPEN_P, w0); camT.lerp(OPEN_T, w0); }   // the opening sweep
+    if (OPEN_B && b < ZOOM) {   // true scale: start a hand's width from the 1 g piece, pull back as the first scrolls come in
+      const w = 1 - sm(clamp(b / ZOOM)), pet = P[3].position;
+      zT.set(pet.x - 0.11, pet.y + 0.02, pet.z); zP.set(pet.x + 0.08, pet.y + 0.17, pet.z + 0.92);
+      camP.lerp(zP, w); camT.lerp(zT, w);
+    }
     if (camera.aspect < 1.1) {   // tall screens: step back so all four fit (a little further, and re-centred, for the opening's angled view)
       const o = 1 - clamp(b / 0.8); camT.x -= 0.14 * o;
       const inV = clamp((b - (S.know + 0.35)) / 0.4);   // heading into the vault: step back less, so the camera ends up inside the room
@@ -1682,7 +1697,7 @@ if (renderer) {
     }
 
     // labels follow their objects
-    const w1 = innerWidth > 760 ? Math.max(bump(b, S.problem, S.problem, 0.45) * (dropOn ? clamp((time - landAt(3)) / 0.4) : 1), bump(b, S.pergram, S.pergram, 0.45)) : bump(b, S.pergram, S.pergram, 0.45);
+    const w1 = innerWidth > 760 ? Math.max(OPEN_B ? bump(b, 0.3, 0.34, 0.08) : bump(b, S.problem, S.problem, 0.45) * (dropOn ? clamp((time - landAt(3)) / 0.4) : 1), bump(b, S.pergram, S.pergram, 0.45)) : bump(b, S.pergram, S.pergram, 0.45);
     pl.forEach((el, k) => { tmpV.copy(P[k].position); tmpV.y += 0.42 * Math.max(P[k].scale.x, 0.6); place(el, tmpV, w1, -6); });
     const wr = sm(clamp((x - 0.75) / 0.25));
     rl.forEach((el, k) => place(el, V(line[k] * 0.82, 0.12 + 1.5 * GS, 0), wr, -6));
@@ -1723,7 +1738,7 @@ measureTape(); addEventListener("resize", measureTape); document.fonts && docume
 /* ---------- loop */
 let cur = sceneB(), last = performance.now(), t0 = last, shown = -1, lastY = scrollY, pin = null;
 if (/[?&]debug\b/.test(location.search)) window.__intro = { at: b => { pin = b; }, free: () => { pin = null; } };   // for checking a scene by hand
-const prog = $("#prog"), hint = $("#hint");
+const prog = $("#prog"), hint = $("#hint"), massEl = $("#mass"), massB = massEl && massEl.querySelector("b"), massS = massEl && massEl.querySelector("small"); let massK = -1;
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (lenis) lenis.raf(now);
@@ -1735,6 +1750,13 @@ function loop(now) {
   cardsFrame(vh, dt);
   prog.style.transform = `scaleX(${(scrollY / Math.max(1, tops[N] + heights[N] - vh)).toFixed(4)})`;
   if (hint) hint.style.opacity = String(1 - clamp(scrollY / (vh * 0.25)));
+  if (OPEN_B && massEl) {   // true scale: the counter names the biggest piece in view, then gives way to the card
+    const mk = MASS_AT.findIndex(t => cur >= t), op = 1 - clamp((cur - (ZOOM - 0.02)) / 0.08);
+    massEl.style.opacity = op.toFixed(3); massEl.style.visibility = op > 0.001 ? "visible" : "hidden";
+    if (mk !== massK && mk >= 0) { massK = mk; const pc = D.pieces[mk], m = pc.kind.match(/^[\d.]+ g/);
+      massEl.classList.add("swap"); massB.textContent = m ? m[0] : pc.kind; massS.textContent = `${pc.sym} · ${pc.kind.replace(/^[\d.]+ g ?/, "") || "piece"}, ${pc.purity}`;
+      requestAnimationFrame(() => massEl.classList.remove("swap")); }
+  }
   const k = Math.round(cur); if (k !== shown) { if (shown >= 0) rollChapter(k, k - shown); shown = k; dotBtns.forEach((b, i) => i === k ? b.setAttribute("aria-current", "step") : b.removeAttribute("aria-current")); }
   if (!reduce && tapeOn && tapeW) {
     tapeV += (vel - tapeV) * (1 - Math.exp(-dt / 0.2));
