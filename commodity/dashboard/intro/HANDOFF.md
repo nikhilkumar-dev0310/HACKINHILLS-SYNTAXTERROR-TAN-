@@ -359,3 +359,18 @@ Motion (open-source, MIT, pinned on jsDelivr):
   went negative) and the beat fraction now hold at the last key, so on tall screens the camera no longer flies out of
   the room. The chapter index is clamped to N, the last chapter, so the final chapter is now shown; the earlier
   N - 1 clamp hid it.
+
+## The mark returns, fresher gold, a livelier Pari (20 Oct 2026)
+- **Finale:** the gold condenses into the Parity mark (the two ingot bars of the site logo) instead of a coin. It is
+  made of its own fine grains (`markGrains`: 2400 on laptops, 1300 on phones, about three times denser than before),
+  with a polished solid mark just behind them. The cursor's push is gentler (strength 0.09, radius about 0.14).
+- **Room:** nine more coin piles (`MOUNDS`). The piles and coins are a clean, saturated new gold, with lighter
+  shading between the coins and almost no colour spread, so the hoard looks freshly minted rather than aged.
+- **Pari:** its arms swing with its breathing at rest, and it has five new gestures (clap, beckon, stretch, shrug,
+  swing). It acts every 0.7 to 2.2 s.
+- **Vault:** the dial, wheel, bolts and door now overlap, and the door starts opening sooner, so the scroll never
+  waits at the door.
+- **Enter Parity:** a pale champagne gold in both themes, no longer orange.
+- **Site, logo reveal:** the lower door used the class `b`, which the boot mark's bar animation also targets. That
+  animation held the lower door shut, so the top half of the page appeared first. The doors are now `dt`/`db`. The
+  first page under the doors also no longer replays its entrance.

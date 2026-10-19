@@ -1215,8 +1215,10 @@ html{-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-t
   .hero h1,.hero .lead{animation:none!important;translate:none!important;opacity:1!important}
 }
 
-/* while the logo reveal is on screen (html.reveal, template.html), the page waits: its entrance plays as the doors part */
-html.reveal main.page>*,html.reveal .hero>*,html.reveal .hero h1 .wi,html.reveal .hl{animation-play-state:paused}
+/* after the logo reveal the doors part onto a page that is already in place: no entrance under them, so the page never
+   shows in pieces (the parts without an entrance first, the hero after). Only the gold sheen waits, then plays as they part */
+html.reveal main.page>*,html.reveal .hero>*,html.reveal .hero h1 .wi{animation:none!important}
+html.rvl-hold .hl{animation-play-state:paused}
 
 /* the gold light that follows the pointer across a card: deeper gold in the light theme, where pale gold vanishes */
 :root[data-theme="light"] .card::after,:root[data-theme="light"] .take::after,:root[data-theme="light"] .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(176,125,28,.13),transparent 45%)}

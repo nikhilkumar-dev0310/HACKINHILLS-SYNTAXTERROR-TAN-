@@ -411,6 +411,7 @@ function App() {
   /* Page change: the old page leaves (160 ms), the jump to the top happens while nothing is on screen, then the new
      page arrives. A second click mid-way just retargets; nothing queues up, so rapid switching never lags behind. */
   const commit = () => { tmr.current = 0; const id = pend.current; pend.current = null; if (!id) return;
+    document.documentElement.classList.remove("reveal");   // after the logo reveal the first page stood still; the next ones arrive as usual
     scrollTo({ top: 0, behavior: "instant" }); setView(id); setPhase("in"); };
   const navigate = useCallback(id => {
     if (!PAGES[id]) { if (bad(id)) { lost.current = id; pend.current = "404"; commit(); } return; }
@@ -444,7 +445,7 @@ function App() {
      part and the page's own entrance (paused until now by html.reveal) runs as the site comes into view */
   useEffect(() => { const b = document.getElementById("boot"); if (!b) return;
     const rvl = b.classList.contains("rvl"), t0 = (rvl ? window.__PARITY_RVL_T0 : window.__PARITY_T0) || 0, wait = Math.max(0, (rvl ? 3000 : 650) - (performance.now() - t0));   // the reveal is timed from when it first appeared
-    const t = setTimeout(() => { b.classList.add("done"); setTimeout(() => document.documentElement.classList.remove("reveal"), rvl ? 260 : 0);
+    const t = setTimeout(() => { b.classList.add("done"); setTimeout(() => document.documentElement.classList.remove("rvl-hold"), rvl ? 260 : 0);
       setTimeout(() => b.remove(), rvl ? 1300 : 520); }, reducedMotion() ? 0 : wait); return () => clearTimeout(t); }, []);
   /* printing: always the light theme, every "more" panel opened, then put back */
   useEffect(() => { let opened = [], prev = null, on = false;

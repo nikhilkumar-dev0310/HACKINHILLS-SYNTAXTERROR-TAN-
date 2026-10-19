@@ -57,7 +57,7 @@
 #boot.rvl>.bx{display:none}
 #boot.rvl .rvx{display:block;position:absolute;inset:0}
 #boot .door{position:absolute;left:0;right:0;height:50.5%;background:#050506;transition:transform 1s cubic-bezier(.76,0,.24,1) .18s}
-#boot .door.t{top:0}#boot .door.b{bottom:0}
+#boot .door.dt{top:0}#boot .door.db{bottom:0}   /* not ".b": that is the boot mark's bar class, whose entrance animation held the lower door shut */
 #boot .seam{position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-.5px;background:linear-gradient(90deg,transparent,#f6d27a 30%,#fff1c2 50%,#f6d27a 70%,transparent);
   box-shadow:0 0 18px 2px rgba(242,181,68,.55);transform:scaleX(0);opacity:0;transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .6s ease .55s}
 #boot .lock{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:26px;transform:translate(-50%,-50%);
@@ -82,7 +82,7 @@
 #boot.rvl.done{opacity:1;transform:none;visibility:visible;pointer-events:none}
 #boot.rvl.done .lock{opacity:0;filter:blur(8px);transform:translate(-50%,-50%) scale(1.08)}
 #boot.rvl.done .seam{transform:none;opacity:0}
-#boot.rvl.done .door.t{transform:translate3d(0,-101%,0)}#boot.rvl.done .door.b{transform:translate3d(0,101%,0)}
+#boot.rvl.done .door.dt{transform:translate3d(0,-101%,0)}#boot.rvl.done .door.db{transform:translate3d(0,101%,0)}
 @keyframes rv-s1{
   0%{opacity:0;transform:translate(-90px,-70px) rotate(-18deg);animation-timing-function:cubic-bezier(.2,.7,.3,1)}
   30%{opacity:1;transform:translate(0,0) rotate(-11deg);animation-timing-function:ease-in-out}
@@ -122,13 +122,13 @@
   <div class="cap">MCX gold futures · 23 years of data</div>
   <div class="slow">This is taking longer than usual. <a href="javascript:location.reload()">Reload</a>. If it keeps happening, the page or its data may not have loaded fully.</div>
 </div>
-<div class="rvx" aria-hidden="true"><i class="door t"></i><i class="door b"></i><i class="seam"></i>
+<div class="rvx" aria-hidden="true"><i class="door dt"></i><i class="door db"></i><i class="seam"></i>
   <div class="lock"><div class="ingot"><b class="lvl"><b></b><b></b><b></b></b><i></i><i></i></div>
     <div class="name"><span><b>P</b></span><span><b>a</b></span><span><b>r</b></span><span><b>i</b></span><span><b>t</b></span><span><b>y</b></span></div>
     <div class="tag">MCX gold · per gram of pure gold</div></div></div></div>
 <script>/* the logo reveal: only when the intro's "Enter Parity" asked for it, once, and never under reduced motion */
 try { if (sessionStorage.getItem("parity:reveal") === "1") { sessionStorage.removeItem("parity:reveal");
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { document.getElementById("boot").classList.add("rvl"); document.documentElement.classList.add("reveal"); window.__PARITY_RVL_T0 = performance.now(); } } } catch (e) {}</script>
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { document.getElementById("boot").classList.add("rvl"); document.documentElement.classList.add("reveal", "rvl-hold"); window.__PARITY_RVL_T0 = performance.now(); } } } catch (e) {}</script>
 <noscript><style>#boot{display:none}</style></noscript>
 <script>
 (function () { var b = document.getElementById("boot");

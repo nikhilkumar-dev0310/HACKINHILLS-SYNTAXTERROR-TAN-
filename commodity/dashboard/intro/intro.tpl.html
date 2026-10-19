@@ -112,7 +112,7 @@ h2{font-size:clamp(32px,3.6vw,48px)}
 .cta{display:flex;flex-wrap:wrap;gap:10px}
 .cta a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:999px;text-decoration:none;font:600 15px var(--f-ui);transition:transform .3s var(--spring),filter .3s ease}
 .cta a:active{transform:scale(.96)}
-.cta .go{min-height:58px;padding:0 34px;font-size:17px;letter-spacing:.01em;color:#1b1206;background:linear-gradient(180deg,var(--gold-2),var(--gold) 55%,#c98f2c);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 12px 30px -10px rgba(232,180,74,.55)}
+.cta .go{min-height:58px;padding:0 34px;font-size:17px;letter-spacing:.01em;color:#1a1408;background:linear-gradient(180deg,#fbf0cc 0%,#f2d993 46%,#dfbd6c 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -1px 0 rgba(150,112,40,.25),0 12px 30px -12px rgba(214,176,92,.45)}   /* a pale champagne gold in both themes: yellow, never orange */
 .cta .go:hover{filter:brightness(1.06)}
 .cta .alt{color:var(--ink);background:var(--glass);border:1px solid var(--edge)}
 .hint{position:absolute;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink-3);font:500 12px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;pointer-events:none;transition:opacity .4s ease}
@@ -864,7 +864,7 @@ if (renderer) {
   //      They are a few KB each; until they arrive, plain stand-ins of the same size hold their places, and the models' normal
   //      maps swap in without a shader change (the materials carry a flat one from the start).
   const tBar = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.2, normalMap: flatN, envMapIntensity: 1.3 }));
-  const tCoin = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: MODERN ? 0.3 : 0.25, normalMap: flatN, envMapIntensity: MODERN ? 0.95 : 1.3 }));
+  const tCoin = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: MODERN ? 0.16 : 0.25, normalMap: flatN, envMapIntensity: MODERN ? 1.15 : 1.3 }));
   const BL = 0.34, BW = 0.119, BT = 0.064, CR = 0.075, CT = 0.01;   // bar and coin sizes in the room, in the models' own proportions
   const golds = [];
   // instanced gold, one mesh per patch of the room so the patches behind the camera are skipped; each piece a slightly
@@ -874,7 +874,8 @@ if (renderer) {
     list.forEach(M => { _s.setFromMatrixPosition(M); const key = Math.floor((_s.x + RW) / 3.2) + "," + Math.floor((_s.z - RZ1) / 3.2); if (!patch.has(key)) patch.set(key, []); patch.get(key).push(M); });
     patch.forEach(items => {
       const im = new THREE.InstancedMesh(geo, mat, items.length);
-      items.forEach((M, n) => { im.setMatrixAt(n, M); _c.setRGB(1, 0.975 + rnd(-0.03, 0.025), 0.95 + rnd(-0.08, 0.05)).multiplyScalar(rnd(0.86, 1.04)); im.setColorAt(n, _c); });
+      items.forEach((M, n) => { im.setMatrixAt(n, M); if (MODERN) _c.setRGB(1, 0.985 + rnd(-0.012, 0.01), 0.97 + rnd(-0.03, 0.02)).multiplyScalar(rnd(0.95, 1.03));   // new gold, one batch: barely any spread
+        else _c.setRGB(1, 0.975 + rnd(-0.03, 0.025), 0.95 + rnd(-0.08, 0.05)).multiplyScalar(rnd(0.86, 1.04)); im.setColorAt(n, _c); });
       im.castShadow = cast; im.receiveShadow = true; im.userData.kind = kind; im.computeBoundingSphere(); room.add(im); golds.push(im);
     });
   };
@@ -887,9 +888,11 @@ if (renderer) {
   //      everything else settles onto its surface. The camera's aisle down the middle stays clear.
   // the finale camera only sees the floor from about z = -10.3 back, so in the modern room Pari's pile and the gold sit there
   const PARI_AT = MODERN ? (mobile ? [-0.35, -10.6] : [-0.95, -10.5]) : mobile ? [0.45, -9.3] : [0.2, -9.3];   // Pari's own pile, below and left of the mark
-  const MOUNDS = MODERN ? [[PARI_AT[0], PARI_AT[1], mobile ? 0.95 : 0.85, mobile ? 1.1 : 0.55],   // on phones the pile is taller, so Pari stands clear above the card
+  const MOUNDS = MODERN ? [[PARI_AT[0], PARI_AT[1], mobile ? 0.95 : 0.85, mobile ? 1.0 : 0.55],   // on phones the pile is taller, so Pari stands clear above the card
     [-3.7, -11.2, 1.0, 0.85], [3.7, -11.6, 1.0, 0.85], [-1.9, -13.1, 1.0, 0.75], [1.9, -13.2, 1.0, 0.75], [0.0, -13.9, 0.9, 0.55],
-    [-3.9, -8.3, 0.85, 1.05], [3.9, -8.5, 0.85, 1.05], [-3.8, -5.4, 0.8, 0.8], [3.8, -5.6, 0.8, 0.8]] : [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
+    [-3.9, -8.3, 0.85, 1.05], [3.9, -8.5, 0.85, 1.05], [-3.8, -5.4, 0.8, 0.8], [3.8, -5.6, 0.8, 0.8],
+    [-2.9, -9.6, 0.7, 0.55], [2.95, -9.5, 0.7, 0.55], [-0.6, -12.6, 0.75, 0.5], [3.0, -12.7, 0.8, 0.65], [-3.0, -12.6, 0.8, 0.65],
+    [-1.7, -8.0, 0.6, 0.42], [1.7, -8.2, 0.6, 0.45], [-2.6, -4.6, 0.6, 0.45], [2.7, -4.8, 0.6, 0.45]] : [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
     [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
     [-3.1, -13.5, 1.2, 0.5], [3.3, -13.6, 1.2, 0.5], [1.9, -4.4, 0.8, 0.4], [-1.9, -10.1, 0.8, 0.4], [-2.2, -3.6, 0.7, 0.3]];   // the back stays low behind the mark
   const dH0 = (x, z) => { const ax = Math.abs(x);
@@ -907,16 +910,16 @@ if (renderer) {
   // below. It is drawn a few dozen coins at a time while the browser is idle (no frame waits for it); until then the hoard
   // shows a plain gold, and the textures swap in without a shader change
   const PS = mobile ? 512 : 1024, pileCol = new Uint8ClampedArray(PS * PS * 4), pileNrm = new Uint8ClampedArray(PS * PS * 4);
-  for (let i = 0; i < PS * PS * 4; i += 4) { pileCol[i] = 70; pileCol[i + 1] = 48; pileCol[i + 2] = 18; pileCol[i + 3] = 255; pileNrm[i] = pileNrm[i + 1] = 128; pileNrm[i + 2] = pileNrm[i + 3] = 255; }
+  for (let i = 0; i < PS * PS * 4; i += 4) { pileCol[i] = MODERN ? 170 : 70; pileCol[i + 1] = MODERN ? 122 : 48; pileCol[i + 2] = MODERN ? 44 : 18; pileCol[i + 3] = 255; pileNrm[i] = pileNrm[i + 1] = 128; pileNrm[i + 2] = pileNrm[i + 3] = 255; }
   const markIn = (u, v) => { const lx = 24 + u * 13.2, ly = 24 - v * 13.2; let best = -9;   // how far inside the Parity mark (u, v in -1..1) lies, 0..1 over its bevel
     for (const y0 of [13, 26.4]) { const t = (ly - y0) / 8.6; best = Math.max(best, Math.min(ly - y0, y0 + 8.6 - ly, (lx - 14 + 3.2 * t) * 0.937, (34 + 3.2 * t - lx) * 0.937)); }
     return clamp(best / 1.1); };
   const pileCoin = () => {
-    const cx = Math.random() * PS, cy = Math.random() * PS, r = PS * (0.03 + Math.random() * 0.043), tx = rnd(-0.5, 0.5), ty = rnd(-0.5, 0.5), sh0 = rnd(0.8, 1.06);
+    const cx = Math.random() * PS, cy = Math.random() * PS, r = PS * (0.03 + Math.random() * 0.043), tx = rnd(-0.5, 0.5), ty = rnd(-0.5, 0.5), sh0 = MODERN ? rnd(0.93, 1.04) : rnd(0.8, 1.06);
     const struck = r > PS * 0.042 && Math.random() < 0.75, ang = rnd(0, 6.28), ca = Math.cos(ang), sa = Math.sin(ang), R = Math.ceil(r * 1.3), ix = Math.round(cx), iy = Math.round(cy);
     for (let dy = -R; dy <= R; dy++) { const span = Math.floor(Math.sqrt(R * R - dy * dy)); for (let dx = -span; dx <= span; dx++) {
       const dist = Math.hypot(dx, dy), d = dist / r, i = ((((iy + dy) % PS + PS) % PS) * PS + (((ix + dx) % PS + PS) % PS)) * 4;
-      if (d > 1) { const f = 0.62 + 0.38 * ((d - 1) / 0.3) ** 2; pileCol[i] *= f; pileCol[i + 1] *= f; pileCol[i + 2] *= f; continue; }   // its shadow on what lies beneath
+      if (d > 1) { const f = (MODERN ? 0.8 : 0.62) + (MODERN ? 0.2 : 0.38) * ((d - 1) / 0.3) ** 2; pileCol[i] *= f; pileCol[i + 1] *= f; pileCol[i + 2] *= f; continue; }   // its shadow on what lies beneath
       const ux = dist ? dx / dist : 0, uy = dist ? dy / dist : 0; let nx = tx, ny = ty, lift = 0;
       if (d > 0.9) { const e = (d - 0.9) / 0.1; nx += ux * (0.4 + 1.6 * e); ny += uy * (0.4 + 1.6 * e); }   // the bevelled edge
       else if (d > 0.79 && d < 0.87) { const k = d < 0.83 ? -0.7 : 0.7; nx += ux * k; ny += uy * k; }   // the raised rim ring
@@ -925,12 +928,12 @@ if (renderer) {
       const l = Math.hypot(nx, ny, 1);   // image y runs down, texture v up
       pileNrm[i] = (nx / l * 0.5 + 0.5) * 255; pileNrm[i + 1] = (-ny / l * 0.5 + 0.5) * 255; pileNrm[i + 2] = (0.5 / l + 0.5) * 255;
       const sh = sh0 * (d > 0.9 ? 0.85 : 1) * (0.95 + 0.05 * lift + (Math.random() - 0.5) * 0.04);
-      pileCol[i] = 255 * sh; pileCol[i + 1] = 220 * sh; pileCol[i + 2] = 140 * sh; } }
+      if (MODERN) { pileCol[i] = 255 * sh; pileCol[i + 1] = 214 * sh; pileCol[i + 2] = 118 * sh; } else { pileCol[i] = 255 * sh; pileCol[i + 1] = 220 * sh; pileCol[i + 2] = 140 * sh; } } }
   };
   const pileTex = (data, srgb) => mkTex(PS, PS, x => x.putImageData(new ImageData(data, PS, PS), 0, 0), 9, 11, srgb);
   const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: mkTex(4, 4, x => { x.fillStyle = "#e9c785"; x.fillRect(0, 0, 4, 4); }, 9, 11), normalMap: flatN,
-    metalness: 1, roughness: MODERN ? 0.3 : 0.27, envMapIntensity: MODERN ? 0.85 : 1.25, vertexColors: true }));
-  if (MODERN) hoardM.color.setRGB(0.92, 0.8, 0.6);   // a deeper gold, so the piles read as metal rather than cream under the lamps
+    metalness: 1, roughness: MODERN ? 0.2 : 0.27, envMapIntensity: MODERN ? 1.05 : 1.25, vertexColors: true }));
+  if (MODERN) hoardM.color.setRGB(1, 0.86, 0.6);   // freshly minted: a clean, saturated yellow gold with a bright polish, not an aged brass
   let heapM = null;
   { let made = 0; const N = 300, idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
     const work = dl => { const end = performance.now() + Math.max(4, Math.min(10, dl.timeRemaining())); while (made < N && performance.now() < end) { pileCoin(); made++; }
@@ -1197,22 +1200,26 @@ if (renderer) {
       gSpin.push(V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(6));
     }
   });
-  // the finale: every grain of the four contracts settles into one plain coin of pure gold. (The Parity mark itself
-  // is kept back for the site's logo reveal, which plays after "Enter Parity".)
-  const logoAt = sp => { const out = [], R = 0.6, dy = sp * 0.866;   // rows staggered like a honeycomb, so the edge reads round
-    for (let r = 0, y = -R + dy / 2; y < R; y += dy, r++) for (let x = -R + (r % 2 ? sp : sp / 2); x < R; x += sp) {
-      const d = Math.hypot(x, y); if (d <= R) out.push(V(LOGO.x + x, LOGO.y + y, LOGO.z + (d > R - sp * 1.2 ? 0.03 : 0))); }   // the rim stands a little proud
+  // the finale: the gold condenses out of the air into the Parity mark, two stacked ingot profiles (the site's logo, from
+  // its 48-unit drawing), made of fine grains of their own, a few times more than the recast uses, so the mark reads crisp
+  const MW = mobile ? 1.05 : 1.4, MK = MW / 26.4, NMG = mobile ? 1300 : 2400;   // the mark's width in the room; grains in it
+  const inMark = (lx, ly) => { for (const y0 of [13, 26.4]) { const t = (ly - y0) / 8.6; if (t >= 0 && t <= 1 && lx >= 14 - 3.2 * t && lx <= 34 + 3.2 * t) return true; } return false; };
+  const logoAt = sp => { const out = [], dy = sp * 0.866, H = 11 * MK + sp, Wd = 13.2 * MK + sp;   // rows staggered like a honeycomb
+    for (let r = 0, y = -H; y < H; y += dy, r++) for (let x = -Wd + (r % 2 ? sp / 2 : 0); x < Wd; x += sp)
+      if (inMark(24 + x / MK, 24 - y / MK)) out.push(V(LOGO.x + x, LOGO.y + y, LOGO.z));
     return out; };
-  let logoSp = 0.03; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
+  let logoSp = 0.012; while (logoAt(logoSp).length > NMG) logoSp += 0.001;
   const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, 0.15 + Math.random() * 0.6, 0.2 + Math.random() * 0.5).normalize().multiplyScalar(1.6 + Math.random() * 0.9).add(LOGO));
-  const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the coin fills left to right
-  // a polished gold face behind the grains: once they settle the coin reads as one solid piece, not a mosaic,
-  // and when the cursor lifts grains off it the gold underneath shows instead of the dark room
+  const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + MW / 2) / MW) * 0.6 + Math.random() * 0.4);   // the mark fills left to right
+  const mSpin = logoDst.map(() => V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(6));
+  const markGrains = new THREE.InstancedMesh(new RoundedBoxGeometry(0.04, 0.04, 0.04, 1, 0.008), grainMat, logoDst.length);
+  markGrains.frustumCulled = false; markGrains.visible = false; world.add(markGrains);
+  // a polished solid mark just behind the grains: once they settle the gaps between them show gold, not the dark room,
+  // and where the cursor lifts grains off it the solid mark shows underneath
   const finCoin = new THREE.Group(), coinMat = grainMat.clone(); coinMat.stencilFunc = THREE.AlwaysStencilFunc;
-  { const face = new THREE.Mesh(new THREE.CylinderGeometry(0.585, 0.585, 0.05, 96), coinMat); face.rotation.x = Math.PI / 2; finCoin.add(face);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.575, 0.022, 16, 128), coinMat); rim.position.z = 0.02; finCoin.add(rim);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.006, 8, 128), coinMat); ring.position.z = 0.026; finCoin.add(ring); }   // one fine inner ring, as on a minted coin
-  finCoin.position.copy(LOGO); finCoin.position.z -= 0.012; finCoin.visible = false; finCoin.frustumCulled = false; world.add(finCoin);
+  [13, 26.4].forEach(y0 => { const P2 = (lx, ly) => new THREE.Vector2((lx - 24) * MK, (24 - ly) * MK), sh = new THREE.Shape([P2(10.8, y0 + 8.6), P2(37.2, y0 + 8.6), P2(34, y0), P2(14, y0)]);
+    finCoin.add(new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2 }), coinMat)); });
+  finCoin.position.copy(LOGO); finCoin.position.z -= 0.055; finCoin.visible = false; finCoin.frustumCulled = false; world.add(finCoin);
   // behind the mark the back wall is plain: no panels, no gold, just a soft pool of warm lamplight, so the cursor's scatter reads clearly
   const pool = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 4.6), roomMat(new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false,
     map: mkTex(256, 256, (x, w, h) => { x.fillStyle = "rgba(0,0,0,0)"; x.fillRect(0, 0, w, h); const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
@@ -1357,13 +1364,13 @@ if (renderer) {
   const faceM = new THREE.Matrix4(), qFace = new THREE.Quaternion(), Z_AXIS = V(0, 0, 1), Q_UP2Z = new THREE.Quaternion().setFromAxisAngle(V(1, 0, 0), Math.PI / 2);
   /* finale: grains scatter away from the cursor and spring back; the mark tilts towards it; the ring swings with it */
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), logoPlane = new THREE.Plane(V(0, 0, 1), -LOGO.z), hit = new THREE.Vector3();
-  const off = new Float32Array(NGT * 3), lq = new THREE.Quaternion(), le = new THREE.Euler();
+  const off = new Float32Array(logoDst.length * 3), lq = new THREE.Quaternion(), le = new THREE.Euler();
   let fin = 0, springy = false, wasInside = false;
   /* Pari: breathes and sways, blinks at uneven moments (sometimes twice), turns to the cursor with a lag and leans into the turn,
      and every few seconds does something, never the same thing twice running: waves, hops, looks around, points up at the mark,
      cheers or spins. Every move eases in and out of the idle pose; squash and stretch keep the soles on the gold. */
   const PA = { land: -1, act: null, next: 0, last: "", blink: 2, blink2: 0, yaw: 0, ex: 0, ey: 0, poke: null, lastPoke: "", sayEnd: 0, press: null, pressId: -1, clicks: [], noticed: 0 };
-  const PACTS = { wave: 2.4, hop: 1.15, look: 2.6, point: 2.2, cheer: 1.7, spin: 1.4 };
+  const PACTS = { wave: 2.4, hop: 1.15, look: 2.6, point: 2.2, cheer: 1.7, spin: 1.4, clap: 1.6, beckon: 2.0, stretch: 2.1, shrug: 1.3, swing: 2.2 };
   /* playing with Pari. A click (or tap) on it: one of eight reactions, never the same twice running, with a line in its
      bubble and a few coins kicked up. Three quick clicks make it dizzy; six in a few seconds hit the jackpot. Press and
      hold to charge a super jump, released when you let go. Click anywhere else: it turns and points there. Its eyes
@@ -1418,7 +1425,9 @@ if (renderer) {
     if (v < 0.97 && A.land >= 0) { A.land = -1; A.act = null; }
     let lift = (1 - v * v) * P_DROP, sq = v < 1 ? -0.1 * Math.sin(Math.PI * v) : 0;   // a short drop (phones: it pops up in place); it never crosses the mark above
     if (A.land >= 0) { const u = t - A.land; sq += 0.26 * Math.exp(-u * 6.5) * Math.cos(u * 17); }
-    let armRz = -0.16 + 0.05 * Math.sin(t * 1.6 + 0.5), armLz = 0.04 * Math.sin(t * 1.6), armRx = 0, armLx = 0, yawAdd = 0, spin = 0, flip = 0, lookY = 0, eyeX = 0, eyeY = 0;
+    // at rest the arms are never still: they swing with its breathing, a little out of step with each other
+    let armRz = -0.16 + 0.13 * Math.sin(t * 1.7 + 0.5) + 0.04 * Math.sin(t * 3.3), armLz = 0.12 * Math.sin(t * 1.7 + 2.4) + 0.04 * Math.sin(t * 2.9 + 1),
+      armRx = 0.16 * Math.sin(t * 1.25), armLx = 0.16 * Math.sin(t * 1.25 + 2.6), yawAdd = 0, spin = 0, flip = 0, lookY = 0, eyeX = 0, eyeY = 0;
     let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1), squint = 0, wide = 0, grin = 0, heartU = -1, dizzyE = 0;
     const kz = PARI_S / 0.72;
     if (!reduce && A.land >= 0) {
@@ -1433,7 +1442,16 @@ if (renderer) {
       if (A.press != null) { const ch = clamp((performance.now() - A.press) / 1000 / 1.15); if (ch > 0.12) { A.act = null; sq += 0.3 * sm(ch); sway += 0.04 * Math.sin(t * 70) * ch; squint = 0.6 * ch; armRz -= 0.45 * ch; armLz += 0.35 * ch; } }
       const a = A.act;
       if (a && t >= a.t0) { const u = (t - a.t0) / a.d, e = sm(clamp(u / 0.18)) * sm(clamp((1 - u) / 0.22));
-        if (a.k === "wave") { armRz = armRz * (1 - e) + e * (0.15 + 0.42 * Math.sin(u * Math.PI * 7)); sway += e * 0.05; }
+        if (a.k === "wave") { armRz = armRz * (1 - e) + e * (0.15 + 0.42 * Math.sin(u * Math.PI * 7)); armLz += e * 0.18 * Math.sin(u * Math.PI * 7 + 1); sway += e * 0.05; }
+        else if (a.k === "clap") { const c = Math.abs(Math.sin(u * Math.PI * 6));   // claps in front of itself, three times
+          armRx = armRx * (1 - e) - 1.05 * e; armLx = armLx * (1 - e) - 1.05 * e; armRz = armRz * (1 - e) + e * (0.05 + 0.3 * c); armLz = armLz * (1 - e) - e * (0.3 * c); grin = e; }
+        else if (a.k === "beckon") { yawAdd = 0.15 * e; armRz = armRz * (1 - e) + 0.25 * e; armRx = armRx * (1 - e) + e * (-0.55 + 0.4 * Math.sin(u * Math.PI * 8)); eyeY = 0.01 * e; }   // "come and see"
+        else if (a.k === "stretch") { const up = Math.sin(Math.PI * clamp(u / 0.85));   // both arms up, a long stretch, then shakes them loose
+          armRz = armRz * (1 - up) + up * 0.42; armLz = armLz * (1 - up) - up * 1.85; sq -= 0.08 * up; squint = up * 0.7; sway += 0.03 * Math.sin(u * 40) * clamp((u - 0.8) / 0.2); }
+        else if (a.k === "shrug") { const sgl = Math.sin(Math.PI * clamp(u / 0.5)) + 0.6 * Math.sin(Math.PI * clamp((u - 0.5) / 0.5));   // two little shrugs, palms up
+          armRz = armRz * (1 - e) + e * (0.1 + 0.25 * sgl); armLz = armLz * (1 - e) - e * (0.4 + 0.25 * sgl); armRx -= 0.5 * e; armLx -= 0.5 * e; lift += 0.02 * PJ * sgl; }
+        else if (a.k === "swing") { const w = Math.sin(u * Math.PI * 4);   // swings its arms back and forth like a walk on the spot
+          armRx = armRx * (1 - e) + 0.75 * w * e; armLx = armLx * (1 - e) - 0.75 * w * e; sway += 0.04 * w * e; lift += 0.015 * PJ * Math.abs(w) * e; }
         else if (a.k === "hop") {   // crouch, spring up with the arms flung up, land with a squash
           const up = clamp((u - 0.22) / 0.42); if (up > 0 && up < 1) lift += 0.24 * PJ * Math.sin(Math.PI * up);
           sq += u < 0.22 ? 0.16 * sm(u / 0.22) : up < 1 ? -0.12 * Math.sin(Math.PI * up) : 0.18 * Math.exp(-(u - 0.64) * 14) * Math.cos((u - 0.64) * 30);
@@ -1470,7 +1488,7 @@ if (renderer) {
           if (up > 0 && up < 1) { lift += h * Math.sin(Math.PI * up); spin = 6.2832 * sm(up); wide = Math.sin(Math.PI * up); armRz += 0.5 * Math.sin(Math.PI * up); armLz -= 1.6 * Math.sin(Math.PI * up); }
           sq += up < 1 ? -0.16 * Math.sin(Math.PI * up) : 0.24 * Math.exp(-(u - 0.66) * 11) * Math.cos((u - 0.66) * 32); }
         else if (a.k === "notice") { wide = Math.sin(Math.PI * u) * 0.8; lift += 0.04 * PJ * Math.sin(Math.PI * u); armRz += 0.2 * Math.sin(Math.PI * u); }
-        if (u >= 1) { A.last = a.k; A.act = null; A.next = t + 1.2 + Math.random() * 2.2; if (a.k === "jackpot") sparkMat.uniforms.boost.value = 0; } }
+        if (u >= 1) { A.last = a.k; A.act = null; A.next = t + 0.7 + Math.random() * 1.5; if (a.k === "jackpot") sparkMat.uniforms.boost.value = 0; } }
       if (t > A.blink + 0.16) { A.blink = t + 1.8 + Math.random() * 3.4; A.blink2 = Math.random() < 0.25 ? A.blink + 0.32 : 0; }
     }
     const bl = x0 => { const d = t - x0; return d > 0 && d < 0.16 ? Math.sin(Math.PI * d / 0.16) : 0; };
@@ -1486,7 +1504,7 @@ if (renderer) {
     const ke = Math.min(1, k * 2.2);
     A.ex += (eyeTX * 0.055 + eyeX - A.ex) * ke; A.ey += (-eyeTY * 0.04 + eyeY - A.ey) * ke;
     eyes.position.x = A.ex; eyes.position.y = 0.33 + A.ey;
-    armR.rotation.z = reduce ? -0.2 : armRz; armR.rotation.x = armRx; armL.rotation.z = reduce ? 0 : armLz; armL.rotation.x = armLx;
+    armR.rotation.z = reduce ? -0.2 : armRz; armR.rotation.x = reduce ? 0 : armRx; armL.rotation.z = reduce ? 0 : armLz; armL.rotation.x = reduce ? 0 : armLx;
     if (reduce) { lift = 0; sq = 0; }
     const sy = 1 - sq + (reduce ? 0 : 0.018 * Math.sin(t * 1.9)), sxz = 1 + sq * 0.5;   // squash and stretch, and breathing
     const pop = reduce ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
@@ -1559,7 +1577,7 @@ if (renderer) {
     const rush = reduce ? 0 : 9 * Math.exp(-Math.pow((camera.position.z - VC.z) / 0.9, 2)) * clamp((b - S.know) * 4);
     const fov = cam[i].fov + (cam[j].fov - cam[i].fov) * sm(Math.min(f, 1)) + rush; if (Math.abs(camera.fov - fov) > 1e-3) { camera.fov = fov; camera.updateProjectionMatrix(); }
     // the treasure room: seen only through the doorway until the camera is inside; then it is all around
-    const inside = camera.position.z < VC.z - 0.25, roomOn = inside || b > S.know - 0.3;   // drawn only once the door starts to open
+    const inside = camera.position.z < VC.z - 0.25, roomOn = inside || b > S.know - 0.4;   // drawn only once the door starts to open
     // warm-up: once the models are in and the reader is between scenes, the room is drawn unseen (its stencil test fails everywhere
     // while the doorway is hidden) over three frames: half its contents, the other half, then all of it casting its shadows, once.
     // Everything reaches the GPU in small steps, long before the vault opens
@@ -1618,7 +1636,7 @@ if (renderer) {
 
     // grains: the recast (pieces → four gram cubes) or the finale (air → the Parity mark)
     const x = 1 - Math.min(1, Math.abs(b - S.recast)), lgo = clamp((b - (S.team - 0.95)) / 0.85);
-    grains.visible = x > 0.001 || lgo > 0.001;
+    grains.visible = x > 0.001; markGrains.visible = x <= 0.001 && lgo > 0.001;
     if (lgo <= 0.001) finCoin.visible = false;
     if (x > 0.001) {
       const side = b < S.recast ? S.problem : S.pergram;
@@ -1638,26 +1656,23 @@ if (renderer) {
       le.set(-my * 0.55 * fin, mx * 0.75 * fin, 0); lq.setFromEuler(le);
       const k2 = 1 - Math.exp(-dt / 0.14); springy = false;
       const solid = sm(clamp((lgo - 0.82) / 0.18));
-      for (let n = 0; n < NGT; n++) {
-        if (n >= logoDst.length) { gs.setScalar(0.0001); gm.compose(LOGO, gq.identity(), gs); grains.setMatrixAt(n, gm); continue; }
+      for (let n = 0; n < logoDst.length; n++) {
         const e = sm(clamp(lgo * 1.5 - logoDel[n] * 0.5)), ang = (1 - e) * 2.6;
         gw.copy(logoSrc[n]).sub(LOGO).applyAxisAngle(THREE.Object3D.DEFAULT_UP, ang).add(LOGO);   // spiral in
         gv.copy(gw).lerp(logoDst[n], e);
         if (fin > 0.001) gv.sub(LOGO).applyQuaternion(lq).add(LOGO);   // the mark tilts towards the cursor
         let tx = 0, ty = 0, tz = 0;
-        if (react) { const dx = gv.x - hit.x, dy = gv.y - hit.y, d2 = dx * dx + dy * dy, f2 = 0.26 * Math.exp(-d2 / 0.035) * fin, dl = Math.sqrt(d2) || 1;
+        if (react) { const dx = gv.x - hit.x, dy = gv.y - hit.y, d2 = dx * dx + dy * dy, f2 = 0.09 * Math.exp(-d2 / 0.02) * fin, dl = Math.sqrt(d2) || 1;
           tx = dx / dl * f2; ty = dy / dl * f2; tz = f2 * 0.8; }
         const o = n * 3; off[o] += (tx - off[o]) * k2; off[o + 1] += (ty - off[o + 1]) * k2; off[o + 2] += (tz - off[o + 2]) * k2;
         if (Math.abs(off[o]) + Math.abs(off[o + 1]) + Math.abs(off[o + 2]) > 1e-3) springy = true;
         gv.x += off[o]; gv.y += off[o + 1]; gv.z += off[o + 2];
-        const tumble = 1 - e; ge.set(gSpin[n].x * tumble, gSpin[n].y * tumble, gSpin[n].z * tumble); gq.setFromEuler(ge);
-        // once the face is solid the grains merge into it; only the ones the cursor lifts stay visible as gold dust
-        const lift = clamp((Math.abs(off[o]) + Math.abs(off[o + 1]) + Math.abs(off[o + 2])) * 14), vis = 1 - solid * (1 - lift);
-        gs.setScalar(Math.max(clamp(e * 4) * (logoSp / GS) * 1.05 * vis, 0.0001)); gm.compose(gv, gq, gs); grains.setMatrixAt(n, gm);
+        const tumble = 1 - e; ge.set(mSpin[n].x * tumble, mSpin[n].y * tumble, mSpin[n].z * tumble); gq.setFromEuler(ge);
+        gs.setScalar(Math.max(clamp(e * 4) * (logoSp / 0.04) * 0.98, 0.0001)); gm.compose(gv, gq, gs); markGrains.setMatrixAt(n, gm);
       }
-      grains.instanceMatrix.needsUpdate = true;
+      markGrains.instanceMatrix.needsUpdate = true;
       // the solid face grows in under the grains as they land, and tilts with them
-      finCoin.visible = solid > 0.001;   // full size from the start: it sits behind the grains until they melt into it
+      finCoin.visible = solid > 0.001;   // full size from the start: it sits behind the grains
       if (fin > 0.001) finCoin.quaternion.copy(lq); else finCoin.quaternion.identity();
     }
 
@@ -1681,11 +1696,12 @@ if (renderer) {
     zDot.position.set(bx(zt), by(zt) + 0.055 + (1 - drop) * 1.1, 0.03); zDot.visible = bellU > 0.38;
 
     // the vault: the wheel turns, the door swings, the river of bars pours out, the plaques slide free
-    const rise = sm(clamp((b - (S.quiet + 0.5)) / 0.5)), open = sm(clamp((b - (S.know - 0.3)) / 0.5)), lift = (1 - rise) * -9;
+    const rise = sm(clamp((b - (S.quiet + 0.5)) / 0.5)), open = sm(clamp((b - (S.know - 0.4)) / 0.42)), lift = (1 - rise) * -9;
     vault.visible = vaultSet.visible = rise > 0.001; vault.position.y = VC.y + lift; vaultSet.position.y = lift;
-    dial.rotation.z = sm(clamp((b - (S.know - 0.85)) / 0.25)) * Math.PI * 3;
-    wheel.rotation.z = -sm(clamp((b - (S.know - 0.65)) / 0.3)) * Math.PI * 1.5;
-    const unlock = sm(clamp((b - (S.know - 0.5)) / 0.18));
+    // the unlocking overlaps (dial, wheel, bolts, door), so the scroll never waits on one step before the next
+    dial.rotation.z = sm(clamp((b - (S.know - 0.8)) / 0.2)) * Math.PI * 3;
+    wheel.rotation.z = -sm(clamp((b - (S.know - 0.66)) / 0.22)) * Math.PI * 1.5;
+    const unlock = sm(clamp((b - (S.know - 0.52)) / 0.14));
     bolts.forEach(bl => bl.position.copy(bl.userData.dir).multiplyScalar(0.62 + 0.13 * (1 - unlock)));
     hinge.rotation.y = -open * 1.85;
     const ro = sm(clamp((open - 0.45) / 0.4)) * (1 - clamp((b - (S.know + 0.55)) / 0.4));   // only once the door is well open
