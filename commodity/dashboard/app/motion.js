@@ -1,6 +1,6 @@
 /* MOTION v3 (19 Oct 2026): the interactions award-winning sites share, kept quiet enough for a data site.
-   Desktop pointer only: smooth wheel scrolling, a cursor ring, magnetic buttons. Everywhere: the CSS layer in
-   styles.css (word-by-word headlines, card wipes, scroll-linked parallax and progress, grain).
+   Desktop pointer only: smooth wheel scrolling and buttons that lean a little toward the pointer. Everywhere: the
+   CSS layer in styles.css (headlines that rise word by word, background lights that drift with scroll).
    Every hook does nothing under prefers-reduced-motion, and each moves only transform/translate (composited). */
 import { useEffect } from "react";
 import { reducedMotion } from "./lib.js";
@@ -50,47 +50,7 @@ export function useSmoothScroll() {
   }, []);
 }
 
-/* A cursor ring that trails the pointer and swells over anything clickable. The system cursor stays. It steps
-   aside over charts (they draw their own crosshair) and text fields. */
-const HOT = "a,button,summary,label,select,[role=button],[role=option],[tabindex='0'],.term";
-export function useCursor() {
-  useEffect(() => {
-    if (reducedMotion() || !finePointer()) return;
-    const el = document.createElement("div"); el.className = "cur out";   // hidden until the pointer first moves
-    el.setAttribute("aria-hidden", "true"); el.innerHTML = "<i></i>";
-    document.body.appendChild(el);
-    let x = -80, y = -80, cx = x, cy = y, raf = 0, last = 0, state = "";
-    const frame = now => {
-      raf = 0;
-      const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60; last = now;
-      const a = ease(dt, 0.06); cx += (x - cx) * a; cy += (y - cy) * a;
-      el.style.transform = `translate3d(${cx.toFixed(1)}px,${cy.toFixed(1)}px,0)`;
-      if (Math.abs(x - cx) + Math.abs(y - cy) > 0.2) raf = requestAnimationFrame(frame); else last = 0;
-    };
-    const move = e => {
-      if (e.pointerType !== "mouse") return;
-      x = e.clientX; y = e.clientY;
-      const t = e.target, c = t && t.closest;
-      const s = !c ? "" : c.call(t, "input,textarea,[contenteditable],.chart,.cplot,svg.ch") ? "off" : c.call(t, HOT) ? "hot" : "";
-      if (s !== state) { state = s; el.dataset.s = s; }
-      el.classList.remove("out");
-      if (!raf) raf = requestAnimationFrame(frame);
-    };
-    const down = () => el.classList.add("dn"), up = () => el.classList.remove("dn");
-    const leave = () => el.classList.add("out");
-    document.addEventListener("pointermove", move, { passive: true });
-    document.addEventListener("pointerdown", down, { passive: true });
-    document.addEventListener("pointerup", up, { passive: true });
-    document.documentElement.addEventListener("mouseleave", leave, { passive: true });
-    return () => {
-      document.removeEventListener("pointermove", move); document.removeEventListener("pointerdown", down);
-      document.removeEventListener("pointerup", up); document.documentElement.removeEventListener("mouseleave", leave);
-      cancelAnimationFrame(raf); el.remove();
-    };
-  }, []);
-}
-
-/* Magnetic controls: a button leans toward the pointer (at most 6 px) and springs back when it leaves. It moves
+/* Magnetic controls: a button leans toward the pointer (at most 3 px) and springs back when it leaves. It moves
    with the CSS `translate` property, so the press-in `transform` on the same buttons still works. */
 const MAG = ".btn,.search,.iconbtn,.theme,.go,.pager button,.linkbtn.kq";
 export function useMagnetic() {
@@ -122,7 +82,7 @@ export function useMagnetic() {
         // measure from the untranslated box, so the pull doesn't feed back into itself
         const cx = r.left + r.width / 2 - o.x, cy = r.top + r.height / 2 - o.y;
         const k = Math.min(0.32, 14 / Math.max(r.width, 24));
-        o.tx = Math.max(-6, Math.min(6, (e.clientX - cx) * k)); o.ty = Math.max(-5, Math.min(5, (e.clientY - cy) * k * 1.2));
+        o.tx = Math.max(-3, Math.min(3, (e.clientX - cx) * k * .5)); o.ty = Math.max(-2.5, Math.min(2.5, (e.clientY - cy) * k * .6));
         live.set(el, o);
       }
       kick();

@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { D, NAME, VIEWS, SYMS, SYM, EVENTS, GLOSSARY, fdate, pname, reducedMotion } from "./lib.js";
 import { AppCtx, Icon } from "./ui.jsx";
-import { useSmoothScroll, useCursor, useMagnetic } from "./motion.js";
+import { useSmoothScroll, useMagnetic } from "./motion.js";
 
 /* The Equal Ingot: two gold bars as an equals sign. When a contract is off fair price today, the lower bar steps right. */
 const HOT = D.signals.rows.filter(r => Math.abs(r.z) >= D.signals.threshold).length;
@@ -394,7 +394,7 @@ function useSheetDrag(ref, open, close) {
 }
 
 function App() {
-  useDock(); useSheen(); useSmoothScroll(); useCursor(); useMagnetic();
+  useDock(); useSheen(); useSmoothScroll(); useMagnetic();
   const bad = h => h && h !== "main" && !PAGES[h];
   const init = () => { const h = location.hash.slice(1); return PAGES[h] ? h : bad(h) ? "404" : store.get("gsl-view", "overview"); };
   const [view, setView] = useState(init), [theme, setTheme] = useTheme(), [phase, setPhase] = useState("in"), [navN, setNavN] = useState(0);
@@ -458,8 +458,6 @@ function App() {
   return <AppCtx.Provider value={ctx}>
     <a className="skip" href="#main" onClick={e => { e.preventDefault(); focusHead(); }}>Skip to content</a>
     <div className="bgfx" aria-hidden="true"><i /><i /></div>
-    <div className="grain" aria-hidden="true" />
-    <div className="sprog" aria-hidden="true" />
     <header className="top">
       <a className="brand" href="#overview" aria-label={`${NAME}, overview`} onClick={e => { e.preventDefault(); go("overview"); }}><Mark /><span className="wm">{NAME}<small>MCX gold futures</small></span><span className="top-t" aria-hidden="true">{view === "404" ? "Not found" : label(view)}</span></a>
       <div className="crumb" aria-hidden="true"><span key={view} className="roll"><span className="num">{idx < 0 ? "—" : String(idx + 1).padStart(2, "0")} / 08</span>{view === "404" ? "Not found" : label(view)}</span></div>

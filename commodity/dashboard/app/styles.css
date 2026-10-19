@@ -954,7 +954,7 @@ kbd,code,pre{font-family:var(--f-code)}
 .rv.in{opacity:1;transform:none;filter:none}
 .hero>*{animation:rise .9s var(--out-expo) both}
 .hero>*:nth-child(2){animation-delay:.08s}.hero>*:nth-child(3){animation-delay:.16s}.hero>*:nth-child(4){animation-delay:.24s}
-@keyframes rise{from{opacity:0;transform:translateY(14px);filter:blur(8px)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
 
 /* sheets, menus and drawers open on the iOS spring */
 .palette,.drawer,.sheet,.gloss,.tip,.news{animation-duration:.5s!important;animation-timing-function:var(--spring)!important}
@@ -1161,96 +1161,63 @@ html{-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-t
 }
 @media (max-width:420px){.stats{grid-template-columns:1fr 1fr}.stats .kpi{border-bottom:1px solid var(--line)}}
 
-/* ======================= MOTION v3 (19 Oct 2026) =======================
-   The motion vocabulary award-winning sites share, on top of the glass: headlines rise word by word out of masks,
-   cards wipe open as they arrive, the background lights drift and a gold line tracks progress as you scroll,
-   labels roll on hover, buttons fill from below, a cursor ring trails the pointer, and a fine grain sits behind
-   everything. Smooth wheel scrolling, the cursor ring and magnetic buttons live in app/motion.js.
-   Only transform, translate, scale, opacity and clip-path animate. Reduced motion turns all of it off. */
+/* ======================= MOTION v3 (19 Oct 2026), held back to Apple's restraint =======================
+   Kept: headlines rise word by word out of a mask, background lights drift as you scroll, the hero eases away,
+   sidebar labels roll on hover, buttons fill with a quiet gold from below, and the glow that follows the pointer
+   across a card. Taken out on purpose: a cursor ring, film grain, a progress line, card wipes and blur-in
+   reveals. Only transform, translate, scale and opacity animate. Reduced motion turns all of it off. */
 
-/* headlines: each word rises out of its own mask; the gold highlight moves as one word, so its gradient stays whole */
+/* headlines: each word rises out of its own mask (no tilt); the gold word moves as one, so its gradient stays whole */
 .wd{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .04em .16em;margin:0 -.04em -.16em}
-.wi{display:inline-block;transform-origin:0 100%}
-.hero h1 .wi{animation:word-up 1.15s var(--out-expo) both;animation-delay:calc(140ms + var(--wi) * 55ms)}
-@keyframes word-up{from{transform:translate3d(0,110%,0) rotate(4deg)}}
-.card-h h2 .wi{transition:transform 1s var(--out-expo);transition-delay:calc(160ms + var(--wi) * 38ms)}
-.rv:not(.in) .card-h h2 .wi{transform:translate3d(0,110%,0) rotate(3deg)}
+.wi{display:inline-block}
+.hero h1 .wi{animation:word-up .9s var(--out-expo) both;animation-delay:calc(100ms + var(--wi) * 45ms)}
+@keyframes word-up{from{transform:translate3d(0,105%,0)}}
+.card-h h2 .wi{transition:transform .8s var(--out-expo);transition-delay:calc(120ms + var(--wi) * 30ms)}
+.rv:not(.in) .card-h h2 .wi{transform:translate3d(0,105%,0)}
 
-/* cards and the "in short" panel wipe open from the top edge as they arrive (the clip is gone once they land,
-   so popovers inside are never cut off); grids cascade left to right */
-.card.rv.in,.take.rv.in{animation:wipe 1.1s var(--out-expo) backwards}
-@keyframes wipe{from{clip-path:inset(0 0 30% 0 round var(--r))}to{clip-path:inset(0 0 0 0 round var(--r))}}
-.grid>.rv:nth-child(2),.stats>.rv:nth-child(2){animation-delay:70ms}
-.grid>.rv:nth-child(3),.stats>.rv:nth-child(3){animation-delay:140ms}
-.grid>.rv:nth-child(4),.stats>.rv:nth-child(4){animation-delay:210ms}
-.grid>.rv:nth-child(5),.stats>.rv:nth-child(5){transition-delay:280ms;animation-delay:280ms}
-.grid>.rv:nth-child(n+6),.stats>.rv:nth-child(n+6){transition-delay:340ms;animation-delay:340ms}
+/* sections arrive with a short fade and lift, nothing more */
+.rv{filter:none!important;transform:translateY(12px);transition:opacity .7s var(--out-expo),transform .8s var(--out-expo)}
+.rv.in{transform:none}
 
 /* sidebar labels roll: the label slides up and a gold copy rolls in under it */
 .rail nav a .rl{overflow:hidden;vertical-align:top;line-height:1.3;height:1.3em}
-.rr{display:inline-block;position:relative;transition:transform .6s var(--out-expo)}
+.rr{display:inline-block;position:relative;transition:transform .55s var(--out-expo)}
 .rr::after{content:attr(data-t);position:absolute;left:0;top:100%;color:var(--gold);white-space:nowrap}
 @media (hover:hover) and (pointer:fine){.rail nav a:hover .rr{transform:translate3d(0,-100%,0)}}
 
-/* buttons fill with gold from below on hover */
+/* buttons fill with a quiet gold from below on hover (they never fade) */
 @media (hover:hover) and (pointer:fine){
   .btn,.search,.pager button{position:relative;overflow:hidden;isolation:isolate}
   .btn::before,.search::before,.pager button::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-    background:color-mix(in srgb,var(--gold) 15%,transparent);transform:scaleY(0);transform-origin:50% 100%;transition:transform .55s var(--out-expo)}
+    background:color-mix(in srgb,var(--gold) 12%,transparent);transform:scaleY(0);transform-origin:50% 100%;transition:transform .5s var(--out-expo)}
   .btn:hover::before,.search:hover::before,.pager button:not(:disabled):hover::before{transform:none}
 }
 
-/* the cursor ring (app/motion.js): trails the pointer, swells over anything clickable, steps aside over charts and fields */
-.cur{position:fixed;left:0;top:0;z-index:150;pointer-events:none;will-change:transform}
-.cur i{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--gold) 72%,transparent);
-  transition:transform .5s var(--spring),opacity .25s ease,background-color .3s ease,border-color .3s ease}
-.cur[data-s="hot"] i{transform:scale(1.75);background:color-mix(in srgb,var(--gold) 11%,transparent);border-color:color-mix(in srgb,var(--gold) 42%,transparent)}
-.cur.dn i{transform:scale(.78)}
-.cur[data-s="hot"].dn i{transform:scale(1.45)}
-.cur[data-s="off"] i,.cur.out i{opacity:0;transform:scale(.4)}
-
-/* film grain, behind the content so figures stay crisp */
-.grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.055;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px}
-:root[data-theme="light"] .grain{opacity:.07;filter:invert(1)}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .grain{opacity:.07;filter:invert(1)}}
-
-/* scroll-linked: a gold progress line, background lights that drift as you read, a hero that eases away.
-   Driven by the compositor where the browser supports scroll timelines; elsewhere they simply stay still. */
-.sprog{display:none}
+/* scroll-linked, on the compositor where supported: the background lights drift as you read, the hero eases away */
 @supports (animation-timeline: scroll()){
-  .sprog{display:block;position:fixed;left:0;right:0;top:0;height:2px;z-index:119;pointer-events:none;transform-origin:0 50%;
-    background:linear-gradient(90deg,var(--gold),var(--gold-2));box-shadow:0 0 10px color-mix(in srgb,var(--gold) 55%,transparent);
-    animation:sprog linear both;animation-timeline:scroll(root block)}
-  @keyframes sprog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
   .bgfx i:nth-child(1){animation:drift-a linear both;animation-timeline:scroll(root block)}
   .bgfx i:nth-child(2){animation:drift-b linear both;animation-timeline:scroll(root block)}
-  @keyframes drift-a{to{translate:8vw 26vh;scale:1.18}}
-  @keyframes drift-b{to{translate:-10vw -30vh;scale:.88}}
+  @keyframes drift-a{to{translate:6vw 20vh;scale:1.12}}
+  @keyframes drift-b{to{translate:-8vw -24vh;scale:.9}}
   .hero h1{animation:hero-away linear both;animation-timeline:view();animation-range:exit 0% exit 100%}
   .hero .lead{animation:lead-away linear both;animation-timeline:view();animation-range:exit 0% exit 100%}
-  @keyframes hero-away{to{translate:0 -56px;opacity:.1}}
-  @keyframes lead-away{to{translate:0 -28px;opacity:.1}}
+  @keyframes hero-away{to{translate:0 -40px;opacity:.2}}
+  @keyframes lead-away{to{translate:0 -20px;opacity:.2}}
 }
 
-@media (hover:none),(pointer:coarse){.cur{display:none}}
 @media (prefers-reduced-motion: reduce){
   .wi,.card-h h2 .wi{animation:none!important;transform:none!important;transition:none!important}
-  .card.rv.in,.take.rv.in,.bgfx i,.hero h1,.hero .lead{animation:none!important}
+  .bgfx i,.hero h1,.hero .lead{animation:none!important}
   .rr{transition:none!important}.rail nav a:hover .rr{transform:none!important}
-  .cur{display:none}
 }
 @media print{
-  .cur,.grain,.sprog{display:none!important}
   .wi{transform:none!important;animation:none!important}
   .hero h1,.hero .lead{animation:none!important;translate:none!important;opacity:1!important}
 }
 
 /* while the logo reveal is on screen (html.reveal, template.html), the page waits: its entrance plays as the doors part */
-html.reveal main.page>*,html.reveal .hero>*,html.reveal .hero h1 .wi,html.reveal .hl,html.reveal .card.rv.in,html.reveal .take.rv.in{animation-play-state:paused}
+html.reveal main.page>*,html.reveal .hero>*,html.reveal .hero h1 .wi,html.reveal .hl{animation-play-state:paused}
 
 /* the gold light that follows the pointer across a card: deeper gold in the light theme, where pale gold vanishes */
 :root[data-theme="light"] .card::after,:root[data-theme="light"] .take::after,:root[data-theme="light"] .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(176,125,28,.13),transparent 45%)}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .card::after,:root:not([data-theme="dark"]) .take::after,:root:not([data-theme="dark"]) .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(176,125,28,.13),transparent 45%)}}
-/* the cursor ring carries a soft gold glow */
-.cur i{box-shadow:0 0 14px color-mix(in srgb,var(--gold) 30%,transparent)}
