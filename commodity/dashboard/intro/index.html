@@ -60,9 +60,7 @@ body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-fon
 .bar{position:fixed;z-index:10;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font:600 19px/1 var(--f-disp);letter-spacing:-.03em}
-.mark{width:26px;height:20px;position:relative}
-.mark i{position:absolute;left:3px;right:3px;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,var(--gold-3));clip-path:polygon(12% 0,88% 0,100% 100%,0 100%)}
-.mark i:first-child{top:0;left:5px;right:5px}.mark i:last-child{bottom:0}
+.bar .pill{margin-left:auto}   /* the intro carries no logo: the mark is revealed on the site, after Enter */
 .pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-radius:999px;color:var(--ink);text-decoration:none;font:500 14px var(--f-ui);
   background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
   box-shadow:inset 0 1px 0 var(--hi);transition:transform .3s var(--spring),background-color .3s ease}
@@ -230,7 +228,6 @@ html.lenis,html.lenis body{height:auto}
 <div class="cglow" id="cglow" aria-hidden="true"></div>
 
 <header class="bar">
-  <a class="brand" href="/" data-enter aria-label="Parity home"><span class="mark" aria-hidden="true"><i></i><i></i></span>Parity</a>
   <a class="pill" href="/" data-enter>Skip intro</a>
 </header>
 
@@ -323,11 +320,16 @@ html.lenis,html.lenis body{height:auto}
       <h2><span class="hl">Parity</span></h2>
       <p>Checks whether MCX’s four gold contracts agree, whether any gap survives real costs, and tells a trader when one is worth a look. Built for Hack in Hills ’26 by</p>
       <ul class="team"><li>Nikhil Kumar</li><li>Sai Ganesh</li><li>Ishaan Chhabra</li></ul>
-      <div class="cta"><a class="go" href="/" data-enter aria-label="Enter Parity"><span class="roll" aria-hidden="true"><span>Enter Parity</span><span>Enter Parity</span></span></a><a class="alt" href="/demo" aria-label="Watch the 1:28 demo"><span class="roll" aria-hidden="true"><span>Watch the 1:28 demo</span><span>Watch the 1:28 demo</span></span></a></div>
+      <div class="cta"><a class="go" href="/" data-enter data-reveal aria-label="Enter Parity"><span class="roll" aria-hidden="true"><span>Enter Parity</span><span>Enter Parity</span></span></a><a class="alt" href="/demo" aria-label="Watch the 1:28 demo"><span class="roll" aria-hidden="true"><span>Watch the 1:28 demo</span><span>Watch the 1:28 demo</span></span></a></div>
     </div>
   </section>
 </main>
 
+<script>
+/* "Enter Parity" asks the site to open with its logo reveal (once); "Skip intro" leaves the flag unset, so it skips both */
+document.querySelectorAll("a[data-reveal]").forEach(a => a.addEventListener("click", () => { try { sessionStorage.setItem("parity:reveal", "1"); } catch (e) {} }));
+document.querySelectorAll("a[data-enter]:not([data-reveal])").forEach(a => a.addEventListener("click", () => { try { sessionStorage.removeItem("parity:reveal"); } catch (e) {} }));
+</script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
  "lenis":"https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.mjs","motion":"https://cdn.jsdelivr.net/npm/motion@13.4.6/+esm"}}
@@ -1145,7 +1147,7 @@ if (renderer) {
     if (b === S.recast) return { p: V(line[i], -0.05, 0), s: 0.001, ry: 0, rx: [0.3, 0.3, 0.6, 0.3][i], rz: 0 };   // melted into grains
     if (b === S.pergram) return { p: onBeam(i, PG_S[i]), s: PG_S[i], ry: 0, rx: 0, rz: balAngle };                // riding the balance
     if (b === S.cost || b === S.unusual) return { p: V(line[i], BASE - 0.12, 0.62), s: [0.42, 0.62, 0.6, 1.05][i], ry: 0, rx: [0.3, 0.3, 1.55, 0.3][i], rz: 0 };
-    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55 + ringSpin), s: 0.001, ry: 0.6, rx: 0.5, rz: 0 };   // the mark stands alone   // a wide ring framing the mark
+    if (b === S.team) return { p: ring(i, 4, 2.7, LOGO.x, LOGO.y, LOGO.z - 0.9, 0.55 + ringSpin), s: 0.001, ry: 0.6, rx: 0.5, rz: 0 };   // a wide ring framing the coin
     return { p: V(line[i], -0.2, 1.1), s: 0.001, ry: 0, rx: 0.3, rz: 0 };                                     // off stage
   };
 
@@ -1166,14 +1168,15 @@ if (renderer) {
       gSpin.push(V(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(6));
     }
   });
-  // the Parity mark: two stacked trapezoid bars (the site's own logo path, 64-unit box), filled with as many grains as fit
-  const logoAt = sp => { const out = [], sc = 0.05, st = sp / sc;
-    for (const y0 of [13, 26.4]) for (let sy = y0 + st / 2; sy < y0 + 8.6; sy += st) { const t = (sy - y0) / 8.6, xl = 14 - 3.2 * t, xr = 34 + 3.2 * t;
-      for (let sx = xl + st / 2; sx < xr; sx += st) out.push(V(LOGO.x + (sx - 24) * sc, LOGO.y + (24 - sy) * sc, LOGO.z)); }
+  // the finale: every grain of the four contracts settles into one plain coin of pure gold. (The Parity mark itself
+  // is kept back for the site's logo reveal, which plays after "Enter Parity".)
+  const logoAt = sp => { const out = [], R = 0.6, dy = sp * 0.866;   // rows staggered like a honeycomb, so the edge reads round
+    for (let r = 0, y = -R + dy / 2; y < R; y += dy, r++) for (let x = -R + (r % 2 ? sp : sp / 2); x < R; x += sp) {
+      const d = Math.hypot(x, y); if (d <= R) out.push(V(LOGO.x + x, LOGO.y + y, LOGO.z + (d > R - sp * 1.2 ? 0.03 : 0))); }   // the rim stands a little proud
     return out; };
   let logoSp = 0.03; while (logoAt(logoSp).length > NGT) logoSp += 0.002;
   const logoDst = logoAt(logoSp), logoSrc = logoDst.map(() => V(Math.random() - 0.5, 0.15 + Math.random() * 0.6, 0.2 + Math.random() * 0.5).normalize().multiplyScalar(1.6 + Math.random() * 0.9).add(LOGO));
-  const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the mark forges left to right
+  const logoDel = logoDst.map(v => clamp((v.x - LOGO.x + 0.7) / 1.4) * 0.6 + Math.random() * 0.4);   // the coin fills left to right
   // behind the mark the back wall is plain: no panels, no gold, just a soft pool of warm lamplight, so the cursor's scatter reads clearly
   const pool = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 4.6), roomMat(new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, fog: false,
     map: mkTex(256, 256, (x, w, h) => { x.fillStyle = "rgba(0,0,0,0)"; x.fillRect(0, 0, w, h); const g = x.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);

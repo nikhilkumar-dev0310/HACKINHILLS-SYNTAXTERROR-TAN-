@@ -56,7 +56,8 @@ const HOT = "a,button,summary,label,select,[role=button],[role=option],[tabindex
 export function useCursor() {
   useEffect(() => {
     if (reducedMotion() || !finePointer()) return;
-    const el = document.createElement("div"); el.className = "cur out";   // hidden until the pointer first moves el.setAttribute("aria-hidden", "true"); el.innerHTML = "<i></i>";
+    const el = document.createElement("div"); el.className = "cur out";   // hidden until the pointer first moves
+    el.setAttribute("aria-hidden", "true"); el.innerHTML = "<i></i>";
     document.body.appendChild(el);
     let x = -80, y = -80, cx = x, cy = y, raf = 0, last = 0, state = "";
     const frame = now => {

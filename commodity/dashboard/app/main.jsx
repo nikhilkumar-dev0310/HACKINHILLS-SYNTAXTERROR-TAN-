@@ -440,9 +440,12 @@ function App() {
   const ctx = { view, go, rvPair, setRvPair, calF, setCalF, theme, setTheme, keysOn, setKeysOn, setNews, setPal, setKeysSheet };
   const Page = PAGES[view], idx = VIEWS.findIndex(v => v[0] === view);
   /* the loading screen leaves once the first page has painted */
+  /* after "Enter Parity" on the intro it is the logo reveal instead (template.html): it plays for 2.4 s, then the doors
+     part and the page's own entrance (paused until now by html.reveal) runs as the site comes into view */
   useEffect(() => { const b = document.getElementById("boot"); if (!b) return;
-    const t0 = window.__PARITY_T0 || 0, wait = Math.max(0, 650 - (performance.now() - t0));
-    const t = setTimeout(() => { b.classList.add("done"); setTimeout(() => b.remove(), 520); }, reducedMotion() ? 0 : wait); return () => clearTimeout(t); }, []);
+    const rvl = b.classList.contains("rvl"), t0 = (rvl ? window.__PARITY_RVL_T0 : window.__PARITY_T0) || 0, wait = Math.max(0, (rvl ? 2400 : 650) - (performance.now() - t0));   // the reveal is timed from when it first appeared
+    const t = setTimeout(() => { b.classList.add("done"); setTimeout(() => document.documentElement.classList.remove("reveal"), rvl ? 260 : 0);
+      setTimeout(() => b.remove(), rvl ? 1300 : 520); }, reducedMotion() ? 0 : wait); return () => clearTimeout(t); }, []);
   /* printing: always the light theme, every "more" panel opened, then put back */
   useEffect(() => { let opened = [], prev = null, on = false;
     const before = () => { if (on) return; on = true; prev = document.documentElement.getAttribute("data-theme"); document.documentElement.setAttribute("data-theme", "light");
