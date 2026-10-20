@@ -416,3 +416,7 @@ Motion (open-source, MIT, pinned on jsDelivr):
   slope, with a whiteout-blended normal map), so it no longer stretches either.
 - **A way through:** a narrow, gently winding path runs down the middle from the door towards the mark, just wide
   enough for someone to squeeze through, with the gold banked up on both sides.
+- **A trodden path, an open door (20 Oct, evening):** the way through the middle now wanders. Its line, width and
+  ragged edges follow simplex noise, its banks slump at different slopes, and its floor keeps a thin, patchy scatter
+  of coins with the stone showing through. The heap banked behind the door is gone, so the view into the vault is
+  open.
