@@ -389,3 +389,19 @@ Motion (open-source, MIT, pinned on jsDelivr):
   over it, falls and slides out across the floor, and a tongue of spilled gold grows in front of the door.
 - **Room:** pile heights now run from 0.26 to 1.5, and bar stacks from 2 to 8 layers with different footprints.
   There is no glow behind the mark any more.
+
+## A vault someone filled (20 Oct 2026, afternoon)
+- **Hoard:** the modern room is one gold landscape again: one full-floor mesh (170 × 200 on laptops). The height is a
+  ragged base layer over nearly all the floor, with a few broad bare patches, plus piles of very different heights.
+  Each pile's reach wanders with simplex noise, so its outline is uneven. The gold dips under the floor smoothly, so
+  its edges follow the ground instead of a grid. The tall piles are broad, so the coin surface does not stretch on
+  steep sides. Behind the mark the gold stays low.
+- **Lying about:** 70 stray bars on the slopes, 34 coin towers of 2 to 19 coins, and 4000 loose coins (phones: 30,
+  12 and 1400).
+- **Colour:** loose cut gems (ruby, emerald, sapphire, amethyst), gold rings set with a stone, and fine chains draped
+  over the piles with pendants. All of it lies on the gold, none on bare floor.
+- **Vault door:** no gold outside any more. The river and the spill are off, and the hoard is banked high behind
+  the sill instead.
+- **Mark:** grains only, with no solid mark behind them; the cursor's push is back up (strength 0.17), so its dark
+  gaps read clearly.
+- **Pari:** calmer springs (less overshoot), a little noise, and a relaxed bend at each elbow.

@@ -865,7 +865,7 @@ if (renderer) {
         pos.push(x, r === NRg ? -0.02 : 0.26 * Math.exp(-(x * x / 0.3 + (z + 0.35) * (z + 0.35) / 0.9)) * (1 - t * t) + 0.004, z);
         if (r < NRg) { const k = r * NSg + a, k2 = r * NSg + (a + 1) % NSg; idx.push(k, k2, k + NSg, k2, k2 + NSg, k + NSg); } }
       const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return g; })(), rBar);
-  spill.position.set(VC.x + 0.15, VFLOOR, VC.z + 1.25); spill.visible = false; vaultSet.add(spill);
+  spill.position.set(VC.x + 0.15, VFLOOR, VC.z + 1.25); spill.visible = false;   // kept unused: no gold lies outside the vault
 
   /* ---------- the treasure room behind the vault door. From outside it is seen only through the open doorway (a stencil
      portal); once the camera flies through, it surrounds you, and the finale's forge happens inside it. */
@@ -936,18 +936,28 @@ if (renderer) {
   //      everything else settles onto its surface. The camera's aisle down the middle stays clear.
   // the finale camera only sees the floor from about z = -10.3 back, so in the modern room Pari's pile and the gold sit there
   const PARI_AT = MODERN ? (mobile ? [-0.35, -10.6] : [-0.95, -10.5]) : mobile ? [0.45, -9.3] : [0.2, -9.3];   // Pari's own pile, below and left of the mark
-  const MOUNDS = MODERN ? [[PARI_AT[0], PARI_AT[1], mobile ? 0.95 : 0.85, mobile ? 1.0 : 0.55],   // on phones the pile is taller, so Pari stands clear above the card
-    // heights run from knee-high drifts to piles taller than Pari; the tallest stand at the sides and back corners, and the
+  const MOUNDS = MODERN ? [[PARI_AT[0], PARI_AT[1], mobile ? 0.95 : 0.85, mobile ? 1.15 : 0.55],   // on phones the pile is taller, so Pari stands clear above the card
+    // heights run from knee-high drifts to piles taller than Pari, the tall ones broad (gentle slopes keep the coin surface
+    // from stretching); the tallest stand at the sides and back corners, and the
     // ones behind the mark stay low enough never to cross it
-    [-3.7, -11.2, 1.1, 1.4], [3.7, -11.6, 0.9, 0.7], [-1.9, -13.1, 1.15, 0.95], [1.9, -13.2, 0.8, 0.45], [0.0, -13.9, 1.0, 0.75],
-    [-3.9, -8.3, 0.75, 0.6], [3.9, -8.5, 1.0, 1.5], [-3.8, -5.4, 0.7, 0.45], [3.8, -5.6, 0.95, 1.05],
-    [-2.9, -9.6, 0.6, 0.36], [2.95, -9.5, 0.75, 0.85], [-0.6, -12.6, 0.6, 0.3], [3.0, -12.7, 0.95, 1.3], [-3.0, -12.6, 0.7, 0.62],
+    [-3.7, -11.2, 1.5, 1.4], [3.7, -11.6, 0.9, 0.7], [-1.9, -13.1, 1.3, 0.95], [1.9, -13.2, 0.8, 0.45], [0.0, -13.9, 1.0, 0.75],
+    [-3.9, -8.3, 1.0, 0.6], [3.9, -8.5, 1.45, 1.5], [-3.8, -5.4, 0.7, 0.45], [3.8, -5.6, 1.25, 1.05],
+    [-2.9, -9.6, 0.6, 0.36], [2.95, -9.5, 0.75, 0.85], [-0.6, -12.6, 0.6, 0.3], [3.0, -12.7, 1.35, 1.3], [-3.0, -12.6, 0.7, 0.62],
     [-1.7, -8.0, 0.5, 0.26], [1.7, -8.2, 0.65, 0.6], [-2.6, -4.6, 0.55, 0.32], [2.7, -4.8, 0.5, 0.28],
-    [0.45, -3.3, 1.0, 1.05]] : [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
+    [0.45, -3.3, 1.4, 1.3]] : [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
     [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
     [-3.1, -13.5, 1.2, 0.5], [3.3, -13.6, 1.2, 0.5], [1.9, -4.4, 0.8, 0.4], [-1.9, -10.1, 0.8, 0.4], [-2.2, -3.6, 0.7, 0.3]];   // the back stays low behind the mark
   const dH0 = (x, z) => { const ax = Math.abs(x);
-    if (MODERN) { let h = 0; for (const [cx, cz, R, H] of MOUNDS) h += H * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (R * R * 0.45)); return h * clamp((RZ0 - 0.1 - z) / 0.6); }
+    if (MODERN) {   // a room someone filled: a ragged base layer of gold over nearly all the floor (a few bare patches), piles
+      // of every height rising out of it with uneven feet and outlines (their reach wanders with simplex noise), a shallow
+      // ripple over everything; behind the mark the gold stays low, so the mark stands against the dark wall
+      let h = 0.07 + 0.06 * noise2(x * 0.8, z * 0.8) + 0.014 * noise2(x * 2.9 + 11, z * 2.9) - 0.16 * clamp((noise2(x * 0.42 + 3.3, z * 0.42 + 9.1) - 0.55) / 0.2);   // a few broad bare patches, not pinholes
+      for (const [cx, cz, R, H] of MOUNDS) { const dx = x - cx, dz = z - cz, w = 1 + 0.42 * noise2(cx * 3.1 + dx * 1.7, cz * 3.1 + dz * 1.7);
+        h += H * Math.exp(-(dx * dx + dz * dz) / (R * R * 0.45 * w * w)); }
+      h += 0.007 * noise2(x * 6.5, z * 6.5) * clamp(h / 0.08);   // just enough to break the light up, not a melted look
+      const behind = clamp((Math.abs(x - (mobile ? 0 : 0.45)) - 0.9) / 1.2) + clamp((z - (-10.6 - 0.4)) / 0.8);   // 0 right behind the mark (LOGO, set further down)
+      if (behind < 1) h = Math.min(h, 0.22 + 0.8 * clamp(behind));
+      return h * clamp((RZ0 - 0.1 - z) / 0.6); }
     let h = 0.66 * Math.pow(clamp((ax - 1.0) / 2.6), 1.6) + 0.42 * clamp((-12.6 - z) / 1.6) * clamp((ax - 0.6) / 1.8);
     for (const [cx, cz, R, H] of MOUNDS) h += H * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (R * R * 0.45));
     return h * clamp((RZ0 - 0.1 - z) / 0.6); };
@@ -983,7 +993,7 @@ if (renderer) {
   };
   const pileTex = (data, srgb) => mkTex(PS, PS, x => x.putImageData(new ImageData(data, PS, PS), 0, 0), 9, 11, srgb);
   const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: mkTex(4, 4, x => { x.fillStyle = "#e9c785"; x.fillRect(0, 0, 4, 4); }, 9, 11), normalMap: flatN,
-    metalness: 1, roughness: MODERN ? 0.2 : 0.27, envMapIntensity: MODERN ? 1.05 : 1.25, vertexColors: true }));
+    metalness: 1, roughness: MODERN ? 0.3 : 0.27, envMapIntensity: MODERN ? 1.0 : 1.25, vertexColors: true }));
   if (MODERN) hoardM.color.setRGB(1, 0.86, 0.6);   // freshly minted: a clean, saturated yellow gold with a bright polish, not an aged brass
   let heapM = null;
   { let made = 0; const N = 300, idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
@@ -1031,8 +1041,8 @@ if (renderer) {
   const DAGGERS = MODERN ? [] : [[-2.4, -7.6, 0.4], [2.2, -11.0, -0.8], [-1.2, -12.2, 1.6]].filter(([x, z]) => free(x, z, 0.32));
   DAGGERS.forEach(([x, z]) => claim(x, z, 0.32));
   // stray bars half-sunk in the slopes
-  for (let k = 0, n = MODERN ? 0 : mobile ? 30 : 80; k < n * 6 && strayBars.length < n; k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2);
-    if (dH(x, z) < 0.12 || !free(x, z, 0.19)) continue; claim(x, z, 0.19); strayBars.push(lay(onD(x, z, -0.02), dN(x, z), rnd(0, 6.28), 0.22)); }
+  for (let k = 0, n = MODERN ? (mobile ? 30 : 70) : mobile ? 30 : 80; k < n * 6 && strayBars.length < n; k++) { const x = rnd(-RW + 0.7, RW - 0.7), z = rnd(RZ1 + 0.6, -3.2);
+    if (dH(x, z) < (MODERN ? 0.05 : 0.12) || !free(x, z, 0.19)) continue; claim(x, z, 0.19); strayBars.push(lay(onD(x, z, -0.02), dN(x, z), rnd(0, 6.28), 0.22)); }
   // coins: never closer than a coin's width to each other or to anything else, so none passes through another
   const cGrid = new Map(), cKey = (x, z) => Math.floor(x / 0.16) + "," + Math.floor(z / 0.16);
   const coinFree = (x, z) => { const i = Math.floor(x / 0.16), j = Math.floor(z / 0.16);
@@ -1052,11 +1062,11 @@ if (renderer) {
       if (k < 4) sparkAt.push(V(x, y + 0.01, z).applyMatrix4(M)); }
   });
   // little towers of coins near the aisle, then the hoard's loose coins (more where the gold is deeper)
-  for (let k = 0, made = 0, n = MODERN ? 0 : mobile ? 14 : 40; k < n * 8 && made < n; k++) { const x = rnd(-2.6, 2.6), z = rnd(RZ1 + 1.2, -3.4); if (Math.abs(x) < 0.9 || !coinFree(x, z) || !free(x, z, 0.1)) continue;
-    const y = FLOOR + lowest(x, z, 0, 0.07, 0.07), hgt = 3 + Math.floor(Math.random() * 7);
+  for (let k = 0, made = 0, n = MODERN ? (mobile ? 12 : 34) : mobile ? 14 : 40; k < n * 8 && made < n; k++) { const x = rnd(-2.6, 2.6), z = rnd(RZ1 + 1.2, -3.4); if (Math.abs(x) < 0.9 || !coinFree(x, z) || !free(x, z, 0.1)) continue;
+    const y = FLOOR + lowest(x, z, 0, 0.07, 0.07), hgt = MODERN ? 2 + Math.floor(Math.random() ** 1.6 * 18) : 3 + Math.floor(Math.random() * 7);   // modern: from a few coins to tall towers
     for (let q = 0; q < hgt; q++) coins.push(new THREE.Matrix4().compose(V(x + rnd(-0.006, 0.006), y + q * CT, z + rnd(-0.006, 0.006)), _q.setFromAxisAngle(UP, rnd(0, 6.28)), _s.set(1, 1, 1)));
     putCoin(x, z, coins.pop()); claim(x, z, 0.09); made++; sparkAt.push(V(x, y + hgt * CT + 0.01, z)); }
-  for (let tries = 0, NC = MODERN ? (mobile ? 700 : 1700) : mobile ? 1000 : 2700, placed = 0; placed < NC && tries < NC * 10; tries++) {
+  for (let tries = 0, NC = MODERN ? (mobile ? 1400 : 4000) : mobile ? 1000 : 2700, placed = 0; placed < NC && tries < NC * 10; tries++) {
     const x = rnd(-RW + 0.3, RW - 0.3), z = rnd(RZ1 + 0.3, RZ0 - 0.3), h = dH(x, z);
     if (h < 0.03 ? (MODERN || Math.random() > 0.04) : Math.random() > Math.min(1, h * 2.5 + 0.2)) continue;   // the modern floor stays clean between the piles
     if (!coinFree(x, z)) continue;
@@ -1067,20 +1077,10 @@ if (renderer) {
   // the dune, with the shade of everything standing on it baked in: soft contact shadows round the chests, piles and props
   const shade = (x, z, h) => { let ao = 1; for (let q = 1; q < claims.length; q++) { const [cx, cz, r] = claims[q]; const d = Math.sqrt((x - cx) ** 2 + (z - cz) ** 2) / (r + 0.25); if (d < 1) ao *= 0.55 + 0.45 * d * d; }
     return ao * (0.8 + 0.2 * clamp(h / 0.35 + 0.4)); };   // soft contact shadows round what stands on the gold; the low ground sits in a little shade
-  if (MODERN) {   // each pile is its own round mesh, so its foot meets the floor in a clean circle, not a stepped grid edge
-    MOUNDS.forEach(([cx, cz, R, H]) => {
-      const RE = R * Math.sqrt(0.45 * Math.log(H / 0.006)), NR = mobile ? 16 : 26, NS = mobile ? 48 : 80, pos = [], uv = [], col = [], idx = [];
-      for (let r = 0; r <= NR; r++) for (let a = 0; a < NS; a++) {
-        const t = r / NR, x = cx + Math.cos(a / NS * 6.2832) * RE * t, z = cz + Math.sin(a / NS * 6.2832) * RE * t, h = r === NR ? -0.02 : dH(x, z);
-        pos.push(x, h, z); uv.push((x + RW) / (RW * 2), (RZ0 - z) / (RZ0 - RZ1)); const ao = shade(x, z, h); col.push(ao, ao, ao);
-        if (r < NR) { const k = r * NS + a, k2 = r * NS + (a + 1) % NS; idx.push(k, k2, k + NS, k2, k2 + NS, k + NS); } }
-      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-      g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
-      const m = new THREE.Mesh(g, hoardM); m.receiveShadow = true; m.position.y = FLOOR + 0.004; room.add(m); });
-  } else {
-    const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, mobile ? 64 : 110, mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
+  {
+    const dg = new THREE.PlaneGeometry(RW * 2 - 0.1, RZ0 - RZ1 - 0.05, MODERN ? (mobile ? 100 : 170) : mobile ? 64 : 110, MODERN ? (mobile ? 120 : 200) : mobile ? 80 : 140); dg.rotateX(-Math.PI / 2);
     const p = dg.attributes.position, col = new Float32Array(p.count * 3);
-    for (let k = 0; k < p.count; k++) { const x = p.getX(k), z = p.getZ(k) + (RZ0 + RZ1) / 2, h = dH(x, z); p.setY(k, h < 0.004 ? -0.03 : h);
+    for (let k = 0; k < p.count; k++) { const x = p.getX(k), z = p.getZ(k) + (RZ0 + RZ1) / 2, h = dH(x, z); p.setY(k, MODERN ? (h < 0.012 ? h - 0.03 * (1 - h / 0.012) : h) : h < 0.004 ? -0.03 : h);   // modern: the gold thins out and dips under the floor smoothly, so its edges follow the ground, not a grid
       let ao = 1; for (let q = 1; q < claims.length; q++) { const [cx, cz, r] = claims[q]; const d = Math.sqrt((x - cx) ** 2 + (z - cz) ** 2) / (r + 0.25); if (d < 1) ao *= 0.55 + 0.45 * d * d; }
       ao *= 0.8 + 0.2 * clamp(h / 0.35 + 0.4);   // the low ground between mounds sits in a little shade
       col[k * 3] = col[k * 3 + 1] = col[k * 3 + 2] = ao; }
@@ -1092,6 +1092,32 @@ if (renderer) {
     heap.forEach((M, n) => hi.setMatrixAt(n, M)); hi.receiveShadow = true; hi.computeBoundingSphere(); room.add(hi); }
   const barStand = new THREE.BoxGeometry(BL, BT, BW).translate(0, BT / 2, 0), coinStand = new THREE.CylinderGeometry(CR, CR, CT, 24).translate(0, CT / 2, 0);
   fill(barStand, tBar, stackBars, "bar", true); fill(barStand, tBar, strayBars, "bar"); fill(coinStand, tCoin, coins, "coin");
+  // colour among the gold (modern room): loose cut gems (ruby, emerald, sapphire, amethyst), gold rings set with a stone,
+  // and fine chains draped over the piles, each with a pendant. All lie on the hoard's surface, none on bare floor
+  if (MODERN) {
+    const gemGeo = new THREE.OctahedronGeometry(0.06, 0); gemGeo.scale(1, 0.72, 1); gemGeo.translate(0, 0.03, 0);
+    const GEMS = [0xb0001e, 0x007a3d, 0x0a3fb8, 0x6a1fa0];   // deep ruby, emerald, sapphire, amethyst
+    const gemMats = GEMS.map(c => roomMat(new THREE.MeshPhysicalMaterial({ color: c, metalness: 0, roughness: 0.08, clearcoat: 0.5, clearcoatRoughness: 0.05, ior: 1.76,
+      envMapIntensity: 1.1, emissive: c, emissiveIntensity: 0.35, flatShading: true })));   // saturated: the warm room light must not wash them pale
+    const jewelM = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.16, envMapIntensity: 1.3 }));   // polished, no texture
+    const onGold = (x, z) => dH(x, z) > 0.06, spot = () => [rnd(-RW + 0.4, RW - 0.4), rnd(RZ1 + 0.4, RZ0 - 0.6)];
+    const many = (geo, mat, list) => { if (!list.length) return; const im = new THREE.InstancedMesh(geo, mat, list.length); list.forEach((M, n) => im.setMatrixAt(n, M)); im.computeBoundingSphere(); room.add(im); };
+    const gemAt = GEMS.map(() => []);
+    for (let k = 0, n = mobile ? 70 : 170, tries = 0; k < n && tries < n * 20; tries++) { const [x, z] = spot();
+      if (!onGold(x, z) || !free(x, z, 0.05)) continue; gemAt[k % GEMS.length].push(lay(onD(x, z, -0.006), dN(x, z), rnd(0, 6.28), 0.5)); k++; }
+    gemAt.forEach((list, i) => many(gemGeo, gemMats[i], list));
+    const ringGeo = new THREE.TorusGeometry(0.036, 0.009, 8, 28); ringGeo.rotateX(Math.PI / 2); ringGeo.translate(0, 0.009, 0);
+    const ringStone = new THREE.OctahedronGeometry(0.022, 0); ringStone.translate(0, 0.03, 0.036);
+    const rings = [], stones = GEMS.map(() => []);
+    for (let k = 0, n = mobile ? 24 : 60, tries = 0; k < n && tries < n * 20; tries++) { const [x, z] = spot();
+      if (!onGold(x, z) || !free(x, z, 0.06)) continue; const M = lay(onD(x, z, -0.004), dN(x, z), rnd(0, 6.28), 0.35); rings.push(M); stones[k % GEMS.length].push(M); k++; }
+    many(ringGeo, jewelM, rings); stones.forEach((list, i) => many(ringStone, gemMats[i], list));
+    for (let k = 0, n = mobile ? 6 : 14, tries = 0; k < n && tries < 400; tries++) { const cx = rnd(-3.8, 3.8), cz = rnd(RZ1 + 1, -4); if (dH(cx, cz) < 0.15) continue;
+      const pts = [], r0 = rnd(0.14, 0.3), sq = rnd(0.5, 1);
+      for (let q = 0; q < 14; q++) { const a = q / 14 * 6.2832, x = cx + Math.cos(a) * r0 * (1 + 0.15 * Math.sin(a * 3 + k)), z = cz + Math.sin(a) * r0 * sq; pts.push(V(x, FLOOR + 0.004 + dH(x, z) + 0.008, z)); }
+      room.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true, "centripetal"), 70, 0.0055, 5, true), jewelM));
+      const pd = new THREE.Mesh(gemGeo, gemMats[k % GEMS.length]); pd.position.copy(pts[Math.floor(Math.random() * 14)]); pd.scale.setScalar(0.8); room.add(pd); k++; }
+  }
   const NB = 10, burst = new THREE.InstancedMesh(coinStand, tCoin, NB);   // the coins Pari kicks up when it is clicked
   for (let n = 0; n < NB; n++) { burst.setMatrixAt(n, new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4)); burst.setColorAt(n, _c.setRGB(1, 1, 1)); }
   burst.frustumCulled = false; burst.receiveShadow = true; burst.visible = false; burst.userData.kind = "coin"; room.add(burst); golds.push(burst);
@@ -1571,12 +1597,12 @@ if (renderer) {
     if (reduce) { armR.rotation.set(0, 0, -0.2); armL.rotation.set(0, 0, 0); armR.userData.fore.rotation.z = 0; armL.userData.fore.rotation.z = 0; }
     else {   // a slow simplex drift on top of every pose, then the springs; the forearms chase the upper arms and bend with the lag
       const nt = t * 0.55, dts = Math.min(dt, 1 / 30);
-      const rz = springStep(ARM.rz, armRz + 0.09 * noise2(nt, 41.2), 0.26, 0.62, dts), lz = springStep(ARM.lz, armLz + 0.09 * noise2(nt, 57.9), 0.28, 0.62, dts);
-      const rx = springStep(ARM.rx, armRx + 0.07 * noise2(nt, 63.4), 0.3, 0.7, dts), lx = springStep(ARM.lx, armLx + 0.07 * noise2(nt, 77.1), 0.3, 0.7, dts);
-      const fr = springStep(ARM.fr, rz, 0.16, 0.45, dts), fl = springStep(ARM.fl, lz, 0.16, 0.45, dts);
+      const rz = springStep(ARM.rz, armRz + 0.06 * noise2(nt, 41.2), 0.34, 0.74, dts), lz = springStep(ARM.lz, armLz + 0.06 * noise2(nt, 57.9), 0.36, 0.74, dts);
+      const rx = springStep(ARM.rx, armRx + 0.05 * noise2(nt, 63.4), 0.38, 0.8, dts), lx = springStep(ARM.lx, armLx + 0.05 * noise2(nt, 77.1), 0.38, 0.8, dts);
+      const fr = springStep(ARM.fr, rz, 0.2, 0.62, dts), fl = springStep(ARM.fl, lz, 0.2, 0.62, dts);
       armR.rotation.set(rx, 0, rz); armL.rotation.set(lx, 0, lz);
-      armR.userData.fore.rotation.z = clamp((fr - rz) * 1.4 + 0.12 * noise2(nt * 1.6, 88.8), -0.9, 0.9);
-      armL.userData.fore.rotation.z = clamp((fl - lz) * 1.4 + 0.12 * noise2(nt * 1.6, 95.5), -0.9, 0.9); }
+      armR.userData.fore.rotation.z = clamp((fr - rz) * 1.1 + 0.1 + 0.06 * noise2(nt * 1.2, 88.8), -0.7, 0.7);   // a relaxed bend at the elbow, never a straight stick
+      armL.userData.fore.rotation.z = clamp((fl - lz) * 1.1 - 0.1 + 0.06 * noise2(nt * 1.2, 95.5), -0.7, 0.7); }
     if (reduce) { lift = 0; sq = 0; }
     const sy = 1 - sq + (reduce ? 0 : 0.018 * Math.sin(t * 1.9)), sxz = 1 + sq * 0.5;   // squash and stretch, and breathing
     const pop = reduce ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
@@ -1738,7 +1764,7 @@ if (renderer) {
         gv.copy(gw).lerp(logoDst[n], e);
         if (fin > 0.001) gv.sub(LOGO).applyQuaternion(lq).add(LOGO);   // the mark tilts towards the cursor
         let tx = 0, ty = 0, tz = 0;
-        if (react) { const dx = gv.x - hit.x, dy = gv.y - hit.y, d2 = dx * dx + dy * dy, f2 = 0.09 * Math.exp(-d2 / 0.02) * fin, dl = Math.sqrt(d2) || 1;
+        if (react) { const dx = gv.x - hit.x, dy = gv.y - hit.y, d2 = dx * dx + dy * dy, f2 = 0.17 * Math.exp(-d2 / 0.03) * fin, dl = Math.sqrt(d2) || 1;
           tx = dx / dl * f2; ty = dy / dl * f2; tz = f2 * 0.8; }
         const o = n * 3; off[o] += (tx - off[o]) * k2; off[o + 1] += (ty - off[o + 1]) * k2; off[o + 2] += (tz - off[o + 2]) * k2;
         if (Math.abs(off[o]) + Math.abs(off[o + 1]) + Math.abs(off[o + 2]) > 1e-3) springy = true;
@@ -1748,7 +1774,7 @@ if (renderer) {
       }
       markGrains.instanceMatrix.needsUpdate = true;
       // the solid face grows in under the grains as they land, and tilts with them
-      finCoin.visible = solid > 0.001;   // full size from the start: it sits behind the grains
+      finCoin.visible = false;   // no solid gold behind the mark: it is the grains alone, so the cursor's scatter shows dark gaps
       if (fin > 0.001) finCoin.quaternion.copy(lq); else finCoin.quaternion.identity();
     }
 
@@ -1781,7 +1807,7 @@ if (renderer) {
     bolts.forEach(bl => bl.position.copy(bl.userData.dir).multiplyScalar(0.62 + 0.13 * (1 - unlock)));
     hinge.rotation.y = -open * 1.85;
     const ro = sm(clamp((open - 0.45) / 0.4)) * (1 - clamp((b - (S.know + 0.55)) / 0.4));   // only once the door is well open
-    river.visible = ro > 0.01;
+    river.visible = false;   // no gold leaves the vault: the hoard fills the doorway up to its sill instead
     if (river.visible) {
       const flow = (b - S.know) * 2.4 + time * 0.05;
       for (let n = 0; n < NR + NRC; n++) {
@@ -1801,7 +1827,6 @@ if (renderer) {
     }
     riverC.visible = river.visible;
     // the tongue of spilled gold grows as the river runs and stays once it has formed
-    const spK = sm(clamp((open - 0.5) / 0.5)); spill.visible = vault.visible && spK > 0.01; spill.scale.set(0.5 + 0.5 * spK, Math.max(spK, 0.0001), 0.4 + 0.6 * spK);
 
     // ribbon: rises with the beat, then draws left to right with the reader's scroll; a bead and a date ride the leading edge
     const rv = bump(b, S.daily, S.daily, 0.65), dp = clamp((b - (S.daily - 0.5)) / 0.95);
