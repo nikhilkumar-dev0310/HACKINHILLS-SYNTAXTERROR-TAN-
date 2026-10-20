@@ -925,7 +925,10 @@ if (renderer) {
   //      everything else settles onto its surface. The camera's aisle down the middle stays clear.
   // the finale camera only sees the floor from about z = -10.3 back, so in the modern room Pari's pile and the gold sit there
   const PARI_AT = MODERN ? (mobile ? [-0.35, -10.6] : [-0.95, -10.5]) : mobile ? [0.45, -9.3] : [0.2, -9.3];   // Pari's own pile, below and left of the mark
+  // Pari waits out of sight behind a heap of its own (back and to the left of its spot), then climbs out and comes forward
+  const PARI_HIDE = [PARI_AT[0] - 0.95, PARI_AT[1] - 1.25];
   const MOUNDS = MODERN ? [[PARI_AT[0], PARI_AT[1], mobile ? 0.95 : 0.85, mobile ? 1.15 : 0.55],   // on phones the pile is taller, so Pari stands clear above the card
+    [PARI_AT[0] - 0.75, PARI_AT[1] - 0.7, 0.42, mobile ? 0.8 : 0.62],   // the heap Pari hides behind
     // heights run from knee-high drifts to piles taller than Pari, the tall ones broad (gentle slopes keep the coin surface
     // from stretching); the tallest stand at the sides and back corners, and the
     // ones behind the mark stay low enough never to cross it
@@ -1258,11 +1261,16 @@ if (renderer) {
     pariBody.add(new THREE.Mesh(bg2, pGold));
     const hi = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.016, 0.016), roomMat(new THREE.MeshBasicMaterial({ color: 0xfff0c8, toneMapped: false }))); hi.position.set(0, 0.54, 0.17); pariBody.add(hi); }
   const eyes = new THREE.Group(); eyes.position.set(0, 0.33, 0.185); pariBody.add(eyes);
-  [-0.13, 0.13].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.05, 18, 12), pInk); e.scale.set(1, 1.25, 0.45); e.position.x = x; eyes.add(e);
-    const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), pShine); s2.position.set(x + 0.016, 0.022, 0.022); eyes.add(s2); });
-  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 8, 24, Math.PI), pInk); mouth.rotation.z = Math.PI; mouth.position.set(0, 0.215, 0.185); pariBody.add(mouth);
+  // each eye: a dark warm-brown iris and a black pupil in front of it, which opens when the cursor comes close and closes
+  // when it moves away (see pariLive), and a white catch-light on top
+  const pIris = roomMat(new THREE.MeshBasicMaterial({ color: 0x4a2c0c })), pupils = [];
+  [-0.13, 0.13].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.05, 18, 12), pIris); e.scale.set(1, 1.25, 0.45); e.position.x = x; eyes.add(e);
+    const pu = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 10), pInk); pu.position.set(x, -0.002, 0.008); pu.scale.set(0.6, 0.75, 0.4); eyes.add(pu); pupils.push(pu);
+    const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), pShine); s2.position.set(x + 0.016, 0.022, 0.03); eyes.add(s2); });
+  eyes.traverse(o => { o.userData.part = "eyes"; });
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 8, 24, Math.PI), pInk); mouth.rotation.z = Math.PI; mouth.position.set(0, 0.215, 0.185); pariBody.add(mouth); mouth.userData.part = "mouth";
   [-0.16, 0.16].forEach(x => { const lg = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.22, 10), pLimb); lg.position.set(x, -0.11, 0); pari.add(lg);
-    const ft = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.05, 0.14, 2, 0.02), pLimb); ft.position.set(x * 1.2, -0.22, 0.03); pari.add(ft); });
+    const ft = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.05, 0.14, 2, 0.02), pLimb); ft.position.set(x * 1.2, -0.22, 0.03); pari.add(ft); lg.userData.part = ft.userData.part = "feet"; });
   // each arm is two parts, an upper arm and a forearm hinged at a round elbow, so a gesture can follow through: the forearm
   // trails the upper arm a beat and overshoots a little (see pariLive)
   const arm = (ex, ey, hx, hy) => { const g = new THREE.Group(), fore = new THREE.Group(), E = V(ex, ey, 0), H = V(hx - ex, hy - ey, 0);
@@ -1276,6 +1284,7 @@ if (renderer) {
   // springs for the four arm angles and the two forearms: gestures set targets, the springs (maath's solver, a touch under-
   // damped) carry the arms there with a soft overshoot, so nothing snaps
   const ARM = { rz: { v: -0.16, u: 0 }, lz: { v: 0, u: 0 }, rx: { v: 0, u: 0 }, lx: { v: 0, u: 0 }, fr: { v: -0.16, u: 0 }, fl: { v: 0, u: 0 } };
+  armR.traverse(o => { o.userData.part = "armR"; }); armL.traverse(o => { o.userData.part = "armL"; });
   const pariShadow = new THREE.Mesh(new THREE.CircleGeometry(0.42, 32), roomMat(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false })));
   pariShadow.rotation.x = -Math.PI / 2; room.add(pariShadow);
   const PARI_S = mobile ? 0.4 : 0.72, P_DROP = mobile ? 0 : 0.34, P_FOOT = 0.245, PARI_FY = FLOOR + 0.004 + PLAT;   // P_FOOT: from Pari's origin down to its soles
@@ -1523,8 +1532,9 @@ if (renderer) {
      hold to charge a super jump, released when you let go. Click anywhere else: it turns and points there. Its eyes
      follow the cursor, and it notices when the cursor first reaches it. */
   const TAPS = ["giggle", "boing", "twirl", "surprise", "dance", "flip", "shy", "heart"];
-  const PREACT = { giggle: 1.4, boing: 1.25, twirl: 1.5, surprise: 1.5, lookat: 1.9, dance: 2.2, flip: 1.3, shy: 1.9, heart: 1.9, dizzy: 2.6, jackpot: 2.2, super: 1.7, notice: 0.75 };
-  const PSAY = { giggle: ["Hee hee, that tickles!", "Hee hee!"], boing: ["Boing!", "Up we go!"], twirl: ["Wheee!", "Round and round!"], surprise: ["Oh! Hello there.", "You found me!"],
+  const PREACT = { eyepoke: 1.7, highfive: 1.5, wavehi: 1.9, toes: 1.4, headpat: 1.8, giggle: 1.4, boing: 1.25, twirl: 1.5, surprise: 1.5, lookat: 1.9, dance: 2.2, flip: 1.3, shy: 1.9, heart: 1.9, dizzy: 2.6, jackpot: 2.2, super: 1.7, notice: 0.75 };
+  const PSAY = { eyepoke: ["Ow, my eye!", "Hey, I need those!"], highfive: ["High five!", "Up top!"], wavehi: ["Hello to you too!", "Hi, hi!"],
+    toes: ["Hey, my toes!", "That tickles my feet!"], headpat: ["Head pats? Yes please.", "Aww, thank you."], giggle: ["Hee hee, that tickles!", "Hee hee!"], boing: ["Boing!", "Up we go!"], twirl: ["Wheee!", "Round and round!"], surprise: ["Oh! Hello there.", "You found me!"],
     dance: ["Dance break!", "Watch these moves!"], flip: ["Ta-da!", "Nailed it!"], shy: ["Oh, stop it…", "You’re making me blush!"], heart: ["Love you too!", "Pure gold, that’s you."],
     dizzy: ["Whoa… dizzy!", "Too many clicks!"], jackpot: ["Jackpot!", "Coins for everyone!"], super: ["Super jump!", "Boing-oing-oing!"] };
   const PJ = mobile ? 0.25 : 1;   // how high Pari may jump: on phones the mark sits close above
@@ -1534,6 +1544,12 @@ if (renderer) {
   const pariScreen = () => { _ph.copy(pari.position); _ph.y += 0.25 * PARI_S; const d = _ph.distanceTo(camera.position); _ph.project(camera);
     return [(_ph.x * 0.5 + 0.5) * innerWidth, (-_ph.y * 0.5 + 0.5) * innerHeight, 0.58 * PARI_S * innerHeight / (2 * d * Math.tan(camera.fov * Math.PI / 360))]; };
   const onPari = (x, y) => { const [sx, sy, rp] = pariScreen(); return Math.hypot(x - sx, y - sy) < rp; };
+  // which part of Pari is under the pointer: eyes, either arm, the feet, the top of its head, or the body
+  const pRay = new THREE.Raycaster(), pNdc = new THREE.Vector2(), pLoc = new THREE.Vector3();
+  const pariPart = (x, y) => { pNdc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); pRay.setFromCamera(pNdc, camera);
+    const hit = pRay.intersectObject(pari, true)[0]; if (!hit) return "body";
+    const tag = hit.object.userData.part; if (tag) return tag;
+    pLoc.copy(hit.point); pariBody.worldToLocal(pLoc); return pLoc.y > 0.43 ? "head" : "body"; };
   addEventListener("pointerdown", e => {
     if (reduce || !pari.visible || fin < 0.5 || PA.land < 0) return;
     if (e.target.closest && e.target.closest("a,button,input,textarea,select,label,.card,#dots,#chap")) return;
@@ -1550,7 +1566,10 @@ if (renderer) {
     let k = null;
     if (PA.clicks.length >= 6) { k = "jackpot"; PA.clicks = []; }
     else if (PA.clicks.filter(c => now - c < 1200).length >= 3) { if (!busy) k = "dizzy"; }
-    else if (!busy) { const ks = TAPS.filter(x => x !== PA.lastPoke); k = ks[Math.floor(Math.random() * ks.length)]; if (mobile && k === "flip") k = "boing"; }
+    else if (!busy) {   // where it was touched decides how it reacts; the body gets one of the general reactions
+      const part = pariPart(e.clientX, e.clientY);
+      if (part === "body" || part === "mouth") { const ks = TAPS.filter(x => x !== PA.lastPoke); k = part === "mouth" ? "giggle" : ks[Math.floor(Math.random() * ks.length)]; if (mobile && k === "flip") k = "boing"; }
+      else k = { eyes: "eyepoke", armR: "highfive", armL: "wavehi", feet: "toes", head: "headpat" }[part]; }
     if (!k) return;
     PA.lastPoke = k; PA.poke = { k };
   }, { passive: true });
@@ -1567,15 +1586,40 @@ if (renderer) {
   const hearts = Array.from({ length: 5 }, () => sprite(heartT)), stars = Array.from({ length: 3 }, () => sprite(starT));
   function pariLive(v, t, dt) {
     const A = PA, k = 1 - Math.exp(-dt / 0.3);
-    // the drop: falls in from above, faster as it goes and stretched a touch; a damped squash on landing, then a wave hello
-    if (v >= 1 && A.land < 0) { A.land = t; A.act = { k: "wave", t0: t + 0.45, d: PACTS.wave }; }
-    if (v < 0.97 && A.land >= 0) { A.land = -1; A.act = null; }
-    let lift = (1 - v * v) * P_DROP, sq = v < 1 ? -0.1 * Math.sin(Math.PI * v) : 0;   // a short drop (phones: it pops up in place); it never crosses the mark above
+    // the entrance. Modern room: hidden in the gold behind its heap, it rises until its eyes peek over the top, looks both
+    // ways, climbs out and hops forward to its spot, lands with a squash and waves. Old room: it drops in from above
+    let lift = 0, sq = 0, enterYaw = 0, enterWide = 0, hx = PARI_AT[0], hz = PARI_AT[1], hy = PARI_FY;
+    if (MODERN && !reduce) {
+      if (v >= 1 && A.enter == null && A.land < 0) A.enter = t;
+      if (v < 0.97) { A.enter = null; A.land = -1; A.act = null; }
+      const fz = window.__pariFreeze;   // ?debug only: hold the entrance at a given second, to check each stage by eye
+      if (fz != null) { A.land = -1; A.enter = t - fz; }
+      const u = A.enter == null ? 0 : t - A.enter, hideY = FLOOR + 0.004 + dH(PARI_HIDE[0], PARI_HIDE[1]);
+      if (A.land < 0) {
+        const rise = sm(clamp((u - 0.35) / 0.7)), go = clamp((u - 2.3) / 1.0);   // 0.35-1.05 s rise, 1.05-2.3 s peek, 2.3-3.3 s come out
+        enterYaw = u < 2.3 ? 0.55 * Math.sin(Math.PI * clamp((u - 1.05) / 1.25) * 2) : 0; enterWide = u > 1.0 && u < 2.3 ? 1 : 0;
+        const gx = sm(go); hx = PARI_HIDE[0] + (PARI_AT[0] - PARI_HIDE[0]) * gx; hz = PARI_HIDE[1] + (PARI_AT[1] - PARI_HIDE[1]) * gx;
+        // the gold under it as it goes: over the heap's shoulder and down to its spot (which is levelled to PARI_FY)
+        const ground = go <= 0 ? hideY : go >= 1 ? PARI_FY : FLOOR + 0.004 + dH(hx, hz);
+        // sunk right under the gold, then up until only its eyes and the top of its head show over the heap, then out
+        const sink = go > 0 ? 0.45 * (1 - sm(clamp(go / 0.3))) : 0.95 - 0.5 * rise;
+        hy = ground - sink * PARI_S;
+        lift = go > 0 && go < 1 ? (0.2 * PJ + 0.05) * Math.abs(Math.sin(Math.PI * go * 2)) : 0;   // two hops out
+        sq = go > 0 && go < 1 ? -0.08 * Math.abs(Math.sin(Math.PI * go * 2)) : 0;
+        if (u >= 3.3 && fz == null) { A.land = t; A.enter = null; A.act = { k: "wave", t0: t + 0.45, d: PACTS.wave }; }
+      }
+    } else {
+      if (v >= 1 && A.land < 0) { A.land = t; A.act = { k: "wave", t0: t + 0.45, d: PACTS.wave }; }
+      if (v < 0.97 && A.land >= 0) { A.land = -1; A.act = null; }
+      lift = (1 - v * v) * P_DROP; sq = v < 1 ? -0.1 * Math.sin(Math.PI * v) : 0;   // a short drop (phones: it pops up in place); it never crosses the mark above
+    }
+    pari.position.x = hx; pari.position.z = hz; pariShadow.position.set(hx, (A.land >= 0 || !MODERN || reduce ? PARI_FY : hy) + 0.006, hz);
     if (A.land >= 0) { const u = t - A.land; sq += 0.26 * Math.exp(-u * 6.5) * Math.cos(u * 17); }
     // at rest the arms are never still: they swing with its breathing, a little out of step with each other
     let armRz = -0.16 + 0.13 * Math.sin(t * 1.7 + 0.5) + 0.04 * Math.sin(t * 3.3), armLz = 0.12 * Math.sin(t * 1.7 + 2.4) + 0.04 * Math.sin(t * 2.9 + 1),
       armRx = 0.16 * Math.sin(t * 1.25), armLx = 0.16 * Math.sin(t * 1.25 + 2.6), yawAdd = 0, spin = 0, flip = 0, lookY = 0, eyeX = 0, eyeY = 0;
-    let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1), squint = 0, wide = 0, grin = 0, heartU = -1, dizzyE = 0;
+    let sway = 0.035 * Math.sin(t * 0.9) + 0.012 * Math.sin(t * 2.3 + 1), squint = 0, wide = enterWide, grin = 0, heartU = -1, dizzyE = 0;
+    yawAdd += enterYaw;
     const kz = PARI_S / 0.72;
     if (!reduce && A.land >= 0) {
       if (A.poke) { const q = A.poke; A.poke = null; A.act = { k: q.k, t0: t, d: PREACT[q.k], tx: q.tx || 0, power: q.power || 0 };
@@ -1634,6 +1678,14 @@ if (renderer) {
         else if (a.k === "super") { const up = clamp((u - 0.04) / 0.62), h = (mobile ? 0.09 : 0.36) * a.power;   // the charged jump: higher the longer you held
           if (up > 0 && up < 1) { lift += h * Math.sin(Math.PI * up); spin = 6.2832 * sm(up); wide = Math.sin(Math.PI * up); armRz += 0.5 * Math.sin(Math.PI * up); armLz -= 1.6 * Math.sin(Math.PI * up); }
           sq += up < 1 ? -0.16 * Math.sin(Math.PI * up) : 0.24 * Math.exp(-(u - 0.66) * 11) * Math.cos((u - 0.66) * 32); }
+        else if (a.k === "eyepoke") { squint = e; sway -= 0.07 * Math.sin(Math.PI * clamp(u / 0.3)); yawAdd = -0.25 * e;   // flinches back, rubs its eyes with both hands
+          armRz = armRz * (1 - e) + 0.9 * e + 0.12 * Math.sin(u * 32) * e; armLz = armLz * (1 - e) - 0.9 * e - 0.12 * Math.sin(u * 32 + 1) * e; armRx = -1.0 * e; armLx = -1.0 * e; }
+        else if (a.k === "highfive") { const up = sm(clamp(u / 0.35)), slap = clamp((u - 0.45) / 0.12);   // right hand up, holds, slaps down
+          grin = e; wide = 0.4 * e; armRz = armRz * (1 - e) + e * (1.25 - 0.9 * Math.sin(Math.PI * slap) * (slap < 1 ? 1 : 0)) * up; armRx = -0.3 * e; lift += 0.03 * PJ * Math.sin(Math.PI * slap); }
+        else if (a.k === "wavehi") { armLz = armLz * (1 - e) - e * (1.55 + 0.35 * Math.sin(u * Math.PI * 9)); grin = 0.7 * e; sway -= 0.04 * e; }   // waves back with the other hand
+        else if (a.k === "toes") { const hp = Math.abs(Math.sin(u * Math.PI * 4)); lift += 0.06 * PJ * hp * e; wide = 0.7 * e;   // hops from foot to foot
+          sway += 0.09 * Math.sin(u * Math.PI * 4) * e; armRz += 0.35 * hp * e; armLz -= 0.6 * hp * e; }
+        else if (a.k === "headpat") { sq += 0.13 * e + 0.03 * Math.sin(u * 18) * e; squint = 0.85 * e; grin = e; sway += 0.04 * Math.sin(u * 6) * e; }   // ducks into it, eyes shut, smiling
         else if (a.k === "notice") { wide = Math.sin(Math.PI * u) * 0.8; lift += 0.04 * PJ * Math.sin(Math.PI * u); armRz += 0.2 * Math.sin(Math.PI * u); }
         if (u >= 1) { A.last = a.k; A.act = null; A.next = t + 0.7 + Math.random() * 1.5; if (a.k === "jackpot") sparkMat.uniforms.boost.value = 0; } }
       if (t > A.blink + 0.16) { A.blink = t + 1.8 + Math.random() * 3.4; A.blink2 = Math.random() < 0.25 ? A.blink + 0.32 : 0; }
@@ -1651,6 +1703,10 @@ if (renderer) {
     const ke = Math.min(1, k * 2.2);
     A.ex += (eyeTX * 0.055 + eyeX - A.ex) * ke; A.ey += (-eyeTY * 0.04 + eyeY - A.ey) * ke;
     eyes.position.x = A.ex; eyes.position.y = 0.33 + A.ey;
+    // the pupils open as the cursor comes near Pari and close as it moves away (and open wide when startled)
+    let near = 0; if (ptrOn && !reduce) { const [sx, sy, rp] = pariScreen(); near = 1 - clamp((Math.hypot(ptrX - sx, ptrY - sy) - rp) / (rp * 6)); }
+    A.dil = (A.dil ?? 0.5) + (clamp(0.35 + 0.55 * near + 0.25 * wide) - (A.dil ?? 0.5)) * Math.min(1, dt / 0.18);
+    pupils.forEach(pu => pu.scale.set(0.3 + 0.62 * A.dil, (0.3 + 0.62 * A.dil) * 1.25, 0.4));
     if (reduce) { armR.rotation.set(0, 0, -0.2); armL.rotation.set(0, 0, 0); armR.userData.fore.rotation.z = 0; armL.userData.fore.rotation.z = 0; }
     else {   // a slow simplex drift on top of every pose, then the springs; the forearms chase the upper arms and bend with the lag
       const nt = t * 0.55, dts = Math.min(dt, 1 / 30);
@@ -1662,8 +1718,8 @@ if (renderer) {
       armL.userData.fore.rotation.z = clamp((fl - lz) * 1.1 - 0.1 + 0.06 * noise2(nt * 1.2, 95.5), -0.7, 0.7); }
     if (reduce) { lift = 0; sq = 0; }
     const sy = 1 - sq + (reduce ? 0 : 0.018 * Math.sin(t * 1.9)), sxz = 1 + sq * 0.5;   // squash and stretch, and breathing
-    const pop = reduce ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
-    pari.position.y = PARI_FY + lift + P_FOOT * PARI_S * sy * pop;   // the soles stay on the gold through every squash
+    const pop = reduce || MODERN ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
+    pari.position.y = (MODERN && !reduce && A.land < 0 ? hy : PARI_FY) + lift + P_FOOT * PARI_S * sy * pop;   // the soles stay on the gold through every squash
     const hgt = clamp(lift / 0.6); pariShadow.material.opacity = 0.38 * (1 - hgt); pariShadow.scale.setScalar(1 - 0.5 * hgt);
     // hearts rise beside it and fade (on phones they stay low, under the mark); dizzy stars circle its head
     const top = pari.position.y + 0.62 * PARI_S;
@@ -1942,7 +1998,7 @@ if (renderer) {
     laneL.forEach((el, k) => { const l = lanes[k], e = (NS - 1) * 3; place(el, V(RX1 + 0.04, (l.top[e + 1] - RB) * ribbon.scale.y + RB + 0.02, l.z), sm(clamp((rv - 0.7) / 0.3)) * clamp((dp - 0.9) / 0.1) * (innerWidth > 760 ? 1 : 0), -2); });
     place(scanL, V(sx, QY + 1.2 * quiet.scale.y, -4.2), scanH.visible ? sm(clamp((qv - 0.5) / 0.5)) : 0, -4);
     place(pariL, V(pari.position.x + (MODERN ? 0.62 : -0.62), pari.position.y + 0.42 * PARI_S, pari.position.z),   // beside Pari: in the modern room on its right, clear of the card
-      pari.visible ? clamp((pariV - 0.85) / 0.15) * (innerWidth > 760 ? 1 : 0) : 0, -6);
+      pari.visible && (PA.land >= 0 || !MODERN || reduce) ? clamp((pariV - 0.85) / 0.15) * (innerWidth > 760 ? 1 : 0) : 0, -6);   // the hello waits until Pari is out
 
     // adaptive resolution: hold about 60 fps by stepping down when frames run long, and back up when there is room
     ftimes.push(dt); if (ftimes.length > 45) ftimes.shift();

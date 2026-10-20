@@ -430,3 +430,22 @@ Motion (open-source, MIT, pinned on jsDelivr):
     2 m tiles that the renderer skips when off-screen. That is 7000 coins on laptops and 2800 on phones, before the
     extra coins on slopes. Slopes get proportionally more coins so they never show bare. Loose model coins are down to
     2400 (phones: 900).
+
+## Pari: an entrance, touch-aware reactions, living eyes (20 Oct 2026, evening)
+- **Entrance (modern room):** Pari waits sunk in the gold behind a heap of its own (`PARI_HIDE`, back and to the left
+  of its spot). When the finale arrives it rises until only its eyes and the top of its head show over the heap,
+  looks both ways with wide eyes, climbs out over the heap's shoulder, hops twice to its spot, lands with a squash and
+  waves. The "Hi, I'm Pari" label waits until it is out. Timed (3.3 s), not scroll-bound. Under reduced motion it is
+  simply there. For checking: `?debug`, then set `window.__pariFreeze = <seconds>` to hold a stage.
+- **Where you touch it matters:** clicks are raycast against Pari's parts.
+  - Eyes: flinches and rubs them ("Ow, my eye!").
+  - Right arm: a high five.
+  - Left arm: waves back.
+  - Feet: hops from foot to foot ("Hey, my toes!").
+  - Top of the head: a head pat (ducks, eyes shut, smiles).
+  - Mouth: giggles.
+  - Body: the eight general reactions as before.
+  - Combos (dizzy, jackpot) and the press-and-hold super jump are unchanged.
+- **Eyes:** each eye is now a warm-brown iris with a black pupil and a catch-light. The pupils open as the cursor
+  comes near Pari and close as it moves away (within about six of Pari's radii), and open wide when it is startled.
+  They are smoothed over about 0.18 s.
