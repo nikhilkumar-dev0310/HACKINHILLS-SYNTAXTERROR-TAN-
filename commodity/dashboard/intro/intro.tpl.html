@@ -941,8 +941,10 @@ if (renderer) {
       // of every height rising out of it with uneven feet and outlines (their reach wanders with simplex noise), a shallow
       // ripple over everything; behind the mark the gold stays low, so the mark stands against the dark wall
       let h = 0.07 + 0.06 * noise2(x * 0.8, z * 0.8) + 0.014 * noise2(x * 2.9 + 11, z * 2.9) - 0.16 * clamp((noise2(x * 0.42 + 3.3, z * 0.42 + 9.1) - 0.55) / 0.2);   // a few broad bare patches, not pinholes
-      for (const [cx, cz, R, H] of MOUNDS) { const dx = x - cx, dz = z - cz, w = 1 + 0.42 * noise2(cx * 3.1 + dx * 1.7, cz * 3.1 + dz * 1.7);
-        h += H * Math.exp(-(dx * dx + dz * dz) / (R * R * 0.45 * w * w)); }
+      // every pile is at least about twice as wide as it is tall (steepest slope near 34 degrees), so the coin surface never
+      // stretches down a cliff; the noise only wobbles the outline, it never pinches a pile narrow
+      for (const [cx, cz, R, H] of MOUNDS) { const dx = x - cx, dz = z - cz, RR = Math.max(R * 1.3, H * 1.9), w = 1.05 + 0.2 * noise2(cx * 3.1 + dx * 1.7, cz * 3.1 + dz * 1.7);
+        h += H * Math.exp(-(dx * dx + dz * dz) / (RR * RR * 0.45 * w * w)); }
       h += 0.007 * noise2(x * 6.5, z * 6.5) * clamp(h / 0.08);   // just enough to break the light up, not a melted look
       const behind = clamp((Math.abs(x - (mobile ? 0 : 0.45)) - 0.9) / 1.2) + clamp((z - (-10.6 - 0.4)) / 0.8);   // 0 right behind the mark (LOGO, set further down)
       if (behind < 1) h = Math.min(h, 0.22 + 0.8 * clamp(behind));
@@ -1013,7 +1015,8 @@ if (renderer) {
     const ry = MODERN ? 0 : rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry);
     if (![-0.5, 0, 0.5].every(u => free(cx + u * c, cz - u * s, 0.42))) return;
     [-0.5, 0, 0.5].forEach(u => claim(cx + u * c, cz - u * s, 0.42));
-    const y0 = FLOOR + lowest(cx, cz, ry, 0.71, 0.39) - 0.012;
+    // modern: the stack stands on the gold where it is (its middle), so the broad piles around it never bury it
+    const y0 = FLOOR + (MODERN ? dH(cx, cz) - 0.02 : lowest(cx, cz, ry, 0.71, 0.39) - 0.012);
     for (let L = 0; L < NL; L++) { const nx = Math.max(1, NX - (L >> 1)), nz = Math.max(1, NZ - L);
       for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
         const lx = (i - (nx - 1) / 2) * 0.355, lz = (j - (nz - 1) / 2) * 0.13, p = V(cx + lx * c + lz * s, y0 + L * BT, cz - lx * s + lz * c);

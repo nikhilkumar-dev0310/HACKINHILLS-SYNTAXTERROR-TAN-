@@ -405,3 +405,7 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Mark:** grains only, with no solid mark behind them; the cursor's push is back up (strength 0.17), so its dark
   gaps read clearly.
 - **Pari:** calmer springs (less overshoot), a little noise, and a relaxed bend at each elbow.
+- **Gentler piles (20 Oct, later):** every pile is now at least about 1.9 times as wide as it is tall (steepest slope
+  near 34 degrees), and the outline noise only wobbles a pile's reach (0.85 to 1.25), never pinches it narrow, so
+  the coin surface no longer stretches down steep sides. Bar stacks now sit on the gold at their middle, so the
+  broader piles never bury them.
