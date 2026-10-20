@@ -959,6 +959,10 @@ if (renderer) {
       h += 0.007 * noise2(x * 6.5, z * 6.5) * clamp(h / 0.08);   // just enough to break the light up, not a melted look
       const behind = clamp((Math.abs(x - (mobile ? 0 : 0.45)) - 0.9) / 1.2) + clamp((z - (-10.6 - 0.4)) / 0.8);   // 0 right behind the mark (LOGO, set further down)
       if (behind < 1) h = Math.min(h, 0.22 + 0.8 * clamp(behind));
+      // a narrow way through the middle, from the door towards the mark: the gold parts just enough for someone to squeeze
+      // through, its banks rising on both sides (it winds a little, as a path trodden through a heap would)
+      const px = 0.2 + 0.35 * Math.sin(z * 0.5), along = clamp((z - (-12.2)) / 0.8);
+      h = h * (1 - along) + h * along * sm(clamp((Math.abs(x - px) - 0.24) / 0.42)) - 0.03 * along * (1 - clamp((Math.abs(x - px) - 0.1) / 0.2));
       return h * clamp((RZ0 - 0.1 - z) / 0.6); }
     let h = 0.66 * Math.pow(clamp((ax - 1.0) / 2.6), 1.6) + 0.42 * clamp((-12.6 - z) / 1.6) * clamp((ax - 0.6) / 1.8);
     for (const [cx, cz, R, H] of MOUNDS) h += H * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (R * R * 0.45));
@@ -996,7 +1000,26 @@ if (renderer) {
   const pileTex = (data, srgb) => mkTex(PS, PS, x => x.putImageData(new ImageData(data, PS, PS), 0, 0), 9, 11, srgb);
   const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: mkTex(4, 4, x => { x.fillStyle = "#e9c785"; x.fillRect(0, 0, 4, 4); }, 9, 11), normalMap: flatN,
     metalness: 1, roughness: MODERN ? 0.3 : 0.27, envMapIntensity: MODERN ? 1.0 : 1.25, vertexColors: true }));
-  if (MODERN) hoardM.color.setRGB(1, 0.86, 0.6);   // freshly minted: a clean, saturated yellow gold with a bright polish, not an aged brass
+  if (MODERN) hoardM.color.setRGB(1, 0.86, 0.6);
+  /* modern: the coin surface is mapped triplanar (projected from above and from both sides, blended by the slope), so
+     every coin keeps its round shape on any slope instead of stretching down it as a top-down map does. The normal map is
+     blended the same way (whiteout blend, after Ben Golus). Tile scale matches the old planar mapping on the flat */
+  if (MODERN) hoardM.onBeforeCompile = sh => {
+    sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vTpPos; varying vec3 vTpNrm;")
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvTpPos = (modelMatrix * vec4(transformed, 1.0)).xyz; vTpNrm = normalize(mat3(modelMatrix) * objectNormal);");
+    sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 vTpPos; varying vec3 vTpNrm;\nconst float TPS = 0.94;")
+      .replace("#include <map_fragment>", `
+        vec3 tpw = pow(abs(normalize(vTpNrm)), vec3(4.0)); tpw /= (tpw.x + tpw.y + tpw.z);
+        vec2 tuvY = vTpPos.xz * TPS, tuvX = vTpPos.zy * TPS, tuvZ = vTpPos.xy * TPS;
+        diffuseColor *= texture2D(map, tuvY) * tpw.y + texture2D(map, tuvX) * tpw.x + texture2D(map, tuvZ) * tpw.z;`)
+      .replace("#include <normal_fragment_maps>", `
+        vec3 tn0 = normalize(vTpNrm);
+        vec3 tnX = texture2D(normalMap, tuvX).xyz * 2.0 - 1.0, tnY = texture2D(normalMap, tuvY).xyz * 2.0 - 1.0, tnZ = texture2D(normalMap, tuvZ).xyz * 2.0 - 1.0;
+        tnX.xy *= normalScale; tnY.xy *= normalScale; tnZ.xy *= normalScale;
+        tnX = vec3(tnX.xy + tn0.zy, abs(tnX.z) * tn0.x); tnY = vec3(tnY.xy + tn0.xz, abs(tnY.z) * tn0.y); tnZ = vec3(tnZ.xy + tn0.xy, abs(tnZ.z) * tn0.z);
+        vec3 tnW = normalize(tnX.zyx * tpw.x + tnY.xzy * tpw.y + tnZ.xyz * tpw.z);
+        normal = normalize((viewMatrix * vec4(tnW, 0.0)).xyz);`);
+  };   // freshly minted: a clean, saturated yellow gold with a bright polish, not an aged brass
   let heapM = null;
   { let made = 0; const N = 300, idle = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
     const work = dl => { const end = performance.now() + Math.max(4, Math.min(10, dl.timeRemaining())); while (made < N && performance.now() < end) { pileCoin(); made++; }
@@ -1095,6 +1118,22 @@ if (renderer) {
     heap.forEach((M, n) => hi.setMatrixAt(n, M)); hi.receiveShadow = true; hi.computeBoundingSphere(); room.add(hi); }
   const barStand = new THREE.BoxGeometry(BL, BT, BW).translate(0, BT / 2, 0), coinStand = new THREE.CylinderGeometry(CR, CR, CT, 24).translate(0, CT / 2, 0);
   fill(barStand, tBar, stackBars, "bar", true); fill(barStand, tBar, strayBars, "bar"); fill(coinStand, tCoin, coins, "coin");
+  // a carpet of real coins over all the gold (modern room): thousands of small minted discs, each with a raised rim, lying
+  // along the surface at its own tilt and overlapping like a real heap. Every coin is geometry, so none can stretch on
+  // a slope; the mapped surface beneath only shows in the gaps, a shade darker, as the coins further down would
+  if (MODERN) {
+    const prof = [[0, 0], [0.96, 0], [1, 0.12], [1, 0.88], [0.93, 1.25], [0.82, 1.08], [0, 1.08]].map(([r, y]) => new THREE.Vector2(r * CR, y * CT));
+    const carpetGeo = new THREE.LatheGeometry(prof, mobile ? 10 : 12); carpetGeo.computeVertexNormals();
+    const carpetM = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.24, envMapIntensity: 1.2, side: THREE.DoubleSide }));
+    const carpet = [];
+    for (let k = 0, n = mobile ? 3500 : 9000, tries = 0; k < n && tries < n * 6; tries++) {
+      const x = rnd(-RW + 0.15, RW - 0.15), z = rnd(RZ1 + 0.15, RZ0 - 0.2), h = dH(x, z); if (h < 0.05 || !free(x, z, CR * 0.6)) continue;
+      const nrm = dN(x, z), M = lay(onD(x, z, rnd(-0.004, 0.012)), nrm, rnd(0, 6.28), 0.18 + 0.4 * (1 - nrm.y)); carpet.push(M); k++; }
+    if (carpet.length) { const im = new THREE.InstancedMesh(carpetGeo, carpetM, carpet.length);
+      carpet.forEach((M, n) => { im.setMatrixAt(n, M); _c.setRGB(1, 0.97 + rnd(-0.02, 0.02), 0.93 + rnd(-0.05, 0.03)).multiplyScalar(rnd(0.9, 1.05)); im.setColorAt(n, _c); });
+      im.receiveShadow = true; im.computeBoundingSphere(); room.add(im); }
+    hoardM.color.setRGB(0.82, 0.68, 0.45);   // the surface under the coins sits in their shade
+  }
   // colour among the gold (modern room): loose cut gems (ruby, emerald, sapphire, amethyst), gold rings set with a stone,
   // and fine chains draped over the piles, each with a pendant. All lie on the hoard's surface, none on bare floor
   if (MODERN) {

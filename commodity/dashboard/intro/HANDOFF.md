@@ -409,3 +409,10 @@ Motion (open-source, MIT, pinned on jsDelivr):
   near 34 degrees), and the outline noise only wobbles a pile's reach (0.85 to 1.25), never pinches it narrow, so
   the coin surface no longer stretches down steep sides. Bar stacks now sit on the gold at their middle, so the
   broader piles never bury them.
+- **Coins keep their shape (20 Oct, later):** the gold is now covered with a carpet of real coins: 9000 on laptops,
+  3500 on phones. Each is a small minted disc with a raised rim (a lathe), laid along the surface at its own tilt and
+  overlapping like a real heap. Being geometry, no coin can stretch on a slope. The mapped surface beneath shows only
+  in the gaps, a shade darker. It is now mapped triplanar (projected from above and from both sides, blended by
+  slope, with a whiteout-blended normal map), so it no longer stretches either.
+- **A way through:** a narrow, gently winding path runs down the middle from the door towards the mark, just wide
+  enough for someone to squeeze through, with the gold banked up on both sides.
