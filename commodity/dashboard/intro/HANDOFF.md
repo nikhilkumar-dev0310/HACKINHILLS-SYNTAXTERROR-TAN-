@@ -449,3 +449,29 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Eyes:** each eye is now a warm-brown iris with a black pupil and a catch-light. The pupils open as the cursor
   comes near Pari and close as it moves away (within about six of Pari's radii), and open wide when it is startled.
   They are smoothed over about 0.18 s.
+
+## Calmer gold, gentler light theme (20 Oct 2026)
+
+- **Gold shine turned down.** Every gold material is rougher and reflects less of its environment:
+  - Bars 0.2 → 0.3 roughness, coins 0.16 → 0.32, the coin carpet 0.24 → 0.38, the hoard 0.3 → 0.38, jewellery 0.16 → 0.25.
+  - Reflection strength drops by about a third on each (for example bars 1.3 → 0.9, coins 1.15 → 0.76); metal props
+    from the model files are at least 0.3 rough.
+  - The four pieces and Pari lose most of their clearcoat (0.7 → 0.4, and 0.8 → 0.45).
+  - The brightest patches in both reflection rooms are dimmer: the studio's key highlights, the vault's chandelier and its glints.
+  - Exposure 1.05 → 0.96.
+- **Glow turned down.**
+  - The vault's lamps are about 30% weaker.
+  - The twinkling glints are smaller and about half as bright.
+  - The bokeh and light shafts are fainter (0.16 → 0.1).
+  - Gems glow less (emissive 0.35 → 0.2).
+  - The cursor's light, the card sheen and its rim glint, and the click ripple are all softer.
+- **Light theme.** The page is a dimmer warm stone (#ddd7cc in the intro, #e2ddd3 on the site) instead of near-white.
+  - Cards and labels are warm off-white instead of white.
+  - Ink is a softer near-black.
+  - The background lights are fainter.
+- **Site (app/styles.css, last block).**
+  - The same softer light palette: panels a step lighter than the page instead of pure white, and fainter white rims and highlights.
+  - Semantic colours are darkened slightly so all text still meets WCAG AA (4.5:1) on the page and panels.
+  - The headline's metallic gold has a softer highlight in both themes.
+  - The pointer light on cards and the background glow are fainter.
+  - The loading screen and 404 use the same background.

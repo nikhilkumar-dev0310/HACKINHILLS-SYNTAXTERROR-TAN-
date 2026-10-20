@@ -34,19 +34,19 @@
 #boot .slow{display:none;font:400 13px/1.5 Inter,system-ui,sans-serif;color:#a1a1a6;text-align:center;max-width:300px}
 #boot .slow a{color:#f2b544}
 /* light theme: the loading screen matches the page it fades into */
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot{background:#ebe5da;color:#101215}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot{background:#e2ddd3;color:#1c1e22}
   :root:not([data-theme="dark"]) #boot .b{fill:#835a07;stroke:#835a07}:root:not([data-theme="dark"]) #boot .ln{background:rgba(70,52,20,.12)}
   :root:not([data-theme="dark"]) #boot .ln i{background:linear-gradient(90deg,transparent,#835a07,transparent)}:root:not([data-theme="dark"]) #boot .cap,:root:not([data-theme="dark"]) #boot .slow{color:#5c5f66}}
-:root[data-theme="light"] #boot{background:#ebe5da;color:#101215}:root[data-theme="light"] #boot .b{fill:#835a07;stroke:#835a07}
+:root[data-theme="light"] #boot{background:#e2ddd3;color:#1c1e22}:root[data-theme="light"] #boot .b{fill:#835a07;stroke:#835a07}
 :root[data-theme="light"] #boot .ln{background:rgba(70,52,20,.12)}:root[data-theme="light"] #boot .ln i{background:linear-gradient(90deg,transparent,#835a07,transparent)}
 :root[data-theme="light"] #boot .cap,:root[data-theme="light"] #boot .slow{color:#5c5f66}
 #boot.late .slow,#boot.fail .slow{display:block}#boot.fail .ln{display:none}
 @keyframes boot-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
 @keyframes boot-fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes boot-run{from{transform:translateX(-110%)}to{transform:translateX(260%)}}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot{background:#ebe5da;color:#101215}:root:not([data-theme="dark"]) #boot .b{fill:#9a6a0a;stroke:#9a6a0a}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot{background:#e2ddd3;color:#1c1e22}:root:not([data-theme="dark"]) #boot .b{fill:#9a6a0a;stroke:#9a6a0a}
   :root:not([data-theme="dark"]) #boot .ln{background:rgba(0,0,0,.08)}:root:not([data-theme="dark"]) #boot .ln i{background:linear-gradient(90deg,transparent,#9a6a0a,transparent)}:root:not([data-theme="dark"]) #boot .cap,:root:not([data-theme="dark"]) #boot .slow{color:#5f6672}:root:not([data-theme="dark"]) #boot .slow a{color:#835a07}}
-:root[data-theme="light"] #boot{background:#ebe5da;color:#101215}:root[data-theme="light"] #boot .b{fill:#9a6a0a;stroke:#9a6a0a}:root[data-theme="light"] #boot .ln{background:rgba(0,0,0,.08)}
+:root[data-theme="light"] #boot{background:#e2ddd3;color:#1c1e22}:root[data-theme="light"] #boot .b{fill:#9a6a0a;stroke:#9a6a0a}:root[data-theme="light"] #boot .ln{background:rgba(0,0,0,.08)}
 :root[data-theme="light"] #boot .ln i{background:linear-gradient(90deg,transparent,#9a6a0a,transparent)}:root[data-theme="light"] #boot .cap,:root[data-theme="light"] #boot .slow{color:#5f6672}:root[data-theme="light"] #boot .slow a{color:#835a07}
 /* The logo reveal ("Balance"): plays once, only after "Enter Parity" on the intro (Skip intro, reloads and links go
    straight in). The two gold bars of the mark swing in like the pans of a scale and settle level against a hairline
@@ -106,10 +106,10 @@
 @keyframes rv-flash{0%{opacity:0;transform:scale(.6)}30%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
 @keyframes rv-up{from{transform:translate3d(0,110%,0) rotate(5deg)}to{transform:none}}
 @keyframes rv-tag{from{opacity:0;letter-spacing:.42em}to{opacity:1;letter-spacing:.2em}}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot .door{background:#ebe5da}:root:not([data-theme="dark"]) #boot .name{color:#101215}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) #boot .door{background:#e2ddd3}:root:not([data-theme="dark"]) #boot .name{color:#1c1e22}
   :root:not([data-theme="dark"]) #boot .tag{color:#5f6672}:root:not([data-theme="dark"]) #boot .ingot{filter:drop-shadow(0 10px 26px rgba(154,106,10,.25))}
   :root:not([data-theme="dark"]) #boot .ingot i{background-image:linear-gradient(100deg,#6e4a05 0%,#a8790f 20%,#e2b548 34%,#9a6c08 50%,#6e4a05 70%,#b8860b 88%,#7a5208 100%)}}
-:root[data-theme="light"] #boot .door{background:#ebe5da}:root[data-theme="light"] #boot .name{color:#101215}:root[data-theme="light"] #boot .tag{color:#5f6672}
+:root[data-theme="light"] #boot .door{background:#e2ddd3}:root[data-theme="light"] #boot .name{color:#1c1e22}:root[data-theme="light"] #boot .tag{color:#5f6672}
 :root[data-theme="light"] #boot .ingot{filter:drop-shadow(0 10px 26px rgba(154,106,10,.25))}
 :root[data-theme="light"] #boot .ingot i{background-image:linear-gradient(100deg,#6e4a05 0%,#a8790f 20%,#e2b548 34%,#9a6c08 50%,#6e4a05 70%,#b8860b 88%,#7a5208 100%)}
 @media (max-width:600px){#boot .name{font-size:48px}#boot .ingot{transform:scale(.8)}#boot .tag{font-size:10px}#boot .lock{gap:20px}}

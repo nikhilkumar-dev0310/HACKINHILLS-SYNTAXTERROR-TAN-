@@ -33,13 +33,13 @@ try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-
 }
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#ebe5da; --bg-2:#f4efe6;
-  --ink:#101215; --ink-2:rgba(16,18,21,.74); --ink-3:rgba(16,18,21,.56);
+  --bg:#ddd7cc; --bg-2:#e5e0d6;
+  --ink:#1c1e22; --ink-2:rgba(28,30,34,.78); --ink-3:rgba(28,30,34,.62);
   --gold:#835a07; --gold-2:#9a6c12; --gold-3:#5f4105; --good:#1f8a55;
-  --glass:rgba(255,255,255,.66); --glass-2:rgba(255,255,255,.42); --edge:rgba(90,66,24,.16); --hi:#fff;
-  --rule:rgba(90,66,24,.12); --lbl-bg:rgba(255,255,255,.86);
-  --card-fill:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.74)); --card-shadow:0 30px 70px -34px rgba(90,64,22,.38); --lbl-shadow:0 1px 8px rgba(255,255,255,.9);
-  --atmo-a:rgba(212,178,104,.36); --atmo-b:rgba(184,160,116,.30);
+  --glass:rgba(240,236,228,.66); --glass-2:rgba(240,236,228,.42); --edge:rgba(90,66,24,.16); --hi:rgba(255,255,255,.45);
+  --rule:rgba(90,66,24,.13); --lbl-bg:rgba(236,232,224,.9);
+  --card-fill:linear-gradient(180deg,rgba(238,234,226,.9),rgba(230,225,216,.8)); --card-shadow:0 30px 70px -34px rgba(70,52,20,.32); --lbl-shadow:0 1px 8px rgba(236,232,224,.8);
+  --atmo-a:rgba(196,166,104,.22); --atmo-b:rgba(170,150,112,.18);
 }
 html{background:var(--bg)}
 body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-ui);-webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -164,20 +164,20 @@ html.lenis,html.lenis body{height:auto}
    The cursor: a soft gold light trails it over the stage; the glass card under it catches the light and its border
    glints near it (as on the site in dark mode); a click sends out a gold ripple. Buttons lean towards the cursor. */
 .cglow{position:fixed;left:0;top:0;z-index:4;width:680px;height:680px;margin:-340px 0 0 -340px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .8s ease;will-change:transform;
-  background:radial-gradient(circle,rgba(255,214,138,.17),rgba(232,180,74,.07) 32%,rgba(232,180,74,.02) 52%,transparent 66%);mix-blend-mode:screen}
-:root[data-theme="light"] .cglow{mix-blend-mode:multiply;background:radial-gradient(circle,rgba(206,160,64,.20),rgba(206,160,64,.07) 34%,transparent 64%)}
+  background:radial-gradient(circle,rgba(255,214,138,.10),rgba(232,180,74,.04) 32%,rgba(232,180,74,.012) 52%,transparent 66%);mix-blend-mode:screen}
+:root[data-theme="light"] .cglow{mix-blend-mode:multiply;background:radial-gradient(circle,rgba(206,160,64,.12),rgba(206,160,64,.04) 34%,transparent 64%)}
 .cglow.on{opacity:1}
 .card>:not(.sheen){position:relative;z-index:1}
 .card .sheen{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;opacity:0;transition:opacity .5s ease;
-  background:radial-gradient(520px circle at var(--mx,50%) var(--my,-40%),rgba(255,226,160,.12),transparent 45%)}
+  background:radial-gradient(520px circle at var(--mx,50%) var(--my,-40%),rgba(255,226,160,.07),transparent 45%)}
 .card .sheen::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
-  background:radial-gradient(260px circle at var(--mx,50%) var(--my,-40%),rgba(255,231,170,.95),rgba(255,231,170,0) 70%);
+  background:radial-gradient(260px circle at var(--mx,50%) var(--my,-40%),rgba(255,231,170,.55),rgba(255,231,170,0) 70%);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
-:root[data-theme="light"] .card .sheen{background:radial-gradient(520px circle at var(--mx,50%) var(--my,-40%),rgba(214,170,80,.14),transparent 45%)}
-:root[data-theme="light"] .card .sheen::after{background:radial-gradient(260px circle at var(--mx,50%) var(--my,-40%),rgba(176,124,26,.8),rgba(176,124,26,0) 70%)}
+:root[data-theme="light"] .card .sheen{background:radial-gradient(520px circle at var(--mx,50%) var(--my,-40%),rgba(214,170,80,.08),transparent 45%)}
+:root[data-theme="light"] .card .sheen::after{background:radial-gradient(260px circle at var(--mx,50%) var(--my,-40%),rgba(176,124,26,.5),rgba(176,124,26,0) 70%)}
 .card.lit .sheen{opacity:1}
 .ripple{position:fixed;left:0;top:0;z-index:12;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;pointer-events:none;
-  border:1.5px solid rgba(246,222,160,.95);box-shadow:0 0 18px rgba(232,180,74,.6),inset 0 0 14px rgba(232,180,74,.35)}
+  border:1.5px solid rgba(246,222,160,.8);box-shadow:0 0 12px rgba(232,180,74,.32),inset 0 0 10px rgba(232,180,74,.18)}
 :root[data-theme="light"] .ripple{border-color:rgba(150,106,20,.9);box-shadow:0 0 16px rgba(176,124,26,.35)}
 /* the text: the headline's gold phrase shimmers, the body lights up word by word as the scene arrives,
    table rules draw in, and the eyebrow decodes like a ticker */
@@ -606,7 +606,7 @@ const label = (html, cls = "") => { const el = document.createElement("div"); el
 let frame = () => {}, vel = 0;
 if (renderer) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.96;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;   // the treasure room's lamp casts real shadows (drawn once, see captureRoom)
   const mobile = matchMedia("(max-width: 760px)").matches;
   const dprMax = Math.min(devicePixelRatio || 1, mobile ? 1.25 : 1.5);
@@ -614,7 +614,7 @@ if (renderer) {
   const scene = new THREE.Scene();
   { // the room: the site's three lights on its background, with film grain baked in (a blend layer over a live canvas costs every frame)
     const c = document.createElement("canvas"); c.width = c.height = 1024; const x = c.getContext("2d");
-    const [base, la, lb] = LIGHT ? ["#ebe5da", "212,178,104,.50", "184,160,116,.40"] : ["#060606", "201,162,84,.30", "140,112,62,.30"];
+    const [base, la, lb] = LIGHT ? ["#ddd7cc", "196,166,104,.30", "170,150,112,.24"] : ["#060606", "201,162,84,.30", "140,112,62,.30"];
     x.fillStyle = base; x.fillRect(0, 0, 1024, 1024);
     const g1 = x.createRadialGradient(740, 300, 0, 740, 300, 620); g1.addColorStop(0, `rgba(${la})`); g1.addColorStop(1, `rgba(${la.replace(/[\d.]+$/, "0")})`); x.fillStyle = g1; x.fillRect(0, 0, 1024, 1024);
     const g2 = x.createRadialGradient(120, 920, 0, 120, 920, 520); g2.addColorStop(0, `rgba(${lb})`); g2.addColorStop(1, `rgba(${lb.replace(/[\d.]+$/, "0")})`); x.fillStyle = g2; x.fillRect(0, 0, 1024, 1024);
@@ -631,12 +631,12 @@ if (renderer) {
     env.add(new THREE.Mesh(new THREE.PlaneGeometry(24, 24).rotateX(-Math.PI / 2).translate(0, -6.9, 0), new THREE.MeshBasicMaterial({ color: 0xbfa27c })));
     E(18, 7, 0xfff1d8, 1.9, 0, 6.8, 0);          // a broad overhead softbox
     E(4, 11, 0xffe6bf, 2.4, -11.5, 0.5, 2);      // tall side softboxes
-    E(4, 11, 0xfff4e4, 2.8, 11.5, 0.5, -2);
+    E(4, 11, 0xfff4e4, 2.2, 11.5, 0.5, -2);
     E(16, 4, 0xffcf8a, 1.6, 0, -1.5, 11.5);      // warm front fill
     E(20, 2.4, 0x1a1008, 1, 0, 1.5, -11.8);      // dark bands, for contrast in the reflections
     E(2.4, 14, 0x1a1008, 1, -11.8, 0, -7);
-    E(3.5, 3.5, 0xffffff, 3, 6, 4, 9);           // key highlights
-    E(2, 2, 0xffe9c0, 4, -7, 3, -9);
+    E(3.5, 3.5, 0xffffff, 2, 6, 4, 9);           // key highlights
+    E(2, 2, 0xffe9c0, 2.6, -7, 3, -9);
     scene.environment = pmrem.fromScene(env, 0.012).texture; }
   // inside the treasure room, metal mirrors that room instead: dark bronze walls, a floor of lamplit gold, banks of gold, the
   // chandelier's glow overhead and glints off the hoard (built like the studio above; a live capture would compile a second set of shaders)
@@ -646,20 +646,20 @@ if (renderer) {
     add(new THREE.PlaneGeometry(17, 17), 0xffe6bf, 1.4, 0, 5.95, 0);   // the lamplit ceiling: what the tops of the gold mirror
     env.add(new THREE.Mesh(new THREE.PlaneGeometry(20, 20).rotateX(-Math.PI / 2).translate(0, -5.9, 0), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xd8b67a).multiplyScalar(1.1) })));
     [[-6, -3.5, 2, 4], [6, -3.8, -3, 3.5], [0, -4.2, -7, 4.5], [-3, -4.4, 7, 3]].forEach(([x, y, z, r]) => add(new THREE.SphereGeometry(r, 24, 12), 0xe6c283, 1.15, x, y, z));   // banks of gold (paler than gold: what gold mirrors, it tints again)
-    add(new THREE.CircleGeometry(2.4, 32), 0xfff0d0, 5, 0, 5.85, 0);   // the chandelier
+    add(new THREE.CircleGeometry(2.4, 32), 0xfff0d0, 3.2, 0, 5.85, 0);   // the chandelier
     add(new THREE.PlaneGeometry(6, 2.2), 0xffd9a0, 1.8, 9.9, 1, -2); add(new THREE.PlaneGeometry(6, 2.2), 0xffd9a0, 1.5, -9.9, 1.5, 3);   // lamplight on the walls
-    for (let k = 0; k < 14; k++) { const a = Math.random() * 6.28, r = 3 + Math.random() * 5; add(new THREE.CircleGeometry(0.18, 10), 0xfff4dc, 7, Math.cos(a) * r, -4 + Math.random() * 2, Math.sin(a) * r); }
+    for (let k = 0; k < 14; k++) { const a = Math.random() * 6.28, r = 3 + Math.random() * 5; add(new THREE.CircleGeometry(0.18, 10), 0xfff4dc, 3.5, Math.cos(a) * r, -4 + Math.random() * 2, Math.sin(a) * r); }
     return pmrem.fromScene(env, 0.02).texture; })();
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 80);
   const key = new THREE.DirectionalLight(0xffe2b0, 1.4); key.position.set(3, 5, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(0xf0d49a, 1.1); rim.position.set(-4, 2, -3); scene.add(rim);
 
   /* materials. The glass is faked (clearcoat reflections, see-through tint): real transmission renders the scene twice. */
-  const goldMat = (c, r = 0.16) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.7, clearcoatRoughness: 0.08, envMapIntensity: 1.25 });
+  const goldMat = (c, r = 0.16) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: r, clearcoat: 0.4, clearcoatRoughness: 0.14, envMapIntensity: 0.95 });
   // gold's colour is its reflectance: pure gold reflects about 100% red, 77% green and 34% blue (linear). Pushed past that it
   // turns orange, so 999 sits just above it and 995, alloyed with silver, a shade paler and lighter
   const G999 = 0xffd985, G995 = 0xf3d595;
-  const g995 = goldMat(G995, 0.28), g999 = goldMat(G999, 0.14);
+  const g995 = goldMat(G995, 0.32), g999 = goldMat(G999, 0.21);
   const flatN = new THREE.DataTexture(new Uint8Array([128, 128, 255, 255]), 1, 1); flatN.needsUpdate = true;   // a flat normal map, stand-in until a model's arrives
   const p995 = g995.clone(), p999 = g999.clone(), pCoin = g999.clone(); pCoin.normalMap = flatN;   // the four pieces get their own copies: at the finale they sit inside the vault
   const glass = () => new THREE.MeshPhysicalMaterial({ color: LIGHT ? 0xffffff : 0xfff3dc, metalness: 0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06,
@@ -911,8 +911,8 @@ if (renderer) {
   // ---- the gold: CC0 models from TextureCan (texturecan.com), a stamped fine-gold bar and a coin re-faced with the Parity mark.
   //      They are a few KB each; until they arrive, plain stand-ins of the same size hold their places, and the models' normal
   //      maps swap in without a shader change (the materials carry a flat one from the start).
-  const tBar = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.2, normalMap: flatN, envMapIntensity: 1.3 }));
-  const tCoin = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: MODERN ? 0.16 : 0.25, normalMap: flatN, envMapIntensity: MODERN ? 1.15 : 1.3 }));
+  const tBar = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.3, normalMap: flatN, envMapIntensity: 0.9 }));
+  const tCoin = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: MODERN ? 0.32 : 0.34, normalMap: flatN, envMapIntensity: MODERN ? 0.76 : 0.9 }));
   const BL = 0.34, BW = 0.119, BT = 0.064, CR = 0.075, CT = 0.01;   // bar and coin sizes in the room, in the models' own proportions
   const golds = [];
   // instanced gold, one mesh per patch of the room so the patches behind the camera are skipped; each piece a slightly
@@ -1018,7 +1018,7 @@ if (renderer) {
   };
   const pileTex = (data, srgb) => mkTex(PS, PS, x => x.putImageData(new ImageData(data, PS, PS), 0, 0), 9, 11, srgb);
   const hoardM = roomMat(new THREE.MeshStandardMaterial({ map: mkTex(4, 4, x => { x.fillStyle = "#e9c785"; x.fillRect(0, 0, 4, 4); }, 9, 11), normalMap: flatN,
-    metalness: 1, roughness: MODERN ? 0.3 : 0.27, envMapIntensity: MODERN ? 1.0 : 1.25, vertexColors: true }));
+    metalness: 1, roughness: MODERN ? 0.38 : 0.32, envMapIntensity: MODERN ? 0.78 : 0.95, vertexColors: true }));
   if (MODERN) hoardM.color.setRGB(1, 0.86, 0.6);
   /* modern: the coin surface is mapped triplanar (projected from above and from both sides, blended by the slope), so
      every coin keeps its round shape on any slope instead of stretching down it as a top-down map does. The normal map is
@@ -1142,7 +1142,7 @@ if (renderer) {
   if (MODERN) {
     const prof = [[0, 0], [0.96, 0], [1, 0.12], [1, 0.88], [0.93, 1.25], [0.82, 1.08], [0, 1.08]].map(([r, y]) => new THREE.Vector2(r * CR, y * CT));
     const carpetGeo = new THREE.LatheGeometry(prof, mobile ? 10 : 12); carpetGeo.computeVertexNormals();
-    const carpetM = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.24, envMapIntensity: 1.2, side: THREE.DoubleSide }));
+    const carpetM = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.38, envMapIntensity: 0.78, side: THREE.DoubleSide }));
     // only where the camera ever looks: inside the room it always faces the back wall, from the doorway to its last place, and
     // the cursor swings it a little; gold beside or behind those viewpoints is never on screen, so it gets no coins
     const EYES = [[0.45, -2.2], [0.3, -3.4], [0, -4.6], [0, -5.6]], seen = (x, z) => EYES.some(([ex, ez]) => { const dz = ez - z; return dz > 0.3 && Math.abs(x - ex) < dz * 0.92 + 1.0; });
@@ -1169,8 +1169,8 @@ if (renderer) {
     const gemGeo = new THREE.OctahedronGeometry(0.06, 0); gemGeo.scale(1, 0.72, 1); gemGeo.translate(0, 0.03, 0);
     const GEMS = [0xb0001e, 0x007a3d, 0x0a3fb8, 0x6a1fa0];   // deep ruby, emerald, sapphire, amethyst
     const gemMats = GEMS.map(c => roomMat(new THREE.MeshPhysicalMaterial({ color: c, metalness: 0, roughness: 0.08, clearcoat: 0.5, clearcoatRoughness: 0.05, ior: 1.76,
-      envMapIntensity: 1.1, emissive: c, emissiveIntensity: 0.35, flatShading: true })));   // saturated: the warm room light must not wash them pale
-    const jewelM = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.16, envMapIntensity: 1.3 }));   // polished, no texture
+      envMapIntensity: 0.9, emissive: c, emissiveIntensity: 0.2, flatShading: true })));   // saturated: the warm room light must not wash them pale
+    const jewelM = roomMat(new THREE.MeshStandardMaterial({ color: G999, metalness: 1, roughness: 0.25, envMapIntensity: 0.95 }));   // polished, no texture
     const onGold = (x, z) => dH(x, z) > 0.06, spot = () => [rnd(-RW + 0.4, RW - 0.4), rnd(RZ1 + 0.4, RZ0 - 0.6)];
     const many = (geo, mat, list) => { if (!list.length) return; const im = new THREE.InstancedMesh(geo, mat, list.length); list.forEach((M, n) => im.setMatrixAt(n, M)); im.computeBoundingSphere(); room.add(im); };
     const gemAt = GEMS.map(() => []);
@@ -1202,8 +1202,8 @@ if (renderer) {
   const spGeo = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(sparkAt.flatMap(v => [v.x, v.y, v.z]), 3))
     .setAttribute("ph", new THREE.Float32BufferAttribute(sparkAt.map(() => Math.random() * 100), 1));
   const sparkMat = roomMat(new THREE.ShaderMaterial({ uniforms: { t: { value: 0 }, map: { value: starTex }, k: { value: 1 }, boost: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: "attribute float ph; uniform float t, k, boost; varying float a; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); float s = sin(t * (0.5 + fract(ph * 7.31) * 0.8) + ph); a = max(pow(max(s, 0.), 30.), boost * pow(max(sin(t * 9. + ph * 3.), 0.), 4.)); gl_PointSize = k * (30. + 70. * a) / -mv.z; gl_Position = projectionMatrix * mv; }",
-    fragmentShader: "uniform sampler2D map; varying float a; void main(){ vec4 c = texture2D(map, gl_PointCoord); gl_FragColor = vec4(c.rgb * a * 1.5, c.a * a); }" }));
+    vertexShader: "attribute float ph; uniform float t, k, boost; varying float a; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.); float s = sin(t * (0.5 + fract(ph * 7.31) * 0.8) + ph); a = max(pow(max(s, 0.), 30.), boost * pow(max(sin(t * 9. + ph * 3.), 0.), 4.)); gl_PointSize = k * (24. + 46. * a) / -mv.z; gl_Position = projectionMatrix * mv; }",
+    fragmentShader: "uniform sampler2D map; varying float a; void main(){ vec4 c = texture2D(map, gl_PointCoord); gl_FragColor = vec4(c.rgb * a * 0.75, c.a * a * 0.6); }" }));
   const sparks = new THREE.Points(spGeo, sparkMat); sparks.frustumCulled = false; room.add(sparks);
 
   // ---- props: CC0 models from Poly Haven (polyhaven.com), optimised to compact .glb files in intro/models/.
@@ -1214,7 +1214,7 @@ if (renderer) {
     const holder = new THREE.Group(); src.scale.multiplyScalar(k); src.updateMatrixWorld(true);
     const b2 = new THREE.Box3().setFromObject(src), c = b2.getCenter(new THREE.Vector3()); src.position.sub(V(c.x, b2.min.y, c.z)); holder.add(src); return holder; };
   const roomify = (obj, cast = true) => obj.traverse(o => { if (!o.isMesh) return; o.material = o.material.clone(); roomMat(o.material);
-    o.material.stencilFunc = roomMats[0].stencilFunc; o.material.envMapIntensity = 1.15; o.castShadow = cast; o.receiveShadow = true; });
+    o.material.stencilFunc = roomMats[0].stencilFunc; o.material.envMapIntensity = 0.75; if (o.material.metalness > 0.5) o.material.roughness = Math.max(o.material.roughness, 0.3); o.castShadow = cast; o.receiveShadow = true; });
   const put = (proto, x, z, ry = 0, s = 1, y = null) => { const m = proto.clone(true); m.position.copy(onD(x, z)); if (y !== null) m.position.y = y; m.rotation.set(0, ry, 0); m.scale.multiplyScalar(s); room.add(m); return m; };
   const get = n => loader.loadAsync(MODELS + n + ".glb").then(g => g.scene).catch(() => null);
   const toFloat = g => { const pick = ["getX", "getY", "getZ", "getW"];   // quantised attributes to plain floats, so they can be scaled freely
@@ -1264,7 +1264,7 @@ if (renderer) {
     }).finally(loaded);
   // Pari, the Parity mascot, waits on the hoard for the finale
   const pari = new THREE.Group(), pariBody = new THREE.Group(); pari.add(pariBody); room.add(pari);
-  const pGold = roomMat(new THREE.MeshPhysicalMaterial({ color: G999, metalness: 1, roughness: 0.14, clearcoat: 0.8, clearcoatRoughness: 0.06, envMapIntensity: 1.3 })); pGold.envMap = null;   // bright as the four pieces
+  const pGold = roomMat(new THREE.MeshPhysicalMaterial({ color: G999, metalness: 1, roughness: 0.2, clearcoat: 0.45, clearcoatRoughness: 0.12, envMapIntensity: 1.0 })); pGold.envMap = null;   // bright as the four pieces
   const pLimb = roomMat(new THREE.MeshStandardMaterial({ color: 0xc98d0c, metalness: 0.7, roughness: 0.35 }));
   const pInk = roomMat(new THREE.MeshBasicMaterial({ color: 0x1b1300 })), pShine = roomMat(new THREE.MeshBasicMaterial({ color: 0xffffff }));
   { const sh = new THREE.Shape(); sh.moveTo(-0.44, 0); sh.lineTo(0.44, 0); sh.lineTo(0.28, 0.56); sh.lineTo(-0.28, 0.56); sh.closePath();
@@ -1307,7 +1307,7 @@ if (renderer) {
   scene.add(spot, spot.target);
   const lamp = new THREE.PointLight(0xffd08a, 0, 18, 1.5); lamp.position.set(0.2, 3.4, -7.0); scene.add(lamp);
   const lamp2 = new THREE.PointLight(0xffe0aa, 0, 12, 1.5); lamp2.position.set(0, 2.6, -11.6); scene.add(lamp2);
-  const LAMPS = [[spot, 70], [lamp, 18], [lamp2, 24]];   // their strengths while the room is in view (an intensity change, no shader change)
+  const LAMPS = [[spot, 48], [lamp, 12], [lamp2, 16]];   // their strengths while the room is in view (an intensity change, no shader change)
   const fillL = new THREE.AmbientLight(0xffe6c0, 0); scene.add(fillL);   // a warm fill, only inside the vault
   // blur: out-of-focus bokeh discs drifting in the air, and soft shafts of light falling from above
   const bokehTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 31);
@@ -1316,14 +1316,14 @@ if (renderer) {
   const bokeh = [0.16, 0.32].map((size, n) => { const cnt = Math.round((mobile ? 36 : 80) / (n + 2)), a = new Float32Array(cnt * 3);
     for (let k = 0; k < cnt; k++) { do { a[k * 3] = rnd(-RW + 0.4, RW - 0.4); a[k * 3 + 2] = rnd(RZ1 + 0.5, RZ0 - 1.2); } while (a[k * 3 + 2] < -9 && Math.abs(a[k * 3]) < 2.4); a[k * 3 + 1] = rnd(FLOOR + 0.6, FLOOR + RH - 0.8); }   // the air round the mark stays clear
     const pts = new THREE.Points(new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(a, 3)),
-      roomMat(new THREE.PointsMaterial({ size, map: bokehTex, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false })));
+      roomMat(new THREE.PointsMaterial({ size, map: bokehTex, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false })));
     room.add(pts); return pts; });
   const shaftTex = (() => { const c = document.createElement("canvas"); c.width = 64; c.height = 256; const x = c.getContext("2d");
     const v = x.createLinearGradient(0, 0, 0, 256); v.addColorStop(0, "rgba(255,220,150,.9)"); v.addColorStop(1, "rgba(255,220,150,0)"); x.fillStyle = v; x.fillRect(0, 0, 64, 256);
     x.globalCompositeOperation = "destination-in"; const h = x.createLinearGradient(0, 0, 64, 0); h.addColorStop(0, "rgba(0,0,0,0)"); h.addColorStop(0.5, "rgba(0,0,0,1)"); h.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = h; x.fillRect(0, 0, 64, 256);
     return new THREE.CanvasTexture(c); })();
   const shafts = [[-2.6, -6.4], [2.7, -7.6], [-2.9, -10.4], [3.2, -11.6]].map(([x, z]) => {   // none falls between the camera and the mark
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(1.5, RH), roomMat(new THREE.MeshBasicMaterial({ map: shaftTex, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide, fog: false })));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1.5, RH), roomMat(new THREE.MeshBasicMaterial({ map: shaftTex, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide, fog: false })));
     m.position.set(x, FLOOR + RH / 2, z); m.rotation.z = rnd(-0.12, 0.12); room.add(m); return m; });
   scene.fog = new THREE.Fog(0x1e160e, 1e4, 2e4);   // set up now so no shader changes later; it only closes in inside the vault
 

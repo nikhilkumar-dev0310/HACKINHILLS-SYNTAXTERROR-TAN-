@@ -1275,3 +1275,61 @@ main .card,main .take,main .more{box-shadow:0 1px 2px rgba(0,0,0,.18),0 12px 32p
 .jump a{text-decoration:none}
 .uq-n{color:var(--ink-3);font-weight:500}
 .wm small{font-family:var(--f-ui);text-transform:none;letter-spacing:0;font-size:12px;font-weight:500}
+
+/* ======================= GENTLER LIGHT, CALMER GOLD (20 Oct 2026) =======================
+   The light theme was near-white paper with white panels, which glared. It is now a dimmer warm stone: the page sits at about
+   73% luminance instead of 90%, panels a step lighter rather than pure white, ink a touch softer than black, and the white
+   rims, highlights and background lights turned down. Every text colour still meets WCAG AA (4.5:1) on the page and panels.
+   In both themes the gold's sheen and the glows that follow the pointer are quieter. */
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#e2ddd3; --bg-2:#d9d3c8; --panel:rgba(238,234,227,.58); --panel-2:rgba(238,234,227,.78); --panel-solid:#ece8e1;
+  --line:rgba(60,46,20,.12); --line-2:rgba(60,46,20,.20); --hi:rgba(255,255,255,.28);
+  --ink:#1c1e22; --ink-2:#43474f; --ink-3:#535760; --inv:#ece8e1;
+  --gold:#7a5306; --gold-2:#7a5306; --gold-soft:rgba(122,83,6,.10); --gold-ink:#f3efe8;
+  --teal:#0a695d; --good:#106a49; --warn:#865103; --bad:#a63524;
+  --grid:rgba(40,32,16,.08);
+  --glow-a:rgba(190,160,100,.20); --glow-b:rgba(168,148,112,.15); --glow-c:rgba(222,208,176,.22);
+  --g-fill:linear-gradient(180deg,rgba(242,239,233,.62),rgba(238,234,227,.42));
+  --g-fill-hover:linear-gradient(180deg,rgba(244,241,236,.72),rgba(240,236,229,.52));
+  --g-rim:linear-gradient(150deg,rgba(255,255,255,.5),rgba(255,255,255,.26) 30%,rgba(236,222,196,.18) 62%,rgba(170,126,50,.26));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(100,74,26,.06);
+  --g-shadow:0 1px 2px rgba(70,52,20,.07),0 8px 18px -8px rgba(70,52,20,.12),0 26px 50px -26px rgba(70,52,20,.26);
+  --seg-on:#f1eee8; --seg-on-ink:#1c1e22;
+  --glass-bar:rgba(226,221,211,.66); --glass:rgba(236,232,225,.78);
+  --glass-edge:rgba(255,255,255,.38); --glass-hi:rgba(255,255,255,.45); --sheen:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 45%);
+  --glass-shadow:0 26px 64px -20px rgba(70,52,20,.30),0 0 0 .5px rgba(70,52,20,.14); --scrim:rgba(50,40,22,.20);
+  --gold-metal:linear-gradient(100deg,#6a4705 0%,#94690c 20%,#b48a2a 34%,#8a6008 50%,#6a4705 70%,#9c720a 88%,#714c07 100%);
+}}
+:root[data-theme="light"]{
+  --bg:#e2ddd3; --bg-2:#d9d3c8; --panel:rgba(238,234,227,.58); --panel-2:rgba(238,234,227,.78); --panel-solid:#ece8e1;
+  --line:rgba(60,46,20,.12); --line-2:rgba(60,46,20,.20); --hi:rgba(255,255,255,.28);
+  --ink:#1c1e22; --ink-2:#43474f; --ink-3:#535760; --inv:#ece8e1;
+  --gold:#7a5306; --gold-2:#7a5306; --gold-soft:rgba(122,83,6,.10); --gold-ink:#f3efe8;
+  --teal:#0a695d; --good:#106a49; --warn:#865103; --bad:#a63524;
+  --grid:rgba(40,32,16,.08);
+  --glow-a:rgba(190,160,100,.20); --glow-b:rgba(168,148,112,.15); --glow-c:rgba(222,208,176,.22);
+  --g-fill:linear-gradient(180deg,rgba(242,239,233,.62),rgba(238,234,227,.42));
+  --g-fill-hover:linear-gradient(180deg,rgba(244,241,236,.72),rgba(240,236,229,.52));
+  --g-rim:linear-gradient(150deg,rgba(255,255,255,.5),rgba(255,255,255,.26) 30%,rgba(236,222,196,.18) 62%,rgba(170,126,50,.26));
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(100,74,26,.06);
+  --g-shadow:0 1px 2px rgba(70,52,20,.07),0 8px 18px -8px rgba(70,52,20,.12),0 26px 50px -26px rgba(70,52,20,.26);
+  --seg-on:#f1eee8; --seg-on-ink:#1c1e22;
+  --glass-bar:rgba(226,221,211,.66); --glass:rgba(236,232,225,.78);
+  --glass-edge:rgba(255,255,255,.38); --glass-hi:rgba(255,255,255,.45); --sheen:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 45%);
+  --glass-shadow:0 26px 64px -20px rgba(70,52,20,.30),0 0 0 .5px rgba(70,52,20,.14); --scrim:rgba(50,40,22,.20);
+  --gold-metal:linear-gradient(100deg,#6a4705 0%,#94690c 20%,#b48a2a 34%,#8a6008 50%,#6a4705 70%,#9c720a 88%,#714c07 100%);
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .search,:root:not([data-theme="dark"]) .iconbtn,:root:not([data-theme="dark"]) .theme,:root:not([data-theme="dark"]) .btn,:root:not([data-theme="dark"]) .pager button,:root:not([data-theme="dark"]) .dl-i{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 2px rgba(70,52,20,.08)}}
+:root[data-theme="light"] .search,:root[data-theme="light"] .iconbtn,:root[data-theme="light"] .theme,:root[data-theme="light"] .btn,:root[data-theme="light"] .pager button,:root[data-theme="light"] .dl-i{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 2px rgba(70,52,20,.08)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .card::after,:root:not([data-theme="dark"]) .take::after,:root:not([data-theme="dark"]) .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(150,108,26,.08),transparent 45%)}}
+:root[data-theme="light"] .card::after,:root[data-theme="light"] .take::after,:root[data-theme="light"] .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(150,108,26,.08),transparent 45%)}
+@media (max-width:760px) and (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tabbar{background:color-mix(in srgb,var(--bg) 82%,transparent)}}
+@media (max-width:760px){:root[data-theme="light"] .tabbar{background:color-mix(in srgb,var(--bg) 82%,transparent)}}
+/* dark: a softer metal highlight in the headline's gold, and a fainter pointer light on cards */
+:root{--gold-metal:linear-gradient(100deg,#b0852f 0%,#e6c574 20%,#f0dba0 34%,#dcb04e 50%,#a97a22 70%,#e2bd66 88%,#c09034 100%)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--gold-metal:linear-gradient(100deg,#6a4705 0%,#94690c 20%,#b48a2a 34%,#8a6008 50%,#6a4705 70%,#9c720a 88%,#714c07 100%)}}
+:root[data-theme="light"]{--gold-metal:linear-gradient(100deg,#6a4705 0%,#94690c 20%,#b48a2a 34%,#8a6008 50%,#6a4705 70%,#9c720a 88%,#714c07 100%)}
+.card::after,.take::after,.more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(255,226,160,.05),transparent 45%)}
+:root[data-theme="light"] .card::after,:root[data-theme="light"] .take::after,:root[data-theme="light"] .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(150,108,26,.08),transparent 45%)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .card::after,:root:not([data-theme="dark"]) .take::after,:root:not([data-theme="dark"]) .more::after{background:radial-gradient(520px circle at var(--mx) var(--my),rgba(150,108,26,.08),transparent 45%)}}
+.bgfx{opacity:.45}
