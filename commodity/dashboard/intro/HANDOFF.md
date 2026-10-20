@@ -374,3 +374,18 @@ Motion (open-source, MIT, pinned on jsDelivr):
 - **Site, logo reveal:** the lower door used the class `b`, which the boot mark's bar animation also targets. That
   animation held the lower door shut, so the top half of the page appeared first. The doors are now `dt`/`db`. The
   first page under the doors also no longer replays its entrance.
+
+## Motion pass: fluid Pari, a camera that keeps moving, an overflowing vault (20 Oct 2026)
+- **Open-source motion kit, vendored at the top of the module:** 2D simplex noise ported from
+  jwagner/simplex-noise.js v4 (MIT, commit 6bfff87), and the exact damped-spring step from pmndrs/maath
+  `src/time/spring-core.ts` (MIT, commit 82387b5). Studies are on the design canvas, page "Intro motion".
+- **Pari:** each arm is now an upper arm and a forearm with a round elbow. Gestures set targets; slightly
+  under-damped springs (about 8% overshoot) carry the arms there; simplex noise keeps them drifting at rest; the
+  forearms trail the upper arms, so motion follows through.
+- **Camera:** the chart beats (every day, cost line, unusual?) have closer keys on laptops. Tall screens keep the
+  wider ones (`pm`/`tm`), since they already stand the camera further back. Every beat gets a simplex-noise handheld
+  drift and a gentle push-in through the chapter.
+- **Vault:** the hoard is banked up to the door's sill. When the door opens, the river rides up to the sill, spills
+  over it, falls and slides out across the floor, and a tongue of spilled gold grows in front of the door.
+- **Room:** pile heights now run from 0.26 to 1.5, and bar stacks from 2 to 8 layers with different footprints.
+  There is no glow behind the mark any more.

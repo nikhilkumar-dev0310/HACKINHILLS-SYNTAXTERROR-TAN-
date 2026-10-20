@@ -335,6 +335,34 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
+/* ---------- open-source motion kit, vendored here so it costs no extra request:
+   - createNoise2D: 2D simplex noise, ported from jwagner/simplex-noise.js v4 (MIT, (c) 2018 Jonas Wagner), commit 6bfff87
+   - springStep: the exact damped-oscillator step from pmndrs/maath src/time/spring-core.ts (MIT, (c) Isaac Mason),
+     commit 82387b5; unconditionally stable at any frame time, like Unity's SmoothDamp when critically damped */
+const createNoise2D = (random = Math.random) => {
+  const F2 = 0.5 * (Math.sqrt(3) - 1), G2 = (3 - Math.sqrt(3)) / 6, grad2 = [1, 1, -1, 1, 1, -1, -1, -1, 1, 0, -1, 0, 1, 0, -1, 0, 0, 1, 0, -1, 0, 1, 0, -1];
+  const perm = new Uint8Array(512); for (let i = 0; i < 256; i++) perm[i] = i;
+  for (let i = 0; i < 255; i++) { const r = i + ~~(random() * (256 - i)), a = perm[i]; perm[i] = perm[r]; perm[r] = a; }
+  for (let i = 256; i < 512; i++) perm[i] = perm[i - 256];
+  const gx = Float64Array.from(perm, v => grad2[(v % 12) * 2]), gy = Float64Array.from(perm, v => grad2[(v % 12) * 2 + 1]);
+  return (x, y) => { let n0 = 0, n1 = 0, n2 = 0; const s = (x + y) * F2, i = Math.floor(x + s) | 0, j = Math.floor(y + s) | 0, t = (i + j) * G2;
+    const x0 = x - (i - t), y0 = y - (j - t), i1 = x0 > y0 ? 1 : 0, j1 = 1 - i1;
+    const x1 = x0 - i1 + G2, y1 = y0 - j1 + G2, x2 = x0 - 1 + 2 * G2, y2 = y0 - 1 + 2 * G2, ii = i & 255, jj = j & 255;
+    let t0 = 0.5 - x0 * x0 - y0 * y0; if (t0 >= 0) { const g = ii + perm[jj]; t0 *= t0; n0 = t0 * t0 * (gx[g] * x0 + gy[g] * y0); }
+    let t1 = 0.5 - x1 * x1 - y1 * y1; if (t1 >= 0) { const g = ii + i1 + perm[jj + j1]; t1 *= t1; n1 = t1 * t1 * (gx[g] * x1 + gy[g] * y1); }
+    let t2 = 0.5 - x2 * x2 - y2 * y2; if (t2 >= 0) { const g = ii + 1 + perm[jj + 1]; t2 *= t2; n2 = t2 * t2 * (gx[g] * x2 + gy[g] * y2); }
+    return 70 * (n0 + n1 + n2); };
+};
+// a spring is { v: value, u: velocity }; smoothTime is roughly the time to arrive, damping 1 = no overshoot, below 1 a soft one
+const springStep = (sp, target, smoothTime, damping, dt) => {
+  const w = 2 / Math.max(1e-4, smoothTime), d = sp.v - target, v = sp.u; let pp, pv, vp, vv;
+  if (damping >= 0.9999) { const e = Math.exp(-w * dt); pp = e * (1 + w * dt); pv = e * dt; vp = -e * w * w * dt; vv = e * (1 - w * dt); }
+  else { const za = -w * damping, wd = w * Math.sqrt(1 - damping * damping), e = Math.exp(za * dt), c = Math.cos(wd * dt), sn = Math.sin(wd * dt);
+    pp = e * (c - za * sn / wd); pv = e * sn / wd; vp = -e * w * w * sn / wd; vv = e * (c + za * sn / wd); }
+  sp.v = target + pp * d + pv * v; sp.u = vp * d + vv * v; return sp.v;
+};
+const noise2 = createNoise2D();
+
 const D = __DATA__;
 const $ = s => document.querySelector(s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -818,6 +846,15 @@ if (renderer) {
   const perLane = Math.ceil((NR + NRC) / LANE.length);
   const rSeed = Array.from({ length: NR + NRC }, (_, n) => { const [lx, ly, o] = LANE[n % LANE.length]; return [(Math.floor(n / LANE.length) + o) / perLane, lx, ly, Math.random() - 0.5, Math.random() * 6.283, 3 + Math.random() * 4]; });
   const RDIR = V(0.28, -0.2, 1).normalize();   // the river spills forward and to the right, away from the open door
+  // the overflow: the hoard inside is banked up to the door's sill, so when the door opens the gold spills over the sill,
+  // falls to the floor and spreads into a tongue of gold that keeps growing while the river runs
+  const LIP = VC.y - 0.64;   // the doorway's sill
+  const spill = new THREE.Mesh((() => { const NRg = mobile ? 14 : 22, NSg = mobile ? 40 : 64, pos = [], idx = [];
+      for (let r = 0; r <= NRg; r++) for (let a = 0; a < NSg; a++) { const t = r / NRg, an = a / NSg * 6.2832, x = Math.cos(an) * t * 0.95, z = Math.sin(an) * t * 1.45;
+        pos.push(x, r === NRg ? -0.02 : 0.26 * Math.exp(-(x * x / 0.3 + (z + 0.35) * (z + 0.35) / 0.9)) * (1 - t * t) + 0.004, z);
+        if (r < NRg) { const k = r * NSg + a, k2 = r * NSg + (a + 1) % NSg; idx.push(k, k2, k + NSg, k2, k2 + NSg, k + NSg); } }
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return g; })(), rBar);
+  spill.position.set(VC.x + 0.15, VFLOOR, VC.z + 1.25); spill.visible = false; vaultSet.add(spill);
 
   /* ---------- the treasure room behind the vault door. From outside it is seen only through the open doorway (a stencil
      portal); once the camera flies through, it surrounds you, and the finale's forge happens inside it. */
@@ -889,10 +926,13 @@ if (renderer) {
   // the finale camera only sees the floor from about z = -10.3 back, so in the modern room Pari's pile and the gold sit there
   const PARI_AT = MODERN ? (mobile ? [-0.35, -10.6] : [-0.95, -10.5]) : mobile ? [0.45, -9.3] : [0.2, -9.3];   // Pari's own pile, below and left of the mark
   const MOUNDS = MODERN ? [[PARI_AT[0], PARI_AT[1], mobile ? 0.95 : 0.85, mobile ? 1.0 : 0.55],   // on phones the pile is taller, so Pari stands clear above the card
-    [-3.7, -11.2, 1.0, 0.85], [3.7, -11.6, 1.0, 0.85], [-1.9, -13.1, 1.0, 0.75], [1.9, -13.2, 1.0, 0.75], [0.0, -13.9, 0.9, 0.55],
-    [-3.9, -8.3, 0.85, 1.05], [3.9, -8.5, 0.85, 1.05], [-3.8, -5.4, 0.8, 0.8], [3.8, -5.6, 0.8, 0.8],
-    [-2.9, -9.6, 0.7, 0.55], [2.95, -9.5, 0.7, 0.55], [-0.6, -12.6, 0.75, 0.5], [3.0, -12.7, 0.8, 0.65], [-3.0, -12.6, 0.8, 0.65],
-    [-1.7, -8.0, 0.6, 0.42], [1.7, -8.2, 0.6, 0.45], [-2.6, -4.6, 0.6, 0.45], [2.7, -4.8, 0.6, 0.45]] : [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
+    // heights run from knee-high drifts to piles taller than Pari; the tallest stand at the sides and back corners, and the
+    // ones behind the mark stay low enough never to cross it
+    [-3.7, -11.2, 1.1, 1.4], [3.7, -11.6, 0.9, 0.7], [-1.9, -13.1, 1.15, 0.95], [1.9, -13.2, 0.8, 0.45], [0.0, -13.9, 1.0, 0.75],
+    [-3.9, -8.3, 0.75, 0.6], [3.9, -8.5, 1.0, 1.5], [-3.8, -5.4, 0.7, 0.45], [3.8, -5.6, 0.95, 1.05],
+    [-2.9, -9.6, 0.6, 0.36], [2.95, -9.5, 0.75, 0.85], [-0.6, -12.6, 0.6, 0.3], [3.0, -12.7, 0.95, 1.3], [-3.0, -12.6, 0.7, 0.62],
+    [-1.7, -8.0, 0.5, 0.26], [1.7, -8.2, 0.65, 0.6], [-2.6, -4.6, 0.55, 0.32], [2.7, -4.8, 0.5, 0.28],
+    [0.45, -3.3, 1.0, 1.05]] : [[PARI_AT[0], PARI_AT[1], 1.35, mobile ? 1.0 : 0.74],   // a broad, smooth rise, not a spike
     [-2.7, -6.6, 1.2, 0.75], [2.8, -7.3, 1.25, 0.8], [-2.6, -11.7, 1.4, 0.95], [2.7, -12.3, 1.35, 0.85], [-3.6, -9.0, 1.0, 0.6], [3.6, -9.9, 1.0, 0.6],
     [-3.1, -13.5, 1.2, 0.5], [3.3, -13.6, 1.2, 0.5], [1.9, -4.4, 0.8, 0.4], [-1.9, -10.1, 0.8, 0.4], [-2.2, -3.6, 0.7, 0.3]];   // the back stays low behind the mark
   const dH0 = (x, z) => { const ax = Math.abs(x);
@@ -955,19 +995,20 @@ if (renderer) {
       [-0.2, 0.2].forEach(u => claim(x + u * c, z - u * s, 0.27)); if (open) claim(x - 0.42 * s, z - 0.42 * c, 0.26);
       return { x, z, ry, open, y: FLOOR + lowest(x, z, ry, CH.w, CH.d) - 0.03 }; });   // sunk a little into the gold
   // bars stacked in stepped piles, each layer offset by half a bar like brickwork
-  const STACKS = MODERN ? (mobile ? [[-2.3, -11.0], [2.4, -10.9], [-3.9, -13.5], [3.9, -13.6]] : [[-2.3, -11.0], [2.4, -10.9], [-3.9, -13.5], [3.9, -13.6], [1.0, -12.0], [-2.4, -6.9], [2.4, -7.1]]) : (mobile ? [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.4]]
+  const STACKS = MODERN ? (mobile ? [[-2.3, -11.0, 4, 3, 4], [2.4, -10.9, 7, 4, 6], [-3.9, -13.5, 8, 5, 7], [3.9, -13.6, 5, 4, 5]]   // [x, z, layers, bars across, bars deep]
+    : [[-2.3, -11.0, 4, 3, 4], [2.4, -10.9, 7, 4, 6], [-3.9, -13.5, 8, 5, 7], [3.9, -13.6, 5, 4, 5], [1.0, -12.0, 3, 2, 3], [-2.4, -6.9, 6, 4, 6], [2.4, -7.1, 2, 3, 4]]) : (mobile ? [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.4]]
     : [[-3.4, -4.6], [-3.6, -7.6], [-3.3, -10.6], [3.3, -5.2], [3.5, -8.6], [3.3, -11.6], [-3.0, -13.3], [3.1, -13.3], [-2.1, -3.3], [2.2, -3.5], [-1.6, -8.4], [2.75, -9.6], [-3.9, -12.2], [3.95, -12.6]]);
   const stackBars = [], strayBars = [], coins = [], sparkAt = [];
-  STACKS.forEach(([cx, cz]) => {
+  STACKS.forEach(([cx, cz, NL = 6, NX = 4, NZ = 6]) => {
     const ry = MODERN ? 0 : rnd(-0.25, 0.25), c = Math.cos(ry), s = Math.sin(ry);
     if (![-0.5, 0, 0.5].every(u => free(cx + u * c, cz - u * s, 0.42))) return;
     [-0.5, 0, 0.5].forEach(u => claim(cx + u * c, cz - u * s, 0.42));
     const y0 = FLOOR + lowest(cx, cz, ry, 0.71, 0.39) - 0.012;
-    for (let L = 0; L < 6; L++) { const nx = Math.max(1, 4 - (L >> 1)), nz = Math.max(1, 6 - L);
+    for (let L = 0; L < NL; L++) { const nx = Math.max(1, NX - (L >> 1)), nz = Math.max(1, NZ - L);
       for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
         const lx = (i - (nx - 1) / 2) * 0.355, lz = (j - (nz - 1) / 2) * 0.13, p = V(cx + lx * c + lz * s, y0 + L * BT, cz - lx * s + lz * c);
         stackBars.push(new THREE.Matrix4().compose(p, _q.setFromAxisAngle(UP, ry), _s.set(1, 1, 1)));
-        if (L === 5 || (L >= 3 && Math.random() < 0.3)) sparkAt.push(p.clone().setY(p.y + BT + 0.01));
+        if (L === NL - 1 || (L >= 3 && Math.random() < 0.3)) sparkAt.push(p.clone().setY(p.y + BT + 0.01));
       } }
   });
   // props on the mounds: brass goblets, vases and a pot (placed when their models load; their floor space is held now)
@@ -1128,10 +1169,19 @@ if (renderer) {
   const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.014, 8, 24, Math.PI), pInk); mouth.rotation.z = Math.PI; mouth.position.set(0, 0.215, 0.185); pariBody.add(mouth);
   [-0.16, 0.16].forEach(x => { const lg = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.22, 10), pLimb); lg.position.set(x, -0.11, 0); pari.add(lg);
     const ft = new THREE.Mesh(new RoundedBoxGeometry(0.15, 0.05, 0.14, 2, 0.02), pLimb); ft.position.set(x * 1.2, -0.22, 0.03); pari.add(ft); });
-  const arm = (pts) => { const g = new THREE.Group(), cv = new THREE.CatmullRomCurve3(pts.map(([x, y]) => V(x, y, 0)));
-    g.add(new THREE.Mesh(new THREE.TubeGeometry(cv, 14, 0.026, 8), pLimb)); const hd = new THREE.Mesh(new THREE.SphereGeometry(0.042, 12, 10), pLimb); hd.position.copy(cv.getPoint(1)); g.add(hd); return g; };
-  const armR = arm([[0, 0], [0.12, 0.07], [0.19, 0.22]]); armR.position.set(0.37, 0.28, 0.02); pariBody.add(armR);   // the waving arm
-  const armL = arm([[0, 0], [-0.12, -0.06], [-0.17, -0.2]]); armL.position.set(-0.37, 0.28, 0.02); pariBody.add(armL);
+  // each arm is two parts, an upper arm and a forearm hinged at a round elbow, so a gesture can follow through: the forearm
+  // trails the upper arm a beat and overshoots a little (see pariLive)
+  const arm = (ex, ey, hx, hy) => { const g = new THREE.Group(), fore = new THREE.Group(), E = V(ex, ey, 0), H = V(hx - ex, hy - ey, 0);
+    const bone = (a, b) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, a.distanceTo(b), 10), pLimb); m.position.copy(a).add(b).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(V(0, 1, 0), b.clone().sub(a).normalize()); return m; };
+    g.add(bone(V(0, 0, 0), E)); const el = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), pLimb); el.position.copy(E); g.add(el);
+    fore.position.copy(E); g.add(fore); fore.add(bone(V(0, 0, 0), H)); const hd = new THREE.Mesh(new THREE.SphereGeometry(0.042, 12, 10), pLimb); hd.position.copy(H); fore.add(hd);
+    g.userData.fore = fore; return g; };
+  const armR = arm(0.12, 0.07, 0.19, 0.22); armR.position.set(0.37, 0.28, 0.02); pariBody.add(armR);   // the waving arm
+  const armL = arm(-0.12, -0.06, -0.17, -0.2); armL.position.set(-0.37, 0.28, 0.02); pariBody.add(armL);
+  // springs for the four arm angles and the two forearms: gestures set targets, the springs (maath's solver, a touch under-
+  // damped) carry the arms there with a soft overshoot, so nothing snaps
+  const ARM = { rz: { v: -0.16, u: 0 }, lz: { v: 0, u: 0 }, rx: { v: 0, u: 0 }, lx: { v: 0, u: 0 }, fr: { v: -0.16, u: 0 }, fl: { v: 0, u: 0 } };
   const pariShadow = new THREE.Mesh(new THREE.CircleGeometry(0.42, 32), roomMat(new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35, depthWrite: false })));
   pariShadow.rotation.x = -Math.PI / 2; room.add(pariShadow);
   const PARI_S = mobile ? 0.4 : 0.72, P_DROP = mobile ? 0 : 0.34, P_FOOT = 0.245, PARI_FY = FLOOR + 0.004 + PLAT;   // P_FOOT: from Pari's origin down to its soles
@@ -1280,16 +1330,19 @@ if (renderer) {
     { p: V(0.95, 0.1, 6.7), t: V(0.12, 0.04, 0), fov: 30 },     // the problem: low at table height, a slight yaw from the right
     { p: V(0, 1.45, 5.2), t: V(0, -0.1, 0), fov: 34 },          // recast
     { p: V(0, 1.5, 6.1), t: V(0, -0.38, 0), fov: 34 },          // per gram: the balance
-    { p: V(-0.5, 1.6, 6.3), t: V(0.45, 0.2, -1.45), fov: 36 },  // every day
-    { p: V(-2.2, 1.3, 6.2), t: V(0.2, 0.45, 0), fov: 36 },      // cost line
-    { p: V(3.3, 1.55, 6.6), t: V(1.95, 1.05, -0.2), fov: 42 },  // unusual?: the column and the bell
+    { p: V(-1.98, 0.98, 3.42), t: V(0.5, 0.0, -1.45), fov: 36, pm: V(-0.5, 1.6, 6.3), tm: V(0.45, 0.2, -1.45) },  // every day: in close on the ribbons, the recent years nearest
+    { p: V(-0.75, 1.0, 4.82), t: V(0.2, 0.38, 0), fov: 36, pm: V(-2.2, 1.3, 6.2), tm: V(0.2, 0.45, 0) },     // cost line: close on the columns and the line
+    { p: V(3.3, 1.02, 5.3), t: V(2.2, 0.62, -0.2), fov: 42, pm: V(3.3, 1.55, 6.6), tm: V(1.95, 1.05, -0.2) },   // unusual?: the column and the bell, closer
     { p: V(0.1, 2.0, 2.6), t: V(0.2, -0.05, -4.2), fov: 36 },   // quiet
     { p: V(0.6, 0.8, 4.8), t: V(0.55, 0.55, -1.6), fov: 40 },   // how we know: the vault
     { p: V(0, 0.75, -5.4), t: V(0, 0.3, -10.6), fov: 36 },      // team: through the vault to the forge
   ];
   const camCurve = new THREE.CatmullRomCurve3(cam.map(c => c.p), false, "centripetal");
+  if (MODERN) pool.visible = false;   // no glow behind the mark: it stands against the plain dark wall
   { const d = LOGO.clone().sub(cam[cam.length - 1].p), t = (RZ1 + 0.03 - cam[cam.length - 1].p.z) / d.z; pool.position.copy(cam[cam.length - 1].p).addScaledVector(d, t); pool.position.z = RZ1 + 0.03; }   // the light pool sits on the back wall, straight behind the mark as the finale sees it
   const tgtCurve = new THREE.CatmullRomCurve3(cam.map(c => c.t), false, "centripetal");
+  // tall screens already stand the camera further back (see below), so there the chart beats keep their wider keys (pm, tm)
+  const camCurveM = new THREE.CatmullRomCurve3(cam.map(c => c.pm || c.p), false, "centripetal"), tgtCurveM = new THREE.CatmullRomCurve3(cam.map(c => c.tm || c.t), false, "centripetal");
   const colAt = (i, b) => (b === S.cost || b === S.unusual) ? D.gaps[i].gap * K : 0.0001;
   const fd = s => { const [y, m, d] = s.split("-"); return `${+d} ${"Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[m - 1]} ${y}`; };
   const ease2 = f => 0.5 * f + 0.5 * f * f * (3 - 2 * f);   // half linear, half smooth: never comes to a full stop
@@ -1504,7 +1557,15 @@ if (renderer) {
     const ke = Math.min(1, k * 2.2);
     A.ex += (eyeTX * 0.055 + eyeX - A.ex) * ke; A.ey += (-eyeTY * 0.04 + eyeY - A.ey) * ke;
     eyes.position.x = A.ex; eyes.position.y = 0.33 + A.ey;
-    armR.rotation.z = reduce ? -0.2 : armRz; armR.rotation.x = reduce ? 0 : armRx; armL.rotation.z = reduce ? 0 : armLz; armL.rotation.x = reduce ? 0 : armLx;
+    if (reduce) { armR.rotation.set(0, 0, -0.2); armL.rotation.set(0, 0, 0); armR.userData.fore.rotation.z = 0; armL.userData.fore.rotation.z = 0; }
+    else {   // a slow simplex drift on top of every pose, then the springs; the forearms chase the upper arms and bend with the lag
+      const nt = t * 0.55, dts = Math.min(dt, 1 / 30);
+      const rz = springStep(ARM.rz, armRz + 0.09 * noise2(nt, 41.2), 0.26, 0.62, dts), lz = springStep(ARM.lz, armLz + 0.09 * noise2(nt, 57.9), 0.28, 0.62, dts);
+      const rx = springStep(ARM.rx, armRx + 0.07 * noise2(nt, 63.4), 0.3, 0.7, dts), lx = springStep(ARM.lx, armLx + 0.07 * noise2(nt, 77.1), 0.3, 0.7, dts);
+      const fr = springStep(ARM.fr, rz, 0.16, 0.45, dts), fl = springStep(ARM.fl, lz, 0.16, 0.45, dts);
+      armR.rotation.set(rx, 0, rz); armL.rotation.set(lx, 0, lz);
+      armR.userData.fore.rotation.z = clamp((fr - rz) * 1.4 + 0.12 * noise2(nt * 1.6, 88.8), -0.9, 0.9);
+      armL.userData.fore.rotation.z = clamp((fl - lz) * 1.4 + 0.12 * noise2(nt * 1.6, 95.5), -0.9, 0.9); }
     if (reduce) { lift = 0; sq = 0; }
     const sy = 1 - sq + (reduce ? 0 : 0.018 * Math.sin(t * 1.9)), sxz = 1 + sq * 0.5;   // squash and stretch, and breathing
     const pop = reduce ? 1 : backOut(clamp(v / 0.35)); pari.scale.set(PARI_S * sxz * pop, PARI_S * sy * pop, PARI_S * sxz * pop);
@@ -1549,7 +1610,7 @@ if (renderer) {
     // past the last chapter (b runs to about N + 0.75) the curves and the lens would extrapolate (the field of view went
     // negative, and on tall screens the camera flew out of the room), so the camera holds on the last key
     const bc = Math.min(b, N);
-    camCurve.getPoint(bc / N, camP); tgtCurve.getPoint(bc / N, camT);
+    if (camera.aspect < 1.1) { camCurveM.getPoint(bc / N, camP); tgtCurveM.getPoint(bc / N, camT); } else { camCurve.getPoint(bc / N, camP); tgtCurve.getPoint(bc / N, camT); }
     // quiet: the camera trucks along the rail with the scanner
     const qv = bump(b, S.quiet, S.quiet, 0.7), sx = QX0 + (QX1 - QX0) * clamp((b - (S.quiet - 0.5)) / 0.95);
     camP.x += sx * 0.06 * qv; camT.x += sx * 0.08 * qv;
@@ -1569,7 +1630,11 @@ if (renderer) {
     fin = reduce ? 0 : clamp((b - (S.team - 0.15)) / 0.15);   // the finale: the scroll has ended, the cursor takes over
     if (!reduce) { camP.x += mx * (0.35 + 0.9 * fin); camP.y -= my * (0.22 + 0.55 * fin); }
     // the camera rides a spring a beat behind the scroll, so every move eases in and out, and drifts a breath at rest
-    if (!reduce) { camP.x += Math.sin(time * 0.31) * 0.022; camP.y += Math.sin(time * 0.43 + 1) * 0.016; }
+    // a steady, gentle handheld drift on every beat (simplex noise, not sines, so it never repeats or settles), plus a slow
+    // push in through each chapter: the camera is never quite still, wherever the reader stops
+    if (!reduce) { const nt = time * 0.16; camP.x += noise2(nt, 1.7) * 0.07; camP.y += noise2(nt, 8.3) * 0.045; camP.z += noise2(nt, 15.1) * 0.05;
+      camT.x += noise2(nt * 0.8, 23.9) * 0.025; camT.y += noise2(nt * 0.8, 31.3) * 0.02;
+      camP.lerp(camT, 0.035 * Math.sin(Math.PI * clamp(b - Math.floor(b)))); }
     if (camInit && !reduce) { const kc = 1 - Math.exp(-dt / 0.06); camPs.lerp(camP, kc); camTs.lerp(camT, kc); } else { camPs.copy(camP); camTs.copy(camT); camInit = true; }
     camLag = camPs.distanceTo(camP) + camTs.distanceTo(camT);
     camera.position.copy(camPs); camera.lookAt(camTs);
@@ -1709,16 +1774,23 @@ if (renderer) {
     if (river.visible) {
       const flow = (b - S.know) * 2.4 + time * 0.05;
       for (let n = 0; n < NR + NRC; n++) {
-        // each piece leaves from its lane across the doorway, spills forward and falls, the lanes fanning out as they go
-        const [s0, lx, ly, t0, a0, spin] = rSeed[n], s = (s0 + flow) % 1;
-        gv.set(VC.x + lx * (1 + 1.6 * s) + RDIR.x * 3.6 * s, Math.max(VC.y + ly * (1 + 0.6 * s) + RDIR.y * 3.6 * s - 1.4 * s * s, VFLOOR + 0.03), VC.z + 0.12 + RDIR.z * 3.6 * s + ly * 2 * s);
-        const fade = ro * clamp(s / 0.06) * clamp((1 - s) / 0.2) * clamp((gv.distanceTo(camera.position) - 0.45) / 0.6);   // pieces near the lens shrink away: the camera never flies through one
-        if (n < NR) { ge.set(t0 * s * 3, a0 + s * 1.2, t0 * s * 1.5); gq.setFromEuler(ge); gs.setScalar(Math.max(0.75 * fade, 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm); }
-        else { ge.set(a0 + s * spin, a0, s * spin * 0.6); gq.setFromEuler(ge); gs.setScalar(Math.max(fade, 0.0001)); gm.compose(gv, gq, gs); riverC.setMatrixAt(n - NR, gm); }   // coins turn edge over edge
+        // each piece rides up the hoard to the sill, tips over it and falls, lands on the floor and slides on to a stop:
+        // gold overflowing the room, not flying out of it
+        const [s0, lx, ly, t0, a0, spin] = rSeed[n], s = (s0 + flow) % 1, wx = VC.x + lx * 0.55;   // lanes narrow enough to clear the round sill
+        if (s < 0.2) { const u = sm(s / 0.2); gv.set(wx, -0.55 + (LIP + 0.03 + 0.55) * u, VC.z - 0.95 + 1.0 * u); }
+        else { const u = (s - 0.2) / 0.8, fall = Math.min(u, 0.42), slide = Math.max(0, u - 0.42), sp = 1 - Math.exp(-slide * 5), xx = wx + lx * 1.3 * u + RDIR.x * (1.1 * fall + 0.7 * sp);
+          gv.set(xx, Math.max(LIP + 0.03 + 0.3 * fall - 8.2 * fall * fall, VFLOOR + 0.03 + 0.18 * Math.exp(-Math.abs(xx - VC.x) * 1.5) * (1 - u)),
+            VC.z + 0.05 + (2.6 * fall + 1.6 * sp) * (0.85 + 0.3 * Math.abs(ly))); }
+        const fade = ro * clamp(s / 0.04) * clamp((1 - s) / 0.15) * clamp((gv.distanceTo(camera.position) - 0.45) / 0.6);   // pieces near the lens shrink away: the camera never flies through one
+        const tumble = s < 0.2 ? 0 : Math.min(1, (s - 0.2) / 0.35);   // tumbling while they fall, lying flat once they slide
+        if (n < NR) { ge.set(t0 * tumble * 3, a0 + s * 1.2, t0 * tumble * 1.5); gq.setFromEuler(ge); gs.setScalar(Math.max(0.75 * fade, 0.0001)); gm.compose(gv, gq, gs); river.setMatrixAt(n, gm); }
+        else { ge.set(a0 + tumble * spin, a0, tumble * spin * 0.6); gq.setFromEuler(ge); gs.setScalar(Math.max(fade, 0.0001)); gm.compose(gv, gq, gs); riverC.setMatrixAt(n - NR, gm); }   // coins turn edge over edge
       }
       river.instanceMatrix.needsUpdate = true; riverC.instanceMatrix.needsUpdate = true;
     }
     riverC.visible = river.visible;
+    // the tongue of spilled gold grows as the river runs and stays once it has formed
+    const spK = sm(clamp((open - 0.5) / 0.5)); spill.visible = vault.visible && spK > 0.01; spill.scale.set(0.5 + 0.5 * spK, Math.max(spK, 0.0001), 0.4 + 0.6 * spK);
 
     // ribbon: rises with the beat, then draws left to right with the reader's scroll; a bead and a date ride the leading edge
     const rv = bump(b, S.daily, S.daily, 0.65), dp = clamp((b - (S.daily - 0.5)) / 0.95);
