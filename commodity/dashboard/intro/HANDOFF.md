@@ -420,3 +420,13 @@ Motion (open-source, MIT, pinned on jsDelivr):
   ragged edges follow simplex noise, its banks slump at different slopes, and its floor keeps a thin, patchy scatter
   of coins with the stone showing through. The heap banked behind the door is gone, so the view into the vault is
   open.
+- **Grounded, and lighter (20 Oct, late):**
+  - Each bar stack sits on a bed of gold heaped up under it to its footprint's highest point. The bed only ever adds
+    gold, fades out softly, and the stacks' positions (`STACK_AT`) are known before the gold is shaped, so no stack
+    hangs over a slope.
+  - Pari's spot eases into the gold instead of being cut flat.
+  - The bare holes are gone, and the path is a thin, trodden layer of coins.
+  - The coin carpet goes only where the camera ever looks (the camera always faces the back wall inside the room), in
+    2 m tiles that the renderer skips when off-screen. That is 7000 coins on laptops and 2800 on phones, before the
+    extra coins on slopes. Slopes get proportionally more coins so they never show bare. Loose model coins are down to
+    2400 (phones: 900).
