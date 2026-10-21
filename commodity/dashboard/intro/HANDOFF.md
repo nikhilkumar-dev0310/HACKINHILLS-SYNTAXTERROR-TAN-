@@ -475,3 +475,14 @@ Motion (open-source, MIT, pinned on jsDelivr):
   - The headline's metallic gold has a softer highlight in both themes.
   - The pointer light on cards and the background glow are fainter.
   - The loading screen and 404 use the same background.
+
+## No 3D intro on phones (21 Oct 2026)
+
+- Phones no longer get the scroll intro: on a phone the WebGL stage has to render at too low a resolution to look good.
+  - "Phone" here means a screen up to 760 px wide, or a touch screen under 500 px tall (a phone held sideways). Tablets and laptops are unchanged.
+- **Arriving on a phone (template.html):** instead of being sent to /intro, the site opens with the logo reveal (the gold
+  doors that part over the page), the same one that follows "Enter Parity" on larger screens.
+- **Opening /intro directly on a phone:** the intro page sends the visitor straight to the site, with the logo reveal.
+  - Hash links are kept.
+  - `?debug` still opens the intro, for testing.
+- **Footer:** the "Replay intro" link is hidden on phones.

@@ -3,6 +3,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<script>/* phones skip the 3D intro (too low a resolution there): straight to the site, which opens with the logo reveal */
+try { if (matchMedia("(max-width: 760px), (pointer: coarse) and (max-height: 500px)").matches && !/[?&]debug\b/.test(location.search)) {
+  try { sessionStorage.setItem("parity:reveal", "1"); } catch (e) {} location.replace("/" + location.hash); } } catch (e) {}</script>
 <script>/* same theme as the site: its saved choice (parity-theme), else the system setting */
 try { var t = localStorage.getItem("parity-theme") || localStorage.getItem("gsl-theme"), l = t === "light" || (t !== "dark" && matchMedia("(prefers-color-scheme: light)").matches);
   document.documentElement.setAttribute("data-theme", l ? "light" : "dark"); } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }</script>

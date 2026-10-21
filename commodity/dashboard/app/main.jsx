@@ -487,7 +487,7 @@ function App() {
           <div className="foot-a"><span className="foot-b"><span className="num">v{BUILD.version || "dev"}</span>{BUILD.built && <> · built <span className="num">{BUILD.built}</span></>}{BUILD.commit && <> · after commit <a className="num" href={`https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/commit/${BUILD.commit}`} target="_blank" rel="noopener">{BUILD.commit}</a></>}</span>
             <Fresh compact /></div>
           <div className="foot-a"><span>SYNTAX TERROR (TAN) · Nikhil Kumar, Sai Ganesh, Ishaan Chhabra · Hack in Hills ’26</span>
-            <span>Prices: official MCX Bhavcopy, mcxindia.com · <a href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-" target="_blank" rel="noopener">Code and data on GitHub</a> · <a href="#quality" onClick={e => { e.preventDefault(); go("quality"); }}>Known limits</a> · <a href="/intro">Replay intro</a> · <button type="button" className="linkbtn" onClick={() => setKeysSheet(true)}>Shortcuts</button></span></div>
+            <span>Prices: official MCX Bhavcopy, mcxindia.com · <a href="https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-" target="_blank" rel="noopener">Code and data on GitHub</a> · <a href="#quality" onClick={e => { e.preventDefault(); go("quality"); }}>Known limits</a><span className="no-phone"> · <a href="/intro">Replay intro</a></span> · <button type="button" className="linkbtn" onClick={() => setKeysSheet(true)}>Shortcuts</button></span></div>
         </footer>
       </main>
     </div>
