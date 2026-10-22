@@ -31,7 +31,13 @@ h = d["hurdle"]
 rt = [b for b in d["alerts"]["baseline"] if b["alert_day"]][0]["round_trip_cost_bp_at_5bp"]
 cost_line = round(2 * rt, 1)
 sig = {r["symbol"]: r for r in d["signals"]["rows"]}
-gaps = [{"sym": s, "gap": h[s]["gap"][-1], "z": h[s]["z"][-1], "sd": sig[s]["sd_bp"]} for s in ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]]
+def latest(s):
+    # the newest day with a value: when MCX skips a contract for a day (the daily job fills it in on a later run),
+    # its last row is empty, so the intro shows that contract's most recent day instead of failing the build
+    g, z = h[s]["gap"], h[s]["z"]
+    i = max(k for k in range(len(g)) if g[k] is not None and z[k] is not None)
+    return {"sym": s, "gap": g[i], "z": z[i], "sd": sig[s]["sd_bp"], "date": h["dates"][i]}
+gaps = [latest(s) for s in ["GOLDTEN", "GOLDGUINEA", "GOLDPETAL"]]
 thr = d["signals"]["threshold"]
 over = [g for g in gaps if g["gap"] >= cost_line]
 signal_today = [g for g in gaps if g["gap"] >= cost_line and abs(g["z"]) >= thr]
