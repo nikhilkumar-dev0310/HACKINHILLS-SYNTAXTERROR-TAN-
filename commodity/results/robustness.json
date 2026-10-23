@@ -184,10 +184,10 @@
     "rows": [
       {
         "symbol": "GOLDTEN",
-        "days": 401,
+        "days": 402,
         "first": "2025-04-01",
-        "last": "2026-10-21",
-        "adf": -2.93,
+        "last": "2026-10-22",
+        "adf": -2.94,
         "lags": 10,
         "stationary_at": "5%",
         "half_life_days": 7.2,
@@ -195,20 +195,20 @@
       },
       {
         "symbol": "GOLDGUINEA",
-        "days": 778,
+        "days": 779,
         "first": "2023-10-10",
-        "last": "2026-10-21",
-        "adf": -3.32,
+        "last": "2026-10-22",
+        "adf": -3.33,
         "lags": 10,
         "stationary_at": "5%",
-        "half_life_days": 7.8,
+        "half_life_days": 7.9,
         "phi": 0.915
       },
       {
         "symbol": "GOLDPETAL",
-        "days": 778,
+        "days": 779,
         "first": "2023-10-10",
-        "last": "2026-10-21",
+        "last": "2026-10-22",
         "adf": -2.08,
         "lags": 10,
         "stationary_at": null,
@@ -569,7 +569,7 @@
       {
         "symbol": "GOLDM",
         "first": "2003-11-24",
-        "pairs": 6078,
+        "pairs": 6079,
         "roll_half_bp": 29.1,
         "roll_months": 275,
         "roll_defined": 153
@@ -577,7 +577,7 @@
       {
         "symbol": "GOLDTEN",
         "first": "2025-04-02",
-        "pairs": 381,
+        "pairs": 382,
         "roll_half_bp": 53.0,
         "roll_months": 19,
         "roll_defined": 13
@@ -585,7 +585,7 @@
       {
         "symbol": "GOLDGUINEA",
         "first": "2008-05-09",
-        "pairs": 4794,
+        "pairs": 4795,
         "roll_half_bp": 23.3,
         "roll_months": 222,
         "roll_defined": 131
@@ -593,7 +593,7 @@
       {
         "symbol": "GOLDPETAL",
         "first": "2011-04-19",
-        "pairs": 3927,
+        "pairs": 3928,
         "roll_half_bp": 25.5,
         "roll_months": 187,
         "roll_defined": 111
@@ -729,39 +729,39 @@
         }
       },
       "recent": {
-        "from": "2025-10-21",
-        "to": "2026-10-21",
+        "from": "2025-10-22",
+        "to": "2026-10-22",
         "GOLDGUINEA": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": 0.01,
+          "hi": 0.0,
           "pairs": 248,
           "months": 13,
-          "raw_bp": -8.95
+          "raw_bp": -9.23
         },
         "GOLDM": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": 1.72,
+          "hi": 1.41,
           "pairs": 247,
           "months": 13,
-          "raw_bp": -7.11
+          "raw_bp": -7.37
         },
         "GOLDPETAL": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": 1.73,
+          "hi": 0.97,
           "pairs": 248,
           "months": 13,
-          "raw_bp": -8.17
+          "raw_bp": -8.6
         },
         "GOLDTEN": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": 0.48,
+          "hi": 0.0,
           "pairs": 247,
           "months": 13,
-          "raw_bp": -10.62
+          "raw_bp": -10.93
         }
       }
     },
