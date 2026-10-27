@@ -22,6 +22,10 @@ def base():
     old = clean("dev").copy()
     full = old.groupby("date").symbol.nunique()
     old = old[old.date <= full[full == len(SYMS)].index.max()]     # start from a day with all four types
+    # ... and on which no contract is still waiting for MCX: the live data can hold such a gap for a few days
+    # (the job publishes without a contract MCX did not return and fetches it again), and the tests below make their own
+    while len(du.lagging(old)):
+        old = old[old.date < old.date.max()]
     last = old.date.max()
     day = last + pd.offsets.BDay(1)
     rows = old[old.date == last].copy()
