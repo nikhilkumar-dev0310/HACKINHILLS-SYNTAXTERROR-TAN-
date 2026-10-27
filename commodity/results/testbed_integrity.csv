@@ -1,10 +1,10 @@
 check,error_rate,rows_checked,errors
-"Duplicate (date, symbol, expiry)",0.0,12375,0
-Row dated after its expiry,0.0,12375,0
-"Open/close outside [low, high]",0.0,12215,0
-Non-positive price,0.0,12215,0
-Previous Close != prior row's Close,0.012188139059304704,12225,149
-  ...of which NOT right after a no-trade day,0.0,12225,0
-Weekend date that is not a known special session,0.0,12375,0
-Missing trading day inside a contract's life,0.0,12375,0
-Normalized price >5% from same-cycle median,0.0009005321326238232,12215,11
+"Duplicate (date, symbol, expiry)",0.0,12405,0
+Row dated after its expiry,0.0,12405,0
+"Open/close outside [low, high]",0.0,12245,0
+Non-positive price,0.0,12245,0
+Previous Close != prior row's Close,0.012158302733578132,12255,149
+  ...of which NOT right after a no-trade day,0.0,12255,0
+Weekend date that is not a known special session,0.0,12405,0
+Missing trading day inside a contract's life,0.0,12405,0
+Normalized price >5% from same-cycle median,0.0008983258472846059,12245,11

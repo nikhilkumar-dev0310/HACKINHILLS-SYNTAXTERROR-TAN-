@@ -184,9 +184,9 @@
     "rows": [
       {
         "symbol": "GOLDTEN",
-        "days": 402,
+        "days": 404,
         "first": "2025-04-01",
-        "last": "2026-10-22",
+        "last": "2026-10-26",
         "adf": -2.94,
         "lags": 10,
         "stationary_at": "5%",
@@ -195,21 +195,21 @@
       },
       {
         "symbol": "GOLDGUINEA",
-        "days": 779,
+        "days": 781,
         "first": "2023-10-10",
-        "last": "2026-10-22",
-        "adf": -3.33,
+        "last": "2026-10-26",
+        "adf": -3.32,
         "lags": 10,
         "stationary_at": "5%",
         "half_life_days": 7.9,
-        "phi": 0.915
+        "phi": 0.916
       },
       {
         "symbol": "GOLDPETAL",
-        "days": 779,
+        "days": 781,
         "first": "2023-10-10",
-        "last": "2026-10-22",
-        "adf": -2.08,
+        "last": "2026-10-26",
+        "adf": -2.09,
         "lags": 10,
         "stationary_at": null,
         "half_life_days": 22.1,
@@ -280,7 +280,7 @@
           {
             "from": "2023-10",
             "to": "2026-10",
-            "mean_bp": 82.0
+            "mean_bp": 81.9
           }
         ],
         "breaks": []
@@ -569,8 +569,8 @@
       {
         "symbol": "GOLDM",
         "first": "2003-11-24",
-        "pairs": 6079,
-        "roll_half_bp": 29.1,
+        "pairs": 6081,
+        "roll_half_bp": 29.0,
         "roll_months": 275,
         "roll_defined": 153
       },
@@ -585,10 +585,10 @@
       {
         "symbol": "GOLDGUINEA",
         "first": "2008-05-09",
-        "pairs": 4795,
+        "pairs": 4796,
         "roll_half_bp": 23.3,
         "roll_months": 222,
-        "roll_defined": 131
+        "roll_defined": 130
       },
       {
         "symbol": "GOLDPETAL",
@@ -735,17 +735,17 @@
           "half_bp": null,
           "lo": 0.0,
           "hi": 0.0,
-          "pairs": 245,
+          "pairs": 246,
           "months": 13,
-          "raw_bp": -9.4
+          "raw_bp": -9.67
         },
         "GOLDM": {
           "half_bp": null,
           "lo": 0.0,
-          "hi": 1.12,
-          "pairs": 244,
+          "hi": 0.96,
+          "pairs": 246,
           "months": 13,
-          "raw_bp": -7.68
+          "raw_bp": -7.85
         },
         "GOLDPETAL": {
           "half_bp": null,
