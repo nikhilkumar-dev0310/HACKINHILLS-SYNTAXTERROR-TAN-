@@ -90,17 +90,49 @@ const res = await page.evaluate(async ([since, cap, SY]) => {
   for (const x of list) listed[x.SymbolValue.trim()] = (listed[x.SymbolValue.trim()] || 0) + 1;
   const wait = ms => new Promise(z => setTimeout(z, ms));
   // MCX sometimes drops a run of requests ("Failed to fetch"): each contract is retried up to 4 times, backing off.
+  // Since late Oct 2026 MCX answers a plain fetch of this endpoint with its HTML page instead of JSON, so the request
+  // is made the way the page's own jQuery makes it (X-Requested-With, JSON accept), then as a form POST; the first
+  // style that returns JSON is kept for the rest of the run, and the styles tried are reported.
+  const URL_ = "/market-data/bhavcopy/GetCommoditywiseBhavCopy";
+  const HDR = { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json, text/javascript, */*; q=0.01" };
+  const STYLES = {
+    ajaxGet: q => fetch(URL_ + "?" + q, { headers: HDR, credentials: "same-origin" }),
+    ajaxPost: q => fetch(URL_, { method: "POST", credentials: "same-origin",
+      headers: { ...HDR, "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" }, body: q.toString() }),
+    jsonPost: q => fetch(URL_, { method: "POST", credentials: "same-origin",
+      headers: { ...HDR, "Content-Type": "application/json; charset=UTF-8" }, body: JSON.stringify(Object.fromEntries(q)) }),
+    plainGet: q => fetch(URL_ + "?" + q),
+  };
+  let style = null; const tried = {};
+  async function once(name, q) {
+    const r = await STYLES[name](q); const t = await r.text();
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    if (/^\s*</.test(t)) throw new Error("html");
+    const j = JSON.parse(t); return (j.Data || j.data || []);
+  }
   async function get(q) {
     let err = "";
     for (let a = 1; a <= 4; a++) {
-      try {
-        const r = await fetch("/market-data/bhavcopy/GetCommoditywiseBhavCopy?" + q);
-        if (r.ok) { const D = (await r.json()).Data || []; if (D.length || a >= 2) return [D, a, ""]; err = "empty"; }
-        else err = "HTTP " + r.status;
-      } catch (e) { err = e.message; }
+      for (const name of style ? [style] : Object.keys(STYLES)) {
+        try {
+          const D = await once(name, q); style = name;
+          if (D.length || a >= 2) return [D, a, ""]; err = "empty";
+          break;
+        } catch (e) { err = e.message; tried[name] = e.message; }
+      }
       await wait(1500 * a);
     }
     return [[], 4, err];
+  }
+  // what the page's own scripts call now, reported only when no request style worked
+  async function probe() {
+    const hits = [], seen = new Set();
+    const scan = (src, txt) => { for (const m of txt.matchAll(/.{0,120}BhavCopy[A-Za-z]*.{0,160}/gi)) { const s = m[0].replace(/\s+/g, " "); if (!seen.has(s) && hits.length < 6) { seen.add(s); hits.push(src + ": " + s); } } };
+    for (const sc of document.scripts) {
+      if (!sc.src) scan("inline", sc.textContent || "");
+      else if (sc.src.startsWith(location.origin)) { try { scan(sc.src.split("/").pop(), await (await fetch(sc.src)).text()); } catch (_) {} }
+    }
+    return hits;
   }
   const orig = ExportManager.downloadFile; ExportManager.downloadFile = c => { captured = c; };
   for (const j of jobs) {
@@ -112,12 +144,19 @@ const res = await page.evaluate(async ([since, cap, SY]) => {
     await wait(700);
   }
   ExportManager.downloadFile = orig;
-  return { files, log, listed };
+  const probeHits = Object.keys(files).length ? [] : await probe();
+  return { files, log, listed, style, tried, probeHits };
 }, [since, CAP, SY]);
 await browser.close();
 console.log("listed by MCX:", JSON.stringify(res.listed), " up to", CAP, " requested since", since + ":", res.log.length, " files:", Object.keys(res.files).length);
 for (const l of res.log) console.log("  ", l.join("  "));
-if (!Object.keys(res.files).length) { console.error("no files returned"); process.exit(4); }
+console.log("request style:", res.style || "none worked", " failures by style:", JSON.stringify(res.tried));
+if (!Object.keys(res.files).length) {
+  // each finding as its own annotation on the run, since the job's logs are not kept beyond the run page
+  console.log(`::warning title=MCX request styles::${JSON.stringify(res.tried).slice(0, 600)}`);
+  for (const h of res.probeHits) console.log(`::warning title=MCX page script::${h.slice(0, 600).replace(/[\r\n]/g, " ")}`);
+  console.error("no files returned; request styles tried: " + JSON.stringify(res.tried)); process.exit(4);
+}
 // A contract type that did not come back is reported, not fatal: daily_update.py publishes the day with what MCX
 // returned (at least two types) and fetches the missing contracts again on every run until MCX returns them.
 const gotSym = new Set(Object.keys(res.files).map(n => n.split("_")[0]));
