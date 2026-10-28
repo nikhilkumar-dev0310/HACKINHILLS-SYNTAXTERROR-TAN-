@@ -577,7 +577,7 @@
       {
         "symbol": "GOLDTEN",
         "first": "2025-04-02",
-        "pairs": 384,
+        "pairs": 385,
         "roll_half_bp": 53.0,
         "roll_months": 19,
         "roll_defined": 13
@@ -729,8 +729,8 @@
         }
       },
       "recent": {
-        "from": "2025-10-26",
-        "to": "2026-10-26",
+        "from": "2025-10-27",
+        "to": "2026-10-27",
         "GOLDGUINEA": {
           "half_bp": null,
           "lo": 0.0,
@@ -759,9 +759,9 @@
           "half_bp": null,
           "lo": 0.0,
           "hi": 0.0,
-          "pairs": 246,
+          "pairs": 247,
           "months": 13,
-          "raw_bp": -11.63
+          "raw_bp": -11.47
         }
       }
     },
