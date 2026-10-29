@@ -1,12 +1,12 @@
 {
-  "run_at": "2026-10-29 08:24 IST",
-  "commit": "2483673",
-  "tests": 10408,
-  "passed": 10384,
+  "run_at": "2026-10-29 08:58 IST",
+  "commit": "b99248e",
+  "tests": 10425,
+  "passed": 10425,
   "failed": 0,
-  "skipped": 24,
-  "seconds": 14.0,
-  "checks": 297,
+  "skipped": 0,
+  "seconds": 81.5,
+  "checks": 304,
   "files": [
     {
       "name": "test_analysis",
@@ -53,8 +53,8 @@
       "file": "tests/test_docs.py",
       "about": "The front-page README states only what the data and results say.",
       "checks": 21,
-      "tests": 36,
-      "passed": 36,
+      "tests": 37,
+      "passed": 37,
       "failed": 0,
       "skipped": 0
     },
@@ -84,9 +84,19 @@
       "about": "No look-ahead, anywhere a signal is computed: rewriting the future must not change the past.",
       "checks": 11,
       "tests": 209,
-      "passed": 185,
+      "passed": 209,
       "failed": 0,
-      "skipped": 24
+      "skipped": 0
+    },
+    {
+      "name": "test_pair_verdicts",
+      "file": "tests/test_pair_verdicts.py",
+      "about": "The six pair verdicts (pair_verdict.py): they reuse stored trades, add up to the published backtests, and follow the stated rule.",
+      "checks": 7,
+      "tests": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
     },
     {
       "name": "test_protocol",
@@ -123,8 +133,8 @@
       "file": "tests/test_site_build.py",
       "about": "The published site: built pages, every term it defines, every source it cites, everything it links to.",
       "checks": 24,
-      "tests": 222,
-      "passed": 222,
+      "tests": 229,
+      "passed": 229,
       "failed": 0,
       "skipped": 0
     },
@@ -133,8 +143,8 @@
       "file": "tests/test_site_data.py",
       "about": "The website's numbers: every figure in dashboard/data.json must match the files it was computed from.",
       "checks": 21,
-      "tests": 97,
-      "passed": 97,
+      "tests": 99,
+      "passed": 99,
       "failed": 0,
       "skipped": 0
     },
@@ -199,5 +209,5 @@
       "skipped": 0
     }
   ],
-  "where": "Daily MCX data update"
+  "where": "local"
 }

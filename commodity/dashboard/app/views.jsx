@@ -248,6 +248,11 @@ function Delivery() {
   if (!v) return null;
   return <Card src={SRC.delivery} title="What the premium costs: sell before delivery, or take the gold"
     sub={<>Each small contract's <Term k="premium">premium</Term> over GOLDM (same expiry, per pure gram) read three times in every contract cycle since GOLDTEN started trading: about a month before expiry, on the last safe exit day before the <Term k="delivwin">delivery window</Term>, and at the final settlement (<Term k="ddr">Due Date Rate</Term>).</>}>
+    {(() => { const cy = (L.cycles || []).filter(c => c.symbol !== "GOLDTEN" && c.exit_premium_rs_cr != null); if (!cy.length) return null;
+      const tot = cy.reduce((x, c) => x + c.exit_premium_rs_cr, 0), cr = cy.filter(c => c.exit >= CRASH[0] && c.exit <= CRASH[1]).reduce((x, c) => x + c.exit_premium_rs_cr, 0);
+      const kg = cy.map(c => c.exit_kg).sort((x, y) => x - y), med = kg[Math.floor(kg.length / 2)];
+      return <div className="status inset"><span className="dot" /><div style={{ flex: "1 1 0", minWidth: 0 }}><b>About ₹{tot.toFixed(1)} crore of premium was still held when the delivery window opened</b>
+        <div className="muted">GOLDGUINEA and GOLDPETAL, {cy.length} contract cycles expiring since {new Date(L.rules.verified_from).toLocaleString("en-IN", { month: "long", year: "numeric" })}: the <Term k="oi">open interest</Term> on the last safe exit day (a median {med.toFixed(0)} kg of gold per contract) times that day's premium per pure gram. ₹{cr.toFixed(1)} crore of it was in the Dec 2025 – Mar 2026 crash cycles. Whoever still held those positions either sold inside the window or paid the premium on delivery.</div></div></div>; })()}
     <div className="grid g3">
       <Kpi src={SRC.delivery} label="GOLDPETAL premium, a month out" note={`Median of ${v.cycles} cycles: about ${inr(v.entry_rs_g)} per gram above GOLDM's bar.`}><Num v={v.entry_bp} f="sgn1" k="dlent" /><small>bp</small></Kpi>
       <Kpi src={SRC.delivery} label="Sell before the delivery window" note={`What a buyer gives up by selling on the last safe day: how far the premium fell while held (a rise would be a gain). The median is small; single cycles swing about ±${v.early_exit_abs_bp.toFixed(0)} bp.`}><Num v={v.early_exit_bp} f="sgn1" k="dlex" /><small>bp</small></Kpi>
@@ -280,6 +285,7 @@ export function Relative() {
           {p.y2024 && <Stat lab="2024" v={`${sgn(p.y2024[0])} bp`} rng={`95% range ${sgn(p.y2024[1])} to ${sgn(p.y2024[2])} · ${p.y2024[3]} weeks`} />}
           <Stat tone="accent" lab="2025–26 quiet months" v={`${sgn(p.normal[0])} bp`} rng={<><Term k="range95">95% range</Term> {sgn(p.normal[1])} to {sgn(p.normal[2])} · {p.normal[3]} weeks</>} />
           <Stat lab="Crash period" v={`${sgn(p.crash[0])} bp`} rng={`95% range ${sgn(p.crash[1])} to ${sgn(p.crash[2])} · ${p.crash[3]} weeks`} />
+          {verdictOf(pair) && <div className="kpi sm"><div className="lab">Tradable after costs?</div><div className="val"><VerdictPill v={verdictOf(pair).verdict} /></div><div className="note">{verdictOf(pair).trades} out-of-sample trades, {inr(verdictOf(pair).net)} at 5 bp · <a href="#backtest">how it is judged</a></div></div>}
           <Stat lab="Same sign in" v={p.cycles_same_sign} rng={<>contract cycles · typical daily swing (<Term k="sigma">1σ</Term>) {p.daily_sd} bp</>} />
         </div>
       </div>
@@ -287,11 +293,11 @@ export function Relative() {
     <Behaviour />
     <Delivery />
     <div className="more-list"><More title="All six pairs in one table" hint="Mean gap by period, with its 95% range. Click a row to chart it.">
-      <div className="tw"><table><thead><tr><th>Pair</th><th className="n">2024</th><th className="n">2025–26 quiet</th><th className="n">95% range</th><th className="n">Crash period</th><th className="n">All days</th><th className="n">Cycles</th></tr></thead>
+      <div className="tw"><table><thead><tr><th>Pair</th><th className="n">2024</th><th className="n">2025–26 quiet</th><th className="n">95% range</th><th className="n">Crash period</th><th className="n">All days</th><th className="n">Cycles</th><th>Tradable? <span className="dim">(<a href="#backtest">verdict</a>)</span></th></tr></thead>
         <tbody>{D.pairs.map(q => { const zero = q.normal[1] <= 0 && q.normal[2] >= 0;
           return <tr key={q.pair} className={"click" + (q.pair === pair ? " sel" : "")} tabIndex={0} onClick={() => setPair(q.pair)} onKeyDown={e => e.key === "Enter" && setPair(q.pair)}>
             <td><b>{pname(q.pair)}</b> {zero && <Pill tone="good">same price</Pill>}</td><td className="n">{q.y2024 ? sgn(q.y2024[0]) + " bp" : <span className="dim">not listed</span>}</td>
-            <td className="n">{sgn(q.normal[0])} bp</td><td className="n dim">{sgn(q.normal[1])} to {sgn(q.normal[2])}</td><td className="n">{sgn(q.crash[0])} bp</td><td className="n">{sgn(q.all[0])} bp</td><td className="n">{q.cycles_same_sign}</td></tr>; })}</tbody></table></div>
+            <td className="n">{sgn(q.normal[0])} bp</td><td className="n dim">{sgn(q.normal[1])} to {sgn(q.normal[2])}</td><td className="n">{sgn(q.crash[0])} bp</td><td className="n">{sgn(q.all[0])} bp</td><td className="n">{q.cycles_same_sign}</td><td>{verdictOf(q.pair) ? <VerdictPill v={verdictOf(q.pair).verdict} /> : "–"}</td></tr>; })}</tbody></table></div>
     </More></div>
   </>;
 }
@@ -346,6 +352,29 @@ const BT = {
 };
 const netAt = (t, s) => t.net0 + (t.net5 - t.net0) * s / 5;
 const posText = t => { const [a, b] = t.what.split("-"); return t.side === "long a/short b" ? `buy ${a}, sell ${b}` : t.side === "short a/long b" ? `sell ${a}, buy ${b}` : t.side.replace("X", t.what).replace(" / ", ", "); };
+
+/* One verdict per pair, from the frozen rules' stored out-of-sample trades (pair_verdict.py). Nothing is re-run here. */
+const VTONE = { "EDGE": "good", "CRASH ONLY": "warn", "NO EDGE": "bad", "UNTESTABLE": "neutral" };
+export const VerdictPill = ({ v }) => <Pill tone={VTONE[v] || "neutral"}><Term k="verdict">{v}</Term></Pill>;
+export const verdictOf = pair => { const V = D.pair_verdicts; return V ? V.rows.find(r => r.pair === pair) : null; };
+function PairVerdicts() {
+  const V = D.pair_verdicts; if (!V) return null;
+  const n = v => V.rows.filter(r => r.verdict === v).length, W = V.windows;
+  const csv = () => downloadCSV("parity_pair_verdicts.csv", ["pair", "strategy", "out_of_sample_trades", "net_rs_at_5bp", "range95_low", "range95_high", "net_outside_crash", "verdict"],
+    V.rows.map(r => [pname(r.pair), r.strategy, r.trades, r.net, r.lo, r.hi, r.net_ex_crash, r.verdict]));
+  return <Card id="verdicts" src={SRC.verdicts} srcNote="Stored trades of the rules as frozen; Strategy C, fitted later, is left out." title="One verdict per pair"
+    sub={<>Every pair, judged only on trades the frozen rules made on windows opened after they were frozen: {Object.values(W).join(", ")}. Net after all costs at {V.slip_bp} bp <Term k="slippage">slippage</Term>; <Term k="range95">95% range</Term> from resampling whole entry weeks. The rule was set before the numbers were read.</>}
+    actions={<CsvButton text="Download" label="Download the six pair verdicts as CSV" onClick={csv} />}>
+    <div className="tw"><table><thead><tr><th>Pair</th><th>Verdict</th><th className="n">Trades</th><th className="n">Net at {V.slip_bp} bp</th><th className="n"><Term k="range95">95% range</Term></th><th className="n">Outside the crash</th></tr></thead>
+      <tbody>{V.rows.map(r => <tr key={r.pair}><td className="nowrap"><b>{pname(r.pair)}</b><br /><small className="dim">Strategy {r.strategy} · {Object.keys(r.windows).length} window{Object.keys(r.windows).length === 1 ? "" : "s"}</small></td>
+        <td><VerdictPill v={r.verdict} />{r.hi != null && r.hi < 0 && <><br /><small className="dim">loses reliably</small></>}</td>
+        <td className="n">{r.trades}</td><td className={"n " + (r.net >= 0 ? "pos" : "neg")}>{inr(r.net)}</td>
+        <td className="n dim">{r.lo != null ? <>{inr(r.lo)} to {inr(r.hi)}</> : "–"}</td>
+        <td className={"n " + (r.net_ex_crash >= 0 ? "pos" : "neg")}>{inr(r.net_ex_crash)}<br /><small className="dim">{r.trades - r.trades_crash} trades</small></td></tr>)}</tbody></table></div>
+    <p className="note"><b>What this says.</b> {n("EDGE") ? `${n("EDGE")} pair${n("EDGE") > 1 ? "s show" : " shows"} an edge.` : "No pair shows an edge after costs."}{n("CRASH ONLY") ? ` ${n("CRASH ONLY")} made money only because of the crash.` : ""} {n("UNTESTABLE") ? <>GOLDM against GOLDTEN is untestable: GOLDTEN only listed in 2025, so it has {(V.rows.find(r => r.pair === "M-TEN") || {}).trades} out-of-sample trades, under the {V.min_trades} the rule asks for.</> : ""} Strategy B made money on the coin and the 1 g contract against GOLDM, but too little to rule out luck. GOLDTEN against the coin and the 1 g contract made money only through the Dec 2025 – Mar 2026 crash; outside it they lost. The 8 g coin against the 1 g contract, the only small pair with a long history, lost in every window, so its whole range sits below zero.
+      Verdict rule: <Term k="verdict">EDGE</Term> needs the 95% range above zero and a profit outside the Dec 2025 – Mar 2026 crash; under {V.min_trades} trades is UNTESTABLE.</p>
+  </Card>;
+}
 
 /* Feature: how a typical backtest is reported, against our sealed test. Every figure is from data.json. */
 function HonestyGap() {
@@ -535,6 +564,7 @@ export function Backtest() {
       actions={<CsvButton text="Download trades" label={`Download all ${rows.length} trade${rows.length === 1 ? "" : "s"} in this view as CSV`} onClick={csv} />}>
         <Chart deps={[key, s, tonly]} draw={host => lineChart(host, { dates: days, series: [{ label: "Cumulative", color: tot >= 0 ? "var(--good)" : "var(--bad)", values: cum }], band: CRASH, zero: true, area: true, yfmt: kfmt, tfmt: v => inr(v), aria: "Cumulative profit", h: 270 })} />
     </Card>
+    <PairVerdicts />
     <HonestyGap />
     <SealedTests s={s} />
     <LuckCheck />
@@ -630,6 +660,11 @@ export function Signals() {
           <td className="n">{sgn(a.premium_bp, 0)}</td><td className="n">{sgn(a.usual_bp, 0)}</td><td className="n">{a.prem_10d == null || !isFinite(a.prem_10d) ? "—" : sgn(a.prem_10d, 0)}</td>
           <td>{a.closed_half_10d === true ? <Pill tone="good">Closed halfway, day {a.days_to_half}</Pill> : a.closed_half_10d === false ? <Pill tone="bad">Did not close</Pill> : <Pill>Too recent</Pill>}</td></tr>)}</tbody></table></div>
       <Pager page={pg} pages={pages} set={setPage} prev="← Newer" next="Older →" />
+    </More>
+    <More title="Why closing prices, not live ticks" hint="What a live feed would and would not change">
+      <p className="prose"><b>The brief asks for this.</b> Problem 03's final challenge is to turn “exchange settlement data” into a defensible signal, validated on unseen history. MCX publishes that data once a day, in the <Term k="bhavcopy">Bhavcopy</Term>, and every result here is measured on it: the fair price, the alert rule, the costs, the sealed tests.
+        <b> Live ticks would not change the verdict.</b> Strategy B fills at the next day's average traded price and Strategy A at the next day's settlement, so a faster feed would not have reached better prices in the backtest. What intraday data would add is depth (how much a real order moves the price), which no public MCX file contains, so we state it as a limit instead of guessing it.
+        <b> How current the site is.</b> A scheduled job on a team computer downloads each new Bhavcopy after MCX publishes it, runs every test, and rebuilds this site; if a test fails, nothing is published. The latest file is {fdate(D.meta.last)}. MCX's own website blocks automated access from cloud servers, which is why the job runs from a home connection.</p>
     </More>
     <More title="Why quiet is the right answer most days" hint="What the alert record and the sealed test show">
       <p className="prose"><b>What the alert record shows.</b> An alert does not make the gap more likely to close, but it marks the large gaps: after an alert the gap closed a median of about {on.median_closed_bp_10d.toFixed(0)} bp in 10 trading days, against {off.median_closed_bp_10d.toFixed(0)} bp on ordinary days, and a round trip costs about {on.round_trip_cost_bp_at_5bp.toFixed(0)} bp. So alerts are worth a look, and quiet days are rightly quiet. <b>Why quiet is the right answer most days.</b> In our <Term k="sealed">sealed test</Term>, quiet-month signals lost money after costs. The gap paid only during sharp gold sell-offs, when GOLDM moved first and the small contracts lagged. We then trained a <Term k="stress">stress filter</Term> for exactly that case on 2008–2015 and 2024–26. On the sealed 2016–2023 data it did not beat the plain rule: in the March 2020 crash the gap kept widening after entry.</p>

@@ -315,6 +315,8 @@ def main():
                            "cycles": [c for c in dl["cycles"] if c["expiry"] >= dl["rules"]["verified_from"]]}   # the verified cycles only
     else:
         out["delivery"] = None
+    _pv = R + "pair_verdicts.json"                # pair_verdict.py: one verdict per pair from the frozen rules' out-of-sample trades
+    out["pair_verdicts"] = json.load(open(_pv)) if os.path.exists(_pv) else None
     _rb = R + "robustness.json"                  # robustness.py: break-even slippage, Sharpe tests, rules tried, trading costs, half-lives, regimes
     out["robustness"] = json.load(open(_rb)) if os.path.exists(_rb) else None
     _tr = R + "test_report.json"                 # tools/run_tests.py: the latest full test run

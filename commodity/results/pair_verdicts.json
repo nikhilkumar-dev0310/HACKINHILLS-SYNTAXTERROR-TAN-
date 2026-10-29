@@ -1,0 +1,185 @@
+{
+ "slip_bp": 5,
+ "min_trades": 20,
+ "crash": [
+  "2025-12-01",
+  "2026-03-31"
+ ],
+ "windows": {
+  "test": "May \u2013 Jul 2025",
+  "holdout": "Aug 2025 \u2013 May 2026",
+  "test3": "2016 \u2013 2019",
+  "test2": "2020 \u2013 2023"
+ },
+ "rows": [
+  {
+   "pair": "M-TEN",
+   "a": "GOLDM",
+   "b": "GOLDTEN",
+   "strategy": "B",
+   "trades": 5,
+   "net": -21686,
+   "lo": -47629,
+   "hi": 4257,
+   "p_pos": 6,
+   "weeks": 4,
+   "net_crash": -14332,
+   "net_ex_crash": -7354,
+   "trades_crash": 1,
+   "windows": {
+    "holdout": {
+     "trades": 5,
+     "net": -21686
+    }
+   },
+   "verdict": "UNTESTABLE"
+  },
+  {
+   "pair": "M-GUINEA",
+   "a": "GOLDM",
+   "b": "GOLDGUINEA",
+   "strategy": "B",
+   "trades": 21,
+   "net": 38240,
+   "lo": -26950,
+   "hi": 102057,
+   "p_pos": 88,
+   "weeks": 21,
+   "net_crash": 10065,
+   "net_ex_crash": 28175,
+   "trades_crash": 1,
+   "windows": {
+    "holdout": {
+     "trades": 4,
+     "net": 27799
+    },
+    "test3": {
+     "trades": 10,
+     "net": 4855
+    },
+    "test2": {
+     "trades": 7,
+     "net": 5586
+    }
+   },
+   "verdict": "NO EDGE"
+  },
+  {
+   "pair": "M-PETAL",
+   "a": "GOLDM",
+   "b": "GOLDPETAL",
+   "strategy": "B",
+   "trades": 24,
+   "net": 39270,
+   "lo": -41823,
+   "hi": 126009,
+   "p_pos": 82,
+   "weeks": 24,
+   "net_crash": 4879,
+   "net_ex_crash": 34391,
+   "trades_crash": 1,
+   "windows": {
+    "holdout": {
+     "trades": 3,
+     "net": 6877
+    },
+    "test3": {
+     "trades": 12,
+     "net": 31018
+    },
+    "test2": {
+     "trades": 9,
+     "net": 1375
+    }
+   },
+   "verdict": "NO EDGE"
+  },
+  {
+   "pair": "TEN-GUINEA",
+   "a": "GOLDTEN",
+   "b": "GOLDGUINEA",
+   "strategy": "A",
+   "trades": 53,
+   "net": 137296,
+   "lo": -18998,
+   "hi": 358603,
+   "p_pos": 91,
+   "weeks": 25,
+   "net_crash": 155374,
+   "net_ex_crash": -18079,
+   "trades_crash": 26,
+   "windows": {
+    "test": {
+     "trades": 5,
+     "net": 639
+    },
+    "holdout": {
+     "trades": 48,
+     "net": 136657
+    }
+   },
+   "verdict": "NO EDGE"
+  },
+  {
+   "pair": "TEN-PETAL",
+   "a": "GOLDTEN",
+   "b": "GOLDPETAL",
+   "strategy": "A",
+   "trades": 56,
+   "net": 103109,
+   "lo": -38975,
+   "hi": 326097,
+   "p_pos": 86,
+   "weeks": 23,
+   "net_crash": 125046,
+   "net_ex_crash": -21937,
+   "trades_crash": 26,
+   "windows": {
+    "test": {
+     "trades": 4,
+     "net": 2104
+    },
+    "holdout": {
+     "trades": 52,
+     "net": 101006
+    }
+   },
+   "verdict": "NO EDGE"
+  },
+  {
+   "pair": "GUINEA-PETAL",
+   "a": "GOLDGUINEA",
+   "b": "GOLDPETAL",
+   "strategy": "A",
+   "trades": 312,
+   "net": -166039,
+   "lo": -218309,
+   "hi": -115899,
+   "p_pos": 0,
+   "weeks": 229,
+   "net_crash": -31121,
+   "net_ex_crash": -134917,
+   "trades_crash": 30,
+   "windows": {
+    "test": {
+     "trades": 10,
+     "net": -7209
+    },
+    "holdout": {
+     "trades": 56,
+     "net": -47322
+    },
+    "test3": {
+     "trades": 109,
+     "net": -48734
+    },
+    "test2": {
+     "trades": 137,
+     "net": -62774
+    }
+   },
+   "verdict": "NO EDGE"
+  }
+ ],
+ "source": "results/test_trades.csv, holdout_trades.csv, fairvalue_holdout_trades.csv, sealed_trades.csv (frozen A and B only)"
+}

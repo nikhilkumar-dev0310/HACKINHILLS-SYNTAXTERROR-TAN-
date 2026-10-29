@@ -20,6 +20,9 @@ GOLDTEN (999) agree per pure gram, which checks the purity normalization. Older 
 but not interpreted: they show the small contracts at a discount about as often as at a premium, and the
 small contracts' specifications over those years have not been checked here.
 A retail comparison (a 1 g coin at a jeweller) needs retail prices we do not hold, so none is made.
+Size: at the last safe exit, the open interest still held (lots x grams per lot x purity) times the premium per
+pure gram is the premium a holder carries into the delivery window, in rupees. Summed over the verified cycles,
+it says how much money the premium question is about.
 Reads every MCX row held (2003 on). Descriptive only: no strategy is chosen or re-run on these rows.
 """
 import json
@@ -38,9 +41,13 @@ SETTLE_MAX_BDAYS = 2         # the last row must be this close to expiry to coun
 VERIFIED_FROM = "2025-04-01"  # GOLDTEN's first day: the per-gram normalization is cross-checked from here
 
 
-def readings(f, price):
+PURITY = 0.999                 # the three small contracts are 999 fine
+
+
+def readings(f, price, oi=None, lot_g=None):
     """Entry, last-exit and settlement readings of one cycle's premium frame, or None if a reading is missing.
-    f: fairvalue.build frame (index date; prem_bp, ok, bleft). price: the small contract's Rs per pure gram by date."""
+    f: fairvalue.build frame (index date; prem_bp, ok, bleft). price: the small contract's Rs per pure gram by date.
+    oi, lot_g: the contract's open interest in lots by date and grams per lot, for the rupees held into delivery."""
     liq = f[f.ok]
     ent, pre = liq[liq.bleft <= ENTRY_BDAYS], liq[liq.bleft >= fv.EXIT_BDAYS]
     if ent.empty or pre.empty or f.bleft.iat[-1] > SETTLE_MAX_BDAYS:
@@ -53,7 +60,9 @@ def readings(f, price):
             "exit": str(p.date()), "exit_bp": float(f.prem_bp[p]),
             "settle": str(s.date()), "settle_bp": float(f.prem_bp[s]), "settle_rs_g": rs(s, f.prem_bp[s]),
             "early_exit_bp": float(f.prem_bp[e] - f.prem_bp[p]), "early_exit_rs_g": rs(e, f.prem_bp[e] - f.prem_bp[p]),
-            "window_change_bp": float(f.prem_bp[s] - f.prem_bp[p])}
+            "window_change_bp": float(f.prem_bp[s] - f.prem_bp[p]),
+            **({"exit_oi_lots": int(oi[p]), "exit_kg": float(oi[p] * lot_g * PURITY / 1e3),
+                "exit_premium_rs_cr": float(oi[p] * lot_g * PURITY * price[p] * f.prem_bp[p] / 1e4 / 1e7)} if oi is not None and p in oi.index else {})}
 
 
 def summary(rows):
@@ -65,16 +74,19 @@ def summary(rows):
             "early_exit_bp": q("early_exit_bp", 0.5), "early_exit_bp_iqr": [q("early_exit_bp", 0.25), q("early_exit_bp", 0.75)],
             "early_exit_abs_bp": round(float(x.early_exit_bp.abs().median()), 1), "early_exit_rs_g": q("early_exit_rs_g", 0.5),
             "window_change_bp": q("window_change_bp", 0.5),
-            "settle_positive": round(float((x.settle_bp > 0).mean()), 3), "entry_positive": round(float((x.entry_bp > 0).mean()), 3)}
+            "settle_positive": round(float((x.settle_bp > 0).mean()), 3), "entry_positive": round(float((x.entry_bp > 0).mean()), 3),
+            **({"exit_premium_rs_cr_total": round(float(x.exit_premium_rs_cr.sum()), 2), "exit_premium_rs_cr_median": round(float(x.exit_premium_rs_cr.median()), 2),
+                "exit_kg_median": round(float(x.exit_kg.median()), 1), "exit_oi_cycles": int(x.exit_premium_rs_cr.notna().sum())} if "exit_premium_rs_cr" in x else {})}
 
 
 def main():
     d, carry = sc.load(include_sealed=True)
     frames = fv.build(d, carry)
     price = d.set_index(["symbol", "expiry_date", "date"]).rs_per_g
+    oi = d.set_index(["symbol", "expiry_date", "date"]).open_interest_lots
     cyc = []
     for (sym, exp), f in sorted(frames.items(), key=lambda kv: (kv[0][0], kv[0][1])):
-        r = readings(f, price.loc[(sym, exp)])
+        r = readings(f, price.loc[(sym, exp)], oi.loc[(sym, exp)], bt.LOT_GRAMS.get(sym))
         if r:
             cyc.append({"symbol": sym, "expiry": str(exp.date()), **{k: (round(v, 2) if isinstance(v, float) else v) for k, v in r.items()}})
     out = {"rows": [], "cycles": cyc, "rules": {"entry_bdays": ENTRY_BDAYS, "exit_bdays": fv.EXIT_BDAYS, "settle_max_bdays": SETTLE_MAX_BDAYS, "verified_from": VERIFIED_FROM},

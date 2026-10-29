@@ -67,7 +67,13 @@ Three standard checks, run on training years only so the sealed results stay unt
   sells before the delivery window gives up only how far the premium fell while held; one who takes delivery pays the
   whole premium. At the final settlement the premium rises, GOLDTEN's included, so much of that rise is spot gold
   settling above the futures, not the coins themselves. Read from the cycles since April 2025, when GOLDM and GOLDTEN
-  agreeing per pure gram confirms the purity conversion.
+  agreeing per pure gram confirms the purity conversion. About ₹32 crore of premium was still held in GOLDGUINEA and
+  GOLDPETAL when the delivery window opened over those 38 cycles (open interest times the premium), ₹22 crore of it in
+  the Dec 2025 – Mar 2026 crash cycles.
+- **One verdict per pair** ([`commodity/pair_verdict.py`](commodity/pair_verdict.py)): each of the six pairs judged only
+  on the frozen rules' trades from windows opened after they were frozen, at 5 bp, by a rule set before the numbers
+  were read. GOLDM–GOLDTEN is untestable (5 trades); the other five show no edge, and GOLDGUINEA–GOLDPETAL loses
+  reliably (its whole 95% range is below zero). The pairs with GOLDTEN made money only through the crash.
 - **Do the gaps come back?** GOLDTEN and GOLDGUINEA gaps halve in about 7 and 8 market days and pass a stationarity
   test. GOLDPETAL's level jumped abruptly in November 2024 (about −150 bp to about +90 bp over GOLDM); we found no
   exchange notice that explains it, and say so.
@@ -91,7 +97,7 @@ Three standard checks, run on training years only so the sealed results stay unt
 
 [![Tests](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml/badge.svg)](https://github.com/nikhilkumar-dev0310/HACKINHILLS-SYNTAXTERROR-TAN-/actions/workflows/tests.yml)
 
-About 10,000 automated tests (297 distinct checks, run per contract, per raw file and per trade log so a failure
+About 10,000 automated tests (304 distinct checks, run per contract, per raw file and per trade log so a failure
 names exactly what broke). They run on GitHub on every push, and on the team computer before the daily job may
 publish; the latest run is shown on the site's Data quality page. Standard-library `unittest`, no extra packages.
 
@@ -128,6 +134,7 @@ python strategy_c.py dev      # Strategy C grid on development years
 python overfit.py             # overfitting, placebo and no-carry checks (training years only)
 python robustness.py          # break-even slippage, Sharpe tests, rules tried, trading costs, half-lives, regimes
 python delivery.py            # the premium a month out, at the last safe exit and at final settlement
+python pair_verdict.py        # one verdict per pair from the frozen rules' stored out-of-sample trades
 python dashboard/export.py && node dashboard/build_app.mjs && python dashboard/build.py   # rebuild the site
 ```
 

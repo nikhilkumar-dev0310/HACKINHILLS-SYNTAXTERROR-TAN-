@@ -39,6 +39,7 @@ export const SRC = {
   robust: { file: "results/robustness.json", by: "robustness.py, from stored results and development data" },
   costs: { file: "results/robustness.json", by: "robustness.py, half-spreads from every MCX row held" },
   delivery: { file: "results/delivery.json", by: "delivery.py, from every MCX row held" },
+  verdicts: { file: "results/pair_verdicts.json", by: "pair_verdict.py, from the frozen rules' stored out-of-sample trades" },
   tests: { file: "results/test_report.json", by: "tools/run_tests.py, on every push and before every daily publish" }
 };
 export const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -109,6 +110,8 @@ export const GLOSSARY = {
   walkforward: ["Walk-forward", "Replaying the market one day at a time, using only what was known on that day."],
   expiry: ["Expiry", "The day a futures contract ends. Each contract here is tracked by its own expiry, never stitched into a series."],
   oi: ["Open interest", "Contracts still open at the end of the day."],
+  verdict: ["Pair verdict", "Our one-word answer for each pair, from the frozen rules' trades on windows they never saw, after all costs at 5 bp. EDGE: the 95% range is above zero and it still makes money outside the crash. CRASH ONLY: above zero, but only because of the crash. NO EDGE: the range includes zero or sits below it. UNTESTABLE: under 20 such trades."],
+  eod: ["End of day", "One price per contract per day, from the exchange's daily file (the Bhavcopy), published after the market closes."],
   futures: ["Futures contract", "An agreement, traded on the exchange, to buy or sell gold at today's agreed price on a set date later. Most traders close it before that date instead of taking delivery."],
   fairprice: ["Fair price", "What a small contract should cost on the day: GOLDM's price moved to the same expiry with that day's carry, plus the premium that contract usually carries."],
   roundtrip: ["Round trip", "Opening a position and closing it again. A pair trade has two legs, so a round trip is four orders, each paying fees, taxes and slippage."],
