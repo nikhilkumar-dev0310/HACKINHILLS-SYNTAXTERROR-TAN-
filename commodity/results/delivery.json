@@ -3,130 +3,130 @@
   {
    "symbol": "GOLDTEN",
    "verified": {
-    "cycles": 18,
+    "cycles": 19,
     "first": "2025-04-30",
-    "last": "2026-09-30",
-    "entry_bp": -2.8,
-    "exit_bp": -9.9,
-    "settle_bp": 45.5,
-    "entry_rs_g": -3.5,
-    "settle_rs_g": 55.7,
-    "early_exit_bp": 13.0,
+    "last": "2026-10-30",
+    "entry_bp": -1.4,
+    "exit_bp": -9.5,
+    "settle_bp": 50.4,
+    "entry_rs_g": -1.7,
+    "settle_rs_g": 71.2,
+    "early_exit_bp": 10.8,
     "early_exit_bp_iqr": [
-     -6.3,
-     25.5
+     -6.0,
+     24.6
     ],
-    "early_exit_abs_bp": 17.7,
-    "early_exit_rs_g": 15.4,
-    "window_change_bp": 67.8,
-    "settle_positive": 0.722,
-    "entry_positive": 0.389
+    "early_exit_abs_bp": 15.7,
+    "early_exit_rs_g": 15.0,
+    "window_change_bp": 66.3,
+    "settle_positive": 0.737,
+    "entry_positive": 0.421
    },
    "all": {
-    "cycles": 18,
+    "cycles": 19,
     "first": "2025-04-30",
-    "last": "2026-09-30",
-    "entry_bp": -2.8,
-    "exit_bp": -9.9,
-    "settle_bp": 45.5,
-    "entry_rs_g": -3.5,
-    "settle_rs_g": 55.7,
-    "early_exit_bp": 13.0,
+    "last": "2026-10-30",
+    "entry_bp": -1.4,
+    "exit_bp": -9.5,
+    "settle_bp": 50.4,
+    "entry_rs_g": -1.7,
+    "settle_rs_g": 71.2,
+    "early_exit_bp": 10.8,
     "early_exit_bp_iqr": [
-     -6.3,
-     25.5
+     -6.0,
+     24.6
     ],
-    "early_exit_abs_bp": 17.7,
-    "early_exit_rs_g": 15.4,
-    "window_change_bp": 67.8,
-    "settle_positive": 0.722,
-    "entry_positive": 0.389
+    "early_exit_abs_bp": 15.7,
+    "early_exit_rs_g": 15.0,
+    "window_change_bp": 66.3,
+    "settle_positive": 0.737,
+    "entry_positive": 0.421
    }
   },
   {
    "symbol": "GOLDGUINEA",
    "verified": {
-    "cycles": 18,
+    "cycles": 19,
     "first": "2025-04-30",
-    "last": "2026-09-30",
-    "entry_bp": 49.1,
-    "exit_bp": 51.8,
-    "settle_bp": 106.8,
-    "entry_rs_g": 67.1,
-    "settle_rs_g": 127.6,
-    "early_exit_bp": 17.3,
+    "last": "2026-10-30",
+    "entry_bp": 51.0,
+    "exit_bp": 50.8,
+    "settle_bp": 96.3,
+    "entry_rs_g": 67.2,
+    "settle_rs_g": 114.1,
+    "early_exit_bp": 12.0,
     "early_exit_bp_iqr": [
-     -31.2,
-     30.2
+     -28.2,
+     29.8
     ],
-    "early_exit_abs_bp": 32.1,
-    "early_exit_rs_g": 19.7,
-    "window_change_bp": 57.4,
-    "settle_positive": 0.889,
-    "entry_positive": 0.944
+    "early_exit_abs_bp": 30.6,
+    "early_exit_rs_g": 18.4,
+    "window_change_bp": 51.5,
+    "settle_positive": 0.895,
+    "entry_positive": 0.947
    },
    "all": {
-    "cycles": 219,
+    "cycles": 220,
     "first": "2008-07-31",
-    "last": "2026-09-30",
-    "entry_bp": -6.3,
-    "exit_bp": -17.6,
-    "settle_bp": 23.4,
-    "entry_rs_g": -2.1,
-    "settle_rs_g": 6.9,
-    "early_exit_bp": 10.5,
+    "last": "2026-10-30",
+    "entry_bp": -5.9,
+    "exit_bp": -15.8,
+    "settle_bp": 23.3,
+    "entry_rs_g": -1.7,
+    "settle_rs_g": 7.0,
+    "early_exit_bp": 10.0,
     "early_exit_bp_iqr": [
-     -33.4,
-     54.3
+     -32.9,
+     53.9
     ],
-    "early_exit_abs_bp": 47.8,
-    "early_exit_rs_g": 3.8,
-    "window_change_bp": 46.8,
-    "settle_positive": 0.626,
-    "entry_positive": 0.47
+    "early_exit_abs_bp": 47.5,
+    "early_exit_rs_g": 3.5,
+    "window_change_bp": 46.7,
+    "settle_positive": 0.627,
+    "entry_positive": 0.473
    }
   },
   {
    "symbol": "GOLDPETAL",
    "verified": {
-    "cycles": 18,
+    "cycles": 19,
     "first": "2025-04-30",
-    "last": "2026-09-30",
-    "entry_bp": 67.3,
-    "exit_bp": 58.8,
-    "settle_bp": 128.5,
-    "entry_rs_g": 88.2,
-    "settle_rs_g": 167.3,
-    "early_exit_bp": 6.4,
+    "last": "2026-10-30",
+    "entry_bp": 59.1,
+    "exit_bp": 57.1,
+    "settle_bp": 119.1,
+    "entry_rs_g": 88.1,
+    "settle_rs_g": 151.5,
+    "early_exit_bp": 2.0,
     "early_exit_bp_iqr": [
-     -18.2,
-     44.6
+     -16.0,
+     43.1
     ],
-    "early_exit_abs_bp": 31.3,
-    "early_exit_rs_g": 6.1,
-    "window_change_bp": 58.6,
-    "settle_positive": 0.889,
+    "early_exit_abs_bp": 26.7,
+    "early_exit_rs_g": 2.4,
+    "window_change_bp": 43.0,
+    "settle_positive": 0.895,
     "entry_positive": 1.0
    },
    "all": {
-    "cycles": 185,
+    "cycles": 186,
     "first": "2011-05-31",
-    "last": "2026-09-30",
-    "entry_bp": -29.4,
-    "exit_bp": -39.2,
-    "settle_bp": 19.4,
+    "last": "2026-10-30",
+    "entry_bp": -29.2,
+    "exit_bp": -37.8,
+    "settle_bp": 19.7,
     "entry_rs_g": -10.0,
-    "settle_rs_g": 6.5,
-    "early_exit_bp": 21.1,
+    "settle_rs_g": 6.6,
+    "early_exit_bp": 20.1,
     "early_exit_bp_iqr": [
-     -22.2,
+     -21.8,
      70.6
     ],
-    "early_exit_abs_bp": 51.4,
+    "early_exit_abs_bp": 50.8,
     "early_exit_rs_g": 8.0,
-    "window_change_bp": 56.1,
-    "settle_positive": 0.584,
-    "entry_positive": 0.362
+    "window_change_bp": 55.9,
+    "settle_positive": 0.586,
+    "entry_positive": 0.366
    }
   }
  ],
@@ -3417,6 +3417,21 @@
    "window_change_bp": 151.1
   },
   {
+   "symbol": "GOLDGUINEA",
+   "expiry": "2026-10-30",
+   "entry": "2026-10-05",
+   "entry_bp": 52.25,
+   "entry_rs_g": 78.07,
+   "exit": "2026-10-23",
+   "exit_bp": 50.78,
+   "settle": "2026-10-28",
+   "settle_bp": 12.77,
+   "settle_rs_g": 18.22,
+   "early_exit_bp": 1.47,
+   "early_exit_rs_g": 2.19,
+   "window_change_bp": -38.02
+  },
+  {
    "symbol": "GOLDPETAL",
    "expiry": "2011-05-31",
    "entry": "2011-05-03",
@@ -6192,6 +6207,21 @@
    "window_change_bp": 135.63
   },
   {
+   "symbol": "GOLDPETAL",
+   "expiry": "2026-10-30",
+   "entry": "2026-10-05",
+   "entry_bp": 47.81,
+   "entry_rs_g": 71.41,
+   "exit": "2026-10-23",
+   "exit_bp": 57.14,
+   "settle": "2026-10-28",
+   "settle_bp": 32.48,
+   "settle_rs_g": 46.43,
+   "early_exit_bp": -9.33,
+   "early_exit_rs_g": -13.94,
+   "window_change_bp": -24.67
+  },
+  {
    "symbol": "GOLDTEN",
    "expiry": "2025-04-30",
    "entry": "2025-04-02",
@@ -6460,6 +6490,21 @@
    "early_exit_bp": -19.65,
    "early_exit_rs_g": -30.04,
    "window_change_bp": 116.59
+  },
+  {
+   "symbol": "GOLDTEN",
+   "expiry": "2026-10-30",
+   "entry": "2026-10-05",
+   "entry_bp": 2.94,
+   "entry_rs_g": 4.37,
+   "exit": "2026-10-23",
+   "exit_bp": 6.29,
+   "settle": "2026-10-28",
+   "settle_bp": 54.22,
+   "settle_rs_g": 77.7,
+   "early_exit_bp": -3.35,
+   "early_exit_rs_g": -4.98,
+   "window_change_bp": 47.94
   }
  ],
  "rules": {
