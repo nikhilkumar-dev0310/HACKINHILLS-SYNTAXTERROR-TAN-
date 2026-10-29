@@ -1,11 +1,11 @@
 {
-  "run_at": "2026-10-29 08:58 IST",
-  "commit": "b99248e",
+  "run_at": "2026-10-29 18:57 IST",
+  "commit": "eb5177f",
   "tests": 10425,
-  "passed": 10425,
+  "passed": 10401,
   "failed": 0,
-  "skipped": 0,
-  "seconds": 81.5,
+  "skipped": 24,
+  "seconds": 14.0,
   "checks": 304,
   "files": [
     {
@@ -84,9 +84,9 @@
       "about": "No look-ahead, anywhere a signal is computed: rewriting the future must not change the past.",
       "checks": 11,
       "tests": 209,
-      "passed": 209,
+      "passed": 185,
       "failed": 0,
-      "skipped": 0
+      "skipped": 24
     },
     {
       "name": "test_pair_verdicts",
@@ -209,5 +209,5 @@
       "skipped": 0
     }
   ],
-  "where": "local"
+  "where": "Daily MCX data update"
 }
